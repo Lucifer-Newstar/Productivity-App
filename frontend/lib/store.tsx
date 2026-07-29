@@ -55,16 +55,15 @@ const seedNotes: Note[] = [
 
 // Career seed — pre-populates two tracks (DevOps, SRE) with sample concepts,
 // sub-concepts, notes, resume bullets, goals, and achievements so new users see
-// what the page can do before entering their own data.
-const seedCareer = (): CareerState => {
+// what the page can do before entering their own data. Evaluated once at module
+// load so server and client produce identical seed data during first render.
+const SEED_CAREER: CareerState = (() => {
   const devops = uid();
   const sre = uid();
-  // Helper to build a concept with sub-concepts
   const c = (title: string, subs: string[]): CareerConcept => ({
-    id: uid(),
-    title,
-    subConcepts: subs.map((t) => ({ id: uid(), title: t, done: false })),
+    id: uid(), title, subConcepts: subs.map((t) => ({ id: uid(), title: t, done: false })),
   });
+  const ANCHOR_C = Date.now();
   return {
     tracks: [
       {
@@ -98,8 +97,8 @@ const seedCareer = (): CareerState => {
           ]},
         ],
         notes: [
-          { id: uid(), title: "Useful commands", content: "kubectl get pods -A\nkubectl logs -f <pod>\nterraform plan -out=plan", updatedAt: Date.now() - 2 * DAY },
-          { id: uid(), title: "Interview prep", content: "- Explain CI/CD\n- Blue/green vs canary deployments\n- CAP theorem", updatedAt: Date.now() - DAY },
+          { id: uid(), title: "Useful commands", content: "kubectl get pods -A\nkubectl logs -f <pod>\nterraform plan -out=plan", updatedAt: ANCHOR_C - 2 * DAY },
+          { id: uid(), title: "Interview prep", content: "- Explain CI/CD\n- Blue/green vs canary deployments\n- CAP theorem", updatedAt: ANCHOR_C - DAY },
         ],
         resumeBullets: [
           { id: uid(), text: "Designed multi-env CI/CD pipelines reducing deploy time by 60%" },
@@ -116,7 +115,7 @@ const seedCareer = (): CareerState => {
           c("Incident Response", ["On-call rotations", "Blameless postmortems", "Retros & action items"]),
         ],
         notes: [
-          { id: uid(), title: "SRE reading list", content: "- Site Reliability Engineering book\n- Google SRE Workbook", updatedAt: Date.now() - 3 * DAY },
+          { id: uid(), title: "SRE reading list", content: "- Site Reliability Engineering book\n- Google SRE Workbook", updatedAt: ANCHOR_C - 3 * DAY },
         ],
         resumeBullets: [
           { id: uid(), text: "Improved MTTR by 40% through better alert routing and on-call docs" },
@@ -129,12 +128,12 @@ const seedCareer = (): CareerState => {
       { id: uid(), title: "Post 12 LinkedIn articles this year", done: false },
     ],
     achievements: [
-      { id: uid(), title: "Completed Docker course", date: new Date(Date.now() - 30 * DAY).toISOString().slice(0, 10), icon: "🐳", trackId: devops },
-      { id: uid(), title: "Won internal hackathon", date: new Date(Date.now() - 60 * DAY).toISOString().slice(0, 10), icon: "🏆" },
+      { id: uid(), title: "Completed Docker course", date: new Date(ANCHOR_C - 30 * DAY).toISOString().slice(0, 10), icon: "🐳", trackId: devops },
+      { id: uid(), title: "Won internal hackathon", date: new Date(ANCHOR_C - 60 * DAY).toISOString().slice(0, 10), icon: "🏆" },
     ],
     linkedin: "",
   };
-};
+})();
 
 // Shape of the value exposed by StoreProvider. Grouped by feature for readability.
 interface StoreState {
@@ -274,11 +273,13 @@ const migrateCareer = (raw: any): CareerState => {
 };
 
 // ---------------- Workout seed ----------------
-// Pre-populate with a sensible starter library + a couple of skills + a "Push Day"
-// routine + sample PR history so new users see the page populated.
-const seedWorkout = (): WorkoutState => {
+// Pre-populate with a starter library, PRs, skills, routines, and one sample
+// session. Evaluated once at module load so server and client produce the same
+// data shape on first render.
+const SEED_WORKOUT: WorkoutState = (() => {
+  const ANCHOR_W = Date.now();
   const ex = (name: string, unit: WorkoutUnit, muscleGroup?: any): WorkoutExercise => ({
-    id: uid(), name, unit, muscleGroup, createdAt: Date.now(),
+    id: uid(), name, unit, muscleGroup, createdAt: ANCHOR_W,
   });
   const bench   = ex("Bench Press", "kg", "chest");
   const squat   = ex("Back Squat", "kg", "legs");
@@ -310,7 +311,7 @@ const seedWorkout = (): WorkoutState => {
     ],
     skills: [
       {
-        id: uid(), name: "Pull-up", createdAt: Date.now(),
+        id: uid(), name: "Pull-up", createdAt: ANCHOR_W,
         progressions: [
           { id: uid(), title: "Dead hangs (30s)",         target: 30,  done: true,  currentBest: 35 },
           { id: uid(), title: "Australian pull-ups",      target: 15,  done: true,  currentBest: 18 },
@@ -320,7 +321,7 @@ const seedWorkout = (): WorkoutState => {
         ],
       },
       {
-        id: uid(), name: "Handstand", createdAt: Date.now(),
+        id: uid(), name: "Handstand", createdAt: ANCHOR_W,
         progressions: [
           { id: uid(), title: "Wall handstand (30s)", target: 30, done: true, currentBest: 45 },
           { id: uid(), title: "Chest-to-wall (20s)",  target: 20, done: false, currentBest: 12 },
@@ -330,7 +331,7 @@ const seedWorkout = (): WorkoutState => {
     ],
     routines: [
       {
-        id: uid(), name: "Push Day", dayOfWeek: 1, createdAt: Date.now(),
+        id: uid(), name: "Push Day", dayOfWeek: 1, createdAt: ANCHOR_W,
         blocks: [
           { id: uid(), exerciseId: bench.id,  type: "strength", sets: 4, reps: 6,  restSeconds: 180 },
           { id: uid(), exerciseId: ohp.id,    type: "strength", sets: 3, reps: 8,  restSeconds: 120 },
@@ -340,7 +341,7 @@ const seedWorkout = (): WorkoutState => {
         ],
       },
       {
-        id: uid(), name: "Leg Day", dayOfWeek: 3, createdAt: Date.now(),
+        id: uid(), name: "Leg Day", dayOfWeek: 3, createdAt: ANCHOR_W,
         blocks: [
           { id: uid(), exerciseId: squat.id,    type: "strength", sets: 5, reps: 5, restSeconds: 180 },
           { id: uid(), label: "Lunges",         type: "strength", sets: 3, reps: 10, restSeconds: 90 },
@@ -352,8 +353,8 @@ const seedWorkout = (): WorkoutState => {
       // Sample completed session from yesterday
       {
         id: uid(), routineId: undefined, name: "Push Day",
-        date: new Date(Date.now() - DAY).toISOString().slice(0, 10),
-        startedAt: Date.now() - DAY - 50 * 60 * 1000, endedAt: Date.now() - DAY,
+        date: new Date(ANCHOR_W - DAY).toISOString().slice(0, 10),
+        startedAt: ANCHOR_W - DAY - 50 * 60 * 1000, endedAt: ANCHOR_W - DAY,
         sets: [],
         totalVolumeKg: 0,
         durationSeconds: 50 * 60,
@@ -361,14 +362,16 @@ const seedWorkout = (): WorkoutState => {
     ],
     activeSessionId: undefined,
   };
-};
+})();
 
 export function StoreProvider({ children }: { children: React.ReactNode }) {
-  // Persisted slices
+  // Persisted slices. Seeds are module-level constants so both server and client
+  // see the exact same data on first render — any Date.now()/uid() inside seeds
+  // runs once at import, not per render.
   const [tasks, setTasks]     = useLocalState<Task[]>("kaizen.tasks", seedTasks);
   const [notes, setNotes]     = useLocalState<Note[]>("kaizen.notes", seedNotes);
-  const [career, setCareer]   = useLocalState<CareerState>("kaizen.career", seedCareer(), migrateCareer);
-  const [workout, setWorkout] = useLocalState<WorkoutState>("kaizen.workout", seedWorkout());
+  const [career, setCareer]   = useLocalState<CareerState>("kaizen.career", SEED_CAREER, migrateCareer);
+  const [workout, setWorkout] = useLocalState<WorkoutState>("kaizen.workout", SEED_WORKOUT);
 
   // One-time cleanup of legacy localStorage keys from pre-monorepo versions
   useEffect(() => {
