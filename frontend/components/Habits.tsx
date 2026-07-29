@@ -1,5 +1,11 @@
 "use client";
 
+/**
+ * Habits — daily habit tracker.
+ * Add habits with icon + color; a 7-day weekly grid lets you check off days and
+ * track streaks. Seeded with Hydrate / Workout / Reading examples.
+ */
+
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { Flame, Plus, Check, Droplets, Dumbbell, BookOpen, Moon, X } from "lucide-react";

@@ -1,5 +1,12 @@
 "use client";
 
+/**
+ * Dashboard — landing view.
+ * Greets based on time of day, shows an animated overall completion bar,
+ * four stat cards, a per-space overview grid, recent tasks, and a focus tip.
+ * `setView` prop lets CTAs ("View all tasks", "Start focus session") navigate.
+ */
+
 import { motion } from "framer-motion";
 import { CheckCircle2, Clock, Flame, Target, Zap, TrendingUp, ArrowRight } from "lucide-react";
 import { useStore } from "../lib/store";

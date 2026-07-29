@@ -1,5 +1,11 @@
 "use client";
 
+/**
+ * App shell — top-level layout for the single-page experience.
+ * Hosts the Sidebar + header (search, notifications, avatar) and swaps the active
+ * view (Dashboard/Tasks/Pomodoro/...) with AnimatePresence page transitions.
+ */
+
 import { useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import Sidebar from "../components/Sidebar";

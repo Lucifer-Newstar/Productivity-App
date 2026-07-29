@@ -1,5 +1,11 @@
 "use client";
 
+/**
+ * Calendar — month view of tasks.
+ * Navigation for prev/next month + Today button; per-day dots colored by which spaces
+ * have tasks. Selecting a day lists that day's tasks with space-colored left bars.
+ */
+
 import { useState, useMemo } from "react";
 import { motion } from "framer-motion";
 import { ChevronLeft, ChevronRight, Plus } from "lucide-react";
@@ -94,7 +100,15 @@ export default function Calendar() {
             const isSelected = iso === selected;
             const dayTasks = tasksOn(cell.date);
             const count = dayTasks.length;
-            const dotColors = [...new Set(dayTasks.map((t) => SPACES.find((s) => s.id === t.space)!.color))].slice(0, 3);
+            // Collect up to 3 distinct space colors for the day-indicator dots.
+            // Array.from avoids spreading a Set (requires downlevelIteration with older TS targets).
+            const seen: string[] = [];
+            for (const dt of dayTasks) {
+              const space = SPACES.find((s) => s.id === dt.space);
+              if (space && !seen.includes(space.color)) seen.push(space.color);
+              if (seen.length >= 3) break;
+            }
+            const dotColors = seen;
             return (
               <motion.button
                 key={i}
