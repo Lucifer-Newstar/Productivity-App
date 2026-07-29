@@ -74,9 +74,9 @@ html:not(.dark) body {
 }
 
 @layer components {
-  /* Glass surface — darker in dark mode, white-frosted in light */
+  /* Glass surface — white frosted in light, dark translucent in dark */
   .glass {
-    @apply bg-white/70 dark:bg-bg-card/60 backdrop-blur-xl border border-black/5 dark:border-white/5;
+    @apply bg-white/70 dark:bg-bg-card/60 backdrop-blur-xl border border-gray-200/60 dark:border-white/5;
   }
   .glow-violet {
     box-shadow: 0 0 40px -10px rgba(139, 92, 246, 0.5);

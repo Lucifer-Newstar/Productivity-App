@@ -1,8 +1,9 @@
 /**
  * Pages Router custom App — wraps every `/pages/*` route (the five Spaces) in the
- * same providers + top nav the main App Router shell uses, so visiting
- * `/career`, `/workout`, etc. standalone looks identical to navigating within
- * the SPA.
+ * same providers + top nav the main App Router shell uses.
+ *
+ * Layout: TopNav at the top (cross-page nav), space page content below. SideNav
+ * is not rendered here — it's home-specific.
  */
 import type { AppProps } from "next/app";
 import { StoreProvider } from "../lib/store";
