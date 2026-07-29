@@ -21,6 +21,9 @@ import type {
   Task, Note, SpaceId,
   CareerState, CareerTrack, CareerConcept, CareerSubConcept,
   CareerNote, CareerBullet, CareerGoal, CareerAchievement,
+  WorkoutState, WorkoutExercise, WorkoutPR, WorkoutSkill, WorkoutProgression,
+  WorkoutRoutine, WorkoutBlock, WorkoutSession, WorkoutSetLog,
+  WorkoutUnit,
 } from "./types";
 import { SPACES } from "./types";
 
@@ -179,6 +182,33 @@ interface StoreState {
   deleteAchievement: (id: string) => void;
   // career posts — LinkedIn URL (portfolio is UI-only placeholder)
   setLinkedin: (v: string) => void;
+  // workout — exercises (library)
+  workout: WorkoutState;
+  addExercise: (name: string, unit: WorkoutUnit, muscleGroup?: string, notes?: string) => void;
+  updateExercise: (id: string, patch: Partial<WorkoutExercise>) => void;
+  deleteExercise: (id: string) => void;
+  // workout — PRs (personal records)
+  logPR: (exerciseId: string, value: number, reps?: number, note?: string) => void;
+  deletePR: (id: string) => void;
+  // workout — skills (progressions)
+  addSkill: (name: string) => void;
+  deleteSkill: (id: string) => void;
+  addProgression: (skillId: string, title: string, target?: number) => void;
+  toggleProgressionDone: (skillId: string, progId: string) => void;
+  updateProgression: (skillId: string, progId: string, patch: Partial<WorkoutProgression>) => void;
+  deleteProgression: (skillId: string, progId: string) => void;
+  // workout — routines (schedule templates)
+  addRoutine: (name: string, dayOfWeek?: number) => void;
+  updateRoutine: (id: string, patch: Partial<WorkoutRoutine>) => void;
+  deleteRoutine: (id: string) => void;
+  addBlock: (routineId: string, block: Omit<WorkoutBlock, "id">) => void;
+  updateBlock: (routineId: string, blockId: string, patch: Partial<WorkoutBlock>) => void;
+  deleteBlock: (routineId: string, blockId: string) => void;
+  // workout — sessions (live workouts)
+  startSession: (name: string, routineId?: string) => string;
+  logSet: (sessionId: string, entry: Omit<WorkoutSetLog, "completed"> & { completed?: boolean }) => void;
+  finishSession: (sessionId: string) => void;
+  discardSession: (sessionId: string) => void;
 }
 
 const StoreContext = createContext<StoreState | null>(null);
@@ -227,11 +257,105 @@ const migrateCareer = (raw: any): CareerState => {
   return { ...raw, tracks };
 };
 
+// ---------------- Workout seed ----------------
+// Pre-populate with a sensible starter library + a couple of skills + a "Push Day"
+// routine + sample PR history so new users see the page populated.
+const seedWorkout = (): WorkoutState => {
+  const ex = (name: string, unit: WorkoutUnit, muscleGroup?: any): WorkoutExercise => ({
+    id: uid(), name, unit, muscleGroup, createdAt: Date.now(),
+  });
+  const bench   = ex("Bench Press", "kg", "chest");
+  const squat   = ex("Back Squat", "kg", "legs");
+  const deadlift= ex("Deadlift", "kg", "back");
+  const ohp     = ex("Overhead Press", "kg", "shoulders");
+  const pullup  = ex("Pull-up", "reps", "back");
+  const pushup  = ex("Push-up", "reps", "chest");
+  const plank   = ex("Plank", "seconds", "core");
+  const run5k   = ex("5k Run", "seconds", "cardio");
+
+  const pr = (exerciseId: string, value: number, reps?: number): WorkoutPR => ({
+    id: uid(), exerciseId, value, reps,
+    date: new Date(Date.now() - Math.floor(Math.random() * 30) * DAY).toISOString().slice(0, 10),
+    history: [{
+      date: new Date(Date.now() - Math.floor(Math.random() * 30) * DAY).toISOString().slice(0, 10),
+      value, reps,
+    }],
+  });
+
+  return {
+    exercises: [bench, squat, deadlift, ohp, pullup, pushup, plank, run5k],
+    prs: [
+      pr(bench.id, 80, 5),
+      pr(squat.id, 120, 3),
+      pr(deadlift.id, 140, 1),
+      pr(pullup.id, 12),
+      pr(plank.id, 180),
+    ],
+    skills: [
+      {
+        id: uid(), name: "Pull-up", createdAt: Date.now(),
+        progressions: [
+          { id: uid(), title: "Dead hangs (30s)",         target: 30,  done: true,  currentBest: 35 },
+          { id: uid(), title: "Australian pull-ups",      target: 15,  done: true,  currentBest: 18 },
+          { id: uid(), title: "Negative pull-ups",        target: 5,   done: true,  currentBest: 6 },
+          { id: uid(), title: "Band-assisted pull-ups",   target: 10,  done: false, currentBest: 7 },
+          { id: uid(), title: "Strict pull-ups",          target: 1,   done: false },
+        ],
+      },
+      {
+        id: uid(), name: "Handstand", createdAt: Date.now(),
+        progressions: [
+          { id: uid(), title: "Wall handstand (30s)", target: 30, done: true, currentBest: 45 },
+          { id: uid(), title: "Chest-to-wall (20s)",  target: 20, done: false, currentBest: 12 },
+          { id: uid(), title: "Free-standing hold",   target: 10, done: false },
+        ],
+      },
+    ],
+    routines: [
+      {
+        id: uid(), name: "Push Day", dayOfWeek: 1, createdAt: Date.now(),
+        blocks: [
+          { id: uid(), exerciseId: bench.id,  type: "strength", sets: 4, reps: 6,  restSeconds: 180 },
+          { id: uid(), exerciseId: ohp.id,    type: "strength", sets: 3, reps: 8,  restSeconds: 120 },
+          { id: uid(), exerciseId: pushup.id, type: "strength", sets: 3, reps: 15, restSeconds: 60 },
+          { id: uid(), label: "Rest",         type: "rest",     sets: 1, reps: 60, restSeconds: 0 },
+          { id: uid(), exerciseId: plank.id,  type: "strength", sets: 3, reps: 60, restSeconds: 60 },
+        ],
+      },
+      {
+        id: uid(), name: "Leg Day", dayOfWeek: 3, createdAt: Date.now(),
+        blocks: [
+          { id: uid(), exerciseId: squat.id,    type: "strength", sets: 5, reps: 5, restSeconds: 180 },
+          { id: uid(), label: "Lunges",         type: "strength", sets: 3, reps: 10, restSeconds: 90 },
+          { id: uid(), label: "Calf raises",    type: "strength", sets: 3, reps: 20, restSeconds: 60 },
+        ],
+      },
+    ],
+    sessions: [
+      // Sample completed session from yesterday
+      {
+        id: uid(), routineId: undefined, name: "Push Day",
+        date: new Date(Date.now() - DAY).toISOString().slice(0, 10),
+        startedAt: Date.now() - DAY - 50 * 60 * 1000, endedAt: Date.now() - DAY,
+        sets: [
+          { blockId: "b", setIndex: 1, value: 6, weight: 70, durationSeconds: 12, completed: true },
+          { blockId: "b", setIndex: 2, value: 5, weight: 75, durationSeconds: 14, completed: true },
+          { blockId: "b", setIndex: 3, value: 5, weight: 75, durationSeconds: 15, completed: true },
+        ],
+        totalVolumeKg: 70 * 6 + 75 * 5 + 75 * 5,
+        durationSeconds: 50 * 60,
+      },
+    ],
+    activeSessionId: undefined,
+  };
+};
+
 export function StoreProvider({ children }: { children: React.ReactNode }) {
   // Persisted slices
-  const [tasks, setTasks]   = useLocalState<Task[]>("kaizen.tasks", seedTasks);
-  const [notes, setNotes]   = useLocalState<Note[]>("kaizen.notes", seedNotes);
-  const [career, setCareer] = useLocalState<CareerState>("kaizen.career", seedCareer(), migrateCareer);
+  const [tasks, setTasks]     = useLocalState<Task[]>("kaizen.tasks", seedTasks);
+  const [notes, setNotes]     = useLocalState<Note[]>("kaizen.notes", seedNotes);
+  const [career, setCareer]   = useLocalState<CareerState>("kaizen.career", seedCareer(), migrateCareer);
+  const [workout, setWorkout] = useLocalState<WorkoutState>("kaizen.workout", seedWorkout());
 
   // One-time cleanup of legacy localStorage keys from pre-monorepo versions
   useEffect(() => {
@@ -240,6 +364,192 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     localStorage.removeItem("prod.projects");
     localStorage.removeItem("prod.habits");
   }, []);
+
+  // ---------------- Workout: exercise library ----------------
+  const addExercise: StoreState["addExercise"] = useCallback((name, unit, muscleGroup, notes) => {
+    setWorkout((w) => ({
+      ...w,
+      exercises: [{ id: uid(), name, unit, muscleGroup: muscleGroup as any, notes, createdAt: Date.now() }, ...w.exercises],
+    }));
+  }, [setWorkout]);
+  const updateExercise: StoreState["updateExercise"] = useCallback((id, patch) => {
+    setWorkout((w) => ({ ...w, exercises: w.exercises.map((e) => e.id === id ? { ...e, ...patch } : e) }));
+  }, [setWorkout]);
+  const deleteExercise: StoreState["deleteExercise"] = useCallback((id) => {
+    setWorkout((w) => ({
+      ...w,
+      exercises: w.exercises.filter((e) => e.id !== id),
+      prs: w.prs.filter((p) => p.exerciseId !== id),
+      // Strip references from routine blocks but leave blocks intact (user can edit)
+      routines: w.routines.map((r) => ({
+        ...r,
+        blocks: r.blocks.map((b) => b.exerciseId === id ? { ...b, exerciseId: undefined } : b),
+      })),
+    }));
+  }, [setWorkout]);
+
+  // ---------------- Workout: PRs (personal records) ----------------
+  // logPR creates a new PR or updates an existing one if the new value is better.
+  // Also appends to the history array of the existing PR so we can show progress.
+  const logPR: StoreState["logPR"] = useCallback((exerciseId, value, reps, note) => {
+    const today = new Date().toISOString().slice(0, 10);
+    setWorkout((w) => {
+      const existing = w.prs.find((p) => p.exerciseId === exerciseId);
+      if (existing) {
+        // Is this a new peak? Higher value wins. For kg we compare weight (value).
+        const isBetter = value > existing.value;
+        return {
+          ...w,
+          prs: w.prs.map((p) => p.id === existing.id ? {
+            ...p,
+            value: isBetter ? value : p.value,
+            reps:  isBetter ? (reps ?? p.reps) : p.reps,
+            date:  isBetter ? today : p.date,
+            note:  isBetter ? (note ?? p.note) : p.note,
+            history: [...p.history, { date: today, value, reps }]
+              .sort((a, b) => a.date.localeCompare(b.date)),
+          } : p),
+        };
+      }
+      return {
+        ...w,
+        prs: [...w.prs, {
+          id: uid(), exerciseId, value, reps, date: today, note,
+          history: [{ date: today, value, reps }],
+        }],
+      };
+    });
+  }, [setWorkout]);
+  const deletePR: StoreState["deletePR"] = useCallback((id) => {
+    setWorkout((w) => ({ ...w, prs: w.prs.filter((p) => p.id !== id) }));
+  }, [setWorkout]);
+
+  // ---------------- Workout: skills (progressions) ----------------
+  const addSkill: StoreState["addSkill"] = useCallback((name) => {
+    setWorkout((w) => ({ ...w, skills: [...w.skills, { id: uid(), name, progressions: [], createdAt: Date.now() }] }));
+  }, [setWorkout]);
+  const deleteSkill: StoreState["deleteSkill"] = useCallback((id) => {
+    setWorkout((w) => ({ ...w, skills: w.skills.filter((s) => s.id !== id) }));
+  }, [setWorkout]);
+  const addProgression: StoreState["addProgression"] = useCallback((skillId, title, target) => {
+    setWorkout((w) => ({
+      ...w,
+      skills: w.skills.map((s) => s.id === skillId ? {
+        ...s, progressions: [...s.progressions, { id: uid(), title, target, done: false }],
+      } : s),
+    }));
+  }, [setWorkout]);
+  const toggleProgressionDone: StoreState["toggleProgressionDone"] = useCallback((skillId, progId) => {
+    setWorkout((w) => ({
+      ...w,
+      skills: w.skills.map((s) => s.id === skillId ? {
+        ...s,
+        progressions: s.progressions.map((p) => p.id === progId ? { ...p, done: !p.done } : p),
+      } : s),
+    }));
+  }, [setWorkout]);
+  const updateProgression: StoreState["updateProgression"] = useCallback((skillId, progId, patch) => {
+    setWorkout((w) => ({
+      ...w,
+      skills: w.skills.map((s) => s.id === skillId ? {
+        ...s, progressions: s.progressions.map((p) => p.id === progId ? { ...p, ...patch } : p),
+      } : s),
+    }));
+  }, [setWorkout]);
+  const deleteProgression: StoreState["deleteProgression"] = useCallback((skillId, progId) => {
+    setWorkout((w) => ({
+      ...w,
+      skills: w.skills.map((s) => s.id === skillId ? {
+        ...s, progressions: s.progressions.filter((p) => p.id !== progId),
+      } : s),
+    }));
+  }, [setWorkout]);
+
+  // ---------------- Workout: routines (schedule templates) ----------------
+  const addRoutine: StoreState["addRoutine"] = useCallback((name, dayOfWeek) => {
+    setWorkout((w) => ({
+      ...w,
+      routines: [...w.routines, { id: uid(), name, dayOfWeek, blocks: [], createdAt: Date.now() }],
+    }));
+  }, [setWorkout]);
+  const updateRoutine: StoreState["updateRoutine"] = useCallback((id, patch) => {
+    setWorkout((w) => ({ ...w, routines: w.routines.map((r) => r.id === id ? { ...r, ...patch } : r) }));
+  }, [setWorkout]);
+  const deleteRoutine: StoreState["deleteRoutine"] = useCallback((id) => {
+    setWorkout((w) => ({ ...w, routines: w.routines.filter((r) => r.id !== id) }));
+  }, [setWorkout]);
+  const addBlock: StoreState["addBlock"] = useCallback((routineId, block) => {
+    setWorkout((w) => ({
+      ...w,
+      routines: w.routines.map((r) => r.id === routineId ? { ...r, blocks: [...r.blocks, { ...block, id: uid() }] } : r),
+    }));
+  }, [setWorkout]);
+  const updateBlock: StoreState["updateBlock"] = useCallback((routineId, blockId, patch) => {
+    setWorkout((w) => ({
+      ...w,
+      routines: w.routines.map((r) => r.id === routineId ? {
+        ...r, blocks: r.blocks.map((b) => b.id === blockId ? { ...b, ...patch } : b),
+      } : r),
+    }));
+  }, [setWorkout]);
+  const deleteBlock: StoreState["deleteBlock"] = useCallback((routineId, blockId) => {
+    setWorkout((w) => ({
+      ...w,
+      routines: w.routines.map((r) => r.id === routineId ? {
+        ...r, blocks: r.blocks.filter((b) => b.id !== blockId),
+      } : r),
+    }));
+  }, [setWorkout]);
+
+  // ---------------- Workout: sessions (live workouts) ----------------
+  const startSession: StoreState["startSession"] = useCallback((name, routineId) => {
+    const id = uid();
+    setWorkout((w) => ({
+      ...w,
+      activeSessionId: id,
+      sessions: [
+        { id, name, routineId, date: new Date().toISOString().slice(0, 10), startedAt: Date.now(), sets: [] },
+        ...w.sessions,
+      ].slice(0, 100), // keep last 100
+    }));
+    return id;
+  }, [setWorkout]);
+
+  const logSet: StoreState["logSet"] = useCallback((sessionId, entry) => {
+    setWorkout((w) => ({
+      ...w,
+      sessions: w.sessions.map((s) => {
+        if (s.id !== sessionId) return s;
+        // Update existing set (same block+setIndex) or append a new one
+        const existingIdx = s.sets.findIndex((x) => x.blockId === entry.blockId && x.setIndex === entry.setIndex);
+        const logged: WorkoutSetLog = { completed: true, ...entry };
+        const sets = existingIdx >= 0
+          ? s.sets.map((x, i) => i === existingIdx ? logged : x)
+          : [...s.sets, logged];
+        const totalVolumeKg = sets.reduce((n, set) => n + (set.weight ? set.weight * set.value : 0), 0);
+        return { ...s, sets, totalVolumeKg };
+      }),
+    }));
+  }, [setWorkout]);
+
+  const finishSession: StoreState["finishSession"] = useCallback((sessionId) => {
+    setWorkout((w) => {
+      const sessions = w.sessions.map((s) => s.id === sessionId ? {
+        ...s,
+        endedAt: Date.now(),
+        durationSeconds: Math.round((Date.now() - s.startedAt) / 1000),
+      } : s);
+      return { ...w, sessions, activeSessionId: undefined };
+    });
+  }, [setWorkout]);
+
+  const discardSession: StoreState["discardSession"] = useCallback((sessionId) => {
+    setWorkout((w) => ({
+      ...w,
+      sessions: w.sessions.filter((s) => s.id !== sessionId),
+      activeSessionId: w.activeSessionId === sessionId ? undefined : w.activeSessionId,
+    }));
+  }, [setWorkout]);
 
   // ---------------- Tasks ----------------
   const addTask: StoreState["addTask"] = useCallback((t) => {
@@ -422,6 +732,12 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     addGoal, toggleGoal, updateGoal, deleteGoal,
     addAchievement, deleteAchievement,
     setLinkedin,
+    workout,
+    addExercise, updateExercise, deleteExercise,
+    logPR, deletePR,
+    addSkill, deleteSkill, addProgression, toggleProgressionDone, updateProgression, deleteProgression,
+    addRoutine, updateRoutine, deleteRoutine, addBlock, updateBlock, deleteBlock,
+    startSession, logSet, finishSession, discardSession,
   };
 
   return <StoreContext.Provider value={value}>{children}</StoreContext.Provider>;
