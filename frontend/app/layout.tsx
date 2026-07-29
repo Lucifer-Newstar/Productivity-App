@@ -1,17 +1,41 @@
 import "./globals.css";
 import type { Metadata } from "next";
 import { StoreProvider } from "../lib/store";
+import { ThemeProvider } from "../lib/theme";
 
 export const metadata: Metadata = {
   title: "Kaizen — Continuous Improvement",
   description: "Your all-in-one life OS — tasks, notes, focus, habits, and more.",
 };
 
+/**
+ * Inline script that runs before paint to set the correct `dark` class on <html>.
+ * Prevents a "flash of dark theme" for light-mode users (and vice-versa).
+ * Duplicates logic from ThemeProvider but runs synchronously in <head>.
+ */
+const themeInitScript = `
+(function(){
+  try {
+    var stored = localStorage.getItem("kaizen.theme");
+    var prefersLight = window.matchMedia("(prefers-color-scheme: light)").matches;
+    var theme = stored === "dark" || stored === "light" ? stored : (prefersLight ? "light" : "dark");
+    if (theme === "dark") document.documentElement.classList.add("dark");
+  } catch(e) {}
+})();
+`;
+
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className="dark">
+    // suppressHydrationWarning because ThemeProvider toggles the `dark` class on
+    // <html> on mount (before React hydrates) — avoids a class-mismatch warning.
+    <html lang="en" suppressHydrationWarning>
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
+      </head>
       <body className="min-h-screen">
-        <StoreProvider>{children}</StoreProvider>
+        <ThemeProvider>
+          <StoreProvider>{children}</StoreProvider>
+        </ThemeProvider>
       </body>
     </html>
   );

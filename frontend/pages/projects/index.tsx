@@ -1,5 +1,6 @@
 /**
  * Projects space page — scoped task list for the Projects space.
+ * Routed at /projects.
  */
 import SpaceTasks from "../../components/SpaceTasks";
 

@@ -1,5 +1,6 @@
 /**
  * Workout space page — scoped task list for the Workout space.
+ * Routed at /workout.
  */
 import SpaceTasks from "../../components/SpaceTasks";
 

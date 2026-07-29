@@ -16,9 +16,7 @@ const weekdayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
 export default function Calendar() {
   const { tasks } = useStore();
-  const [cursor, setCursor] = useState(() => {
-    const d = new Date(); d.setDate(1); return d;
-  });
+  const [cursor, setCursor] = useState(() => { const d = new Date(); d.setDate(1); return d; });
   const [selected, setSelected] = useState<string>(new Date().toISOString().slice(0, 10));
 
   const { monthMatrix, monthName, year } = useMemo(() => {
@@ -44,8 +42,6 @@ export default function Calendar() {
 
   const tasksOnSelected = tasks.filter((t) => new Date(t.createdAt).toISOString().slice(0, 10) === selected);
   const completedOnSelected = tasksOnSelected.filter((t) => t.completed).length;
-
-  const isSameDate = (d: Date, iso: string) => d.toISOString().slice(0, 10) === iso;
   const todayIso = new Date().toISOString().slice(0, 10);
 
   const tasksOn = (d: Date) => {
@@ -56,19 +52,21 @@ export default function Calendar() {
   return (
     <div className="max-w-5xl mx-auto space-y-6">
       <div>
-        <h2 className="text-3xl font-bold">Calendar</h2>
-        <p className="text-gray-400 mt-1">Visualize your tasks across time.</p>
+        <h2 className="text-3xl font-bold text-gray-900 dark:text-white">Calendar</h2>
+        <p className="text-gray-500 dark:text-gray-400 mt-1">Visualize your tasks across time.</p>
       </div>
 
       <div className="card">
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h3 className="text-2xl font-bold">{monthName} <span className="gradient-text">{year}</span></h3>
+            <h3 className="text-2xl font-bold text-gray-900 dark:text-white">
+              {monthName} <span className="gradient-text">{year}</span>
+            </h3>
           </div>
           <div className="flex gap-2">
             <button
               onClick={() => setCursor(new Date(cursor.getFullYear(), cursor.getMonth() - 1, 1))}
-              className="p-2 rounded-lg bg-white/5 hover:bg-white/10 border border-white/5"
+              className="p-2 rounded-lg bg-black/5 dark:bg-white/5 hover:bg-black/10 dark:hover:bg-white/10 border border-black/5 dark:border-white/5 text-gray-700 dark:text-gray-300"
             >
               <ChevronLeft size={18} />
             </button>
@@ -80,7 +78,7 @@ export default function Calendar() {
             </button>
             <button
               onClick={() => setCursor(new Date(cursor.getFullYear(), cursor.getMonth() + 1, 1))}
-              className="p-2 rounded-lg bg-white/5 hover:bg-white/10 border border-white/5"
+              className="p-2 rounded-lg bg-black/5 dark:bg-white/5 hover:bg-black/10 dark:hover:bg-white/10 border border-black/5 dark:border-white/5 text-gray-700 dark:text-gray-300"
             >
               <ChevronRight size={18} />
             </button>
@@ -100,15 +98,13 @@ export default function Calendar() {
             const isSelected = iso === selected;
             const dayTasks = tasksOn(cell.date);
             const count = dayTasks.length;
-            // Collect up to 3 distinct space colors for the day-indicator dots.
-            // Array.from avoids spreading a Set (requires downlevelIteration with older TS targets).
+            // Up to 3 distinct space-color dots per day (de-duped without Set spread)
             const seen: string[] = [];
             for (const dt of dayTasks) {
               const space = SPACES.find((s) => s.id === dt.space);
               if (space && !seen.includes(space.color)) seen.push(space.color);
               if (seen.length >= 3) break;
             }
-            const dotColors = seen;
             return (
               <motion.button
                 key={i}
@@ -119,16 +115,20 @@ export default function Calendar() {
                   isSelected
                     ? "bg-gradient-to-br from-accent/30 to-accent-cyan/20 border border-accent/50 shadow-lg shadow-accent/20"
                     : cell.inMonth
-                    ? "bg-white/5 hover:bg-white/10 border border-transparent"
-                    : "bg-transparent text-gray-700"
+                    ? "bg-black/[0.03] dark:bg-white/5 hover:bg-black/[0.06] dark:hover:bg-white/10 border border-transparent"
+                    : "bg-transparent text-gray-400 dark:text-gray-700"
                 }`}
               >
-                <span className={`text-sm font-medium ${isToday ? "w-6 h-6 rounded-full bg-gradient-to-r from-accent to-accent-cyan flex items-center justify-center text-white text-xs" : ""}`}>
+                <span className={`text-sm font-medium ${
+                  isToday
+                    ? "w-6 h-6 rounded-full bg-gradient-to-r from-accent to-accent-cyan flex items-center justify-center text-white text-xs shadow"
+                    : cell.inMonth ? "text-gray-900 dark:text-white" : ""
+                }`}>
                   {cell.date.getDate()}
                 </span>
                 {count > 0 && cell.inMonth && (
                   <div className="absolute bottom-2 right-2 flex gap-0.5">
-                    {dotColors.map((c, idx) => (
+                    {seen.map((c, idx) => (
                       <div key={idx} className="w-1.5 h-1.5 rounded-full" style={{ background: c }} />
                     ))}
                   </div>
@@ -142,7 +142,7 @@ export default function Calendar() {
       <div className="card">
         <div className="flex items-center justify-between mb-4">
           <div>
-            <h3 className="font-semibold">
+            <h3 className="font-semibold text-gray-900 dark:text-white">
               {new Date(selected).toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric", year: "numeric" })}
             </h3>
             <p className="text-sm text-gray-500">
@@ -158,18 +158,18 @@ export default function Calendar() {
         ) : (
           <div className="space-y-2">
             {tasksOnSelected.map((t) => {
-            const meta = SPACES.find((s) => s.id === t.space)!;
-            return (
-              <div key={t.id} className="flex items-center gap-3 p-3 rounded-lg bg-white/5">
-                <div className="w-1 h-8 rounded-full shrink-0" style={{ background: meta.color }} />
-                <p className={`flex-1 text-sm ${t.completed ? "line-through text-gray-500" : "text-gray-200"}`}>{t.title}</p>
-                <span className="chip" style={{ background: `${meta.color}20`, color: meta.color }}>
-                  {meta.emoji} {meta.name}
-                </span>
-                {t.completed && <span className="chip bg-accent-lime/20 text-accent-lime">Done</span>}
-              </div>
-            );
-          })}
+              const meta = SPACES.find((s) => s.id === t.space)!;
+              return (
+                <div key={t.id} className="flex items-center gap-3 p-3 rounded-lg bg-black/[0.03] dark:bg-white/5">
+                  <div className="w-1 h-8 rounded-full shrink-0" style={{ background: meta.color }} />
+                  <p className={`flex-1 text-sm ${t.completed ? "line-through text-gray-400 dark:text-gray-500" : "text-gray-800 dark:text-gray-200"}`}>{t.title}</p>
+                  <span className="chip" style={{ background: `${meta.color}20`, color: meta.color }}>
+                    {meta.emoji} {meta.name}
+                  </span>
+                  {t.completed && <span className="chip bg-lime-500/20 text-lime-600 dark:text-accent-lime">Done</span>}
+                </div>
+              );
+            })}
           </div>
         )}
       </div>

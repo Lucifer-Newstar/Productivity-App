@@ -1,5 +1,6 @@
 /**
  * Entertainment space page — scoped task list for the Entertainment space.
+ * Routed at /entertainment.
  */
 import SpaceTasks from "../../components/SpaceTasks";
 
