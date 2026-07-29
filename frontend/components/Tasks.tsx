@@ -1,5 +1,12 @@
 "use client";
 
+/**
+ * Tasks — aggregate to-do view.
+ * Add new tasks with priority selection; supports text search, status filter
+ * (all/active/completed), and per-space filter chips. Task rows show completion
+ * checkbox, priority badge, space chip (emoji + name), date, and delete on hover.
+ */
+
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Flag, Calendar, Trash2, Search } from "lucide-react";

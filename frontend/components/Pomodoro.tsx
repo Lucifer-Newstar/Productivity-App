@@ -1,5 +1,11 @@
 "use client";
 
+/**
+ * Pomodoro timer — focus / short-break / long-break modes.
+ * Animated circular SVG progress ring, live minute:second display, session counter,
+ * optional beep when a session ends, and a start/pause/reset/skip control row.
+ */
+
 import { useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Play, Pause, RotateCcw, Coffee, Brain, SkipForward, Volume2, VolumeX } from "lucide-react";

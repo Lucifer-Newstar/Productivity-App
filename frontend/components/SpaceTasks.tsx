@@ -1,5 +1,12 @@
 "use client";
 
+/**
+ * SpaceTasks — reusable task list scoped to a single space.
+ * Used by each of the five space pages (Projects, Workout, Career, Entertainment, Health).
+ * Provides per-space add form (color-themed to the space), priority chips, and a
+ * grouped list with active tasks above completed ones.
+ */
+
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Plus, Trash2, Flag, Calendar, CheckCircle2 } from "lucide-react";

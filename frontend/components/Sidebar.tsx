@@ -1,5 +1,19 @@
 "use client";
 
+/**
+ * Sidebar — persistent left navigation.
+ *
+ * - Top section: core productivity tools (Dashboard, Tasks, Pomodoro, Notes, Habits, Calendar)
+ * - Middle section: the five life Spaces (Projects, Workout, Career, Entertainment, Health).
+ *   Pulled from SPACES so colors/emojis stay in sync with the task model.
+ * - Bottom section: Today's Progress widget (completed tasks %) + a Settings placeholder.
+ *
+ * Uses a single Framer Motion `layoutId` ("nav-pill") shared by both sections so the
+ * active highlight slides smoothly between ANY nav item — core or space.
+ *
+ * State is controlled: parent passes `view`/`setView`, Sidebar just renders buttons.
+ */
+
 import { motion } from "framer-motion";
 import {
   LayoutGrid,

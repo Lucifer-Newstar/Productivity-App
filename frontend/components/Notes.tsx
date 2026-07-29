@@ -1,5 +1,11 @@
 "use client";
 
+/**
+ * Notes — global sticky-note board.
+ * Colorful cards with 6 color choices, pinning, search, modal editor with title +
+ * content. Uses its own slice of the store (separate from career track notes).
+ */
+
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Plus, Pin, PinOff, Trash2, X, StickyNote, Search } from "lucide-react";
