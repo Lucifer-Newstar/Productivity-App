@@ -1,0 +1,77 @@
+# Dependencies (across all workspaces)
+node_modules/
+.pnp/
+.pnp.js
+.yarn/install-state.gz
+
+# Build outputs
+.next/
+out/
+build/
+dist/
+
+# Environment files
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# Runtime / process
+pids/
+*.pid
+*.seed
+*.pid.lock
+
+# Caches
+.cache/
+.npm/
+.eslintcache
+.stylelintcache
+.parcel-cache/
+.turbo/
+.vercel/
+.nx/
+
+# TypeScript build info
+*.tsbuildinfo
+next-env.d.ts
+
+# Testing
+coverage/
+.nyc_output/
+
+# IDE
+.idea/
+.vscode/*
+!.vscode/settings.json
+!.vscode/extensions.json
+!.vscode/launch.json
+*.swp
+*.swo
+*~
+.project
+.classpath
+.settings/
+
+# OS
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+desktop.ini
+
+# Scratch
+*.local
+tmp/
+temp/
