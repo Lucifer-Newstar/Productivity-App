@@ -16,7 +16,7 @@
  * into the new concepts/sub-concepts shape if a user had existing data.
  */
 
-import React, { createContext, useContext, useEffect, useState, useCallback } from "react";
+import React, { createContext, useContext, useEffect, useRef, useState, useCallback } from "react";
 import type {
   Task, Note, SpaceId,
   CareerState, CareerTrack, CareerConcept, CareerSubConcept,
@@ -215,25 +215,41 @@ const StoreContext = createContext<StoreState | null>(null);
 
 /**
  * Helper hook — wraps useState to hydrate from localStorage on mount and
- * auto-persist on change. SSR-safe (returns seed on the server).
- * On first hydration, applies a one-time migration: old `milestones[]` data
- * (flat list per track) is converted to `concepts[]` with each legacy milestone
- * becoming a concept titled by the milestone name and no sub-concepts. This
- * ensures pre-existing users don't lose data when we upgrade the schema.
+ * auto-persist on change. Hydration-safe to prevent React text mismatches:
+ *
+ *   - On the server: always returns `seed` (matches client first render).
+ *   - On first client render: also returns `seed` so HTML matches the server.
+ *   - After mount (useEffect), reads localStorage once and updates state — this
+ *     is the single re-render that swaps in persisted data.
+ *   - Subsequent state changes write back to localStorage automatically.
+ *
+ * An optional `migrate` upgrades legacy schemas on first read.
  */
 function useLocalState<T>(key: string, seed: T, migrate?: (raw: any) => T): [T, React.Dispatch<React.SetStateAction<T>>] {
-  const [v, setV] = useState<T>(() => {
-    if (typeof window === "undefined") return seed;
+  const [v, setV] = useState<T>(seed);
+  const hydrated = useRef(false);
+
+  // Hydrate from localStorage exactly once on the client after mount
+  useEffect(() => {
     const raw = localStorage.getItem(key);
-    if (!raw) return seed;
-    try {
-      const parsed = JSON.parse(raw);
-      return migrate ? migrate(parsed) : parsed;
-    } catch {
-      return seed;
+    if (raw) {
+      try {
+        const parsed = JSON.parse(raw);
+        setV(migrate ? migrate(parsed) : parsed);
+      } catch {
+        /* corrupted storage — keep seed */
+      }
     }
-  });
-  useEffect(() => { localStorage.setItem(key, JSON.stringify(v)); }, [key, v]);
+    hydrated.current = true;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [key]);
+
+  // Persist on every change AFTER hydration completes
+  useEffect(() => {
+    if (!hydrated.current) return;
+    localStorage.setItem(key, JSON.stringify(v));
+  }, [key, v]);
+
   return [v, setV];
 }
 
@@ -273,23 +289,24 @@ const seedWorkout = (): WorkoutState => {
   const plank   = ex("Plank", "seconds", "core");
   const run5k   = ex("5k Run", "seconds", "cardio");
 
-  const pr = (exerciseId: string, value: number, reps?: number): WorkoutPR => ({
-    id: uid(), exerciseId, value, reps,
-    date: new Date(Date.now() - Math.floor(Math.random() * 30) * DAY).toISOString().slice(0, 10),
-    history: [{
-      date: new Date(Date.now() - Math.floor(Math.random() * 30) * DAY).toISOString().slice(0, 10),
-      value, reps,
-    }],
-  });
+  // Build a PR with a fixed-days-ago date — deterministic offsets so seed values
+  // are identical between server and client (no Math.random).
+  const makePr = (exerciseId: string, value: number, reps: number | undefined, daysAgo: number): WorkoutPR => {
+    const d = new Date(Date.now() - daysAgo * DAY).toISOString().slice(0, 10);
+    return {
+      id: uid(), exerciseId, value, reps, date: d,
+      history: [{ date: d, value, reps }],
+    };
+  };
 
   return {
     exercises: [bench, squat, deadlift, ohp, pullup, pushup, plank, run5k],
     prs: [
-      pr(bench.id, 80, 5),
-      pr(squat.id, 120, 3),
-      pr(deadlift.id, 140, 1),
-      pr(pullup.id, 12),
-      pr(plank.id, 180),
+      makePr(bench.id, 80, 5, 20),
+      makePr(squat.id, 120, 3, 10),
+      makePr(deadlift.id, 140, 1, 7),
+      makePr(pullup.id, 12, undefined, 5),
+      makePr(plank.id, 180, undefined, 3),
     ],
     skills: [
       {
@@ -337,12 +354,8 @@ const seedWorkout = (): WorkoutState => {
         id: uid(), routineId: undefined, name: "Push Day",
         date: new Date(Date.now() - DAY).toISOString().slice(0, 10),
         startedAt: Date.now() - DAY - 50 * 60 * 1000, endedAt: Date.now() - DAY,
-        sets: [
-          { blockId: "b", setIndex: 1, value: 6, weight: 70, durationSeconds: 12, completed: true },
-          { blockId: "b", setIndex: 2, value: 5, weight: 75, durationSeconds: 14, completed: true },
-          { blockId: "b", setIndex: 3, value: 5, weight: 75, durationSeconds: 15, completed: true },
-        ],
-        totalVolumeKg: 70 * 6 + 75 * 5 + 75 * 5,
+        sets: [],
+        totalVolumeKg: 0,
         durationSeconds: 50 * 60,
       },
     ],
