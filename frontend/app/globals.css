@@ -9,41 +9,74 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
-html,
-body {
-  background: #0a0a0f;
-  color: #e5e7eb;
+html, body {
   font-family: "Inter", system-ui, sans-serif;
   min-height: 100vh;
 }
 
-body {
+/* ---------- Theme backgrounds ----------
+ * Dark mode (default, .dark on <html>): uses the existing deep violet mesh.
+ * Light mode: clean soft off-white with subtle violet/cyan mesh tint.
+ */
+html {
+  background: #0a0a0f;
+}
+html.dark body {
+  background: #0a0a0f;
+  color: #e5e7eb;
   background-image:
     radial-gradient(at 20% 20%, rgba(139, 92, 246, 0.12) 0px, transparent 50%),
     radial-gradient(at 80% 10%, rgba(6, 182, 212, 0.08) 0px, transparent 50%),
     radial-gradient(at 0% 90%, rgba(236, 72, 153, 0.08) 0px, transparent 50%);
   background-attachment: fixed;
 }
+html:not(.dark) body {
+  background: #f7f7fb;
+  color: #0f172a;
+  background-image:
+    radial-gradient(at 20% 20%, rgba(139, 92, 246, 0.08) 0px, transparent 50%),
+    radial-gradient(at 80% 10%, rgba(6, 182, 212, 0.06) 0px, transparent 50%),
+    radial-gradient(at 0% 90%, rgba(236, 72, 153, 0.05) 0px, transparent 50%);
+  background-attachment: fixed;
+}
 
-/* Custom scrollbar */
+/* Custom scrollbar — theme-aware */
 ::-webkit-scrollbar {
   width: 8px;
   height: 8px;
 }
 ::-webkit-scrollbar-track {
+  background: transparent;
+}
+.dark ::-webkit-scrollbar-track {
   background: #12121a;
 }
 ::-webkit-scrollbar-thumb {
-  background: linear-gradient(180deg, #8b5cf6, #06b6d4);
+  background: #cbd5e1;
   border-radius: 4px;
 }
+.dark ::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #8b5cf6, #06b6d4);
+}
 ::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+.dark ::-webkit-scrollbar-thumb:hover {
   background: linear-gradient(180deg, #a78bfa, #22d3ee);
 }
 
+@layer base {
+  /* Selection color */
+  ::selection {
+    background: rgba(139, 92, 246, 0.35);
+    color: inherit;
+  }
+}
+
 @layer components {
+  /* Glass surface — darker in dark mode, white-frosted in light */
   .glass {
-    @apply bg-bg-card/60 backdrop-blur-xl border border-white/5;
+    @apply bg-white/70 dark:bg-bg-card/60 backdrop-blur-xl border border-black/5 dark:border-white/5;
   }
   .glow-violet {
     box-shadow: 0 0 40px -10px rgba(139, 92, 246, 0.5);
@@ -53,7 +86,7 @@ body {
   }
   .gradient-text {
     @apply bg-clip-text text-transparent;
-    background-image: linear-gradient(135deg, #a78bfa 0%, #06b6d4 50%, #ec4899 100%);
+    background-image: linear-gradient(135deg, #8b5cf6 0%, #06b6d4 50%, #ec4899 100%);
   }
   .btn-primary {
     @apply relative overflow-hidden rounded-xl px-5 py-2.5 font-medium text-white transition-all
@@ -62,29 +95,39 @@ body {
       active:translate-y-0 disabled:opacity-50 disabled:cursor-not-allowed;
   }
   .btn-ghost {
-    @apply rounded-xl px-4 py-2 font-medium text-gray-300 transition-all
-      bg-white/5 hover:bg-white/10 border border-white/5
-      hover:border-white/10;
+    @apply rounded-xl px-4 py-2 font-medium text-gray-700 dark:text-gray-300 transition-all
+      bg-black/5 dark:bg-white/5 hover:bg-black/10 dark:hover:bg-white/10 border border-black/5 dark:border-white/5
+      hover:border-black/10 dark:hover:border-white/10;
   }
   .card {
-    @apply glass rounded-2xl p-6 transition-all hover:border-white/10;
+    @apply glass rounded-2xl p-6 transition-all hover:border-black/10 dark:hover:border-white/10 shadow-sm;
   }
   .chip {
     @apply inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-medium;
   }
+  /* Themed input (used by task add forms, search, etc.) */
+  .input-base {
+    @apply bg-black/5 dark:bg-white/5 border border-black/5 dark:border-white/5 rounded-xl px-3 py-2
+      text-sm text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500
+      outline-none focus:border-accent/50 transition;
+  }
 }
 
-/* Checkbox custom */
+/* Checkbox custom — theme-aware outline, gradient fill when checked */
 .checkbox-custom {
   appearance: none;
   width: 22px;
   height: 22px;
-  border: 2px solid rgba(255, 255, 255, 0.15);
+  border: 2px solid rgba(0, 0, 0, 0.15);
   border-radius: 6px;
   cursor: pointer;
   position: relative;
   transition: all 0.2s;
   flex-shrink: 0;
+  background: transparent;
+}
+.dark .checkbox-custom {
+  border-color: rgba(255, 255, 255, 0.15);
 }
 .checkbox-custom:hover {
   border-color: #8b5cf6;
@@ -102,4 +145,13 @@ body {
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
+}
+
+/* Subtle page-in animation utility */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.animate-fade-up {
+  animation: fadeUp 0.35s ease-out both;
 }

@@ -1,15 +1,17 @@
 "use client";
 
 /**
- * Career page — composed view.
+ * Career page — composed view (standalone route: /career).
+ *
  * Hero header with live stats, a global track filter (TrackTabs), section tabs
  * (Roadmap / Notes / Posts / Goals / Achievements) with an animated sliding pill,
  * and the currently-selected section filtered by activeTrackId.
  */
 
 import { useState } from "react";
+import Link from "next/link";
 import { motion } from "framer-motion";
-import { Map, StickyNote, Send, Target, Trophy, Briefcase } from "lucide-react";
+import { Map, StickyNote, Send, Target, Trophy, Briefcase, ArrowLeft } from "lucide-react";
 import TrackTabs from "../../components/career/TrackTabs";
 import Roadmap from "../../components/career/Roadmap";
 import CareerNotes from "../../components/career/CareerNotes";
@@ -33,7 +35,7 @@ export default function CareerPage() {
   const [activeTrackId, setActiveTrackId] = useState<string | "all">("all");
   const { career } = useStore();
 
-  // Aggregate sub-concept progress across visible tracks (respects the activeTrackId filter)
+  // Aggregate sub-concept progress across visible tracks (respects activeTrackId)
   const completedSubs = career.tracks.reduce(
     (n, t) => n + (activeTrackId === "all" || t.id === activeTrackId
       ? t.concepts.reduce((m, c) => m + c.subConcepts.filter((s) => s.done).length, 0)
@@ -52,10 +54,17 @@ export default function CareerPage() {
   const trackCount = activeTrackId === "all" ? career.tracks.length : 1;
 
   return (
-    <div className="space-y-8 max-w-5xl">
-      {/* Header */}
+    // Force dark styling for career internals — the colored tinted panels and
+    // gradients were designed for the dark theme and look best that way.
+    <div className="dark space-y-8 max-w-5xl mx-auto text-gray-100">
+      {/* Back link */}
+      <Link href="/" className="inline-flex items-center gap-1.5 text-sm text-gray-400 hover:text-gray-200 transition">
+        <ArrowLeft size={14} /> Back to Dashboard
+      </Link>
+
+      {/* Hero header */}
       <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
-        className="relative overflow-hidden rounded-3xl p-8 md:p-10 glass border border-white/10">
+        className="relative overflow-hidden rounded-3xl p-8 md:p-10 glass border border-black/10 dark:border-white/10 shadow-sm">
         <div className="absolute -top-20 -right-20 w-64 h-64 rounded-full bg-cyan-500/20 blur-3xl" />
         <div className="absolute -bottom-20 -left-20 w-64 h-64 rounded-full bg-violet-500/20 blur-3xl" />
         <div className="relative flex items-center gap-4">
@@ -63,10 +72,10 @@ export default function CareerPage() {
             <Briefcase size={30} className="text-white" />
           </div>
           <div>
-            <h1 className="text-4xl md:text-5xl font-bold tracking-tight">
+            <h1 className="text-4xl md:text-5xl font-bold tracking-tight text-white">
               Career
               {activeTrackId !== "all" && (
-                <span className="ml-3 text-2xl align-middle opacity-70">
+                <span className="ml-3 text-2xl align-middle opacity-60">
                   · {career.tracks.find((t) => t.id === activeTrackId)?.name}
                 </span>
               )}
@@ -145,7 +154,7 @@ function Stat({ label, value, color }: { label: string; value: string | number; 
   return (
     <div className="rounded-xl p-4 bg-white/5 border border-white/5">
       <p className="text-xs text-gray-500 uppercase tracking-wider">{label}</p>
-      <p className="text-2xl font-bold mt-1" style={{ color }}>{value}</p>
+      <p className="text-2xl font-bold mt-1 text-white" style={{ color }}>{value}</p>
     </div>
   );
 }
@@ -154,7 +163,7 @@ function Section({ title, subtitle, children }: { title: string; subtitle: strin
   return (
     <div>
       <div className="mb-5">
-        <h2 className="text-2xl font-bold">{title}</h2>
+        <h2 className="text-2xl font-bold text-white">{title}</h2>
         <p className="text-sm text-gray-400 mt-1">{subtitle}</p>
       </div>
       {children}
