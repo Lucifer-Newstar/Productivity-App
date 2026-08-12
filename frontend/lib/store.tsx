@@ -32,6 +32,7 @@ import type {
 } from "./types";
 import { SPACES } from "./types";
 import { evaluateBadges, epley1RM, readinessScore as computeReadiness } from "./workoutAnalytics";
+import { DEFAULT_EXERCISES } from "./exerciseLibrary";
 
 // Generate ids for runtime-created entities.
 const uid = () => Math.random().toString(36).slice(2, 10) + Date.now().toString(36);
@@ -117,28 +118,28 @@ const SEED_CAREER: CareerState = (() => {
 
 // ---------------- Workout seed ----------------
 const SEED_WORKOUT: WorkoutState = (() => {
-  const ex = (
-    id: string, name: string, unit: WorkoutUnit, muscleGroup: any,
-    equipment?: Equipment, level?: Level, cues?: string[], pattern?: any, secondary?: any[],
-  ): WorkoutExercise => ({
-    id, name, unit, muscleGroup, secondaryMuscles: secondary ?? [], equipment, level, cues,
-    pattern, estimatedSetSeconds: 30, createdAt: A,
-  });
-  const bench    = ex("w-bench",    "Bench Press",      "kg", "chest",     "barbell", "intermediate", ["Brace core","Elbows 45°","Drive through heels"], "Push");
-  const squat    = ex("w-squat",    "Back Squat",       "kg", "quads",     "barbell", "intermediate", ["Chest up","Knees track toes","Drive through heels"], "Squat");
-  const deadlift = ex("w-dead",     "Deadlift",         "kg", "hamstrings","barbell", "advanced",     ["Neutral spine","Bar close","Lift with legs"], "Hinge");
-  const ohp      = ex("w-ohp",      "Overhead Press",   "kg", "shoulders", "barbell", "intermediate", ["Core tight","Don't arch back"], "Push");
-  const pullup   = ex("w-pullup",   "Pull-up",          "reps","lats",     "bodyweight","intermediate", ["Squeeze scapulae","Chest to bar"], "Pull");
-  const pushup   = ex("w-pushup",   "Push-up",          "reps","chest",    "bodyweight","beginner",     ["Body in a line","Elbows 45°"], "Push");
-  const plank    = ex("w-plank",    "Plank",            "seconds","abs",  "bodyweight","beginner",     ["Glutes squeezed","Neck neutral"], "Isometric");
-  const run5k    = ex("w-run5k",    "5k Run",           "seconds","cardio","cardio","beginner", [], "Gait");
-  const row      = ex("w-row",      "Barbell Row",      "kg", "upperBack", "barbell", "intermediate", ["Pull to hip","Squeeze scap"], "Pull");
-  const bicep    = ex("w-bicep",    "Bicep Curl",       "kg", "biceps",    "dumbbell","beginner", [], "Pull");
-  const tri      = ex("w-tri",      "Tricep Pushdown",  "kg", "triceps",   "cable",   "beginner", [], "Push");
-  const latRaise = ex("w-latraise", "Lateral Raise",    "kg", "sideDelt",  "dumbbell","beginner", [], "Push");
-  const legPress = ex("w-legpress", "Leg Press",        "kg", "quads",     "machine", "beginner", [], "Squat");
-  const calfRaise= ex("w-calf",     "Calf Raise",       "reps","calves",   "machine", "beginner", [], "Other");
-  const lSit     = ex("w-lsit",     "L-Sit Hold",       "seconds","abs",  "bodyweight","advanced", ["Locked elbows","Hips high"], "Isometric");
+  // Exercises come from the curated default library; stamp each with createdAt
+  // so "new" sort works.  We keep refs by id so PR seeds below still link up.
+  const seededExercises: WorkoutExercise[] = DEFAULT_EXERCISES.map((e) => ({
+    ...e,
+    createdAt: A,
+  }));
+  const byId = (id: string) => seededExercises.find((e) => e.id === id)!;
+  const bench    = byId("w-bench");
+  const squat    = byId("w-squat");
+  const deadlift = byId("w-dead");
+  const ohp      = byId("w-ohp");
+  const pullup   = byId("w-pullup");
+  const pushup   = byId("w-pushup");
+  const plank    = byId("w-plank");
+  const run5k    = byId("w-run5k");
+  const row      = byId("w-row");
+  const bicep    = byId("w-bicep");
+  const tri      = byId("w-tbextend");
+  const latRaise = byId("w-latraise");
+  const legPress = byId("w-legpress");
+  const calfRaise= byId("w-calf");
+  const lSit     = byId("w-lsit");
 
   const daysAgo = (n: number) => new Date(A - n * DAY).toISOString().slice(0,10);
   const pr = (id: string, eid: string, v: number, reps: number | undefined, da: number): WorkoutPR => ({
@@ -204,7 +205,7 @@ const SEED_WORKOUT: WorkoutState = (() => {
   ];
 
   return {
-    exercises: [bench, squat, deadlift, ohp, pullup, pushup, plank, run5k, row, bicep, tri, latRaise, legPress, calfRaise, lSit],
+    exercises: seededExercises,
     prs: [
       pr("p1", bench.id, 80, 5, 20),
       pr("p2", squat.id, 120, 3, 10),
