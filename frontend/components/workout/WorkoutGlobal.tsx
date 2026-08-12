@@ -19,14 +19,15 @@
  * 13. Goal tracker                                       ✓ addWorkoutGoal/deleteWorkoutGoal
  */
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Flame, Calendar as CalIcon, Dumbbell, Timer as TimerIcon, Shuffle, Star,
   Droplet, Coffee, Users, Music, Target, Sparkles, BookOpen, Award, Trash2, Plus,
 } from "lucide-react";
 import { useStore } from "../../lib/store";
-import { weeklyStats, frequencyByDay, timePreference, consistencyScore, shouldDeload } from "../../lib/workoutAnalytics";
+import { weeklyStats, frequencyByDay, timePreference, consistencyScore, shouldDeload, goalProgress } from "../../lib/workoutAnalytics";
+import CelebrationModal from "./CelebrationModal";
 
 const MONTHS = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
 const CROWD: { id: "empty"|"light"|"moderate"|"packed"; label: string }[] = [
@@ -39,8 +40,29 @@ export default function WorkoutGlobal() {
     workout, logBodyweight, updateWorkoutSettings,
     addChallenge, toggleChallengeDay, deleteChallenge,
     addJournalEntry, addBoardItem, deleteBoardItem,
-    logRestDay, addWorkoutGoal, deleteWorkoutGoal, updateSession,
+    logRestDay, addWorkoutGoal, deleteWorkoutGoal, updateWorkoutGoal, updateSession,
   } = useStore();
+
+  // Goal achievement detection — fire celebration when a goal flips to achieved
+  const prevAchievedRef = useRef<Set<string>>(new Set());
+  const [goalCelebration, setGoalCelebration] = useState<{ title: string } | null>(null);
+  useEffect(() => {
+    const newly: string[] = [];
+    workout.goals.forEach((g) => {
+      const { achieved } = goalProgress(g, workout.sessions, workout.bodyweight, workout.exercises, workout.prs, workout.currentStreak ?? 0);
+      if (achieved && !g.achieved && !prevAchievedRef.current.has(g.id)) {
+        newly.push(g.id);
+        updateWorkoutGoal(g.id, { achieved: true, achievedAt: Date.now() });
+      }
+      if (achieved) prevAchievedRef.current.add(g.id);
+      else prevAchievedRef.current.delete(g.id);
+    });
+    if (newly.length > 0) {
+      const g = workout.goals.find((x) => x.id === newly[0]);
+      setGoalCelebration({ title: g?.title ?? "Goal achieved" });
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [workout.sessions, workout.prs, workout.bodyweight, workout.currentStreak]);
   const todayIso = new Date().toISOString().slice(0, 10);
   const todayBw = workout.bodyweight.find((b) => b.date === todayIso);
 
@@ -347,12 +369,27 @@ export default function WorkoutGlobal() {
         </form>
         <div className="space-y-2">
           {workout.goals.length === 0 && <p className="text-sm text-gray-500 italic">No goals yet.</p>}
-          {workout.goals.map(g => (
-            <div key={g.id} className="flex items-center gap-3 p-2 rounded-lg bg-white/5">
-              <span className={`text-sm flex-1 ${g.achieved ? "line-through text-lime-400" : "text-gray-200"}`}>{g.title}</span>
-              <button onClick={() => deleteWorkoutGoal(g.id)} className="text-gray-500 hover:text-red-400 text-xs">✕</button>
-            </div>
-          ))}
+          {workout.goals.map(g => {
+            const prog = goalProgress(g, workout.sessions, workout.bodyweight, workout.exercises, workout.prs, workout.currentStreak ?? 0);
+            return (
+              <div key={g.id} className="p-2 rounded-lg bg-white/5">
+                <div className="flex items-center gap-2 mb-1">
+                  <span className={`text-sm flex-1 ${g.achieved ? "line-through text-lime-400" : "text-gray-200"}`}>{g.title}</span>
+                  <span className="text-[10px] text-gray-500 font-mono">{prog.current}/{g.target} {g.unit}</span>
+                  <button onClick={() => deleteWorkoutGoal(g.id)} className="text-gray-500 hover:text-red-400 text-xs">✕</button>
+                </div>
+                <div className="h-1.5 rounded-full bg-white/5 overflow-hidden">
+                  <motion.div
+                    initial={{ width: 0 }} animate={{ width: `${prog.pct}%` }}
+                    transition={{ duration: 0.6 }}
+                    className="h-full rounded-full"
+                    style={{ background: g.achieved
+                      ? "linear-gradient(90deg,#22c55e,#a3e635)"
+                      : "linear-gradient(90deg,#8b5cf6,#ec4899)" }} />
+                </div>
+              </div>
+            );
+          })}
         </div>
       </div>
 
@@ -411,6 +448,16 @@ export default function WorkoutGlobal() {
           ))}
         </div>
       </div>
+
+      {/* Goal celebration */}
+      <CelebrationModal
+        open={!!goalCelebration}
+        title="Goal achieved! 🎯"
+        subtitle={goalCelebration ? `You hit your target: ${goalCelebration.title}` : ""}
+        emoji="🎯"
+        color="#a3e635"
+        actionLabel="Awesome"
+        onClose={() => setGoalCelebration(null)} />
     </div>
   );
 }

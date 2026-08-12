@@ -539,6 +539,47 @@ export function suggestNextWorkout(params: {
   return { title: focusTitle, reasoning, focus: pick, intensity };
 }
 
+// ---------- Goal progress ----------
+
+/**
+ * Compute current progress for a goal based on its metric.
+ * - "workouts": completed sessions count
+ * - "streak": current streak (days)
+ * - "volume-kg": total kg volume across sessions
+ * - "1rm-kg": best estimated 1RM for the linked exercise
+ * - "bodyweight-kg": most recent bodyweight log
+ * - "custom": 0 (manual)
+ */
+export function goalProgress(
+  goal: { metric: string; target: number; exerciseId?: string },
+  sessions: WorkoutSession[],
+  bodyweight: { date: string; weightKg: number }[],
+  exercises: WorkoutExercise[],
+  prs: WorkoutPR[],
+  currentStreak: number,
+): { current: number; pct: number; achieved: boolean } {
+  let current = 0;
+  const finished = sessions.filter((s) => s.endedAt);
+  switch (goal.metric) {
+    case "workouts": current = finished.length; break;
+    case "streak":   current = currentStreak; break;
+    case "volume-kg": current = Math.round(finished.reduce((n, s) => n + (s.totalVolumeKg ?? 0), 0)); break;
+    case "bodyweight-kg": {
+      const last = [...bodyweight].sort((a, b) => b.date.localeCompare(a.date))[0];
+      current = last?.weightKg ?? 0;
+      break;
+    }
+    case "1rm-kg": {
+      if (!goal.exerciseId) break;
+      const pr = prs.find((p) => p.exerciseId === goal.exerciseId);
+      current = pr?.estimated1RM ?? pr?.value ?? 0;
+      break;
+    }
+  }
+  const pct = goal.target > 0 ? Math.min(100, Math.round((current / goal.target) * 100)) : 0;
+  return { current, pct, achieved: current >= goal.target };
+}
+
 // ---------- RPE auto-calibration ----------
 
 /**
