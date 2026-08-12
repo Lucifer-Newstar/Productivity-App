@@ -3,10 +3,10 @@
  *
  * - Core: Task, Note, Space, Priority, SPACES
  * - Career: tracks/concepts/notes/goals/achievements
- * - Workout: full-featured tracker (exercises, PRs, skills, routines,
- *   sessions, readiness, badges, bodyweight, settings) with multi-unit
- *   exercises, RIR logging, equipment/level filters, and a muscle-group
- *   heatmap.
+ * - Workout: full-featured tracker.  Types here are exhaustive — calisthenics,
+ *   gym/weights, cardio, and global wellness features are all modelled in
+ *   this file (no parallel ext-types file).  Per-set metadata captures
+ *   every data point a serious lifter would want to log.
  */
 
 // ---------------- Core ----------------
@@ -126,12 +126,8 @@ export const LEVELS: { id: Level; label: string }[] = [
 ];
 
 // Muscle groups used for tagging AND for the anatomical heatmap.
-// Coarse filter groups (chest/back/legs/shoulders/arms/core) are also valid as
-// tags — they alias to the heatmap regions via MUSCLE_FILTER_GROUP below.
 export type MuscleGroup =
-  // coarse filter-aliases (kept for backward compat with seed data & old components)
   | "chest" | "back" | "legs" | "shoulders" | "arms" | "core"
-  // fine-grained heatmap regions
   | "upperChest"
   | "abs" | "obliques"
   | "biceps" | "triceps" | "forearms"
@@ -140,9 +136,6 @@ export type MuscleGroup =
   | "quads" | "hamstrings" | "glutes" | "calves"
   | "cardio" | "other";
 
-// Human-friendly grouping + colour for the muscle-group filter chips. The first
-// column is the *chip id*; fine-grained muscles map back to these via
-// MUSCLE_FILTER_GROUP.
 export const MUSCLE_GROUPS: { id: MuscleGroup; label: string; color: string }[] = [
   { id: "chest",     label: "Chest",     color: "#ec4899" },
   { id: "back",      label: "Back",      color: "#8b5cf6" },
@@ -153,8 +146,6 @@ export const MUSCLE_GROUPS: { id: MuscleGroup; label: string; color: string }[] 
   { id: "cardio",    label: "Cardio",    color: "#ef4444" },
   { id: "other",     label: "Other",     color: "#64748b" },
 ];
-// Internal expanded groups for heatmap colours; still map to one of the
-// above filter chips via `muscleFilterGroup` below.
 export const HEATMAP_MUSCLES: MuscleGroup[] = [
   "chest","upperChest","abs","obliques","biceps","triceps","forearms",
   "shoulders","frontDelt","sideDelt","rearDelt","traps",
@@ -162,7 +153,6 @@ export const HEATMAP_MUSCLES: MuscleGroup[] = [
   "quads","hamstrings","glutes","calves","cardio",
 ];
 
-// Map detailed muscles (and coarse aliases) back to their filter-chip id.
 export const MUSCLE_FILTER_GROUP: Record<MuscleGroup, MuscleGroup> = {
   chest: "chest", upperChest: "chest",
   abs: "core", obliques: "core", core: "core",
@@ -174,7 +164,6 @@ export const MUSCLE_FILTER_GROUP: Record<MuscleGroup, MuscleGroup> = {
   other: "other",
 };
 
-// Format a value+unit for display.
 export function formatWorkoutValue(value: number, unit: WorkoutUnit): string {
   if (unit === "seconds") {
     const h = Math.floor(value / 3600);
@@ -200,13 +189,15 @@ export interface WorkoutExercise {
   equipment?: Equipment;
   level?: Level;
   notes?: string;
-  cues?: string[];       // short form cues shown during a set
+  cues?: string[];
   estimatedSetSeconds?: number;
+  pattern?: MovementPattern;
+  videoUrl?: string;
+  isBodyweight?: boolean;
   createdAt: number;
 }
 
-// A Personal Record entry — peak performance on a single exercise.
-// `history` tracks every logged attempt to allow charting progress.
+// A Personal Record entry.
 export interface WorkoutPR {
   id: string;
   exerciseId: string;
@@ -215,10 +206,18 @@ export interface WorkoutPR {
   estimated1RM?: number;
   date: string;
   note?: string;
-  history: { date: string; value: number; reps?: number; rir?: number }[];
+  history: WorkoutPRAttempt[];
+}
+export interface WorkoutPRAttempt {
+  date: string;
+  value: number;
+  reps?: number;
+  rir?: number;
+  rpe?: number;
+  weight?: number;
 }
 
-// Skill progressions (e.g. pull-up progressions).
+// Skill progressions (high-level bodyweight goals visible on /workout/skills).
 export interface WorkoutProgression {
   id: string;
   title: string;
@@ -241,35 +240,83 @@ export interface WorkoutBlock {
   label?: string;
   type: WorkoutBlockType;
   sets: number;
-  reps: number;              // target reps OR seconds for cardio/rest
+  reps: number;
   restSeconds: number;
 }
 export interface WorkoutRoutine {
   id: string;
   name: string;
-  dayOfWeek?: number;        // 0=Sun..6=Sat
+  dayOfWeek?: number;
   blocks: WorkoutBlock[];
+  isTemplate?: boolean;
   createdAt: number;
 }
 
-// A performed set, optionally annotated with RIR (reps in reserve).
+// -------- Extended per-set gym metadata --------
+
+export type RepQuality = "perfect" | "good" | "decent" | "bad";
+export type BarSpeed = "fast" | "normal" | "slow" | "grind";
+export type GripType = "overhand" | "underhand" | "mixed" | "hook" | "straps";
+export type Feeling = "fast" | "normal" | "slow" | "grind";
+export type MentalState = "locked-in" | "distracted" | "anxious" | "tired";
+export type CrowdLevel = "empty" | "light" | "moderate" | "packed";
+export type TrainingPhase = "bulking" | "cutting" | "maintenance" | "deload" | "peak";
+export type StickingPoint = "off-floor" | "mid-range" | "lockout" | "transition" | "none";
+export type MovementPattern =
+  | "Push" | "Pull" | "Squat" | "Hinge" | "Carry" | "Rotation" | "Gait" | "Isometric" | "Other";
+
 export interface WorkoutSetLog {
   blockId: string;
   setIndex: number;
-  value: number;             // reps or seconds performed
-  weight?: number;
-  rir?: number;              // reps in reserve (0 = all-out)
-  durationSeconds?: number;  // wall-clock time the set took (timed sets)
+  value: number;                 // reps or seconds performed
+  weight?: number;               // kg
+  rir?: number;                  // reps in reserve
+  rpe?: number;                  // 1-10 rate of perceived exertion
+  durationSeconds?: number;
   completed: boolean;
+  // gym per-set flags
+  isWarmup?: boolean;
+  isJoker?: boolean;
+  isDrop?: boolean;
+  dropFromWeight?: number;       // previous weight when drop
+  isAMRAP?: boolean;
+  isPaused?: boolean;
+  pauseSec?: number;
+  tempo?: string;                // "3-1-2-1"
+  isCluster?: boolean;
+  clusterReps?: number[];        // reps per mini-set within cluster
+  clusterRestSec?: number;
+  isSuperset?: boolean;
+  supersetGroupId?: string;
+  isGiant?: boolean;
+  isMyo?: boolean;               // myo-reps / rest-pause
+  unilateral?: boolean;
+  leftValue?: number;
+  rightValue?: number;
+  leftWeight?: number;
+  rightWeight?: number;
+  belt?: boolean;
+  kneeSleeves?: boolean;
+  wristWraps?: boolean;
+  barSpinOk?: boolean;
+  grip?: GripType;
+  quality?: RepQuality;
+  speed?: BarSpeed;
+  feeling?: Feeling;
+  mental?: MentalState;
+  pain?: number;                 // 0-10
+  stickingPoint?: StickingPoint;
+  asymmetry?: "left-weak" | "right-weak" | "none";
+  notes?: string;
 }
 
 // Daily readiness check-in (1-10 scales).
 export interface WorkoutReadiness {
-  date: string;              // ISO yyyy-mm-dd
-  soreness: number;          // 1 (fine) - 10 (crippling)
-  sleep: number;             // 1 (terrible) - 10 (great)
-  stress: number;            // 1 (calm) - 10 (max)
-  score: number;             // computed 0-100
+  date: string;
+  soreness: number;
+  sleep: number;
+  stress: number;
+  score: number;
   note?: string;
 }
 
@@ -279,7 +326,7 @@ export type BadgeId =
   | "pr_strength" | "pr_cardio" | "pr_bodyweight"
   | "streak_3" | "streak_7" | "streak_30"
   | "early_bird" | "iron_grip" | "century_volume"
-  | "perfect_week" | "cardio_king";
+  | "perfect_week" | "cardio_king" | "goal_achieved";
 export interface WorkoutBadge {
   id: BadgeId;
   earnedAt: number;
@@ -292,18 +339,179 @@ export interface WorkoutBodyweight {
 }
 
 // Workout UI preferences.
-export type TrainingPhase = "bulking" | "cutting" | "maintenance" | "deload" | "peak";
 export interface WorkoutSettings {
-  gloveMode: boolean;        // giant buttons for chalky fingers
-  minimalMode: boolean;      // hide everything except current set + timer
-  soundEnabled: boolean;     // rest-over beep
+  gloveMode: boolean;
+  minimalMode: boolean;
+  soundEnabled: boolean;
   restSecondsDefault: number;
-  streakFreezes: number;     // Duolingo-style freezes earned/available
+  streakFreezes: number;
   units: "kg" | "lb";
-  phase?: TrainingPhase;     // current training block
+  phase?: TrainingPhase;
+  age?: number;                   // for cardio HR max
+  gender?: "male" | "female";    // for Wilks
 }
 
-// A completed (or in-progress) session.
+// -------- Calisthenics domain --------
+
+export interface CalisthenicsProgression {
+  id: string;
+  name: string;
+  difficulty: number;
+  achieved: boolean;
+  achievedDate?: string;
+  bestReps?: number;
+  bestHoldSec?: number;
+  notes?: string;
+}
+export interface CalisthenicsChain {
+  id: string;
+  name: string;
+  pattern: MovementPattern;
+  progressions: CalisthenicsProgression[];
+}
+export type CaliEquipment =
+  | "pull-up-bar" | "rings" | "parallettes" | "resistance-bands" | "weighted-vest" | "dip-bars" | "none";
+export interface CalisthenicsSkill {
+  id: string;
+  name: string;
+  pattern: MovementPattern;
+  difficulty: number;
+  unlocked: boolean;
+  unlockedAt?: string;
+  videoUrl?: string;
+  accessoryIds: string[];       // exercise or chain ids
+  equipmentNeeded: CaliEquipment[];
+  archived: boolean;
+  firstAttemptDate?: string;
+  bestAttempt?: { reps?: number; holdSec?: number; date: string };
+  attempts: CaliAttempt[];
+  failLog: CaliFail[];
+  ringHeightCm?: number;
+}
+export interface CaliAttempt {
+  id: string;
+  date: string;
+  reps?: number;
+  holdSec?: number;
+  ringHeightCm?: number;
+  assistance?: string;
+  mmc?: number;                  // mind-muscle connection 1-10
+  tempo?: string;
+  quality?: RepQuality;
+  isTestDay?: boolean;
+  isRestPause?: boolean;
+  restPauseAttempts?: number[];
+  notes?: string;
+}
+export interface CaliFail {
+  id: string;
+  date: string;
+  reason: string;
+}
+export interface CalisthenicsFlow {
+  id: string;
+  name: string;
+  moves: string;                 // free-text sequence
+  quality: number;               // 1-10
+  date: string;
+}
+export interface GtGEntry {
+  id: string;
+  date: string;
+  hour: number;
+  reps: number;
+  exerciseName: string;
+}
+export interface IsometricLog {
+  id: string;
+  date: string;
+  name: string;
+  seconds: number;
+}
+export interface IntervalLog {
+  id: string;
+  date: string;
+  type: "emom" | "amrap" | "rest-pause" | "cluster" | "fartlek" | "intervals" | "brick";
+  name: string;
+  timeCapSec?: number;
+  perMinuteReps?: number[];
+  rounds?: number;
+  reps?: number;
+  clusters?: { reps: number; restSec: number }[];
+  intervals?: { reps: number; workSec: number; restSec: number }[];
+  notes?: string;
+}
+export interface MobilityDrill {
+  id: string;
+  name: string;
+  durationSec: number;
+  tags: string[];
+}
+export interface MobilitySession {
+  id: string;
+  date: string;
+  drillIds: string[];
+  durationSec: number;
+  notes?: string;
+}
+export interface PseudoPlancheEntry {
+  id: string;
+  date: string;
+  handDistanceCm: number;         // distance forward from waist
+  holdSec: number;
+}
+
+// -------- Cardio domain --------
+
+export type CardioType = "run" | "bike" | "swim" | "row" | "jump-rope" | "walk" | "hike" | "other";
+export interface CardioLog {
+  id: string;
+  date: string;
+  type: CardioType;
+  routeName?: string;
+  distanceMeters?: number;
+  durationSec: number;
+  avgHr?: number;
+  maxHr?: number;
+  hr2minPost?: number;
+  cadenceSpm?: number;
+  splitsSec?: number[];
+  negativeSplit?: boolean;
+  hrStart?: number;
+  hrEnd?: number;
+  hrDriftPct?: number;
+  fuel?: string;
+  strides?: { count: number; distanceM: number };
+  cooldownMin?: number;
+  jumpRope?: { jumps: number; misses: number };
+  paceSecPerKm?: number;
+  power?: number;
+  intervals?: { reps: number; workSec: number; restSec: number }[];
+  fartlek?: { workSec: number; restSec: number; reps: number }[];
+  isLSD?: boolean;
+  isRecovery?: boolean;
+  isBrick?: boolean;
+  brickNextType?: CardioType;
+  brickTransSec?: number;
+  injuryNotes?: string;
+  injuryTags?: string[];         // shin-splints / plantar / it-band / achilles
+  notes?: string;
+}
+
+// -------- Global / session metadata --------
+
+export interface IntraWorkoutNutrition {
+  carbsG?: number;
+  bcaaG?: number;
+  electrolytes?: boolean;
+  waterMl?: number;
+}
+export interface WorkoutNote {
+  id: string;
+  date: string;
+  content: string;
+  tags?: string[];
+}
 export interface WorkoutSession {
   id: string;
   routineId?: string;
@@ -318,14 +526,80 @@ export interface WorkoutSession {
   readinessScore?: number;
   warmup?: string[];
   cooldown?: MuscleGroup[];
-  // Extended per-session metadata
+  // metadata
   playlist?: string;
-  crowdLevel?: "empty" | "light" | "moderate" | "packed";
+  crowdLevel?: CrowdLevel;
   phase?: TrainingPhase;
-  rating?: number;            // 1-10
+  rating?: number;
   isDeload?: boolean;
   isRestDay?: boolean;
+  restReason?: "soreness" | "fatigue" | "injury" | "life" | "deload";
   bodyweightKg?: number;
+  timeOfDay?: "morning" | "afternoon" | "evening";
+  hydrationPreMl?: number;
+  hydrationPostMl?: number;
+  preworkout?: boolean;
+  caffeineMg?: number;
+  soreness?: number;
+  jointPain?: string[];
+  warmupDrillIds?: string[];
+  warmupDurationSec?: number;
+  cooldownDurationSec?: number;
+  nutrition?: IntraWorkoutNutrition;
+  programId?: string;
+  workoutNumberInProgram?: number;
+}
+
+// Programs / goals / challenges / board
+
+export interface Program {
+  id: string;
+  name: string;
+  weeks: number;
+  daysPerWeek: number;
+  routineIds: string[];
+  startDate?: string;
+}
+export interface WorkoutGoal {
+  id: string;
+  title: string;
+  target: number;
+  unit: string;
+  metric: "volume-kg" | "workouts" | "streak" | "bodyweight-kg" | "1rm-kg" | "custom";
+  exerciseId?: string;
+  byDate?: string;
+  achieved?: boolean;
+  achievedAt?: number;
+}
+export interface CustomMetric {
+  id: string;
+  name: string;
+  unit?: string;
+  emoji?: string;
+}
+export interface CustomMetricEntry {
+  id: string;
+  metricId: string;
+  sessionId: string;
+  value: number;
+}
+export interface ChallengeEntry {
+  id: string;
+  name: string;
+  startDate: string;
+  lengthDays: number;
+  perDay: { date: string; done: boolean; value?: number; note?: string }[];
+}
+export interface MotivationBoardItem {
+  id: string;
+  type: "quote" | "photo" | "pr" | "goal" | "custom";
+  content: string;
+  emoji?: string;
+  createdAt: number;
+}
+export interface RestDayEntry {
+  date: string;
+  reason: string;
 }
 
 // Root workout state.
@@ -343,4 +617,25 @@ export interface WorkoutState {
   lastWorkoutDate?: string;
   currentStreak?: number;
   longestStreak?: number;
+  // calisthenics
+  caliChains: CalisthenicsChain[];
+  caliSkills: CalisthenicsSkill[];
+  caliFlows: CalisthenicsFlow[];
+  gtg: GtGEntry[];
+  isometricLogs: IsometricLog[];
+  intervalLogs: IntervalLog[];
+  mobilityDrills: MobilityDrill[];
+  mobilitySessions: MobilitySession[];
+  plancheEntries: PseudoPlancheEntry[];
+  // cardio
+  cardioLogs: CardioLog[];
+  // global
+  programs: Program[];
+  customMetrics: CustomMetric[];
+  customMetricEntries: CustomMetricEntry[];
+  goals: WorkoutGoal[];
+  challenges: ChallengeEntry[];
+  journal: WorkoutNote[];
+  board: MotivationBoardItem[];
+  restDays: RestDayEntry[];
 }

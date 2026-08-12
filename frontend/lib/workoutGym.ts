@@ -1,103 +1,67 @@
 /**
- * Gym/Weights math + helpers.
+ * Gym math helpers — plate math, Wilks 2020, DB↔BB equivalence, strength ratio.
  *
- * - Epley 1RM (re-exported from workoutAnalytics for convenience)
- * - Training max (90% of 1RM)
- * - Plate calculator (kg — assumes 20kg bar, common plates: 25/20/15/10/5/2.5/1.25)
- * - Dumbbell ↔ barbell rough equivalence (assumes two dumbbells)
- * - Wilks coefficient (2020 coefficient approximation)
- * - Volume & intensity (% of 1RM)
+ * These are pure functions used by the Gym tab and ActiveWorkout.
+ * See docs/ALGORITHMS.md for formulas and references.
  */
 
-import { epley1RM } from "./workoutAnalytics";
-import type { PlateConfig } from "./workoutExtTypes";
+// ---------- Training Max ----------
+// Training Max = 90% of 1RM — used for 5/3/1 and similar percentage-based programs.
+export const trainingMax = (oneRM: number) => oneRM * 0.9;
 
-export { epley1RM };
+// ---------- Plate calculator (greedy) ----------
+// Given a total bar+loaded weight, returns a sorted (desc) array of plates per side.
+// Defaults to a 20 kg men's Olympic bar and the standard colored kg set. Add
+// micro-plates (0.25/0.5) so 0.5/1 kg jumps are possible.
+const KG_PLATES = [25, 20, 15, 10, 5, 2.5, 1.25, 0.5, 0.25];
+const LB_PLATES = [45, 35, 25, 10, 5, 2.5, 1.25];
 
-// Training max = 90% of 1RM — used for 5/3/1-style programming.
-export function trainingMax(oneRM: number): number {
-  return Math.round(oneRM * 0.9 * 10) / 10;
-}
-
-// Plate calculator: given a target total weight, returns plates per side
-// (bar weight included — default Olympic bar = 20kg). Plates greedy-fit from
-// largest to smallest. Returns null if the target is under bar weight.
-const KG_PLATES = [25, 20, 15, 10, 5, 2.5, 1.25];
-export function platesForKg(targetKg: number, barKg = 20): PlateConfig | null {
-  if (targetKg < barKg) return null;
-  const perSide = (targetKg - barKg) / 2;
-  const plates: number[] = [];
-  let remaining = perSide;
-  for (const p of KG_PLATES) {
-    while (remaining + 0.001 >= p) {
-      plates.push(p);
-      remaining = +(remaining - p).toFixed(2);
+export function platesForKg(totalKg: number, barKg = 20, plates = KG_PLATES): number[] {
+  let side = (totalKg - barKg) / 2;
+  if (side < 0) side = 0;
+  const used: number[] = [];
+  for (const p of plates) {
+    while (side >= p - 1e-9) {
+      used.push(p);
+      side -= p;
     }
   }
-  return { barKg, platesPerSide: plates };
+  return used;
+}
+export function platesForLb(totalLb: number, barLb = 45, plates = LB_PLATES): number[] {
+  return platesForKg(totalLb, barLb, plates); // math is identical
 }
 
-// Rough DB → BB: dumbbell press "N each" ≈ 2N total (same total load), but
-// stability demands make it harder — multiply by ~0.85 for equivalent barbell.
-export function dbToBbEquivalent(dumbbellEachKg: number): number {
-  return Math.round(dumbbellEachKg * 2 * 0.85 * 10) / 10;
+// ---------- DB ↔ BB equivalence ----------
+// Empirically dumbbell press ≈ 0.85× barbell press for the same load-per-hand sum.
+// I.e. 2 × 40 kg DBs (80 kg total) ≈ 0.85 × 80 = 68 kg BB, or 34 kg/hand DB ≈ 80 kg BB.
+export const dbToBbEquivalent = (dbPerHandKg: number) => +(dbPerHandKg * 2 * 0.85).toFixed(1);
+export const bbToDbEquivalent = (bbKg: number) => +(bbKg / 2 / 0.85).toFixed(1);
+
+// ---------- Wilks 2020 coefficient ----------
+// Third-order polynomial coefficients from the official 2020 Wilks formula.
+// coeffs = [a, b, c, d, e, f] ; score = 600 / (a + b*x + c*x^2 + d*x^3 + e*x^4 + f*x^5)
+// where x = totalKg for male and female lifters respectively.
+const WILKS_M = [-125.4255398, 13.74242991, -0.348573308, 0.004598018, -0.000020133, 0];
+const WILKS_F = [-255.0505161, 20.7270857, -0.490282466, 0.006673806, -0.00004461, 0.00000011];
+function poly(coeffs: number[], x: number) {
+  return coeffs.reduce((acc, c, i) => acc + c * Math.pow(x, i), 0);
 }
-export function bbToDbEquivalent(barbellKg: number): number {
-  return Math.round(((barbellKg / 2) / 0.85) * 10) / 10;
+export function wilks(bodyweightKg: number, totalKg: number, female = false): number {
+  if (bodyweightKg <= 0 || totalKg <= 0) return 0;
+  const coeffs = female ? WILKS_F : WILKS_M;
+  const denom = poly(coeffs, bodyweightKg);
+  if (denom <= 0) return 0;
+  return +(600 / denom * totalKg / 100).toFixed(2);
 }
 
-// Wilks 2020 coefficient (simplified, male+female average approximation).
-// Uses the polynomial formula from the official Wilks 2020 paper. Good enough
-// for casual display; serious powerlifters should use the official calculator.
-export function wilks(bodyweightKg: number, totalKg: number, isFemale = false): number {
-  const coeff = isFemale
-    ? { a: -125.4255398, b: 13.7028159, c: -0.2401009, d: -0.0099808, e: 0.0003087, f: -0.0000037 }
-    : { a: 47.4617885,  b: 8.4720611,  c: 0.073694,   d: -0.0013958, e: 0.0000516, f: -0.0000013 };
-  const x = bodyweightKg;
-  const denom = 600
-    + coeff.a * x
-    + coeff.b * x ** 2
-    + coeff.c * x ** 3
-    + coeff.d * x ** 4
-    + coeff.e * x ** 5
-    + coeff.f * x ** 6;
-  if (denom === 0) return 0;
-  return Math.round((600 / denom) * totalKg * 100) / 100;
-}
+// ---------- Strength-to-weight ratio ----------
+export const strengthToWeight = (liftKg: number, bodyweightKg: number) =>
+  bodyweightKg > 0 ? +(liftKg / bodyweightKg).toFixed(2) : 0;
 
-// Strength-to-weight ratio = 1RM / bodyweight
-export function strengthToWeight(oneRM: number, bw: number): number {
-  if (!bw) return 0;
-  return Math.round((oneRM / bw) * 100) / 100;
-}
+// ---------- RPE ↔ RIR ----------
+export const rirToRpe = (rir: number) => Math.max(1, Math.min(10, 10 - rir));
+export const rpeToRir = (rpe: number) => Math.max(0, Math.min(10, 10 - rpe));
 
-// Average % of 1RM for a session
-export function avgIntensity(sets: { weight?: number; reps: number; oneRM?: number }[]): number {
-  const vals = sets
-    .filter((s) => s.weight && s.oneRM)
-    .map((s) => (s.weight! / s.oneRM!) * 100);
-  if (!vals.length) return 0;
-  return Math.round(vals.reduce((n, v) => n + v, 0) / vals.length);
-}
-
-// RIR → RPE mapping. RPE = 10 - RIR, clamped.
-export function rirToRpe(rir: number): number {
-  return Math.max(1, Math.min(10, 10 - rir));
-}
-export function rpeToRir(rpe: number): number {
-  return Math.max(0, Math.min(10, 10 - rpe));
-}
-
-// AMRAP projection: given a weight × reps, predict reps at same weight (linear).
-export function projectAMRAP(weight: number, reps: number, oneRM: number): number {
-  // From Epley, projected reps at w = (oneRM/w - 1) * 30
-  if (!weight || weight >= oneRM) return reps;
-  return Math.round((oneRM / weight - 1) * 30);
-}
-
-// Deload detector: fire when 4-6 weeks of increasing volume/intensity without deload.
-export function shouldDeload(lastDeloadDate: string | undefined, sessionsPerWeek: number): boolean {
-  if (!lastDeloadDate) return sessionsPerWeek * 6 >= 24; // 6 weeks @ 4/wk
-  const weeks = (Date.now() - new Date(lastDeloadDate).getTime()) / (7 * 86400000);
-  return weeks >= 6;
-}
+// ---------- Epley (re-export from analytics so consumers can import from one file) ----------
+export { epley1RM, brzycki1RM, projectAMRAP, shouldDeload } from "./workoutAnalytics";
