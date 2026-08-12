@@ -194,4 +194,14 @@ model (89-region anatomical SVG).
 - ✅ **Back muscle SVG bug fixed**: `<g transform="translate(-34,0)">` on the back group + widened viewBox `-8 -28 48 125` so back muscles (authored at x≈32..67) render in frame.
 - ✅ **UI comfort pass**: cards bumped to p-6 with gap-7 between sections, hero panels have 8 px internal padding, larger 28px hero icons, ambient colored blobs tuned, hover glow on exercise cards matches the muscle color, transitions 0.2–0.28s eased.
 - ✅ **Backend** Express server (port 4000): `/api/health`, full CRUD on `/api/exercises`, session helpers (`/api/sessions/:id/sets` auto-tallies volume; `PATCH /api/sessions/:id/finish` sets duration), `/api/analytics/*`, `/api/sync`. CORS open to :3000. `tsc` passes.
+- ✅ **ActiveWorkout Set Details**: bar-spin OK, sticking-point selector (off-floor/mid-range/lockout/transition), mental state (locked-in/distracted/anxious/tired), tempo string (e.g. 3-1-2-1), superset/giant/cluster/myo-rep/unilateral toggles (cluster accepts comma-separated micro-set reps + inter-set rest; myo-rep RPE stop selector; unilateral captures L/R reps).
+- ✅ **Post-session check-in** modal pops on finish: 1–10 session rating, joint-pain multi-select, crowd level, training phase, free-text note — all persisted to the session.
+- ✅ **Per-exercise history drawer** (clock icon on library cards): total sets, best set, total volume, sparkline of estimated 1RM over time with PR dots, recent-sets list with RPE/RIR/flags.
+- ✅ **Next-workout suggestion engine** (`suggestNextWorkout()`): picks today's scheduled routine with an intensity note (deload/easy/normal/push/PR based on readiness + deload detection), otherwise picks the most undertrained major muscle group from last 5 days avoiding yesterday's muscles; shown as "Suggested today" card on overview.
+- ✅ **CelebrationModal** reusable spring-animated full-screen overlay used for PRs and goal achievement.
+- ✅ **Symmetric Strength chart** on Gym tab: best squat/bench/deadlift/OHP 1RM vs powerlifting-standard ratios (1.00/0.75/1.25/0.45), animated fill, balance percentage color-coded.
+- ✅ **Lactate threshold** card: age input + trained toggle → Max HR, LT1 (~77%), LT2 (~90% trained).
+- ✅ **RPE auto-calibration** card: after 3+ sets logged with RPE, shows sample count, mean error vs. standard RPE table, and a personal multiplier.
+- ✅ **Goal progress bars + auto-achievement**: each goal shows current/target with progress bar; progress computed via `goalProgress()` for workouts/streak/volume/bodyweight/1RM; when a goal flips to achieved it's stamped with `achievedAt`, crossed out in lime, and triggers the celebration modal.
+- ✅ **Dependencies** bumped within the pinned React 18 / Next 14 line: next 14.2.35 (latest 14.x patch, fixes many GHSAs), postcss 8.5.26, lucide-react & framer-motion latest. Removed unused `body-muscles` package.
 
