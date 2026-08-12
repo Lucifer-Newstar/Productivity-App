@@ -3,24 +3,27 @@
 /**
  * Workout page — /workout route.
  *
- * When a session is active (workout.activeSessionId is set) we take over the
- * whole viewport with ActiveWorkout (one-thumb in-session screen). Otherwise
- * we show a dashboard + tabs:
+ * This page is FULL-SCREEN (WorkoutPage.fullScreen = true) — _app.tsx renders
+ * it WITHOUT the shared TopNav / page padding so we can paint edge-to-edge
+ * with our own dedicated chrome (see WorkoutShell). The shell provides:
  *
- *   0. Overview — hero stats, today's readiness quick-log, 7-day muscle heatmap,
- *      streak + badges, CSV export, glove/minimal/sound quick toggles.
- *   1. PRs       — Personal Records (peak per exercise, quick-log attempts)
- *   2. Skills    — Progressive skill trees with progressions
- *   3. Exercises — Exercise library with unit/equipment/level filters
- *   4. Schedule  — Routines editor + Start-workout buttons
+ *   - Left nav rail (desktop) / bottom tab bar (mobile) for switching between
+ *     the 9 workout sections (Overview, Calisthenics, Gym, Cardio, PRs, Skills,
+ *     Exercises, Schedule, Tools).
+ *   - Slim top strip with quick toggles (sound/glove/minimal), theme toggle,
+ *     notifications, avatar.
+ *   - Animated page transitions (fade + slide + subtle scale) via Framer
+ *     Motion's AnimatePresence, plus ambient floating mesh blobs.
+ *   - A "Start today's routine" CTA pinned in the rail.
+ *
+ * When a session is active (workout.activeSessionId), we skip the shell and
+ * hand the whole screen to ActiveWorkout (one-thumb in-session UI).
  */
 
 import { useMemo, useState } from "react";
-import Link from "next/link";
 import { motion } from "framer-motion";
 import {
-  ArrowLeft, Dumbbell, Trophy, Target, Calendar, Flame, Play,
-  Download, Hand, Minimize2, Volume2, VolumeX, Zap, Award,
+  Dumbbell, Play, Download, Zap, Flame, Award,
 } from "lucide-react";
 
 import WorkoutPRs from "../../components/workout/WorkoutPRs";
@@ -33,23 +36,10 @@ import WorkoutCardio from "../../components/workout/WorkoutCardio";
 import WorkoutGlobal from "../../components/workout/WorkoutGlobal";
 import ActiveWorkout from "../../components/workout/ActiveWorkout";
 import MuscleHeatmap from "../../components/workout/MuscleHeatmap";
+import WorkoutShell, { type WorkoutSectionId } from "../../components/workout/WorkoutShell";
 import { useStore } from "../../lib/store";
 import { weeklyMuscleVolume, intensityMultiplier } from "../../lib/workoutAnalytics";
 import type { MuscleGroup } from "../../lib/types";
-
-type Section = "overview" | "calisthenics" | "gym" | "cardio" | "pr" | "skills" | "exercises" | "schedule" | "global";
-
-const SECTIONS: { id: Section; label: string; icon: any; color: string }[] = [
-  { id: "overview",     label: "Overview",     icon: Flame,        color: "#ec4899" },
-  { id: "calisthenics", label: "Calisthenics", icon: Target,       color: "#a3e635" },
-  { id: "gym",          label: "Gym",          icon: Dumbbell,     color: "#f59e0b" },
-  { id: "cardio",       label: "Cardio",       icon: Zap,          color: "#06b6d4" },
-  { id: "pr",           label: "PRs",          icon: Trophy,       color: "#f59e0b" },
-  { id: "skills",       label: "Skills",       icon: Target,       color: "#a3e635" },
-  { id: "exercises",    label: "Exercises",    icon: Dumbbell,     color: "#ec4899" },
-  { id: "schedule",     label: "Schedule",     icon: Calendar,     color: "#06b6d4" },
-  { id: "global",       label: "Tools",        icon: Award,        color: "#8b5cf6" },
-];
 
 /* ---------- Badge metadata (icon + label + colour) ---------- */
 const BADGE_META: Record<string, { icon: string; label: string; color: string }> = {
@@ -70,10 +60,10 @@ const BADGE_META: Record<string, { icon: string; label: string; color: string }>
 };
 
 export default function WorkoutPage() {
-  const [section, setSection] = useState<Section>("overview");
-  const { workout, tasks, logReadiness, exportWorkoutCSV, updateWorkoutSettings, startSession } = useStore();
+  const [section, setSection] = useState<WorkoutSectionId>("overview");
+  const { workout, tasks, logReadiness, exportWorkoutCSV, startSession } = useStore();
 
-  // -------- Aggregate stats --------
+  // -------- Aggregate stats (for the Overview hero) --------
   const stats = useMemo(() => {
     const prCount = workout.prs.length;
     const exerciseCount = workout.exercises.length;
@@ -83,11 +73,9 @@ export default function WorkoutPage() {
     const totalVolume = completed.reduce((n, s) => n + (s.totalVolumeKg ?? 0), 0);
     const workoutTasks = tasks.filter((t) => t.space === "workout");
     const activeTasks = workoutTasks.filter((t) => !t.completed).length;
-    const longestSession = completed.reduce((best, s) => Math.max(best, s.durationSeconds ?? 0), 0);
     return {
       prCount, exerciseCount, thisWeek, totalVolume,
-      completedCount: completed.length,
-      activeTasks, longestSession,
+      completedCount: completed.length, activeTasks,
     };
   }, [workout, tasks]);
 
@@ -120,166 +108,170 @@ export default function WorkoutPage() {
     URL.revokeObjectURL(url);
   }
 
-  // Active session — take over the view
+  // -------- Start today's routine (wired to rail CTA) --------
+  function handleStartTodays() {
+    if (!todaysRoutine) {
+      // If there's no routine scheduled for today, jump to Schedule so user
+      // can build or pick one.
+      setSection("schedule");
+      return;
+    }
+    startSession(todaysRoutine.name, todaysRoutine.id, todayReadiness?.score);
+  }
+
+  // ---- Active session takeover — render edge-to-edge without shell chrome ----
   if (workout.activeSessionId) {
     return (
-      <div className="dark max-w-6xl mx-auto text-gray-100 py-10 px-4">
-        <ActiveWorkout
-          sessionId={workout.activeSessionId}
-          onFinish={() => setSection("overview")}
-          onDiscard={() => setSection("schedule")}
-        />
+      <div className="dark min-h-screen w-full text-gray-100 flex items-center justify-center p-4 md:p-8"
+        style={{
+          background:
+            "radial-gradient(at 15% 10%, rgba(236,72,153,0.2) 0, transparent 45%)," +
+            "radial-gradient(at 85% 90%, rgba(6,182,212,0.15) 0, transparent 45%)," +
+            "#08080d",
+        }}>
+        <div className="w-full max-w-4xl">
+          <ActiveWorkout
+            sessionId={workout.activeSessionId}
+            onFinish={() => setSection("overview")}
+            onDiscard={() => setSection("schedule")}
+          />
+        </div>
       </div>
     );
   }
 
   return (
-    // Force dark mode for workout — pink/cyan gradients + deep panels are designed for dark.
-    <div className="dark space-y-8 max-w-6xl mx-auto text-gray-100 py-8 px-4">
-      <Link href="/" className="inline-flex items-center gap-1.5 text-sm text-gray-400 hover:text-gray-200 transition">
-        <ArrowLeft size={14} /> Back to Dashboard
-      </Link>
+    <WorkoutShell
+      section={section}
+      onSectionChange={setSection}
+      onStartTodaysRoutine={handleStartTodays}
+      todaysRoutineName={todaysRoutine?.name}
+    >
+      {section === "overview" && (
+        <OverviewContent
+          stats={stats}
+          todaysRoutine={todaysRoutine}
+          todayReadiness={todayReadiness}
+          volume={volume as Partial<Record<MuscleGroup, number>>}
+          badges={workout.badges}
+          streak={workout.currentStreak ?? 0}
+          longestStreak={workout.longestStreak ?? 0}
+          freezes={workout.settings.streakFreezes}
+          onLogReadiness={(r) => logReadiness(r)}
+          onStartTodays={handleStartTodays}
+          onExport={handleExport}
+        />
+      )}
+      {section === "calisthenics" && <WorkoutCalisthenics />}
+      {section === "gym" && <WorkoutGym />}
+      {section === "cardio" && <WorkoutCardio />}
+      {section === "pr" && <WorkoutPRs />}
+      {section === "skills" && <WorkoutSkills />}
+      {section === "exercises" && <WorkoutExercises />}
+      {section === "schedule" && <WorkoutSchedule />}
+      {section === "global" && <WorkoutGlobal />}
+    </WorkoutShell>
+  );
+}
 
+// Opt into the FULL-SCREEN immersive shell — _app.tsx will skip the shared
+// TopNav when this flag is set, so WorkoutShell can own the entire viewport.
+WorkoutPage.fullScreen = true;
+
+/* ---------- Overview content (hero + heatmap + readiness + badges) ---------- */
+
+interface OverviewProps {
+  stats: {
+    prCount: number; exerciseCount: number; thisWeek: number; totalVolume: number;
+    completedCount: number; activeTasks: number;
+  };
+  todaysRoutine: { name: string; id: string } | undefined;
+  todayReadiness: { score: number; soreness: number; sleep: number; stress: number } | undefined;
+  volume: Partial<Record<MuscleGroup, number>>;
+  badges: { id: string; earnedAt: number }[];
+  streak: number;
+  longestStreak: number;
+  freezes: number;
+  onLogReadiness: (r: { soreness: number; sleep: number; stress: number; note?: string }) => void;
+  onStartTodays: () => void;
+  onExport: () => void;
+}
+
+function OverviewContent({
+  stats, todaysRoutine, todayReadiness, volume, badges, streak, longestStreak, freezes,
+  onLogReadiness, onStartTodays, onExport,
+}: OverviewProps) {
+  return (
+    <div className="space-y-6">
       {/* Hero */}
       <motion.div
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
-        className="relative overflow-hidden rounded-3xl p-8 md:p-10 glass border border-white/10"
+        className="relative overflow-hidden rounded-3xl p-6 md:p-8 glass border border-white/10"
         style={{ borderColor: "#ec489930" }}
       >
         <div className="absolute -top-20 -right-20 w-64 h-64 rounded-full bg-pink-500/20 blur-3xl" />
         <div className="absolute -bottom-20 -left-20 w-64 h-64 rounded-full bg-cyan-500/20 blur-3xl" />
 
         <div className="relative flex items-center gap-4 flex-wrap">
-          <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-pink-500 to-rose-500 flex items-center justify-center shadow-xl"
+          <div className="w-14 h-14 md:w-16 md:h-16 rounded-2xl bg-gradient-to-br from-pink-500 to-rose-500 flex items-center justify-center shadow-xl"
             style={{ boxShadow: "0 10px 40px -10px #ec489980" }}>
-            <Dumbbell size={30} className="text-white" />
+            <Dumbbell size={28} className="text-white" />
           </div>
           <div className="flex-1 min-w-0">
-            <h1 className="text-4xl md:text-5xl font-bold tracking-tight text-white">Workout</h1>
-            <p className="text-gray-400 mt-1">Log lifts, chase PRs, build skills, and run your routines — all in one place.</p>
+            <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-white">Let&apos;s move.</h1>
+            <p className="text-gray-400 mt-1 text-sm md:text-base">
+              {todaysRoutine
+                ? `Today is ${todaysRoutine.name} — you got this.`
+                : "No routine on the schedule today — pick a quick session or rest intentionally."}
+            </p>
           </div>
           <div className="flex gap-2">
-            {todaysRoutine && (
-              <button onClick={() => { startSession(todaysRoutine.name, todaysRoutine.id, todayReadiness?.score); }}
-                className="btn-primary text-sm inline-flex items-center gap-2">
-                <Play size={14} /> Start {todaysRoutine.name}
-              </button>
-            )}
-            <button onClick={handleExport} className="btn-ghost text-sm inline-flex items-center gap-2">
-              <Download size={14} /> Export CSV
+            <button onClick={onStartTodays}
+              className="btn-primary text-sm inline-flex items-center gap-2 !bg-gradient-to-r !from-pink-500 !to-rose-500">
+              <Play size={14} fill="white" /> {todaysRoutine ? `Start ${todaysRoutine.name}` : "Quick start"}
+            </button>
+            <button onClick={onExport} className="btn-ghost text-sm inline-flex items-center gap-2 !text-gray-300">
+              <Download size={14} /> Export
             </button>
           </div>
         </div>
 
         {/* Stats */}
-        <div className="relative grid grid-cols-2 md:grid-cols-5 gap-3 mt-8">
-          <Stat label="🔥 Streak" value={`${workout.currentStreak ?? 0} days`} color="#f59e0b" />
+        <div className="relative grid grid-cols-2 md:grid-cols-5 gap-3 mt-6">
+          <Stat label="🔥 Streak" value={`${streak} days`} color="#f59e0b" />
           <Stat label="PRs" value={stats.prCount} color="#ec4899" />
           <Stat label="Exercises" value={stats.exerciseCount} color="#a3e635" />
           <Stat label="This week" value={`${stats.thisWeek} workouts`} color="#06b6d4" />
           <Stat label="Total volume" value={`${Math.round(stats.totalVolume).toLocaleString()} kg`} color="#8b5cf6" />
         </div>
-
-        {/* Quick settings strip */}
-        <div className="relative flex flex-wrap gap-2 mt-6">
-          <ToggleChip
-            active={workout.settings.gloveMode}
-            onClick={() => updateWorkoutSettings({ gloveMode: !workout.settings.gloveMode })}
-            icon={<Hand size={14} />}
-            label="Glove mode"
-          />
-          <ToggleChip
-            active={workout.settings.minimalMode}
-            onClick={() => updateWorkoutSettings({ minimalMode: !workout.settings.minimalMode })}
-            icon={<Minimize2 size={14} />}
-            label="Minimal mode"
-          />
-          <ToggleChip
-            active={workout.settings.soundEnabled}
-            onClick={() => updateWorkoutSettings({ soundEnabled: !workout.settings.soundEnabled })}
-            icon={workout.settings.soundEnabled ? <Volume2 size={14} /> : <VolumeX size={14} />}
-            label={workout.settings.soundEnabled ? "Sound on" : "Muted"}
-          />
-        </div>
       </motion.div>
 
-      {/* Section tabs */}
-      <div className="flex flex-wrap gap-1 p-1 bg-white/5 rounded-xl border border-white/5 w-fit">
-        {SECTIONS.map((s) => {
-          const Icon = s.icon;
-          const active = section === s.id;
-          return (
-            <button key={s.id} onClick={() => setSection(s.id)}
-              className={`relative px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-2 transition ${
-                active ? "text-white" : "text-gray-400 hover:text-gray-200"
-              }`}>
-              {active && (
-                <motion.div layoutId="workout-section-pill"
-                  className="absolute inset-0 rounded-lg bg-gradient-to-r from-pink-500/20 to-cyan-500/20 border border-pink-500/30"
-                  transition={{ type: "spring", bounce: 0.2, duration: 0.4 }} />
-              )}
-              <Icon size={15} className="relative z-10" />
-              <span className="relative z-10">{s.label}</span>
-            </button>
-          );
-        })}
-      </div>
-
-      <motion.div key={section} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.2 }}>
-        {section === "overview" && (
-          <Overview
-            volume={volume as Partial<Record<MuscleGroup, number>>}
-            readiness={todayReadiness}
-            onLogReadiness={(r) => logReadiness(r)}
-            badges={workout.badges}
-            streak={workout.currentStreak ?? 0}
-            longestStreak={workout.longestStreak ?? 0}
-            freezes={workout.settings.streakFreezes}
-          />
-        )}
-        {section === "calisthenics" && <WorkoutCalisthenics />}
-        {section === "gym" && <WorkoutGym />}
-        {section === "cardio" && <WorkoutCardio />}
-        {section === "pr" && <WorkoutPRs />}
-        {section === "skills" && <WorkoutSkills />}
-        {section === "exercises" && <WorkoutExercises />}
-        {section === "schedule" && <WorkoutSchedule />}
-        {section === "global" && <WorkoutGlobal />}
-      </motion.div>
+      <OverviewBody
+        volume={volume}
+        readiness={todayReadiness}
+        onLogReadiness={onLogReadiness}
+        badges={badges}
+        streak={streak}
+        longestStreak={longestStreak}
+        freezes={freezes}
+      />
     </div>
   );
 }
 
-/* ---------- Small presentational helpers ---------- */
-
+/* ---------- Stat tile used in the overview hero ---------- */
 function Stat({ label, value, color }: { label: string; value: string | number; color: string }) {
   return (
-    <div className="rounded-xl p-4 bg-white/5 border border-white/5">
-      <p className="text-xs text-gray-500 uppercase tracking-wider">{label}</p>
-      <p className="text-2xl font-bold mt-1 text-white" style={{ color }}>{value}</p>
+    <div className="rounded-xl p-3 md:p-4 bg-white/5 border border-white/5">
+      <p className="text-[10px] md:text-xs text-gray-500 uppercase tracking-wider">{label}</p>
+      <p className="text-xl md:text-2xl font-bold mt-1 text-white" style={{ color }}>{value}</p>
     </div>
   );
 }
 
-function ToggleChip({ active, onClick, icon, label }: {
-  active: boolean; onClick: () => void; icon: React.ReactNode; label: string;
-}) {
-  return (
-    <button onClick={onClick}
-      className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition border ${
-        active
-          ? "bg-violet-500/20 text-violet-200 border-violet-500/40"
-          : "bg-white/5 text-gray-400 border-white/10 hover:text-gray-200"
-      }`}>
-      {icon} {label}
-    </button>
-  );
-}
-
-/* ---------- Overview tab ---------- */
-
-function Overview({
+/* ---------- The rest of Overview (heatmap + readiness + badges grid) ---------- */
+function OverviewBody({
   volume, readiness, onLogReadiness, badges, streak, longestStreak, freezes,
 }: {
   volume: Partial<Record<MuscleGroup, number>>;
@@ -295,7 +287,6 @@ function Overview({
   const [sleep, setSleep] = useState(7);
   const [stress, setStress] = useState(4);
 
-  // Live preview the readiness score as sliders move
   const previewScore = useMemo(() => {
     const s = Math.max(1, Math.min(10, soreness));
     const sl = Math.max(1, Math.min(10, sleep));
@@ -304,18 +295,12 @@ function Overview({
   }, [soreness, sleep, stress]);
 
   const intensity = intensityMultiplier(readiness?.score ?? previewScore);
-
   const scoreColor = readiness
-    ? readiness.score >= 75 ? "#a3e635"
-    : readiness.score >= 50 ? "#f59e0b"
-    : "#ef4444"
-    : previewScore >= 75 ? "#a3e635"
-    : previewScore >= 50 ? "#f59e0b"
-    : "#ef4444";
+    ? readiness.score >= 75 ? "#a3e635" : readiness.score >= 50 ? "#f59e0b" : "#ef4444"
+    : previewScore >= 75 ? "#a3e635" : previewScore >= 50 ? "#f59e0b" : "#ef4444";
 
   return (
     <div className="grid lg:grid-cols-[1fr_320px] gap-6">
-      {/* Left column */}
       <div className="space-y-6">
         {/* Muscle heatmap */}
         <div className="card">
@@ -383,8 +368,6 @@ function Overview({
               })}
             </div>
           )}
-
-          {/* Locked preview */}
           <div className="mt-4 pt-4 border-t border-white/5">
             <p className="text-xs text-gray-500 mb-2">Locked</p>
             <div className="flex flex-wrap gap-2">
@@ -403,40 +386,16 @@ function Overview({
 
       {/* Right column */}
       <div className="space-y-6">
-        {/* Readiness */}
-        <div className="card">
-          <h3 className="font-semibold text-white flex items-center gap-2 mb-3">
-            <Zap className="text-cyan-400" size={18} /> Today’s Readiness
-          </h3>
-
-          <div className="rounded-xl p-4 bg-black/30 border border-white/5 text-center mb-4">
-            <p className="text-xs text-gray-500 uppercase tracking-widest">Score</p>
-            <p className="text-4xl font-bold font-mono mt-1" style={{ color: scoreColor }}>
-              {readiness?.score ?? previewScore}
-            </p>
-            <p className="text-xs text-gray-400 mt-1">
-              Intensity x{intensity.toFixed(2)}
-              {intensity < 0.85 && " — deload recommended"}
-              {intensity >= 1.05 && " — push for a PR!"}
-            </p>
-          </div>
-
-          <Slider label="Soreness" minLabel="fresh" maxLabel="sore" value={soreness} onChange={setSoreness} inverted />
-          <Slider label="Sleep"    minLabel="bad"   maxLabel="great" value={sleep}    onChange={setSleep} />
-          <Slider label="Stress"   minLabel="calm"  maxLabel="max"   value={stress}   onChange={setStress} inverted />
-
-          <button
-            onClick={() => onLogReadiness({ soreness, sleep, stress })}
-            className="w-full mt-3 btn-primary text-sm"
-          >
-            {readiness ? "Update today’s check-in" : "Log today’s readiness"}
-          </button>
-          {readiness && (
-            <p className="text-[11px] text-gray-500 text-center mt-2">Already logged today — adjust and re-save.</p>
-          )}
-        </div>
-
-        {/* Streak + long-streak */}
+        <ReadinessCard
+          score={readiness?.score ?? previewScore}
+          scoreColor={scoreColor}
+          intensity={intensity}
+          logged={!!readiness}
+          soreness={soreness} setSoreness={setSoreness}
+          sleep={sleep} setSleep={setSleep}
+          stress={stress} setStress={setStress}
+          onLog={() => onLogReadiness({ soreness, sleep, stress })}
+        />
         <div className="card">
           <h3 className="font-semibold text-white flex items-center gap-2 mb-3">
             <Flame className="text-amber-400" size={18} /> Streak
@@ -453,11 +412,48 @@ function Overview({
           </div>
           <p className="text-xs text-gray-500 mt-3">
             Finish a workout every calendar day to extend your streak. Streaks freeze with
-            <span className="text-cyan-400 mx-1">{freezes ?? 0} freezes</span>
-            available.
+            <span className="text-cyan-400 mx-1">{freezes ?? 0} freezes</span> available.
           </p>
         </div>
       </div>
+    </div>
+  );
+}
+
+/* ---------- Readiness card (right column of Overview) ---------- */
+function ReadinessCard({
+  score, scoreColor, intensity, logged,
+  soreness, setSoreness, sleep, setSleep, stress, setStress, onLog,
+}: {
+  score: number; scoreColor: string; intensity: number; logged: boolean;
+  soreness: number; setSoreness: (v: number) => void;
+  sleep: number; setSleep: (v: number) => void;
+  stress: number; setStress: (v: number) => void;
+  onLog: () => void;
+}) {
+  return (
+    <div className="card">
+      <h3 className="font-semibold text-white flex items-center gap-2 mb-3">
+        <Zap className="text-cyan-400" size={18} /> Today&apos;s Readiness
+      </h3>
+      <div className="rounded-xl p-4 bg-black/30 border border-white/5 text-center mb-4">
+        <p className="text-xs text-gray-500 uppercase tracking-widest">Score</p>
+        <p className="text-4xl font-bold font-mono mt-1" style={{ color: scoreColor }}>{score}</p>
+        <p className="text-xs text-gray-400 mt-1">
+          Intensity x{intensity.toFixed(2)}
+          {intensity < 0.85 && " — deload recommended"}
+          {intensity >= 1.05 && " — push for a PR!"}
+        </p>
+      </div>
+      <Slider label="Soreness" minLabel="fresh" maxLabel="sore" value={soreness} onChange={setSoreness} inverted />
+      <Slider label="Sleep"    minLabel="bad"   maxLabel="great" value={sleep}    onChange={setSleep} />
+      <Slider label="Stress"   minLabel="calm"  maxLabel="max"   value={stress}   onChange={setStress} inverted />
+      <button onClick={onLog} className="w-full mt-3 btn-primary text-sm">
+        {logged ? "Update today's check-in" : "Log today's readiness"}
+      </button>
+      {logged && (
+        <p className="text-[11px] text-gray-500 text-center mt-2">Already logged today — adjust and re-save.</p>
+      )}
     </div>
   );
 }
