@@ -7,10 +7,11 @@
 
 import { useMemo, useState } from "react";
 import { motion } from "framer-motion";
-import { Dumbbell, Play, Download, Zap, Flame, Award } from "lucide-react";
+import { Dumbbell, Play, Download, Zap, Flame, Award, Sparkles } from "lucide-react";
+import { useRouter } from "next/router";
 import MuscleHeatmap from "./MuscleHeatmap";
 import { useStore } from "../../lib/store";
-import { intensityMultiplier, weeklyMuscleVolume } from "../../lib/workoutAnalytics";
+import { intensityMultiplier, weeklyMuscleVolume, suggestNextWorkout } from "../../lib/workoutAnalytics";
 import type { MuscleGroup } from "../../lib/types";
 
 const BADGE_META: Record<string, { icon: string; label: string; color: string }> = {
@@ -32,7 +33,8 @@ const BADGE_META: Record<string, { icon: string; label: string; color: string }>
 };
 
 export default function OverviewContent() {
-  const { workout, tasks, logReadiness, exportWorkoutCSV, startSession } = useStore();
+  const { workout, tasks, logReadiness, exportWorkoutCSV, startSession, getExerciseForBlock } = useStore();
+  const router = useRouter();
 
   const stats = useMemo(() => {
     const prCount = workout.prs.length;
@@ -73,6 +75,13 @@ export default function OverviewContent() {
     if (!todaysRoutine) return;
     startSession(todaysRoutine.name, todaysRoutine.id, todayReadiness?.score);
   }
+
+  // Next-workout suggestion engine
+  const nextWorkout = useMemo(() => suggestNextWorkout({
+    sessions: workout.sessions, routines: workout.routines, exercises: workout.exercises,
+    readinessScore: todayReadiness?.score,
+    blockToExercise: getExerciseForBlock,
+  }), [workout.sessions, workout.routines, workout.exercises, todayReadiness, getExerciseForBlock]);
 
   return (
     <div className="space-y-6">
@@ -121,6 +130,9 @@ export default function OverviewContent() {
         streak={workout.currentStreak ?? 0}
         longestStreak={workout.longestStreak ?? 0}
         freezes={workout.settings.streakFreezes}
+        nextWorkout={nextWorkout}
+        onGoToSchedule={() => router.push("/workout/schedule")}
+        onGoToLibrary={() => router.push("/workout/library")}
       />
     </div>
   );
@@ -135,7 +147,7 @@ function Stat({ label, value, color }: { label: string; value: string | number; 
   );
 }
 
-function OverviewBody({ volume, readiness, onLogReadiness, badges, streak, longestStreak, freezes }: any) {
+function OverviewBody({ volume, readiness, onLogReadiness, badges, streak, longestStreak, freezes, nextWorkout, onGoToSchedule, onGoToLibrary }: any) {
   const [selectedMuscle, setSelectedMuscle] = useState<MuscleGroup | null>(null);
   const [soreness, setSoreness] = useState(5);
   const [sleep, setSleep] = useState(7);
@@ -212,6 +224,38 @@ function OverviewBody({ volume, readiness, onLogReadiness, badges, streak, longe
       </div>
 
       <div className="space-y-6">
+        {/* Next workout suggestion */}
+        <div className="card border-violet-500/30 relative overflow-hidden">
+          <div className="absolute -top-20 -right-20 w-40 h-40 rounded-full bg-violet-500/20 blur-3xl pointer-events-none" />
+          <div className="relative">
+            <h3 className="font-semibold text-white flex items-center gap-2 mb-1">
+              <Sparkles className="text-violet-400" size={18} /> Suggested today
+            </h3>
+            <p className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-violet-300 to-pink-300 mb-2">
+              {nextWorkout.title}
+            </p>
+            <p className="text-sm text-gray-400 mb-3">{nextWorkout.reasoning}</p>
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase ${
+                nextWorkout.intensity === "pr" ? "bg-pink-500/25 text-pink-300" :
+                nextWorkout.intensity === "push" ? "bg-amber-500/25 text-amber-300" :
+                nextWorkout.intensity === "easy" ? "bg-cyan-500/25 text-cyan-300" :
+                nextWorkout.intensity === "deload" ? "bg-gray-500/25 text-gray-300" :
+                "bg-emerald-500/25 text-emerald-300"
+              }`}>{nextWorkout.intensity}</span>
+              {nextWorkout.routineId ? (
+                <button onClick={onGoToSchedule} className="chip cursor-pointer bg-violet-500/20 text-violet-200 hover:bg-violet-500/30 text-[10px]">
+                  View schedule
+                </button>
+              ) : nextWorkout.focus ? (
+                <button onClick={onGoToLibrary} className="chip cursor-pointer bg-violet-500/20 text-violet-200 hover:bg-violet-500/30 text-[10px]">
+                  Browse {nextWorkout.focus} exercises
+                </button>
+              ) : null}
+            </div>
+          </div>
+        </div>
+
         <div className="card">
           <h3 className="font-semibold text-white flex items-center gap-2 mb-3">
             <Zap className="text-cyan-400" size={18} /> Today's Readiness

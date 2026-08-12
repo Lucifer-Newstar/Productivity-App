@@ -22,11 +22,13 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Play, Check, SkipForward, Maximize2, Minimize2, Hand, Flame, Trophy, Volume2, VolumeX,
+  X, AlertCircle,
 } from "lucide-react";
 import { useStore } from "../../lib/store";
 import { epley1RM, playBeep, suggestProgression } from "../../lib/workoutAnalytics";
-import type { WorkoutBlock, WorkoutExercise } from "../../lib/types";
+import type { WorkoutBlock, WorkoutExercise, StickingPoint, MentalState, CrowdLevel, TrainingPhase } from "../../lib/types";
 import Confetti from "./Confetti";
+import CelebrationModal from "./CelebrationModal";
 
 interface Props {
   sessionId: string;
@@ -36,7 +38,7 @@ interface Props {
 
 export default function ActiveWorkout({ sessionId, onFinish, onDiscard }: Props) {
   const {
-    workout, logSet, logPR, finishSession, discardSession,
+    workout, logSet, logPR, finishSession, discardSession, updateSession,
     getExerciseForBlock, updateWorkoutSettings,
   } = useStore();
   const session = workout.sessions.find((s) => s.id === sessionId);
@@ -105,7 +107,22 @@ export default function ActiveWorkout({ sessionId, onFinish, onDiscard }: Props)
   const [feeling, setFeeling] = useState<""|"fast"|"normal"|"slow"|"grind">("");
   const [pain, setPain] = useState(0);
   const [setNote, setSetNote] = useState("");
+  // Advanced per-set metadata
+  const [barSpin, setBarSpin] = useState(false);
+  const [sticking, setSticking] = useState<StickingPoint | "">("");
+  const [mental, setMental] = useState<MentalState | "">("");
+  const [tempo, setTempo] = useState<string>("");
   const [showMeta, setShowMeta] = useState(false);
+
+  // Post-session joint-pain + RPE check-in
+  const [postOpen, setPostOpen] = useState(false);
+  const [jointPain, setJointPain] = useState<string[]>([]);
+  const [sessionRating, setSessionRating] = useState(7);
+  const [sessionNote, setSessionNote] = useState("");
+  const [crowd, setCrowd] = useState<CrowdLevel | "">("");
+  const [phase, setPhase] = useState<TrainingPhase | "">("");
+  // Celebration modals
+  const [celebrate, setCelebrate] = useState<{ title: string; subtitle?: string; emoji: string; color: string } | null>(null);
 
   // Reset inputs when position changes
   useEffect(() => {
@@ -115,6 +132,7 @@ export default function ActiveWorkout({ sessionId, onFinish, onDiscard }: Props)
     setIsWarmup(false); setIsJoker(false); setIsDrop(false); setIsAMRAP(false);
     setIsPaused(false); setPauseSec(2); setBelt(false); setSleeves(false); setWraps(false);
     setGrip(""); setQuality(""); setSpeed(""); setFeeling(""); setPain(0); setSetNote("");
+    setBarSpin(false); setSticking(""); setMental(""); setTempo("");
     setShowMeta(false);
   }, [defaultReps, defaultWeight, currentBlock?.id, currentSetNum]);
 
@@ -197,6 +215,10 @@ export default function ActiveWorkout({ sessionId, onFinish, onDiscard }: Props)
       quality: quality || undefined,
       speed: speed || undefined,
       feeling: feeling || undefined,
+      mental: mental || undefined,
+      barSpinOk: barSpin || undefined,
+      stickingPoint: (sticking as StickingPoint) || undefined,
+      tempo: tempo || undefined,
       pain: pain > 0 ? pain : undefined,
       notes: setNote || undefined,
     };
@@ -209,6 +231,16 @@ export default function ActiveWorkout({ sessionId, onFinish, onDiscard }: Props)
       setShowConfetti(true);
       setTimeout(() => setShowConfetti(false), 2500);
       if (sound) { playBeep(1200, 200); setTimeout(() => playBeep(1600, 300), 200); }
+      // Fire PR celebration
+      const valLabel = currentExercise.unit === "kg" && w
+        ? `${w} kg × ${value}`
+        : `${value}${currentExercise.unit === "seconds" ? "s" : currentExercise.unit === "meters" ? "m" : ""}`;
+      setCelebrate({
+        title: "New PR! 🎉",
+        subtitle: `${currentExercise.name}: ${valLabel}`,
+        emoji: "🏆",
+        color: "#f59e0b",
+      });
     }
 
     setRunning(false); setStartRef.current = null; setElapsedState(0);
@@ -237,7 +269,20 @@ export default function ActiveWorkout({ sessionId, onFinish, onDiscard }: Props)
   function handleSkipRest() { setResting(false); setRestRemain(0); }
 
   function handleFinish() {
+    // Show post-session check-in (joint pain, rating, crowd, phase, note)
+    setPostOpen(true);
+    setPhase(settings.phase ?? "");
+  }
+  function handleSubmitPost() {
+    updateSession(sessionId, {
+      rating: sessionRating,
+      jointPain: jointPain.length ? jointPain : undefined,
+      note: sessionNote || undefined,
+      crowdLevel: crowd || undefined,
+      phase: phase || undefined,
+    });
     finishSession(sessionId);
+    setPostOpen(false);
     onFinish();
   }
   function handleDiscardClick() {
@@ -245,6 +290,9 @@ export default function ActiveWorkout({ sessionId, onFinish, onDiscard }: Props)
       discardSession(sessionId);
       onDiscard();
     }
+  }
+  function toggleJoint(j: string) {
+    setJointPain((cur) => cur.includes(j) ? cur.filter((x) => x !== j) : [...cur, j]);
   }
 
   if (!session) return null;
@@ -491,6 +539,36 @@ export default function ActiveWorkout({ sessionId, onFinish, onDiscard }: Props)
                               className={`w-6 h-6 rounded text-[10px] font-bold ${pain===n?"bg-red-500/30 text-red-200":"bg-white/5 text-gray-400"}`}>{n}</button>
                           ))}
                         </div>
+
+                        {/* --- Advanced: bar spin, sticking point, mental, tempo --- */}
+                        <div className="flex flex-wrap gap-1 justify-center pt-1 border-t border-white/5">
+                          <button onClick={() => setBarSpin(!barSpin)}
+                            className={`px-2 py-1 rounded text-[10px] font-semibold border ${barSpin
+                              ? "border-cyan-500/50 bg-cyan-500/20 text-cyan-200"
+                              : "border-white/10 bg-white/5 text-gray-400"}`}>Bar spin OK</button>
+                        </div>
+                        <div className="flex flex-wrap gap-1 justify-center">
+                          <span className="text-[10px] text-gray-400 mr-1 self-center">Sticking:</span>
+                          {(["none","off-floor","mid-range","lockout","transition"] as StickingPoint[]).map(s => (
+                            <button key={s} onClick={() => setSticking(sticking===s?"":s)}
+                              className={`px-2 py-1 rounded text-[10px] capitalize ${sticking===s?"bg-orange-500/20 text-orange-200":"bg-white/5 text-gray-400"}`}>{s}</button>
+                          ))}
+                        </div>
+                        <div className="flex flex-wrap gap-1 justify-center">
+                          <span className="text-[10px] text-gray-400 mr-1 self-center">Mental:</span>
+                          {(["locked-in","distracted","anxious","tired"] as MentalState[]).map(m => (
+                            <button key={m} onClick={() => setMental(mental===m?"":m)}
+                              className={`px-2 py-1 rounded text-[10px] capitalize ${mental===m?"bg-fuchsia-500/20 text-fuchsia-200":"bg-white/5 text-gray-400"}`}>{m}</button>
+                          ))}
+                        </div>
+                        <div className="flex items-center justify-center gap-2">
+                          <span className="text-[10px] text-gray-400">Tempo</span>
+                          <input value={tempo} onChange={(e) => setTempo(e.target.value)}
+                            placeholder="e.g. 3-1-2-1"
+                            className="input-base text-[11px] w-28 py-1 text-center" />
+                        </div>
+                        {/* --- end advanced --- */}
+
                         <input value={setNote} onChange={e=>setSetNote(e.target.value)}
                           placeholder="Set note…"
                           className="input-base text-[11px] w-full" />
@@ -561,6 +639,112 @@ export default function ActiveWorkout({ sessionId, onFinish, onDiscard }: Props)
       {minimal && !allDone && (
         <button onClick={handleFinish} className="w-full btn-ghost mt-4">Finish workout</button>
       )}
+
+      {/* PR celebration */}
+      <CelebrationModal
+        open={!!celebrate}
+        title={celebrate?.title ?? ""}
+        subtitle={celebrate?.subtitle}
+        emoji={celebrate?.emoji}
+        color={celebrate?.color}
+        onClose={() => setCelebrate(null)} />
+
+      {/* Post-session check-in */}
+      <AnimatePresence>
+        {postOpen && (
+          <motion.div
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
+            <motion.div
+              initial={{ scale: 0.95, y: 10 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.95, y: 10 }}
+              className="w-full max-w-lg glass rounded-2xl p-6 border border-lime-500/30 max-h-[90vh] overflow-y-auto">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-lime-500 to-emerald-500 flex items-center justify-center">
+                  <Trophy className="text-white" size={20} />
+                </div>
+                <div>
+                  <h3 className="text-xl font-bold text-white">Great session!</h3>
+                  <p className="text-xs text-gray-400">Quick check-in before we save</p>
+                </div>
+              </div>
+
+              {/* Rating */}
+              <div className="mb-4">
+                <p className="text-[10px] uppercase tracking-widest text-gray-500 mb-2">How'd it feel? <span className="text-white font-mono ml-1">{sessionRating}/10</span></p>
+                <div className="flex gap-1">
+                  {[1,2,3,4,5,6,7,8,9,10].map((n) => (
+                    <button key={n} onClick={() => setSessionRating(n)}
+                      className={`flex-1 h-9 rounded-lg text-xs font-bold transition ${sessionRating >= n
+                        ? "bg-gradient-to-t from-pink-500 to-amber-400 text-white"
+                        : "bg-white/5 text-gray-500 hover:bg-white/10"}`}>{n}</button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Joint pain */}
+              <div className="mb-4">
+                <p className="text-[10px] uppercase tracking-widest text-gray-500 mb-2 flex items-center gap-1">
+                  <AlertCircle size={11} className="text-red-400" /> Any joint pain?
+                </p>
+                <div className="flex flex-wrap gap-1.5">
+                  {["none","shoulders","elbows","wrists","neck","upper back","lower back","hips","knees","ankles","shins"].map((j) => (
+                    <button key={j} onClick={() => {
+                      if (j === "none") setJointPain([]);
+                      else { toggleJoint(j); setJointPain(p => p.filter(x => x !== "none")); }
+                    }}
+                      className={`px-2.5 py-1 rounded-lg text-[11px] capitalize border transition ${
+                        (j==="none" && jointPain.length===0) || jointPain.includes(j)
+                          ? "bg-red-500/20 text-red-200 border-red-500/40"
+                          : "bg-white/5 text-gray-400 border-white/5 hover:bg-white/10"
+                      }`}>{j}</button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Crowd + phase */}
+              <div className="grid grid-cols-2 gap-3 mb-4">
+                <div>
+                  <p className="text-[10px] uppercase tracking-widest text-gray-500 mb-2">Crowd</p>
+                  <select value={crowd} onChange={(e) => setCrowd(e.target.value as CrowdLevel | "")}
+                    className="input-base w-full text-sm">
+                    <option value="">—</option>
+                    <option value="empty">Empty</option>
+                    <option value="light">Light</option>
+                    <option value="moderate">Moderate</option>
+                    <option value="packed">Packed</option>
+                  </select>
+                </div>
+                <div>
+                  <p className="text-[10px] uppercase tracking-widest text-gray-500 mb-2">Phase</p>
+                  <select value={phase} onChange={(e) => setPhase(e.target.value as TrainingPhase | "")}
+                    className="input-base w-full text-sm">
+                    <option value="">—</option>
+                    <option value="bulking">Bulking</option>
+                    <option value="cutting">Cutting</option>
+                    <option value="maintenance">Maintenance</option>
+                    <option value="deload">Deload</option>
+                    <option value="peak">Peak</option>
+                  </select>
+                </div>
+              </div>
+
+              {/* Note */}
+              <textarea value={sessionNote} onChange={(e) => setSessionNote(e.target.value)}
+                placeholder="Notes for future you (how it felt, PRs, what sucked, what's next)..."
+                className="input-base w-full h-24 resize-none text-sm mb-4" />
+
+              <div className="flex gap-2 justify-end">
+                <button onClick={() => { finishSession(sessionId); setPostOpen(false); onFinish(); }}
+                  className="btn-ghost text-xs">Skip</button>
+                <button onClick={handleSubmitPost}
+                  className="btn-primary text-sm !bg-gradient-to-r !from-lime-500 !to-emerald-500">
+                  Save workout
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

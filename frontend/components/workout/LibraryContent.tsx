@@ -21,7 +21,7 @@
 import { useState, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  BookOpen, Dumbbell, Plus, Search, Trash2, X, Filter, Target, Sparkles,
+  BookOpen, Dumbbell, Plus, Search, Trash2, X, Filter, Target, Sparkles, History,
 } from "lucide-react";
 import { useStore } from "../../lib/store";
 import {
@@ -31,6 +31,7 @@ import type {
   WorkoutUnit, MuscleGroup, Equipment, Level, MovementPattern, WorkoutExercise,
 } from "../../lib/types";
 import MuscleHeatmap from "./MuscleHeatmap";
+import ExerciseHistoryDrawer from "./ExerciseHistoryDrawer";
 
 const UNITS: { id: WorkoutUnit; label: string }[] = [
   { id: "reps",    label: "Reps" },
@@ -75,6 +76,8 @@ export default function LibraryContent() {
   // quick-log inputs keyed by exerciseId
   const [logValue, setLogValue] = useState<Record<string, string>>({});
   const [logReps, setLogReps] = useState<Record<string, string>>({});
+  // history drawer
+  const [historyFor, setHistoryFor] = useState<WorkoutExercise | null>(null);
 
   // ----- derive hovered highlight -----
   const hoveredExercise = hoveredId ? exercises.find((e) => e.id === hoveredId) : null;
@@ -302,6 +305,7 @@ export default function LibraryContent() {
                   onQuickLog={() => quickLog(ex.id)}
                   onDelete={() => { if (confirm(`Delete exercise "${ex.name}"?`)) deleteExercise(ex.id); }}
                   onMuscleClick={(m) => setMuscleFilter((p) => p === m ? "all" : m)}
+                  onHistory={() => setHistoryFor(ex)}
                 />
               ))}
             </AnimatePresence>
@@ -317,6 +321,13 @@ export default function LibraryContent() {
           )}
         </div>
       </div>
+
+      {/* ---------- Exercise history drawer ---------- */}
+      <AnimatePresence>
+        {historyFor && (
+          <ExerciseHistoryDrawer exercise={historyFor} onClose={() => setHistoryFor(null)} />
+        )}
+      </AnimatePresence>
 
       {/* ---------- New exercise modal ---------- */}
       <AnimatePresence>
@@ -429,7 +440,7 @@ function ChipGroup({ label, value, onChange, options }:
   );
 }
 
-function ExerciseCard({ exercise: ex, pr, hovered, onHover, logValue, logReps, setLogValue, setLogReps, onQuickLog, onDelete, onMuscleClick }: {
+function ExerciseCard({ exercise: ex, pr, hovered, onHover, logValue, logReps, setLogValue, setLogReps, onQuickLog, onDelete, onMuscleClick, onHistory }: {
   exercise: WorkoutExercise;
   pr: ReturnType<typeof Object> | undefined;
   hovered: boolean;
@@ -440,6 +451,7 @@ function ExerciseCard({ exercise: ex, pr, hovered, onHover, logValue, logReps, s
   onQuickLog: () => void;
   onDelete: () => void;
   onMuscleClick: (m: MuscleGroup) => void;
+  onHistory: () => void;
 }) {
   const mg = ex.muscleGroup ? MUSCLE_GROUPS.find((m) => m.id === MUSCLE_FILTER_GROUP[ex.muscleGroup!] ?? ex.muscleGroup) : null;
   const accent = mg?.color ?? "#64748b";
@@ -489,10 +501,16 @@ function ExerciseCard({ exercise: ex, pr, hovered, onHover, logValue, logReps, s
             )}
           </div>
         </div>
-        <button onClick={onDelete}
-          className="p-1.5 rounded-lg text-gray-500 hover:text-red-400 hover:bg-red-500/10 opacity-0 group-hover:opacity-100 transition shrink-0">
-          <Trash2 size={14} />
-        </button>
+        <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition shrink-0">
+          <button onClick={onHistory} title="History"
+            className="p-1.5 rounded-lg text-gray-500 hover:text-violet-300 hover:bg-violet-500/10">
+            <History size={14} />
+          </button>
+          <button onClick={onDelete} title="Delete"
+            className="p-1.5 rounded-lg text-gray-500 hover:text-red-400 hover:bg-red-500/10">
+            <Trash2 size={14} />
+          </button>
+        </div>
       </div>
 
       {/* cues */}

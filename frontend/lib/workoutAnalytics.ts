@@ -437,6 +437,91 @@ export function computeStreak(sessions: WorkoutSession[], freezes = 0): { curren
   return { current: cur, longest };
 }
 
+// ---------- Next-workout suggestion ----------
+
+/**
+ * Recommend what to do today based on:
+ *   - Readiness score → intensity multiplier (deload / normal / PR day)
+ *   - Weekly volume per muscle → pick muscles that are undertrained (low volume)
+ *   - Last session's muscle groups → avoid repeating same muscles back-to-back
+ *   - Day of week → match routine if scheduled, otherwise suggest the weakest muscle
+ *
+ * Returns a human-readable suggestion + a recommended routine id (or null).
+ */
+export interface NextWorkoutSuggestion {
+  title: string;
+  reasoning: string;
+  routineId?: string;
+  focus?: MuscleGroup;
+  intensity: "deload" | "easy" | "normal" | "push" | "pr";
+}
+
+export function suggestNextWorkout(params: {
+  sessions: WorkoutSession[];
+  routines: WorkoutRoutine[];
+  exercises: WorkoutExercise[];
+  readinessScore?: number;
+  blockToExercise: (blockId: string) => WorkoutExercise | undefined;
+}): NextWorkoutSuggestion {
+  const { sessions, routines, exercises, readinessScore, blockToExercise } = params;
+  const finished = sessions.filter((s) => s.endedAt);
+  const last = finished[0];
+
+  // Decide intensity from readiness
+  let intensity: NextWorkoutSuggestion["intensity"] = "normal";
+  const score = readinessScore ?? 70;
+  if (shouldDeload(sessions)) intensity = "deload";
+  else if (score < 45) intensity = "easy";
+  else if (score < 65) intensity = "normal";
+  else if (score < 85) intensity = "push";
+  else intensity = "pr";
+
+  // If today has a scheduled routine, prefer that — with an intensity note.
+  const todaysRoutine = routines.find((r) => r.dayOfWeek === new Date().getDay());
+  if (todaysRoutine) {
+    const intensityNote =
+      intensity === "deload" ? "Deload week — cut volume 40% and weight 50%." :
+      intensity === "easy" ? "Readiness is low — take it light, focus on form." :
+      intensity === "push" ? "Readiness is high — push for a small PR or +2.5 kg." :
+      intensity === "pr" ? "You're primed — today is a PR day. Go for it." :
+      "Hit the programmed work as written.";
+    return {
+      title: todaysRoutine.name,
+      reasoning: intensityNote,
+      routineId: todaysRoutine.id,
+      intensity,
+    };
+  }
+
+  // Otherwise pick the muscle group with the least volume in the last 5 days,
+  // skipping anything hit hard in the last session.
+  const vol = weeklyMuscleVolume(sessions, blockToExercise, 5) as Record<MuscleGroup, number>;
+  const lastHit = new Set<MuscleGroup>();
+  if (last) {
+    last.sets.forEach((set) => {
+      const ex = blockToExercise(set.blockId);
+      if (!ex) return;
+      if (ex.muscleGroup) lastHit.add(MUSCLE_FILTER_GROUP[ex.muscleGroup]);
+    });
+  }
+  const priorityGroups: MuscleGroup[] = ["chest","back","legs","shoulders","core"];
+  let pick: MuscleGroup = "chest";
+  let bestScore = Infinity;
+  for (const g of priorityGroups) {
+    if (lastHit.has(g)) continue;
+    const v = vol[g] ?? 0;
+    if (v < bestScore) { bestScore = v; pick = g; }
+  }
+  const focusTitle = `Focus: ${pick}`;
+  const reasoning =
+    intensity === "deload" ? "Deload — active recovery, mobility, light volume." :
+    intensity === "easy" ? `${pick} is under-trained this week; take it light.` :
+    intensity === "push" ? `${pick} is under-trained — good day to push weight.` :
+    intensity === "pr" ? `${pick} is under-trained and readiness is high — PR day.` :
+    `${pick} is the most undertrained muscle group this week.`;
+  return { title: focusTitle, reasoning, focus: pick, intensity };
+}
+
 // ---------- Cali weakness analysis ----------
 // Map common fail reasons → accessory work recommendations.
 const WEAKNESS_RULES: { keywords: string[]; tip: string }[] = [
