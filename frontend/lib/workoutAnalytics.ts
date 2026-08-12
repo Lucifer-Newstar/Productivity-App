@@ -539,6 +539,65 @@ export function suggestNextWorkout(params: {
   return { title: focusTitle, reasoning, focus: pick, intensity };
 }
 
+// ---------- RPE auto-calibration ----------
+
+/**
+ * Given historical (weight, reps, RPE) triplets, compute a calibration factor
+ * that relates RPE to estimated % of 1RM for the user.
+ *
+ * Standard RPE table (Prilepin / table form):
+ *   RPE 10 = 100% of 1RM (0 RIR)
+ *   RPE 9  = 96%
+ *   RPE 8  = 92%
+ *   RPE 7  = 89%
+ *   RPE 6  = 86%
+ *
+ * We compare actual reps done at a given RPE against the standard table and
+ * return the mean error + a recommended personal multiplier.
+ */
+export const RPE_TO_PCT: Record<number, number> = {
+  10: 1.00, 9.5: 0.98, 9: 0.96, 8.5: 0.94, 8: 0.92,
+  7.5: 0.90, 7: 0.89, 6.5: 0.87, 6: 0.86,
+};
+export function pctFromRpe(rpe: number): number {
+  if (rpe >= 10) return 1.0;
+  if (rpe <= 6) return RPE_TO_PCT[6];
+  // interpolate
+  const lo = Math.floor(rpe * 2) / 2;
+  const hi = Math.ceil(rpe * 2) / 2;
+  if (lo === hi) return RPE_TO_PCT[lo] ?? 1;
+  return RPE_TO_PCT[lo] + (RPE_TO_PCT[hi] - RPE_TO_PCT[lo]) * ((rpe - lo) / (hi - lo));
+}
+
+export interface RpeCalibration {
+  samples: number;
+  meanError: number;   // (predicted% - actual%) — positive means standard table is optimistic
+  personalMultiplier: number;  // multiplier for pctFromRpe() to fit this user
+}
+export function calibrateRpe(sets: WorkoutSetLog[]): RpeCalibration {
+  // Compute best 1RM per block first
+  const blockBest: Record<string, number> = {};
+  sets.forEach((set) => {
+    if (!set.weight || set.value <= 0 || set.isWarmup) return;
+    const est = epley1RM(set.weight, set.value);
+    if (!blockBest[set.blockId] || est > blockBest[set.blockId]) blockBest[set.blockId] = est;
+  });
+  const errs: number[] = [];
+  sets.forEach((set) => {
+    if (!set.weight || set.value <= 0 || set.isWarmup) return;
+    if (set.rpe == null) return;
+    const best = blockBest[set.blockId];
+    if (!best) return;
+    const actualPct = set.weight / best;
+    const standardPct = pctFromRpe(set.rpe);
+    errs.push(standardPct - actualPct);
+  });
+  if (errs.length < 3) return { samples: errs.length, meanError: 0, personalMultiplier: 1 };
+  const mean = errs.reduce((n, e) => n + e, 0) / errs.length;
+  // If standard table predicts 92% but user actually lifts 95%, multiplier > 1
+  return { samples: errs.length, meanError: mean, personalMultiplier: 1 + mean };
+}
+
 // ---------- Cali weakness analysis ----------
 // Map common fail reasons → accessory work recommendations.
 const WEAKNESS_RULES: { keywords: string[]; tip: string }[] = [

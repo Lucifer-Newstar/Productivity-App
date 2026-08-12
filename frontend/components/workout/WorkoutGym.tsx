@@ -25,7 +25,7 @@ import {
   epley1RM, trainingMax, platesForKg, dbToBbEquivalent, bbToDbEquivalent,
   wilks, strengthToWeight, rirToRpe, projectAMRAP,
 } from "../../lib/workoutGym";
-import { maxHR, estimateLactateThreshold } from "../../lib/workoutAnalytics";
+import { maxHR, estimateLactateThreshold, calibrateRpe } from "../../lib/workoutAnalytics";
 
 export default function WorkoutGym() {
   const { workout } = useStore();
@@ -258,6 +258,12 @@ export default function WorkoutGym() {
               <h4 className="font-semibold text-white mb-3">Lactate Threshold Estimate</h4>
               <ThresholdCard />
             </div>
+
+            {/* RPE calibration */}
+            <div className="card md:col-span-2">
+              <h4 className="font-semibold text-white mb-3">RPE Calibration</h4>
+              <RpeCard sessions={workout.sessions} />
+            </div>
           </motion.div>
         )}
       </AnimatePresence>
@@ -356,7 +362,41 @@ function SymmetricChart({ sessions, exercises, routines }: any) {
   );
 }
 
-// ---------- Threshold card ----------
+// ---------- RPE calibration ----------
+function RpeCard({ sessions }: any) {
+  const allSets = sessions
+    .filter((s: any) => s.endedAt)
+    .flatMap((s: any) => s.sets.filter((set: any) => set.completed && !set.isWarmup));
+  const cal = calibrateRpe(allSets);
+  return (
+    <div>
+      {cal.samples < 3 ? (
+        <p className="text-sm text-gray-400">
+          Log at least <b className="text-white">3</b> sets with an RPE value to calibrate your personal RPE scale. We'll compare your actual weight × reps against the standard RPE table.
+        </p>
+      ) : (
+        <div className="grid grid-cols-3 gap-3 mb-3">
+          <div className="rounded-xl p-3 bg-white/5 border border-white/5">
+            <p className="text-[10px] text-gray-500 uppercase tracking-widest">Samples</p>
+            <p className="text-xl font-bold mt-0.5 font-mono text-violet-300">{cal.samples}</p>
+          </div>
+          <div className="rounded-xl p-3 bg-white/5 border border-white/5">
+            <p className="text-[10px] text-gray-500 uppercase tracking-widest">Mean error</p>
+            <p className="text-xl font-bold mt-0.5 font-mono text-amber-300">{(cal.meanError * 100).toFixed(1)}%</p>
+          </div>
+          <div className="rounded-xl p-3 bg-white/5 border border-white/5">
+            <p className="text-[10px] text-gray-500 uppercase tracking-widest">Multiplier</p>
+            <p className="text-xl font-bold mt-0.5 font-mono text-emerald-300">×{cal.personalMultiplier.toFixed(2)}</p>
+          </div>
+        </div>
+      )}
+      <p className="text-[10px] text-gray-500">
+        Positive error means the standard RPE table is slightly optimistic for you (you're stronger than it predicts), multiplier adjusts recommended weights upward accordingly.
+      </p>
+    </div>
+  );
+}
+
 function ThresholdCard() {
   const [age, setAge] = useState(25);
   const [trained, setTrained] = useState(true);
