@@ -23,6 +23,7 @@ Base URL: `http://localhost:4000/api`
 | GET    | `/exercises/:id`      | Get one                              |
 | PATCH  | `/exercises/:id`      | Update exercise                      |
 | DELETE | `/exercises/:id`      | Delete exercise                      |
+| GET    | `/exercises/by-muscle/:muscle` | Exercises targeting a muscle (primary OR secondary) |
 
 ## PRs
 
@@ -102,6 +103,12 @@ These endpoints run the same algorithms as the frontend but return JSON:
 | GET    | `/analytics/streak`         | { current, longest }                    |
 | GET    | `/analytics/onerm/:eid`     | Best 1RM for exercise                   |
 | GET    | `/analytics/wilks`          | Wilks coefficient (bodyweight, total, sex query params) |
+
+## Export
+
+| Method | Path             | Description                           |
+|--------|------------------|---------------------------------------|
+| GET    | `/export/csv`    | Download all completed sessions as CSV (same schema the frontend imports) |
 
 ## Sync
 

@@ -128,6 +128,46 @@ app.post("/api/sync", (req, res) => {
   res.json({ ok: true });
 });
 
+// ---------------- Specialized query endpoints ----------------
+
+// Exercises filtered by muscle group / equipment
+app.get("/api/exercises/by-muscle/:muscle", (req, res) => {
+  const m = req.params.muscle;
+  const out = Object.values(db.exercises).filter((e: any) =>
+    e.muscleGroup === m || (e.secondaryMuscles ?? []).includes(m),
+  );
+  res.json(out);
+});
+
+// CSV export — same format the frontend writes
+app.get("/api/export/csv", (_req, res) => {
+  const rows = [["type","date","name","set","value","unit","weight_kg","rir","rpe","duration_s","volume_kg","notes"]];
+  const exById = db.exercises as Record<string, any>;
+  for (const s of Object.values(db.sessions) as any[]) {
+    if (!s.endedAt) continue;
+    // resolve exercise from routine block, fall back to adHocBlocks
+    const routine = s.routineId ? (db.routines[s.routineId] as any) : null;
+    const adHoc = (s.adHocBlocks ?? []) as any[];
+    const blockMap = new Map<string, any>();
+    if (routine) for (const b of routine.blocks ?? []) blockMap.set(b.id, b);
+    for (const b of adHoc) blockMap.set(b.id, b);
+    for (const set of s.sets ?? []) {
+      const block = blockMap.get(set.blockId);
+      const ex = block?.exerciseId ? exById[block.exerciseId] : null;
+      rows.push(["strength", s.date, ex?.name ?? s.name, String(set.setIndex ?? ""),
+        String(set.value ?? ""), ex?.unit ?? "reps",
+        set.weight != null ? String(set.weight) : "",
+        set.rir != null ? String(set.rir) : "", set.rpe != null ? String(set.rpe) : "",
+        set.durationSeconds != null ? String(set.durationSeconds) : "",
+        String((set.weight ?? 0) * (set.value ?? 0)), set.notes ?? ""]);
+    }
+  }
+  const csv = rows.map((r) => r.map((c) => `"${String(c).replace(/"/g, '""')}"`).join(",")).join("\n");
+  res.setHeader("Content-Type", "text/csv");
+  res.setHeader("Content-Disposition", `attachment; filename="kaizen-${today()}.csv"`);
+  res.send(csv);
+});
+
 // ---------------- Analytics (same algorithms as frontend, simplified) ----------------
 
 // Epley 1RM
