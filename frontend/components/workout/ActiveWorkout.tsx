@@ -22,13 +22,14 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Play, Check, SkipForward, Maximize2, Minimize2, Hand, Flame, Trophy, Volume2, VolumeX,
-  X, AlertCircle,
+  X, AlertCircle, Clock,
 } from "lucide-react";
 import { useStore } from "../../lib/store";
 import { epley1RM, playBeep, suggestProgression } from "../../lib/workoutAnalytics";
 import type { WorkoutBlock, WorkoutExercise, StickingPoint, MentalState, CrowdLevel, TrainingPhase } from "../../lib/types";
 import Confetti from "./Confetti";
 import CelebrationModal from "./CelebrationModal";
+import ExerciseHistoryDrawer from "./ExerciseHistoryDrawer";
 
 interface Props {
   sessionId: string;
@@ -134,6 +135,8 @@ export default function ActiveWorkout({ sessionId, onFinish, onDiscard }: Props)
   const [phase, setPhase] = useState<TrainingPhase | "">("");
   // Celebration modals
   const [celebrate, setCelebrate] = useState<{ title: string; subtitle?: string; emoji: string; color: string } | null>(null);
+  // Per-exercise history drawer (opened from the current-exercise hero)
+  const [historyFor, setHistoryFor] = useState<WorkoutExercise | null>(null);
 
   // Reset inputs when position changes
   useEffect(() => {
@@ -424,9 +427,18 @@ export default function ActiveWorkout({ sessionId, onFinish, onDiscard }: Props)
               <p className="text-xs uppercase tracking-widest text-gray-400 mb-1">
                 {currentBlock.type === "cardio" ? "Cardio" : "Set"} {currentSetNum} of {currentBlock.sets}
               </p>
-              <h3 className={`${glove ? "text-4xl" : "text-3xl"} font-bold text-white mb-2`}>
-                {currentExercise?.name ?? currentBlock.label ?? "—"}
-              </h3>
+              <div className="flex items-center justify-center gap-2 mb-2">
+                <h3 className={`${glove ? "text-4xl" : "text-3xl"} font-bold text-white`}>
+                  {currentExercise?.name ?? currentBlock.label ?? "—"}
+                </h3>
+                {currentExercise && (
+                  <button onClick={() => setHistoryFor(currentExercise)}
+                    title="View history"
+                    className="p-1.5 rounded-lg bg-white/5 border border-white/10 text-gray-400 hover:text-violet-300 hover:border-violet-500/40">
+                    <Clock size={14} />
+                  </button>
+                )}
+              </div>
               {prFor && currentExercise && (
                 <p className="text-xs text-gray-400 mb-4">
                   PR: <span className="text-amber-400 font-semibold">
@@ -711,6 +723,13 @@ export default function ActiveWorkout({ sessionId, onFinish, onDiscard }: Props)
       {minimal && !allDone && (
         <button onClick={handleFinish} className="w-full btn-ghost mt-4">Finish workout</button>
       )}
+
+      {/* Per-exercise history drawer */}
+      <AnimatePresence>
+        {historyFor && (
+          <ExerciseHistoryDrawer exercise={historyFor} onClose={() => setHistoryFor(null)} />
+        )}
+      </AnimatePresence>
 
       {/* PR celebration */}
       <CelebrationModal

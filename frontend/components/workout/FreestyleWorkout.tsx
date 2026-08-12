@@ -18,7 +18,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Plus, Search, Play, Check, SkipForward, X, Trophy, Volume2, VolumeX,
-  Hand, Maximize2, Minimize2, Flame, Dumbbell, Trash2,
+  Hand, Maximize2, Minimize2, Flame, Dumbbell, Trash2, Clock,
 } from "lucide-react";
 import { useStore } from "../../lib/store";
 import { epley1RM, playBeep, suggestProgression } from "../../lib/workoutAnalytics";
@@ -29,6 +29,7 @@ import type {
 import { MUSCLE_GROUPS, EQUIPMENT } from "../../lib/types";
 import Confetti from "./Confetti";
 import CelebrationModal from "./CelebrationModal";
+import ExerciseHistoryDrawer from "./ExerciseHistoryDrawer";
 
 interface Props {
   sessionId: string;
@@ -126,6 +127,7 @@ export default function FreestyleWorkout({ sessionId, onFinish, onDiscard }: Pro
   const [phase, setPhase] = useState<TrainingPhase | "">("");
   const [celebrate, setCelebrate] = useState<{ title: string; subtitle?: string; emoji: string; color: string } | null>(null);
   const [showConfetti, setShowConfetti] = useState(false);
+  const [historyFor, setHistoryFor] = useState<WorkoutExercise | null>(null);
 
   // ---- Derived current exercise ----
   const currentBlock = blocks.find((b) => b.id === currentBlockId) ?? null;
@@ -370,7 +372,13 @@ export default function FreestyleWorkout({ sessionId, onFinish, onDiscard }: Pro
           ) : (
             <>
               <p className="text-xs uppercase tracking-widest text-gray-400 mb-1">Set {nextSetNum}</p>
-              <h3 className={`${glove ? "text-4xl" : "text-3xl"} font-bold text-white mb-2`}>{currentExercise.name}</h3>
+              <div className="flex items-center justify-center gap-2 mb-2">
+                <h3 className={`${glove ? "text-4xl" : "text-3xl"} font-bold text-white`}>{currentExercise.name}</h3>
+                <button onClick={() => setHistoryFor(currentExercise)} title="View history"
+                  className="p-1.5 rounded-lg bg-white/5 border border-white/10 text-gray-400 hover:text-violet-300 hover:border-violet-500/40">
+                  <Clock size={14} />
+                </button>
+              </div>
               {prFor && (
                 <p className="text-xs text-gray-400 mb-3">
                   PR: <span className="text-amber-400 font-semibold">
@@ -493,6 +501,11 @@ export default function FreestyleWorkout({ sessionId, onFinish, onDiscard }: Pro
             onClose={() => setPickerOpen(false)}
           />
         )}
+      </AnimatePresence>
+
+      {/* Per-exercise history */}
+      <AnimatePresence>
+        {historyFor && <ExerciseHistoryDrawer exercise={historyFor} onClose={() => setHistoryFor(null)} />}
       </AnimatePresence>
 
       {/* PR celebration */}

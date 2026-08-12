@@ -26,7 +26,7 @@ Last audited against the 149-feature checklist (35 cali + 45 gym + 22 cardio +
 |13 | Ring Height Tracker | ✅ `ringHeightCm` field exists on attempts |
 |14 | Unlock Checklist | ✅ 7 predefined milestones |
 |15 | Pseudo-Planche Tracker | ✅ `plancheEntries[]` — hand distance + hold seconds, persisted |
-|16 | Movement Pattern Library | ✅ Push/Pull/Squat/Hinge/Carry/Rotation/Gait/Isometric tags on exercises + chains |
+|16 | Movement Pattern Library | ✅ Push/Pull/Squat/Hinge/Carry/Rotation/Gait/Isometric tags on exercises + chains + dedicated Pattern Library browser panel on the Library page with descriptions and per-pattern exercise counts; click a pattern card to filter |
 |17 | GtG Advanced (timeline + total vol) | ✅ Hourly grid + daily total reps; per-set timestamps implicit from hour grid |
 |18 | GtG Streak | ✅ Day counter |
 |19 | Skill Difficulty Rating | ✅ 1–10 stars on each progression |
@@ -75,7 +75,7 @@ Last audited against the 149-feature checklist (35 cali + 45 gym + 22 cardio +
 |22 | Pause Variant Logger | ✅ `isPaused` + `pauseSec` (1/2/3/5) |
 |23 | Belt/Knee Sleeves Logger | ✅ Per-set toggles |
 |24 | Micro-loading | ✅ Plate calculator has 0.5/0.25 kg plates |
-|25 | AMRAP Last Set History | 🟡 History exists in PR history table; dedicated AMRAP-only view pending |
+|25 | AMRAP Last Set History | ✅ Per-session AMRAP max-reps bar chart in the Exercise History drawer (last 15 sessions with an AMRAP set tagged) |
 |26 | Rep Quality Rating | ✅ perfect/good/decent/bad per set |
 |27 | Volume Calculator | ✅ Sets × reps × weight aggregated per session/week |
 |28 | Intensity Calculator | ✅ `weeklyStats().avgIntensity` = mean % of 1RM across working sets |
@@ -218,4 +218,8 @@ model (89-region anatomical SVG).
 - ✅ **Hierarchical skill tree SVG**: branched visualization on the Skills page. Each skill is a vertical branch with progression nodes bottom-to-top, completed nodes filled lime with checkmark, the next-in-line node gets a dashed amber ring, future nodes are dim. A gradient bar fills the trunk up to the highest completed progression. Skill names label the top node. Nodes are clickable to toggle.
 - ✅ **CSV import**: new `importSession()` store action inserts a fully-formed session into state (with ad-hoc block resolution, totalVolumeKg, streak recompute). The Tools page now has Import CSV next to Export: parses the same CSV columns the export writes, groups rows by date into sessions, auto-creates unknown exercises as "misc", assigns ad-hoc block ids per exercise, and commits one session per date via `importSession()`.
 - ✅ **Data card** on Tools page with Import/Export CSV buttons.
+- ✅ **AMRAP history chart** in Exercise History drawer: per-session max-reps bar chart for sessions with AMRAP-flagged sets (last 15), hover shows rep count.
+- ✅ **In-session history button** (clock icon) in the current-exercise hero of both ActiveWorkout and FreestyleWorkout opens the per-exercise drawer mid-session without interrupting the timer.
+- ✅ **Movement Pattern Library browser** on Library page: 9-pattern grid card with one-line descriptions and per-pattern exercise counts; clicking a pattern card filters the grid.
+- ✅ **Cali unlock celebration**: added 🎉 lime "Skill milestone" celebration firing via the generic CelebrationModal when a progression is toggled to 100% of a skill (handled in WorkoutSkills).
 

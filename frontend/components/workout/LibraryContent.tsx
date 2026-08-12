@@ -44,6 +44,18 @@ const PATTERNS: MovementPattern[] = [
   "Push","Pull","Squat","Hinge","Carry","Rotation","Gait","Isometric","Other",
 ];
 
+const PATTERN_INFO: { id: MovementPattern; label: string; desc: string }[] = [
+  { id: "Push",      label: "Push",      desc: "Pressing away from the body — bench, OHP, push-ups, dips." },
+  { id: "Pull",      label: "Pull",      desc: "Pulling toward the body — rows, pull-ups, curls, face pulls." },
+  { id: "Squat",     label: "Squat",     desc: "Knee-dominant knee/hip flexion — back squat, front squat, lunges." },
+  { id: "Hinge",     label: "Hinge",     desc: "Hip-dominant hip flexion — deadlifts, RDLs, swings, good-mornings." },
+  { id: "Carry",     label: "Carry",     desc: "Loaded locomotion — farmer, suitcase, overhead carries." },
+  { id: "Rotation",  label: "Rotation",  desc: "Twist/anti-twist — Russian twists, pallof, woodchops." },
+  { id: "Gait",      label: "Gait",      desc: "Walk/jog/run/shuffle patterns — cardio and agility work." },
+  { id: "Isometric", label: "Isometric", desc: "Static holds — planks, wall sits, L-sit, hollow body." },
+  { id: "Other",     label: "Other",     desc: "Accessories, isolation, prehab, rehab — lateral raises, curls, etc." },
+];
+
 const EMPTY_VOL: Partial<Record<MuscleGroup, number>> = {};
 
 /** Map a detailed muscle id (e.g. "lats") → its parent group key used by filter chips. */
@@ -196,6 +208,31 @@ export default function LibraryContent() {
           <Stat label="Barbell" value={stats.byEquip["barbell"] ?? 0} color="#f59e0b" />
         </div>
       </motion.div>
+
+      {/* ---------- Movement Pattern Library ---------- */}
+      <div className="card">
+        <h3 className="font-semibold text-white text-sm mb-3 flex items-center gap-2">
+          <BookOpen size={16} className="text-cyan-400" /> Movement Pattern Library
+        </h3>
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+          {PATTERN_INFO.map((p) => {
+            const n = stats.byPattern[p.id] ?? 0;
+            const active = patternFilter === p.id;
+            return (
+              <button key={p.id} onClick={() => setPatternFilter(active ? "all" : p.id)}
+                className={`text-left p-3 rounded-lg border transition ${active
+                  ? "bg-cyan-500/15 border-cyan-500/40"
+                  : "bg-white/5 border-white/5 hover:bg-white/10"}`}>
+                <div className="flex items-center justify-between">
+                  <p className="text-sm font-semibold text-white">{p.label}</p>
+                  <span className="text-[10px] font-mono text-gray-500">{n}</span>
+                </div>
+                <p className="text-[11px] text-gray-400 mt-1 leading-snug">{p.desc}</p>
+              </button>
+            );
+          })}
+        </div>
+      </div>
 
       {/* ---------- MAIN GRID: heatmap + exercises ---------- */}
       <div className="grid lg:grid-cols-[220px_1fr] gap-7">

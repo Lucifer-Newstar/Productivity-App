@@ -30,6 +30,7 @@ interface SetPoint {
   value: number;
   weight?: number;
   reps: number;
+  isAMRAP?: boolean;
 }
 
 export default function ExerciseHistoryDrawer({ exercise, onClose }: Props) {
@@ -62,7 +63,7 @@ export default function ExerciseHistoryDrawer({ exercise, onClose }: Props) {
         const w = set.weight ?? 0;
         const reps = set.value;
         const v = exercise.unit === "kg" && w > 0 ? epley1RM(w, reps) : reps;
-        const point: SetPoint = { date: session.date, set, value: v, weight: w, reps };
+        const point: SetPoint = { date: session.date, set, value: v, weight: w, reps, isAMRAP: !!set.isAMRAP };
         if (v > bestValue) { bestValue = v; bestSet = point; }
         totalVol += w * reps;
         setCount += 1;
@@ -132,6 +133,20 @@ export default function ExerciseHistoryDrawer({ exercise, onClose }: Props) {
     if (entries.length < 2) return null;
     return entries;
   }, [points, exercise.unit]);
+
+  // AMRAP history: max reps achieved per session at any logged weight where isAMRAP=true.
+  const amrapSeries = useMemo(() => {
+    const amraps = points.filter((p) => p.isAMRAP);
+    if (amraps.length < 1) return null;
+    // Group by date: take max reps for the day.
+    const map = new Map<string, number>();
+    amraps.forEach((p) => {
+      const cur = map.get(p.date) ?? 0;
+      if (p.reps > cur) map.set(p.date, p.reps);
+    });
+    const entries = Array.from(map.entries()).sort((a, b) => a[0].localeCompare(b[0])).slice(-15);
+    return entries;
+  }, [points]);
 
   return (
     <AnimatePresence>
@@ -220,6 +235,29 @@ export default function ExerciseHistoryDrawer({ exercise, onClose }: Props) {
                   <circle key={i} cx={d.x} cy={d.y} r={d.rpe >= 9 ? 4 : 3} fill={d.rpe >= 9 ? "#ef4444" : d.rpe >= 8 ? "#f59e0b" : "#a3e635"} />
                 ))}
               </svg>
+            </div>
+          )}
+
+          {/* AMRAP history */}
+          {amrapSeries && (
+            <div className="card !p-4 mb-5">
+              <p className="text-[10px] uppercase tracking-widest text-gray-500 mb-2">AMRAP sets (max reps/session)</p>
+              <div className="flex items-end gap-1 h-16">
+                {amrapSeries.map(([date, reps]) => {
+                  const max = Math.max(...amrapSeries.map(([, r]) => r));
+                  const h = max > 0 ? (reps / max) * 50 : 0;
+                  return (
+                    <div key={date} className="flex-1 flex flex-col items-center justify-end group">
+                      <div className="text-[8px] text-pink-300 mb-0.5 opacity-0 group-hover:opacity-100">{reps}</div>
+                      <div className="w-full rounded-t bg-gradient-to-t from-pink-500 to-amber-400" style={{ height: `${h}px` }} />
+                    </div>
+                  );
+                })}
+              </div>
+              <div className="flex justify-between text-[9px] text-gray-500 mt-1">
+                <span>{amrapSeries[0][0].slice(5)}</span>
+                <span>{amrapSeries[amrapSeries.length-1][0].slice(5)}</span>
+              </div>
             </div>
           )}
 

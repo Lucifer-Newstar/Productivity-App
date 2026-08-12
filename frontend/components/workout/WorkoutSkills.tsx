@@ -13,6 +13,7 @@ import { useMemo, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Plus, Trash2, Check, Target, ChevronDown, GitBranch } from "lucide-react";
 import { useStore } from "../../lib/store";
+import CelebrationModal from "./CelebrationModal";
 
 export default function WorkoutSkills() {
   const { workout, addSkill, deleteSkill, addProgression, toggleProgressionDone, deleteProgression, updateProgression } = useStore();
@@ -23,10 +24,24 @@ export default function WorkoutSkills() {
   // Inline add-progression form per skill
   const [newProg, setNewProg] = useState<Record<string, string>>({});
 
+  const [skillCeleb, setSkillCeleb] = useState<{ title: string; subtitle?: string } | null>(null);
+
   const createSkill = () => {
     if (!newSkillName.trim()) return;
     addSkill(newSkillName.trim());
     setNewSkillName("");
+  };
+
+  // Wrap toggle to fire a celebration when the final progression is completed.
+  const handleToggle = (skillId: string, progId: string) => {
+    const skill = workout.skills.find((s) => s.id === skillId);
+    const p = skill?.progressions.find((pp) => pp.id === progId);
+    const willComplete = p && !p.done && skill
+      && skill.progressions.filter((pp) => pp.id !== progId).every((pp) => pp.done);
+    toggleProgressionDone(skillId, progId);
+    if (willComplete && skill) {
+      setSkillCeleb({ title: `Mastered: ${skill.name}`, subtitle: "All progressions complete!" });
+    }
   };
 
   /** Total completion across all skills for the hero tree. */
@@ -49,7 +64,7 @@ export default function WorkoutSkills() {
       </div>
 
       {/* Skill tree overview: branched SVG viz, one branch per skill */}
-      <SkillTree />
+      <SkillTree onToggle={handleToggle} />
 
       {/* New skill form */}
       <form onSubmit={(e) => { e.preventDefault(); createSkill(); }} className="card flex items-center gap-2">
@@ -125,7 +140,7 @@ export default function WorkoutSkills() {
                         {skill.progressions.map((p, i) => (
                           <div key={p.id} className="group flex items-center gap-3 p-2 rounded-lg hover:bg-black/[0.03] dark:hover:bg-white/5">
                             <button
-                              onClick={() => toggleProgressionDone(skill.id, p.id)}
+                              onClick={() => handleToggle(skill.id, p.id)}
                               className={`w-6 h-6 rounded-md border-2 flex items-center justify-center shrink-0 transition ${
                                 p.done
                                   ? "bg-gradient-to-br from-accent to-accent-cyan border-transparent"
@@ -212,6 +227,14 @@ export default function WorkoutSkills() {
           </div>
         )}
       </div>
+
+      <CelebrationModal
+        open={!!skillCeleb}
+        title={skillCeleb?.title ?? ""}
+        subtitle={skillCeleb?.subtitle}
+        emoji="🎉"
+        color="#a3e635"
+        onClose={() => setSkillCeleb(null)} />
     </div>
   );
 }
@@ -220,8 +243,8 @@ export default function WorkoutSkills() {
  *  circular nodes arranged bottom-to-top (basics at the bottom, master skill at
  *  the top). Completed nodes are filled with gradient, current gets a pulsing
  *  ring, future nodes are dim. Clicking a node toggles it (mirrors the list UI). */
-function SkillTree() {
-  const { workout, toggleProgressionDone } = useStore();
+function SkillTree({ onToggle }: { onToggle: (skillId: string, progId: string) => void }) {
+  const { workout } = useStore();
   const skills = workout.skills;
   if (skills.length === 0) return null;
 
@@ -265,7 +288,7 @@ function SkillTree() {
                   const isDone = p.done;
                   const isCurrent = !isDone && (pi === 0 || skill.progressions[pi - 1]?.done);
                   return (
-                    <g key={p.id} style={{ cursor: "pointer" }} onClick={() => toggleProgressionDone(skill.id, p.id)}>
+                    <g key={p.id} style={{ cursor: "pointer" }} onClick={() => onToggle(skill.id, p.id)}>
                       <circle cx={cx} cy={cy} r={NODE_R * 0.4} fill="#0b0b10" />
                       <circle cx={cx} cy={cy} r={NODE_R * 0.6}
                         fill={isDone ? "url(#st-node)" : isCurrent ? "transparent" : "#ffffff08"}
