@@ -180,8 +180,18 @@ Last audited against the 149-feature checklist (35 cali + 45 gym + 22 cardio +
 
 All of the "Ultimate Workout App Checklist" tier-0 items are shipped: PRs with
 history + 1RM, skills/progressions, multi-unit exercises (reps / seconds /
-meters / kg) with equipment/level filters, schedule w/ sets × reps, per-set
+meters / kg) with equipment/level/pattern filters, schedule w/ sets × reps, per-set
 timer + rest timer w/ beep, RIR, 7-day muscle heatmap, CSV export, warm-up
 generator, cooldown, achievement badges with confetti, streaks, readiness,
 dark mode, glove mode, minimal mode, one-thumb nav during sessions, 3D muscle
 model (89-region anatomical SVG).
+
+## Updated this session
+
+- ✅ **Real sub-pages**: `/workout/overview`, `/workout/library`, `/workout/calisthenics`, `/workout/gym`, `/workout/cardio`, `/workout/prs`, `/workout/skills`, `/workout/schedule`, `/workout/tools` — each is its own file in `pages/workout/` using the `WorkoutPage` HOC with `fullScreen = true`; index redirects to `/overview`. AnimatePresence cross-fades between them; left-rail + mobile bottom-tab nav uses `router.push` with `scroll:false` for instant feel.
+- ✅ **Expanded exercise library**: ~120 seeded movements across chest / back / shoulders / arms / legs / core / cali skills / cardio. Each tagged with primary + secondary muscles, equipment, level, movement pattern, and 2–4 form cues. Replaces the previous 15-exercise seed.
+- ✅ **Mini muscle-map on the Library**: compact (200px) sticky sidebar rendering of the anatomical SVG. Clicking a region filters the grid to exercises targeting that muscle (primary OR secondary). Hovering an exercise card highlights its primary muscle on the map via the `highlight` prop. Quick-filter chips + equipment/level/pattern chips + search sit below.
+- ✅ **Back muscle SVG bug fixed**: `<g transform="translate(-34,0)">` on the back group + widened viewBox `-8 -28 48 125` so back muscles (authored at x≈32..67) render in frame.
+- ✅ **UI comfort pass**: cards bumped to p-6 with gap-7 between sections, hero panels have 8 px internal padding, larger 28px hero icons, ambient colored blobs tuned, hover glow on exercise cards matches the muscle color, transitions 0.2–0.28s eased.
+- ✅ **Backend** Express server (port 4000): `/api/health`, full CRUD on `/api/exercises`, session helpers (`/api/sessions/:id/sets` auto-tallies volume; `PATCH /api/sessions/:id/finish` sets duration), `/api/analytics/*`, `/api/sync`. CORS open to :3000. `tsc` passes.
+
