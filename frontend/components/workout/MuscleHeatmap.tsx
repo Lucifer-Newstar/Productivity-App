@@ -19,8 +19,11 @@
 
 import { useMemo, useState } from "react";
 import { motion } from "framer-motion";
-import { FRONT_MUSCLES, BACK_MUSCLES } from "body-muscles";
-import type { MuscleDef } from "body-muscles";
+// Inlined from body-muscles@1.0.0 (Apache-2.0) — see ./body-muscles-data.ts.
+// We keep the data next to the component to avoid "module not found" errors
+// when someone pulls the repo without running `npm install` first.
+import { FRONT_MUSCLES, BACK_MUSCLES } from "./body-muscles-data";
+import type { MuscleDef } from "./body-muscles-data";
 import type { MuscleGroup } from "../../lib/types";
 import { MUSCLE_FILTER_GROUP } from "../../lib/types";
 
