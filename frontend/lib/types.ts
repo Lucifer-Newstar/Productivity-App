@@ -105,16 +105,22 @@ export type WorkoutUnit = "reps" | "seconds" | "meters" | "kg";
 // Equipment required (filter chip).
 export type Equipment =
   | "bodyweight" | "barbell" | "dumbbell" | "kettlebell"
-  | "cable" | "machine" | "bands" | "cardio";
+  | "cable" | "machine" | "bands" | "cardio"
+  | "sandbag" | "sled" | "medicine-ball" | "foam-roll" | "misc";
 export const EQUIPMENT: { id: Equipment; label: string }[] = [
-  { id: "bodyweight", label: "Bodyweight" },
-  { id: "barbell",    label: "Barbell" },
-  { id: "dumbbell",   label: "Dumbbell" },
-  { id: "kettlebell", label: "Kettlebell" },
-  { id: "cable",      label: "Cable" },
-  { id: "machine",    label: "Machine" },
-  { id: "bands",      label: "Bands" },
-  { id: "cardio",     label: "Cardio" },
+  { id: "bodyweight",    label: "Bodyweight" },
+  { id: "barbell",       label: "Barbell" },
+  { id: "dumbbell",      label: "Dumbbell" },
+  { id: "kettlebell",    label: "Kettlebell" },
+  { id: "cable",         label: "Cable" },
+  { id: "machine",       label: "Machine" },
+  { id: "bands",         label: "Bands" },
+  { id: "cardio",        label: "Cardio" },
+  { id: "sandbag",       label: "Sandbag" },
+  { id: "sled",          label: "Sled" },
+  { id: "medicine-ball", label: "Medicine Ball" },
+  { id: "foam-roll",     label: "Foam Roller" },
+  { id: "misc",          label: "Other" },
 ];
 
 // Experience level (filter chip).
