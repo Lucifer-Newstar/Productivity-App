@@ -292,6 +292,7 @@ export interface WorkoutBodyweight {
 }
 
 // Workout UI preferences.
+export type TrainingPhase = "bulking" | "cutting" | "maintenance" | "deload" | "peak";
 export interface WorkoutSettings {
   gloveMode: boolean;        // giant buttons for chalky fingers
   minimalMode: boolean;      // hide everything except current set + timer
@@ -299,6 +300,7 @@ export interface WorkoutSettings {
   restSecondsDefault: number;
   streakFreezes: number;     // Duolingo-style freezes earned/available
   units: "kg" | "lb";
+  phase?: TrainingPhase;     // current training block
 }
 
 // A completed (or in-progress) session.
@@ -316,6 +318,14 @@ export interface WorkoutSession {
   readinessScore?: number;
   warmup?: string[];
   cooldown?: MuscleGroup[];
+  // Extended per-session metadata
+  playlist?: string;
+  crowdLevel?: "empty" | "light" | "moderate" | "packed";
+  phase?: TrainingPhase;
+  rating?: number;            // 1-10
+  isDeload?: boolean;
+  isRestDay?: boolean;
+  bodyweightKg?: number;
 }
 
 // Root workout state.
