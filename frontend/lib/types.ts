@@ -1,21 +1,20 @@
 /**
  * Shared type definitions for the Kaizen app.
  *
- * - Core domain types (Task, Note, Space) power the main productivity features
- * - Career-specific types (CareerTrack, CareerConcept, CareerGoal, etc.)
- *   are used by the /career page.
- * - The SPACES constant is the single source of truth for the five life spaces
- *   (Projects, Workout, Career, Entertainment, Health) that tasks are scoped to.
+ * - Core: Task, Note, Space, Priority, SPACES
+ * - Career: tracks/concepts/notes/goals/achievements
+ * - Workout: full-featured tracker (exercises, PRs, skills, routines,
+ *   sessions, readiness, badges, bodyweight, settings) with multi-unit
+ *   exercises, RIR logging, equipment/level filters, and a muscle-group
+ *   heatmap.
  */
 
-// Priority level for tasks — controls badge color & sort weight
+// ---------------- Core ----------------
+
 export type Priority = "low" | "medium" | "high";
 
-// The five life "spaces" that own tasks and their own pages
 export type SpaceId = "projects" | "workout" | "career" | "entertainment" | "health";
 
-// Every top-level view routable from the sidebar.
-// Core tools + the five spaces.
 export type View =
   | "dashboard"
   | "tasks"
@@ -25,7 +24,6 @@ export type View =
   | "calendar"
   | SpaceId;
 
-// A to-do item. Belongs to exactly one space via `space`.
 export interface Task {
   id: string;
   title: string;
@@ -36,7 +34,6 @@ export interface Task {
   createdAt: number;
 }
 
-// Sticky note from the Notes page.
 export interface Note {
   id: string;
   title: string;
@@ -46,8 +43,6 @@ export interface Note {
   updatedAt: number;
 }
 
-// Metadata for a space (color, emoji, display name) used throughout the UI
-// to tint badges, headers, cards and gradients.
 export interface Space {
   id: SpaceId;
   name: string;
@@ -63,52 +58,22 @@ export const SPACES: Space[] = [
   { id: "health",        name: "Health",        color: "#a3e635", emoji: "❤️" },
 ];
 
-// ---------------- Career domain ----------------
+// ---------------- Career ----------------
 
-// A career "track" is a path like DevOps, SRE, Backend, etc.
-// Each track owns its own roadmap (concepts → sub-concepts), notes, and resume bullets.
 export type CareerTrackId = string;
 
-// A single checkable sub-concept nested under a CareerConcept.
-// e.g. under the "Networking" concept you might have "TCP/IP", "DNS", "HTTP/TLS".
-export interface CareerSubConcept {
-  id: string;
-  title: string;
-  done: boolean;
-}
-
-// A top-level roadmap concept (e.g. "Linux Fundamentals") containing an ordered
-// checklist of sub-concepts. Rendered as an expandable section with its own progress.
-export interface CareerConcept {
-  id: string;
-  title: string;
-  subConcepts: CareerSubConcept[];
-}
-
-// Free-form note scoped to a specific track (interview prep, reading, etc.)
-export interface CareerNote {
-  id: string;
-  title: string;
-  content: string;
-  updatedAt: number;
-}
-
-// A single resume bullet point under a track.
-export interface CareerBullet {
-  id: string;
-  text: string;
-}
-
+export interface CareerSubConcept { id: string; title: string; done: boolean; }
+export interface CareerConcept    { id: string; title: string; subConcepts: CareerSubConcept[]; }
+export interface CareerNote       { id: string; title: string; content: string; updatedAt: number; }
+export interface CareerBullet     { id: string; text: string; }
 export interface CareerTrack {
   id: CareerTrackId;
   name: string;
   color: string;
-  concepts: CareerConcept[];     // roadmap hierarchy: concepts -> sub-concepts
+  concepts: CareerConcept[];
   notes: CareerNote[];
   resumeBullets: CareerBullet[];
 }
-
-// A high-level goal, optionally tied to a track and a deadline.
 export interface CareerGoal {
   id: string;
   title: string;
@@ -117,65 +82,105 @@ export interface CareerGoal {
   done: boolean;
   deadline?: string;
 }
-
-// Celebrated win (internship, certification, course completion, etc.)
-// Shown in the Achievement Vault timeline.
 export interface CareerAchievement {
   id: string;
   title: string;
   description?: string;
-  date: string;           // ISO yyyy-mm-dd
-  icon: string;           // emoji
+  date: string;
+  icon: string;
   trackId?: CareerTrackId;
 }
-
-// Root career state persisted to localStorage under `kaizen.career`.
 export interface CareerState {
   tracks: CareerTrack[];
   goals: CareerGoal[];
   achievements: CareerAchievement[];
-  linkedin: string;       // LinkedIn profile URL (portfolio is placeholder)
+  linkedin: string;
 }
 
-// ---------------- Workout domain ----------------
+// ---------------- Workout ----------------
 
-// Measurement unit for an exercise — determines how we record progress.
-// - reps:    count of repetitions (e.g. pull-ups, push-ups)
-// - seconds: timed duration (e.g. plank, treadmill, wall sit)
-// - meters:  distance (e.g. running, rowing, swimming)
-// - kg:      weight lifted — stored alongside reps (compound lifts)
+// Measurement unit for an exercise.
 export type WorkoutUnit = "reps" | "seconds" | "meters" | "kg";
 
-// Muscle groups used to tag exercises (for filtering/color coding)
-export type MuscleGroup = "chest" | "back" | "legs" | "shoulders" | "arms" | "core" | "cardio" | "other";
+// Equipment required (filter chip).
+export type Equipment =
+  | "bodyweight" | "barbell" | "dumbbell" | "kettlebell"
+  | "cable" | "machine" | "bands" | "cardio";
+export const EQUIPMENT: { id: Equipment; label: string }[] = [
+  { id: "bodyweight", label: "Bodyweight" },
+  { id: "barbell",    label: "Barbell" },
+  { id: "dumbbell",   label: "Dumbbell" },
+  { id: "kettlebell", label: "Kettlebell" },
+  { id: "cable",      label: "Cable" },
+  { id: "machine",    label: "Machine" },
+  { id: "bands",      label: "Bands" },
+  { id: "cardio",     label: "Cardio" },
+];
 
+// Experience level (filter chip).
+export type Level = "beginner" | "intermediate" | "advanced";
+export const LEVELS: { id: Level; label: string }[] = [
+  { id: "beginner",     label: "Beginner" },
+  { id: "intermediate", label: "Intermediate" },
+  { id: "advanced",     label: "Advanced" },
+];
+
+// Muscle groups used for tagging AND for the anatomical heatmap.
+// Coarse filter groups (chest/back/legs/shoulders/arms/core) are also valid as
+// tags — they alias to the heatmap regions via MUSCLE_FILTER_GROUP below.
+export type MuscleGroup =
+  // coarse filter-aliases (kept for backward compat with seed data & old components)
+  | "chest" | "back" | "legs" | "shoulders" | "arms" | "core"
+  // fine-grained heatmap regions
+  | "upperChest"
+  | "abs" | "obliques"
+  | "biceps" | "triceps" | "forearms"
+  | "frontDelt" | "sideDelt" | "rearDelt" | "traps"
+  | "lats" | "upperBack" | "lowerBack"
+  | "quads" | "hamstrings" | "glutes" | "calves"
+  | "cardio" | "other";
+
+// Human-friendly grouping + colour for the muscle-group filter chips. The first
+// column is the *chip id*; fine-grained muscles map back to these via
+// MUSCLE_FILTER_GROUP.
 export const MUSCLE_GROUPS: { id: MuscleGroup; label: string; color: string }[] = [
   { id: "chest",     label: "Chest",     color: "#ec4899" },
   { id: "back",      label: "Back",      color: "#8b5cf6" },
-  { id: "legs",      label: "Legs",      color: "#06b6d4" },
   { id: "shoulders", label: "Shoulders", color: "#f59e0b" },
   { id: "arms",      label: "Arms",      color: "#a3e635" },
   { id: "core",      label: "Core",      color: "#f43f5e" },
+  { id: "legs",      label: "Legs",      color: "#06b6d4" },
   { id: "cardio",    label: "Cardio",    color: "#ef4444" },
   { id: "other",     label: "Other",     color: "#64748b" },
 ];
+// Internal expanded groups for heatmap colours; still map to one of the
+// above filter chips via `muscleFilterGroup` below.
+export const HEATMAP_MUSCLES: MuscleGroup[] = [
+  "chest","upperChest","abs","obliques","biceps","triceps","forearms",
+  "shoulders","frontDelt","sideDelt","rearDelt","traps",
+  "lats","upperBack","lowerBack",
+  "quads","hamstrings","glutes","calves","cardio",
+];
 
-// An exercise definition from the user's library (user-created).
-// e.g. { name: "Bench Press", unit: "kg", muscleGroup: "chest" }
-export interface WorkoutExercise {
-  id: string;
-  name: string;
-  unit: WorkoutUnit;
-  muscleGroup?: MuscleGroup;
-  notes?: string;
-  createdAt: number;
-}
+// Map detailed muscles (and coarse aliases) back to their filter-chip id.
+export const MUSCLE_FILTER_GROUP: Record<MuscleGroup, MuscleGroup> = {
+  chest: "chest", upperChest: "chest",
+  abs: "core", obliques: "core", core: "core",
+  biceps: "arms", triceps: "arms", forearms: "arms", arms: "arms",
+  shoulders: "shoulders", frontDelt: "shoulders", sideDelt: "shoulders", rearDelt: "shoulders", traps: "shoulders",
+  lats: "back", upperBack: "back", lowerBack: "back", back: "back",
+  quads: "legs", hamstrings: "legs", glutes: "legs", calves: "legs", legs: "legs",
+  cardio: "cardio",
+  other: "other",
+};
 
-// Helper to format a unit value for display ("135" + "kg" → "135 kg"; "60" + "seconds" → "1:00")
+// Format a value+unit for display.
 export function formatWorkoutValue(value: number, unit: WorkoutUnit): string {
   if (unit === "seconds") {
-    const m = Math.floor(value / 60);
+    const h = Math.floor(value / 3600);
+    const m = Math.floor((value % 3600) / 60);
     const s = Math.floor(value % 60);
+    if (h) return `${h}:${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
     return `${m}:${String(s).padStart(2, "0")}`;
   }
   if (unit === "kg") return `${value} kg`;
@@ -185,87 +190,147 @@ export function formatWorkoutValue(value: number, unit: WorkoutUnit): string {
   return `${value} reps`;
 }
 
+// An exercise definition.
+export interface WorkoutExercise {
+  id: string;
+  name: string;
+  unit: WorkoutUnit;
+  muscleGroup?: MuscleGroup;
+  secondaryMuscles?: MuscleGroup[];
+  equipment?: Equipment;
+  level?: Level;
+  notes?: string;
+  cues?: string[];       // short form cues shown during a set
+  estimatedSetSeconds?: number;
+  createdAt: number;
+}
+
 // A Personal Record entry — peak performance on a single exercise.
-// For kg lifts we also track how many reps that PR was done for.
-// A history log lets us chart progress over time.
+// `history` tracks every logged attempt to allow charting progress.
 export interface WorkoutPR {
   id: string;
   exerciseId: string;
   value: number;
   reps?: number;
-  date: string;              // ISO yyyy-mm-dd
+  estimated1RM?: number;
+  date: string;
   note?: string;
-  history: { date: string; value: number; reps?: number }[];
+  history: { date: string; value: number; reps?: number; rir?: number }[];
 }
 
-// A Skill — a progressive chain of exercises leading to a target move.
-// e.g. "Pull-up" with progressions: negative → Australian → band-assisted → strict.
+// Skill progressions (e.g. pull-up progressions).
 export interface WorkoutProgression {
   id: string;
   title: string;
-  target?: number;           // target reps/seconds to unlock next level
+  target?: number;
   currentBest?: number;
   done: boolean;
 }
-
 export interface WorkoutSkill {
   id: string;
-  name: string;              // e.g. "Pull-up", "Handstand", "Planche"
+  name: string;
   progressions: WorkoutProgression[];
   createdAt: number;
 }
 
-// A scheduled routine (template for a workout day).
-// Contains ordered blocks — each block is one exercise with sets/reps/rest.
+// Routines / schedule.
 export type WorkoutBlockType = "strength" | "cardio" | "rest";
-
 export interface WorkoutBlock {
   id: string;
   exerciseId?: string;
-  label?: string;            // fallback free-text label (also used for "Rest")
+  label?: string;
   type: WorkoutBlockType;
   sets: number;
-  reps: number;              // target reps per set, or seconds for cardio/rest
-  restSeconds: number;       // rest between sets
+  reps: number;              // target reps OR seconds for cardio/rest
+  restSeconds: number;
 }
-
 export interface WorkoutRoutine {
   id: string;
-  name: string;              // e.g. "Push Day", "Leg Day", "Morning Cardio"
-  dayOfWeek?: number;        // 0=Sun..6=Sat (optional schedule)
+  name: string;
+  dayOfWeek?: number;        // 0=Sun..6=Sat
   blocks: WorkoutBlock[];
   createdAt: number;
 }
 
-// A performed set logged during an active session
+// A performed set, optionally annotated with RIR (reps in reserve).
 export interface WorkoutSetLog {
   blockId: string;
-  setIndex: number;          // 1-based
-  value: number;             // reps performed or seconds elapsed
-  weight?: number;           // for kg lifts
-  durationSeconds?: number;  // wall-clock time the set took (from auto-timer)
+  setIndex: number;
+  value: number;             // reps or seconds performed
+  weight?: number;
+  rir?: number;              // reps in reserve (0 = all-out)
+  durationSeconds?: number;  // wall-clock time the set took (timed sets)
   completed: boolean;
 }
 
-// A completed (or in-progress) workout session
+// Daily readiness check-in (1-10 scales).
+export interface WorkoutReadiness {
+  date: string;              // ISO yyyy-mm-dd
+  soreness: number;          // 1 (fine) - 10 (crippling)
+  sleep: number;             // 1 (terrible) - 10 (great)
+  stress: number;            // 1 (calm) - 10 (max)
+  score: number;             // computed 0-100
+  note?: string;
+}
+
+// Achievement badges.
+export type BadgeId =
+  | "first_workout" | "ten_workouts" | "fifty_workouts"
+  | "pr_strength" | "pr_cardio" | "pr_bodyweight"
+  | "streak_3" | "streak_7" | "streak_30"
+  | "early_bird" | "iron_grip" | "century_volume"
+  | "perfect_week" | "cardio_king";
+export interface WorkoutBadge {
+  id: BadgeId;
+  earnedAt: number;
+}
+
+// Bodyweight log entry.
+export interface WorkoutBodyweight {
+  date: string;
+  weightKg: number;
+}
+
+// Workout UI preferences.
+export interface WorkoutSettings {
+  gloveMode: boolean;        // giant buttons for chalky fingers
+  minimalMode: boolean;      // hide everything except current set + timer
+  soundEnabled: boolean;     // rest-over beep
+  restSecondsDefault: number;
+  streakFreezes: number;     // Duolingo-style freezes earned/available
+  units: "kg" | "lb";
+}
+
+// A completed (or in-progress) session.
 export interface WorkoutSession {
   id: string;
   routineId?: string;
   name: string;
-  date: string;              // ISO yyyy-mm-dd
-  startedAt: number;         // epoch ms
+  date: string;
+  startedAt: number;
   endedAt?: number;
   sets: WorkoutSetLog[];
-  totalVolumeKg?: number;    // computed: sum(weight * reps) for strength sets
+  note?: string;
+  totalVolumeKg?: number;
   durationSeconds?: number;
+  readinessScore?: number;
+  warmup?: string[];
+  cooldown?: MuscleGroup[];
 }
 
-// Root workout state persisted to localStorage under `kaizen.workout`.
+// Root workout state.
 export interface WorkoutState {
   exercises: WorkoutExercise[];
   prs: WorkoutPR[];
   skills: WorkoutSkill[];
   routines: WorkoutRoutine[];
   sessions: WorkoutSession[];
+  readiness: WorkoutReadiness[];
+  badges: WorkoutBadge[];
+  bodyweight: WorkoutBodyweight[];
+  settings: WorkoutSettings;
   activeSessionId?: string;
+  lastWorkoutDate?: string;
+  currentStreak?: number;
+  longestStreak?: number;
 }

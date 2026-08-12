@@ -14,8 +14,8 @@ import { useState, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Dumbbell, Plus, Search, Trash2, X } from "lucide-react";
 import { useStore } from "../../lib/store";
-import { MUSCLE_GROUPS, formatWorkoutValue } from "../../lib/types";
-import type { WorkoutUnit } from "../../lib/types";
+import { MUSCLE_GROUPS, EQUIPMENT, LEVELS, formatWorkoutValue } from "../../lib/types";
+import type { WorkoutUnit, MuscleGroup, Equipment, Level } from "../../lib/types";
 
 const UNITS: { id: WorkoutUnit; label: string }[] = [
   { id: "reps",    label: "Reps" },
@@ -30,8 +30,12 @@ export default function WorkoutExercises() {
   const [showNew, setShowNew] = useState(false);
   const [name, setName] = useState("");
   const [unit, setUnit] = useState<WorkoutUnit>("reps");
-  const [muscle, setMuscle] = useState<string>("chest");
+  const [muscle, setMuscle] = useState<MuscleGroup>("chest");
+  const [equipment, setEquipment] = useState<Equipment>("bodyweight");
+  const [level, setLevel] = useState<Level>("beginner");
+  const [cuesText, setCuesText] = useState("");
   const [filter, setFilter] = useState<string>("all");
+  const [equipFilter, setEquipFilter] = useState<string>("all");
   const [q, setQ] = useState("");
   // Quick-log inputs keyed by exerciseId
   const [logValue, setLogValue] = useState<Record<string, string>>({});
@@ -40,17 +44,31 @@ export default function WorkoutExercises() {
   const filtered = useMemo(() => {
     return exercises.filter((e) => {
       if (filter !== "all" && e.muscleGroup !== filter) return false;
+      if (equipFilter !== "all" && e.equipment !== equipFilter) return false;
       if (q && !e.name.toLowerCase().includes(q.toLowerCase())) return false;
       return true;
     });
-  }, [exercises, filter, q]);
+  }, [exercises, filter, equipFilter, q]);
 
   const getPR = (eid: string) => prs.find((p) => p.exerciseId === eid);
 
   const submit = () => {
     if (!name.trim()) return;
-    addExercise(name.trim(), unit, muscle);
-    setName(""); setUnit("reps"); setShowNew(false);
+    const cues = cuesText
+      .split(",")
+      .map((c) => c.trim())
+      .filter(Boolean);
+    addExercise({
+      name: name.trim(),
+      unit,
+      muscleGroup: muscle,
+      equipment,
+      level,
+      cues: cues.length ? cues : undefined,
+    });
+    setName(""); setUnit("reps"); setCuesText("");
+    setEquipment("bodyweight"); setLevel("beginner");
+    setShowNew(false);
   };
 
   const quickLog = (eid: string) => {
@@ -87,8 +105,8 @@ export default function WorkoutExercises() {
         <div className="flex gap-1 flex-wrap">
           <button
             onClick={() => setFilter("all")}
-            className={`chip cursor-pointer ${filter === "all" ? "bg-gray-900 text-white dark:bg-white dark:text-gray-900" : "bg-black/5 dark:bg-white/5 text-gray-600 dark:text-gray-400 hover:bg-black/10 dark:hover:bg-white/10"}`}
-          >All</button>
+            className={`chip cursor-pointer ${filter === "all" ? "bg-white text-gray-900" : "bg-white/5 text-gray-400 hover:bg-white/10"}`}
+          >All muscles</button>
           {MUSCLE_GROUPS.map((m) => (
             <button
               key={m.id}
@@ -97,6 +115,18 @@ export default function WorkoutExercises() {
               style={filter === m.id ? { background: m.color, color: "white" } : { background: `${m.color}20`, color: m.color }}
             >
               {m.label}
+            </button>
+          ))}
+        </div>
+        <div className="flex gap-1 flex-wrap">
+          <button
+            onClick={() => setEquipFilter("all")}
+            className={`chip cursor-pointer ${equipFilter === "all" ? "bg-white text-gray-900" : "bg-white/5 text-gray-400 hover:bg-white/10"}`}
+          >Any equipment</button>
+          {EQUIPMENT.map((eq) => (
+            <button key={eq.id} onClick={() => setEquipFilter(eq.id)}
+              className={`chip cursor-pointer transition ${equipFilter === eq.id ? "bg-violet-500 text-white" : "bg-white/5 text-gray-400 hover:bg-white/10"}`}>
+              {eq.label}
             </button>
           ))}
         </div>
@@ -124,11 +154,20 @@ export default function WorkoutExercises() {
                       {mg && <span className="w-2 h-2 rounded-full" style={{ background: mg.color }} />}
                       <h4 className="font-semibold text-gray-900 dark:text-white truncate">{ex.name}</h4>
                     </div>
-                    <div className="flex items-center gap-2 mt-1">
+                    <div className="flex items-center gap-2 mt-1 flex-wrap">
                       <span className="chip text-xs" style={{ background: `${mg?.color ?? "#64748b"}20`, color: mg?.color ?? "#64748b" }}>
                         {UNITS.find((u) => u.id === ex.unit)?.label}
                       </span>
-                      {mg && <span className="text-xs text-gray-500">{mg.label}</span>}
+                      {ex.equipment && (
+                        <span className="chip text-xs bg-white/5 text-gray-400">
+                          {EQUIPMENT.find((e) => e.id === ex.equipment)?.label}
+                        </span>
+                      )}
+                      {ex.level && (
+                        <span className="chip text-xs bg-violet-500/15 text-violet-300 capitalize">
+                          {ex.level}
+                        </span>
+                      )}
                     </div>
                   </div>
                   <button
@@ -232,7 +271,7 @@ export default function WorkoutExercises() {
                 ))}
               </div>
               <p className="text-xs uppercase tracking-widest text-gray-500 mb-2">Muscle group</p>
-              <div className="flex flex-wrap gap-2 mb-5">
+              <div className="flex flex-wrap gap-2 mb-4">
                 {MUSCLE_GROUPS.map((m) => (
                   <button
                     key={m.id}
@@ -242,6 +281,32 @@ export default function WorkoutExercises() {
                   >{m.label}</button>
                 ))}
               </div>
+
+              <div className="grid grid-cols-2 gap-3 mb-4">
+                <div>
+                  <p className="text-xs uppercase tracking-widest text-gray-500 mb-2">Equipment</p>
+                  <select value={equipment} onChange={(e) => setEquipment(e.target.value as Equipment)}
+                    className="input-base w-full">
+                    {EQUIPMENT.map((eq) => <option key={eq.id} value={eq.id}>{eq.label}</option>)}
+                  </select>
+                </div>
+                <div>
+                  <p className="text-xs uppercase tracking-widest text-gray-500 mb-2">Level</p>
+                  <select value={level} onChange={(e) => setLevel(e.target.value as Level)}
+                    className="input-base w-full">
+                    {LEVELS.map((l) => <option key={l.id} value={l.id}>{l.label}</option>)}
+                  </select>
+                </div>
+              </div>
+
+              <p className="text-xs uppercase tracking-widest text-gray-500 mb-2">Form cues (comma-separated)</p>
+              <input
+                value={cuesText}
+                onChange={(e) => setCuesText(e.target.value)}
+                placeholder="Brace core, Elbows 45°, Drive through heels"
+                className="input-base w-full mb-5"
+              />
+
               <div className="flex justify-end gap-2">
                 <button onClick={() => setShowNew(false)} className="btn-ghost">Cancel</button>
                 <button onClick={submit} className="btn-primary" disabled={!name.trim()}>Create</button>
