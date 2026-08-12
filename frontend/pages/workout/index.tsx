@@ -17,29 +17,38 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import {
   ArrowLeft, Dumbbell, Trophy, Target, Calendar, Flame, Play,
   Download, Hand, Minimize2, Volume2, VolumeX, Zap, Award,
 } from "lucide-react";
+
 import WorkoutPRs from "../../components/workout/WorkoutPRs";
 import WorkoutSkills from "../../components/workout/WorkoutSkills";
 import WorkoutExercises from "../../components/workout/WorkoutExercises";
 import WorkoutSchedule from "../../components/workout/WorkoutSchedule";
+import WorkoutCalisthenics from "../../components/workout/WorkoutCalisthenics";
+import WorkoutGym from "../../components/workout/WorkoutGym";
+import WorkoutCardio from "../../components/workout/WorkoutCardio";
+import WorkoutGlobal from "../../components/workout/WorkoutGlobal";
 import ActiveWorkout from "../../components/workout/ActiveWorkout";
 import MuscleHeatmap from "../../components/workout/MuscleHeatmap";
 import { useStore } from "../../lib/store";
 import { weeklyMuscleVolume, intensityMultiplier } from "../../lib/workoutAnalytics";
 import type { MuscleGroup } from "../../lib/types";
 
-type Section = "overview" | "pr" | "skills" | "exercises" | "schedule";
+type Section = "overview" | "calisthenics" | "gym" | "cardio" | "pr" | "skills" | "exercises" | "schedule" | "global";
 
-const SECTIONS: { id: Section; label: string; icon: any }[] = [
-  { id: "overview",  label: "Overview", icon: Flame },
-  { id: "pr",        label: "PRs",      icon: Trophy },
-  { id: "skills",    label: "Skills",   icon: Target },
-  { id: "exercises", label: "Exercises",icon: Dumbbell },
-  { id: "schedule",  label: "Schedule", icon: Calendar },
+const SECTIONS: { id: Section; label: string; icon: any; color: string }[] = [
+  { id: "overview",     label: "Overview",     icon: Flame,        color: "#ec4899" },
+  { id: "calisthenics", label: "Calisthenics", icon: Target,       color: "#a3e635" },
+  { id: "gym",          label: "Gym",          icon: Dumbbell,     color: "#f59e0b" },
+  { id: "cardio",       label: "Cardio",       icon: Zap,          color: "#06b6d4" },
+  { id: "pr",           label: "PRs",          icon: Trophy,       color: "#f59e0b" },
+  { id: "skills",       label: "Skills",       icon: Target,       color: "#a3e635" },
+  { id: "exercises",    label: "Exercises",    icon: Dumbbell,     color: "#ec4899" },
+  { id: "schedule",     label: "Schedule",     icon: Calendar,     color: "#06b6d4" },
+  { id: "global",       label: "Tools",        icon: Award,        color: "#8b5cf6" },
 ];
 
 /* ---------- Badge metadata (icon + label + colour) ---------- */
@@ -229,10 +238,14 @@ export default function WorkoutPage() {
             freezes={workout.settings.streakFreezes}
           />
         )}
+        {section === "calisthenics" && <WorkoutCalisthenics />}
+        {section === "gym" && <WorkoutGym />}
+        {section === "cardio" && <WorkoutCardio />}
         {section === "pr" && <WorkoutPRs />}
         {section === "skills" && <WorkoutSkills />}
         {section === "exercises" && <WorkoutExercises />}
         {section === "schedule" && <WorkoutSchedule />}
+        {section === "global" && <WorkoutGlobal />}
       </motion.div>
     </div>
   );
