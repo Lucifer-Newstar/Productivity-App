@@ -53,12 +53,13 @@ interface ShellProps {
   section: WorkoutSectionId;
   onSectionChange: (s: WorkoutSectionId) => void;
   onStartTodaysRoutine?: () => void;
+  onQuickStart?: () => void;
   todaysRoutineName?: string;
   children: React.ReactNode;
 }
 
 export default function WorkoutShell({
-  section, onSectionChange, onStartTodaysRoutine, todaysRoutineName, children,
+  section, onSectionChange, onStartTodaysRoutine, onQuickStart, todaysRoutineName, children,
 }: ShellProps) {
   const { theme, toggle } = useTheme();
   const { workout, updateWorkoutSettings } = useStore();
@@ -146,15 +147,27 @@ export default function WorkoutShell({
         </nav>
 
         {onStartTodaysRoutine && (
-          <div className="p-3 border-t border-white/5">
-            <button onClick={onStartTodaysRoutine}
-              className="w-full relative overflow-hidden rounded-xl px-4 py-3 font-medium text-white
-                bg-gradient-to-r from-pink-500 via-rose-500 to-amber-500
-                shadow-lg shadow-pink-500/20 hover:shadow-pink-500/40 hover:-translate-y-0.5 transition
-                flex items-center justify-center gap-2 text-sm">
-              <Play size={14} fill="white" />
-              {todaysRoutineName ? `Start ${todaysRoutineName}` : "Quick start"}
-            </button>
+          <div className="p-3 border-t border-white/5 space-y-2">
+            {todaysRoutineName ? (
+              <button onClick={onStartTodaysRoutine}
+                className="w-full relative overflow-hidden rounded-xl px-4 py-3 font-medium text-white
+                  bg-gradient-to-r from-pink-500 via-rose-500 to-amber-500
+                  shadow-lg shadow-pink-500/20 hover:shadow-pink-500/40 hover:-translate-y-0.5 transition
+                  flex items-center justify-center gap-2 text-sm">
+                <Play size={14} fill="white" />
+                Start {todaysRoutineName}
+              </button>
+            ) : null}
+            {onQuickStart && (
+              <button onClick={onQuickStart}
+                className={`w-full rounded-xl px-4 py-2 font-medium text-sm transition flex items-center justify-center gap-2
+                  ${todaysRoutineName
+                    ? "bg-white/5 text-gray-300 hover:bg-white/10 border border-white/5"
+                    : "bg-gradient-to-r from-pink-500 via-rose-500 to-amber-500 text-white shadow-lg shadow-pink-500/20"}`}>
+                <Play size={12} fill={todaysRoutineName ? "currentColor" : "white"} />
+                Quick start
+              </button>
+            )}
           </div>
         )}
       </aside>

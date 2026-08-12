@@ -5,16 +5,17 @@
  *
  * Lists every exercise with its current PR (peak weight/reps/time/distance) and
  * the date it was achieved. Supports quick-logging a new attempt from here
- * (auto-updates the PR if the new number is higher), deleting a PR, and
- * opening a small inline form to add a new PR.
+ * (auto-updates the PR if the new number is higher), deleting a PR, opening
+ * a per-exercise history drawer, and opening a small inline form to add a new PR.
  */
 
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Trophy, Plus, Trash2, Flame } from "lucide-react";
+import { Trophy, Plus, Trash2, Flame, History } from "lucide-react";
 import { useStore } from "../../lib/store";
 import { MUSCLE_GROUPS, formatWorkoutValue } from "../../lib/types";
 import type { WorkoutExercise } from "../../lib/types";
+import ExerciseHistoryDrawer from "./ExerciseHistoryDrawer";
 
 export default function WorkoutPRs() {
   const { workout, logPR, deletePR } = useStore();
@@ -22,6 +23,7 @@ export default function WorkoutPRs() {
   const [logging, setLogging] = useState<string | null>(null); // exerciseId being logged
   const [value, setValue] = useState("");
   const [reps, setReps] = useState("");
+  const [historyFor, setHistoryFor] = useState<WorkoutExercise | null>(null);
 
   // Show exercises that have at least one PR, plus a "new PR" dropdown for others.
   const exercisesWithPR = new Set(prs.map((p) => p.exerciseId));
@@ -88,12 +90,20 @@ export default function WorkoutPRs() {
                 </div>
                 <div className="mt-3 flex items-center justify-between">
                   <p className="text-xs text-gray-500">Set on {formatDate(p.date)}</p>
-                  <button
-                    onClick={() => { setLogging(p.exerciseId); setValue(""); setReps(""); }}
-                    className="text-xs font-medium text-accent hover:text-accent-cyan transition flex items-center gap-1"
-                  >
-                    <Flame size={12} /> Log attempt
-                  </button>
+                  <div className="flex items-center gap-1">
+                    <button
+                      onClick={() => setHistoryFor(ex)}
+                      title="History"
+                      className="p-1.5 rounded text-gray-400 hover:text-violet-300 hover:bg-violet-500/10 transition">
+                      <History size={13} />
+                    </button>
+                    <button
+                      onClick={() => { setLogging(p.exerciseId); setValue(""); setReps(""); }}
+                      className="text-xs font-medium text-accent hover:text-accent-cyan transition flex items-center gap-1"
+                    >
+                      <Flame size={12} /> Log attempt
+                    </button>
+                  </div>
                 </div>
 
                 {/* Quick log inline form */}
@@ -155,8 +165,13 @@ export default function WorkoutPRs() {
       )}
 
       {prs.length === 0 && noPRexercises.length === 0 && (
-        <EmptyHint text="Add exercises in the Exercises tab to start logging PRs." />
+        <EmptyHint text="Add exercises in the Library to start logging PRs." />
       )}
+
+      {/* Exercise history drawer */}
+      <AnimatePresence>
+        {historyFor && <ExerciseHistoryDrawer exercise={historyFor} onClose={() => setHistoryFor(null)} />}
+      </AnimatePresence>
     </div>
   );
 }

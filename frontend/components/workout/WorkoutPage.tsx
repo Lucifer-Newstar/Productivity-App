@@ -56,6 +56,9 @@ export default function WorkoutPage({ section, children }: Props) {
     if (!todaysRoutine) { router.push("/workout/schedule"); return; }
     startSession(todaysRoutine.name, todaysRoutine.id, todayReadiness?.score);
   }, [todaysRoutine, todayReadiness, startSession, router]);
+  const handleQuickStart = useCallback(() => {
+    startSession("Quick Session", undefined, todayReadiness?.score);
+  }, [todayReadiness, startSession]);
 
   // Active-session takeover
   if (workout.activeSessionId) {
@@ -83,6 +86,7 @@ export default function WorkoutPage({ section, children }: Props) {
       section={section}
       onSectionChange={onSectionChange}
       onStartTodaysRoutine={handleStartTodays}
+      onQuickStart={handleQuickStart}
       todaysRoutineName={todaysRoutine?.name}
     >
       <div className="max-w-6xl mx-auto w-full">{children}</div>
