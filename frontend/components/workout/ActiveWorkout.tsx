@@ -113,6 +113,17 @@ export default function ActiveWorkout({ sessionId, onFinish, onDiscard }: Props)
   const [mental, setMental] = useState<MentalState | "">("");
   const [tempo, setTempo] = useState<string>("");
   const [showMeta, setShowMeta] = useState(false);
+  // Superset / cluster / myo-reps
+  const [isSuper, setIsSuper] = useState(false);
+  const [isGiant, setIsGiant] = useState(false);
+  const [isCluster, setIsCluster] = useState(false);
+  const [clusterRepsStr, setClusterRepsStr] = useState("3,3,2");
+  const [clusterRest, setClusterRest] = useState(15);
+  const [isMyo, setIsMyo] = useState(false);
+  const [myoRpe, setMyoRpe] = useState(8);
+  const [isUnilat, setIsUnilat] = useState(false);
+  const [leftVal, setLeftVal] = useState("");
+  const [rightVal, setRightVal] = useState("");
 
   // Post-session joint-pain + RPE check-in
   const [postOpen, setPostOpen] = useState(false);
@@ -133,6 +144,8 @@ export default function ActiveWorkout({ sessionId, onFinish, onDiscard }: Props)
     setIsPaused(false); setPauseSec(2); setBelt(false); setSleeves(false); setWraps(false);
     setGrip(""); setQuality(""); setSpeed(""); setFeeling(""); setPain(0); setSetNote("");
     setBarSpin(false); setSticking(""); setMental(""); setTempo("");
+    setIsSuper(false); setIsGiant(false); setIsCluster(false); setClusterRepsStr("3,3,2"); setClusterRest(15);
+    setIsMyo(false); setMyoRpe(8); setIsUnilat(false); setLeftVal(""); setRightVal("");
     setShowMeta(false);
   }, [defaultReps, defaultWeight, currentBlock?.id, currentSetNum]);
 
@@ -219,6 +232,15 @@ export default function ActiveWorkout({ sessionId, onFinish, onDiscard }: Props)
       barSpinOk: barSpin || undefined,
       stickingPoint: (sticking as StickingPoint) || undefined,
       tempo: tempo || undefined,
+      isSuperset: isSuper || undefined,
+      isGiant: isGiant || undefined,
+      isCluster: isCluster || undefined,
+      clusterReps: isCluster ? clusterRepsStr.split(",").map(s => parseInt(s.trim(), 10)).filter(n => n > 0) : undefined,
+      clusterRestSec: isCluster ? clusterRest : undefined,
+      isMyo: isMyo || undefined,
+      unilateral: isUnilat || undefined,
+      leftValue: isUnilat && leftVal ? parseInt(leftVal, 10) : undefined,
+      rightValue: isUnilat && rightVal ? parseInt(rightVal, 10) : undefined,
       pain: pain > 0 ? pain : undefined,
       notes: setNote || undefined,
     };
@@ -567,7 +589,57 @@ export default function ActiveWorkout({ sessionId, onFinish, onDiscard }: Props)
                             placeholder="e.g. 3-1-2-1"
                             className="input-base text-[11px] w-28 py-1 text-center" />
                         </div>
-                        {/* --- end advanced --- */}
+
+                        {/* --- Supersets / Clusters / Myo --- */}
+                        <div className="flex flex-wrap gap-1 justify-center pt-1 border-t border-white/5">
+                          <span className="text-[10px] text-gray-400 self-center mr-1">Set type:</span>
+                          {[["Super", isSuper, setIsSuper],
+                            ["Giant", isGiant, setIsGiant],
+                            ["Cluster", isCluster, setIsCluster],
+                            ["Myo-rep", isMyo, setIsMyo],
+                            ["Unilateral", isUnilat, setIsUnilat]]
+                            .map(([label, val, setter]: any) => (
+                              <button key={label} onClick={() => {
+                                setter(!val);
+                                // Giant/superset are mutually exclusive with each other
+                                if (label === "Super" && !val) setIsGiant(false);
+                                if (label === "Giant" && !val) setIsSuper(false);
+                              }}
+                                className={`px-2 py-1 rounded text-[10px] font-semibold border ${val
+                                  ? "border-pink-500/50 bg-pink-500/20 text-pink-200"
+                                  : "border-white/10 bg-white/5 text-gray-400"}`}>{label}</button>
+                            ))}
+                        </div>
+                        {isCluster && (
+                          <div className="flex items-center justify-center gap-2 flex-wrap">
+                            <input value={clusterRepsStr} onChange={(e) => setClusterRepsStr(e.target.value)}
+                              placeholder="3,3,2"
+                              className="input-base text-[11px] w-20 py-1 text-center" />
+                            <span className="text-[10px] text-gray-400">reps/micro-set, rest</span>
+                            {[10,15,20,30].map(n => (
+                              <button key={n} onClick={() => setClusterRest(n)}
+                                className={`w-8 h-7 rounded text-[10px] ${clusterRest===n?"bg-cyan-500/30 text-cyan-200":"bg-white/5 text-gray-400"}`}>{n}s</button>
+                            ))}
+                          </div>
+                        )}
+                        {isMyo && (
+                          <div className="flex items-center justify-center gap-2">
+                            <span className="text-[10px] text-gray-400">RPE stop</span>
+                            {[6,7,8,9].map(n => (
+                              <button key={n} onClick={() => setMyoRpe(n)}
+                                className={`w-8 h-7 rounded text-[10px] font-bold ${myoRpe===n?"bg-pink-500/30 text-pink-200":"bg-white/5 text-gray-400"}`}>{n}</button>
+                            ))}
+                          </div>
+                        )}
+                        {isUnilat && (
+                          <div className="grid grid-cols-2 gap-2 w-full max-w-xs mx-auto">
+                            <input value={leftVal} onChange={(e) => setLeftVal(e.target.value)}
+                              placeholder="L reps" type="number" className="input-base text-[11px] py-1 text-center" />
+                            <input value={rightVal} onChange={(e) => setRightVal(e.target.value)}
+                              placeholder="R reps" type="number" className="input-base text-[11px] py-1 text-center" />
+                          </div>
+                        )}
+                        {/* --- end set types --- */}
 
                         <input value={setNote} onChange={e=>setSetNote(e.target.value)}
                           placeholder="Set note…"

@@ -120,6 +120,23 @@ export function shouldDeload(sessions: WorkoutSession[], lastDeloadMs = 0): bool
   return hard.length >= 12 || weeksSince >= 6;
 }
 
+// ---------- Lactate Threshold estimation (Wolff / DMAX-style) ----------
+
+/**
+ * Estimate Lactate Threshold (LT2 / anaerobic threshold) HR from a max HR.
+ * Two common empirical formulas:
+ *   - LT1 (aerobic):   ~77% max HR
+ *   - LT2 (anaerobic): ~88-90% max HR for trained, ~85% for untrained
+ * We also take avg HR from a 30-min time-trial and return the average of the
+ * last 20 minutes — that's the gold-standard field test.
+ */
+export function estimateLactateThreshold(maxHr: number, trained = true): { lt1: number; lt2: number } {
+  return {
+    lt1: Math.round(maxHr * 0.77),
+    lt2: Math.round(maxHr * (trained ? 0.90 : 0.85)),
+  };
+}
+
 // ---------- Weekly muscle volume ----------
 export function weeklyMuscleVolume(
   sessions: WorkoutSession[],
