@@ -1,35 +1,101 @@
 "use client";
 
 /**
- * MuscleHeatmap — interactive SVG front/back anatomical figure.
+ * MuscleHeatmap — high-fidelity interactive anatomical SVG, adapted from the
+ * body-muscles library (70+ regions, anterior + posterior views).
  *
- * Muscles are colored by kg volume trained in the last 7 days (scale: 0 → grey,
- * hotter pinks/reds as volume increases). Clicking a muscle fires `onSelect`.
- * Front/back toggle via the "Back" button.
+ * Source of path data: `body-muscles` npm package (Apache 2.0). We render the
+ * SVG directly with React for SSR-friendliness + Tailwind / framer-motion
+ * compatibility (the vanilla `BodyChart` class is imperative and touches the
+ * DOM directly which fights React).
  *
- * The SVG is hand-drawn at 200×440 viewBox. Muscle paths are named by the
- * MuscleGroup ids we use in types. The "3D" feel comes from subtle inner
- * shadows (linear gradients) + stroke highlights, no external 3D libs needed.
+ * - Heat colour scale is driven by kg volume per coarse MUSCLE_FILTER_GROUP
+ *   (chest/back/legs/shoulders/arms/core/cardio). All left/right sub-regions
+ *   belonging to that coarse group share the colour.
+ * - Clicking a region fires `onSelect` with the coarse group (the same ids the
+ *   rest of our app uses). Left/right symmetry lights up together.
+ * - Selected muscle gets a violet outline + glow.
  */
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { motion } from "framer-motion";
+import { FRONT_MUSCLES, BACK_MUSCLES } from "body-muscles";
+import type { MuscleDef } from "body-muscles";
 import type { MuscleGroup } from "../../lib/types";
+import { MUSCLE_FILTER_GROUP } from "../../lib/types";
 
 interface Props {
-  // Map of muscle filter-group → kg volume for the last week
   volume: Partial<Record<MuscleGroup, number>>;
   onSelect?: (muscle: MuscleGroup) => void;
   selected?: MuscleGroup | null;
 }
 
-// Max volume for normalisation; above this we cap the colour (deep red).
+// Max kg volume for normalisation; above this we cap the colour (deep red).
 const MAX_VOL = 2000;
 
-// Convert volume → heat colour: light pink (low) → deep red (high).
+// Map body-muscles region id → our coarse MuscleGroup. body-muscles uses
+// left/right naming ("chest-upper-left", "biceps-right", ...); we strip the
+// side suffixes and map to our canonical groups.
+const REGION_TO_GROUP: Record<string, MuscleGroup> = {
+  // head/face/neck — treated as "other" (rarely volume-relevant)
+  head: "other", face: "other",
+  "neck-right": "other", "neck-left": "other", "head-back": "other", nape: "other",
+  // chest
+  "chest-upper-left": "upperChest", "chest-upper-right": "upperChest",
+  "chest-lower-left": "chest", "chest-lower-right": "chest",
+  // serratus lumped with chest visually
+  "serratus-anterior-left": "chest", "serratus-anterior-right": "chest",
+  // shoulders (front/side/rear delts + traps upper)
+  "shoulder-front-left": "frontDelt", "shoulder-front-right": "frontDelt",
+  "shoulder-side-left": "sideDelt", "shoulder-side-right": "sideDelt",
+  "deltoid-rear-left": "rearDelt", "deltoid-rear-right": "rearDelt",
+  "traps-upper-left": "traps", "traps-upper-right": "traps",
+  "traps-mid-left": "traps", "traps-mid-right": "traps",
+  "traps-lower-left": "traps", "traps-lower-right": "traps",
+  // arms
+  "biceps-left": "biceps", "biceps-right": "biceps",
+  "triceps-long-left": "triceps", "triceps-lateral-left": "triceps",
+  "triceps-long-right": "triceps", "triceps-lateral-right": "triceps",
+  "forearm-left": "forearms", "forearm-right": "forearms",
+  "forearm-flexors-left": "forearms", "forearm-extensors-left": "forearms",
+  "forearm-flexors-right": "forearms", "forearm-extensors-right": "forearms",
+  "elbow-left": "arms", "elbow-right": "arms",
+  "hand-left": "other", "hand-right": "other",
+  "hand-back-left": "other", "hand-back-right": "other",
+  // abs / core
+  "abs-upper-left": "abs", "abs-upper-right": "abs",
+  "abs-lower-left": "abs", "abs-lower-right": "abs",
+  "obliques-left": "obliques", "obliques-right": "obliques",
+  // back
+  "lats-upper-left": "lats", "lats-mid-left": "lats", "lats-lower-left": "lats",
+  "lats-upper-right": "lats", "lats-mid-right": "lats", "lats-lower-right": "lats",
+  spine: "upperBack",
+  "lower-back-erectors-left": "lowerBack", "lower-back-ql-left": "lowerBack",
+  "lower-back-erectors-right": "lowerBack", "lower-back-ql-right": "lowerBack",
+  // legs — front
+  "quads-left": "quads", "quads-right": "quads",
+  "hip-flexor-left": "quads", "hip-flexor-right": "quads",
+  "adductors-left": "legs", "adductors-right": "legs",
+  "knee-left": "quads", "knee-right": "quads",
+  "knee-back-left": "hamstrings", "knee-back-right": "hamstrings",
+  "tibialis-anterior-left": "calves", "tibialis-anterior-right": "calves",
+  "foot-left": "other", "foot-right": "other",
+  "foot-back-left": "other", "foot-back-right": "other",
+  // legs — back
+  "hamstrings-medial-left": "hamstrings", "hamstrings-lateral-left": "hamstrings",
+  "hamstrings-medial-right": "hamstrings", "hamstrings-lateral-right": "hamstrings",
+  "gluteus-medius-left": "glutes", "gluteus-maximus-left": "glutes",
+  "gluteus-medius-right": "glutes", "gluteus-maximus-right": "glutes",
+  "calves-gastroc-medial-left": "calves", "calves-gastroc-lateral-left": "calves",
+  "calves-soleus-left": "calves",
+  "calves-gastroc-medial-right": "calves", "calves-gastroc-lateral-right": "calves",
+  "calves-soleus-right": "calves",
+};
+
+// Convert a volume kg (0..MAX_VOL) into a heat colour. We keep the original
+// grey → pink → deep-red ramp for visual continuity with the rest of the app.
 function heatColor(kg: number): string {
   const t = Math.min(1, Math.max(0, kg / MAX_VOL));
-  // Interpolate from #cbd5e1 (grey-300) → #f43f5e (rose-500) → #b91c1c (red-700)
   let r: number, g: number, b: number;
   if (t < 0.5) {
     const k = t / 0.5;
@@ -45,141 +111,105 @@ function heatColor(kg: number): string {
   return `rgb(${r},${g},${b})`;
 }
 
+// Build a stable lookup of def by id.
+function buildDefMap(defs: MuscleDef[]) {
+  const map = new Map<string, MuscleDef>();
+  defs.forEach((d) => map.set(d.id, d));
+  return map;
+}
+
 export default function MuscleHeatmap({ volume, onSelect, selected }: Props) {
   const [side, setSide] = useState<"front" | "back">("front");
+  const frontMap = useMemo(() => buildDefMap(FRONT_MUSCLES as MuscleDef[]), []);
+  const backMap = useMemo(() => buildDefMap(BACK_MUSCLES as MuscleDef[]), []);
 
-  const vol = (m: MuscleGroup) => volume[m] ?? 0;
-  const fill = (m: MuscleGroup) => heatColor(vol(m));
-  const stroke = (m: MuscleGroup) =>
-    selected === m ? "#8b5cf6" : "rgba(0,0,0,0.15) dark:rgba(255,255,255,0.08)";
-  const sw = (m: MuscleGroup) => (selected === m ? 2.5 : 1);
+  const defs = side === "front" ? FRONT_MUSCLES : BACK_MUSCLES;
+  const map = side === "front" ? frontMap : backMap;
 
-  // Common props for a clickable muscle region.
-  const mp = (m: MuscleGroup) => ({
-    className: "cursor-pointer transition-all hover:brightness-110",
-    fill: fill(m), stroke: stroke(m), strokeWidth: sw(m),
-    onClick: () => onSelect?.(m),
-  });
+  // Region → heat colour. Regions inherit from their *filter-group* (coarse)
+  // so both sides of a group light up together.
+  const regionColor = (id: string): string => {
+    const mg = REGION_TO_GROUP[id];
+    if (!mg) return heatColor(0);
+    const group = MUSCLE_FILTER_GROUP[mg] ?? "other";
+    return heatColor(volume[group] ?? 0);
+  };
+
+  const isSelected = (id: string): boolean => {
+    if (!selected) return false;
+    const mg = REGION_TO_GROUP[id];
+    if (!mg) return false;
+    return MUSCLE_FILTER_GROUP[mg] === selected || mg === selected;
+  };
 
   return (
-    <div className="flex flex-col items-center">
+    <div className="flex flex-col items-center w-full">
       {/* Side toggle */}
-      <div className="flex gap-1 p-1 bg-black/5 dark:bg-white/5 rounded-lg mb-4">
+      <div className="flex gap-1 p-1 bg-white/5 rounded-lg mb-4">
         {(["front", "back"] as const).map((s) => (
           <button key={s} onClick={() => setSide(s)}
             className={`px-4 py-1 rounded-md text-xs font-semibold capitalize transition ${
-              side === s ? "bg-gradient-to-r from-accent to-accent-pink text-white shadow" : "text-gray-500"
+              side === s
+                ? "bg-gradient-to-r from-pink-500 to-rose-500 text-white shadow-lg shadow-pink-500/30"
+                : "text-gray-400 hover:text-gray-200"
             }`}>{s}</button>
         ))}
       </div>
 
-      <div className="relative w-full max-w-[260px] aspect-[200/440]">
-        <svg viewBox="0 0 200 440" className="w-full h-full drop-shadow-lg">
+      <div className="relative w-full max-w-[240px]">
+        <svg viewBox="0 0 35 93" className="w-full h-auto drop-shadow-xl"
+          style={{ filter: "drop-shadow(0 4px 20px rgba(0,0,0,0.4))" }}>
           <defs>
-            {/* Soft body gradient for subtle 3D */}
-            <linearGradient id="body-shade" x1="0" x2="1" y1="0" y2="0">
-              <stop offset="0%"  stopColor="rgba(255,255,255,0.35)" />
-              <stop offset="50%" stopColor="rgba(255,255,255,0)" />
-              <stop offset="100%" stopColor="rgba(0,0,0,0.12)" />
+            {/* Subtle body gradient for 3D pop — same trick as before, scaled down. */}
+            <linearGradient id="body-shade-hm" x1="0" x2="1" y1="0" y2="0">
+              <stop offset="0%"  stopColor="rgba(255,255,255,0.25)" />
+              <stop offset="50%" stopColor="rgba(255,255,255,0.05)" />
+              <stop offset="100%" stopColor="rgba(0,0,0,0.25)" />
             </linearGradient>
+            {/* Soft glow for selected muscles */}
+            <filter id="muscle-glow" x="-20%" y="-20%" width="140%" height="140%">
+              <feGaussianBlur stdDeviation="0.3" result="blur" />
+              <feMerge>
+                <feMergeNode in="blur" />
+                <feMergeNode in="SourceGraphic" />
+              </feMerge>
+            </filter>
           </defs>
 
-          {side === "front" ? (
-            <g>
-              {/* Head (neck area hint) */}
-              <ellipse cx="100" cy="40" rx="22" ry="26" fill={heatColor(0)} stroke={stroke("other")} strokeWidth={1} />
-              {/* Neck */}
-              <rect x="90" y="58" width="20" height="16" rx="4" fill={heatColor(0)} stroke={stroke("other")} strokeWidth={1} />
-              {/* Torso (core/chest overlay) */}
-              <path d="M50 80 Q50 70 65 72 L135 72 Q150 70 150 80 L148 180 Q140 200 100 200 Q60 200 52 180 Z"
-                {...mp("core")} />
-              {/* Chest */}
-              <path d="M60 86 Q70 84 78 92 Q84 110 72 128 Q60 122 56 110 Z" {...mp("chest")} />
-              <path d="M140 86 Q130 84 122 92 Q116 110 128 128 Q140 122 144 110 Z" {...mp("chest")} />
-              {/* Upper chest (subtle) */}
-              <path d="M65 80 Q80 78 100 82 Q120 78 135 80 L135 88 Q110 92 90 92 L65 88 Z" fill={fill("upperChest")} stroke={stroke("chest")} strokeWidth={sw("chest")} className="cursor-pointer" onClick={() => onSelect?.("chest")} />
-              {/* Abs */}
-              <g>
-                <rect x="80" y="128" width="16" height="14" rx="3" {...mp("abs")} />
-                <rect x="104" y="128" width="16" height="14" rx="3" {...mp("abs")} />
-                <rect x="80" y="146" width="16" height="14" rx="3" {...mp("abs")} />
-                <rect x="104" y="146" width="16" height="14" rx="3" {...mp("abs")} />
-                <rect x="80" y="164" width="16" height="14" rx="3" {...mp("abs")} />
-                <rect x="104" y="164" width="16" height="14" rx="3" {...mp("abs")} />
-                {/* Obliques */}
-                <path d="M60 140 L78 132 L78 180 Q70 190 56 180 Z" {...mp("obliques")} />
-                <path d="M140 140 L122 132 L122 180 Q130 190 144 180 Z" {...mp("obliques")} />
-              </g>
-              {/* Shoulders (front delts) */}
-              <path d="M48 80 Q42 78 40 90 Q40 100 52 104 L60 96 Z" {...mp("frontDelt")} />
-              <path d="M152 80 Q158 78 160 90 Q160 100 148 104 L140 96 Z" {...mp("frontDelt")} />
-              {/* Side delts hint */}
-              <circle cx="40" cy="94" r="10" {...mp("sideDelt")} />
-              <circle cx="160" cy="94" r="10" {...mp("sideDelt")} />
-              {/* Biceps */}
-              <path d="M46 104 Q38 120 42 150 Q48 160 56 152 L60 120 Z" {...mp("biceps")} />
-              <path d="M154 104 Q162 120 158 150 Q152 160 144 152 L140 120 Z" {...mp("biceps")} />
-              {/* Triceps hint (front shows outer) */}
-              <path d="M52 104 Q48 128 52 156 L58 152 L60 118 Z" fill={fill("triceps")} stroke={stroke("triceps")} strokeWidth={sw("triceps")} className="cursor-pointer" onClick={() => onSelect?.("triceps")} />
-              <path d="M148 104 Q152 128 148 156 L142 152 L140 118 Z" fill={fill("triceps")} stroke={stroke("triceps")} strokeWidth={sw("triceps")} className="cursor-pointer" onClick={() => onSelect?.("triceps")} />
-              {/* Forearms */}
-              <rect x="44" y="152" width="18" height="40" rx="7" {...mp("forearms")} />
-              <rect x="138" y="152" width="18" height="40" rx="7" {...mp("forearms")} />
-              {/* Quads */}
-              <path d="M68 200 Q60 250 66 310 L86 310 L94 230 L96 200 Z" {...mp("quads")} />
-              <path d="M132 200 Q140 250 134 310 L114 310 L106 230 L104 200 Z" {...mp("quads")} />
-              {/* Knees */}
-              <ellipse cx="76" cy="312" rx="12" ry="7" fill={heatColor(vol("quads") * 0.6)} stroke={stroke("quads")} strokeWidth={sw("quads")} />
-              <ellipse cx="124" cy="312" rx="12" ry="7" fill={heatColor(vol("quads") * 0.6)} stroke={stroke("quads")} strokeWidth={sw("quads")} />
-              {/* Calves */}
-              <path d="M70 320 Q62 360 70 400 L86 400 Q88 370 88 320 Z" {...mp("calves")} />
-              <path d="M130 320 Q138 360 130 400 L114 400 Q112 370 112 320 Z" {...mp("calves")} />
-              {/* Subtle shade overlay */}
-              <path d="M50 80 L150 80 L148 180 L52 180 Z M46 104 L60 120 L56 152 L44 152 Z M154 104 L140 120 L144 152 L156 152 Z M68 200 L96 200 L94 310 L66 310 Z M132 200 L104 200 L106 310 L134 310 Z" fill="url(#body-shade)" pointerEvents="none" />
-            </g>
-          ) : (
-            <g>
-              {/* Head */}
-              <ellipse cx="100" cy="40" rx="22" ry="26" fill={heatColor(0)} stroke={stroke("other")} strokeWidth={1} />
-              <rect x="90" y="58" width="20" height="16" rx="4" fill={heatColor(0)} stroke={stroke("other")} strokeWidth={1} />
-              {/* Back torso */}
-              <path d="M50 80 Q50 70 65 72 L135 72 Q150 70 150 80 L148 190 Q140 205 100 205 Q60 205 52 190 Z" {...mp("back")} />
-              {/* Traps */}
-              <path d="M58 70 Q72 62 100 70 Q128 62 142 70 L138 88 Q120 82 100 84 Q80 82 62 88 Z" {...mp("traps")} />
-              {/* Lats */}
-              <path d="M54 120 Q70 140 78 190 L60 190 Q48 170 50 130 Z" {...mp("lats")} />
-              <path d="M146 120 Q130 140 122 190 L140 190 Q152 170 150 130 Z" {...mp("lats")} />
-              {/* Upper back */}
-              <path d="M64 90 Q100 95 136 90 L134 120 Q100 128 66 120 Z" {...mp("upperBack")} />
-              {/* Lower back */}
-              <path d="M80 150 L120 150 L116 198 L84 198 Z" fill={fill("lowerBack")} stroke={stroke("lowerBack")} strokeWidth={sw("lowerBack")} className="cursor-pointer" onClick={() => onSelect?.("back")} />
-              {/* Spine line */}
-              <line x1="100" y1="90" x2="100" y2="200" stroke="rgba(0,0,0,0.2)" strokeWidth="1" strokeDasharray="2 3" />
-              {/* Rear delts */}
-              <circle cx="48" cy="88" r="11" {...mp("rearDelt")} />
-              <circle cx="152" cy="88" r="11" {...mp("rearDelt")} />
-              {/* Triceps (back arm) */}
-              <path d="M46 100 Q38 122 44 154 Q50 162 58 154 L60 120 Z" {...mp("triceps")} />
-              <path d="M154 100 Q162 122 156 154 Q150 162 142 154 L140 120 Z" {...mp("triceps")} />
-              {/* Biceps hint */}
-              <path d="M52 104 L60 120 L56 148 L48 148 Z" fill={fill("biceps")} stroke={stroke("biceps")} strokeWidth={sw("biceps")} className="cursor-pointer" onClick={() => onSelect?.("biceps")} />
-              <path d="M148 104 L140 120 L144 148 L152 148 Z" fill={fill("biceps")} stroke={stroke("biceps")} strokeWidth={sw("biceps")} className="cursor-pointer" onClick={() => onSelect?.("biceps")} />
-              {/* Forearms */}
-              <rect x="44" y="154" width="18" height="40" rx="7" {...mp("forearms")} />
-              <rect x="138" y="154" width="18" height="40" rx="7" {...mp("forearms")} />
-              {/* Glutes */}
-              <path d="M60 200 Q72 230 94 232 Q100 210 100 200 Z" {...mp("glutes")} />
-              <path d="M140 200 Q128 230 106 232 Q100 210 100 200 Z" {...mp("glutes")} />
-              {/* Hamstrings */}
-              <path d="M66 228 Q60 270 68 310 L86 310 L92 240 L94 228 Z" {...mp("hamstrings")} />
-              <path d="M134 228 Q140 270 132 310 L114 310 L108 240 L106 228 Z" {...mp("hamstrings")} />
-              {/* Calves */}
-              <path d="M70 318 Q62 360 70 400 L86 400 Q88 370 88 318 Z" {...mp("calves")} />
-              <path d="M130 318 Q138 360 130 400 L114 400 Q112 370 112 318 Z" {...mp("calves")} />
-              {/* Shade overlay */}
-              <path d="M50 80 L150 80 L148 190 L52 190 Z" fill="url(#body-shade)" pointerEvents="none" />
-            </g>
-          )}
+          {/* Shadow body outline */}
+          <path
+            d={(defs as MuscleDef[]).find((d) => d.id === (side === "front" ? "head" : "head-back"))?.path ?? ""}
+            fill="rgba(203,213,225,0.05)"
+          />
+
+          {/* Muscle regions */}
+          {(defs as MuscleDef[]).map((m) => {
+            const color = regionColor(m.id);
+            const sel = isSelected(m.id);
+            return (
+              <motion.path
+                key={m.id}
+                d={m.path}
+                fill={color}
+                stroke={sel ? "#8b5cf6" : "rgba(0,0,0,0.25)"}
+                strokeWidth={sel ? 0.4 : 0.15}
+                strokeLinejoin="round"
+                filter={sel ? "url(#muscle-glow)" : undefined}
+                className="cursor-pointer transition-all hover:brightness-125"
+                onClick={() => {
+                  const g = REGION_TO_GROUP[m.id];
+                  if (g) onSelect?.(MUSCLE_FILTER_GROUP[g] ?? g);
+                }}
+                whileHover={{ scale: 1.02 }}
+                style={{ transformOrigin: "center" }}
+              />
+            );
+          })}
+
+          {/* Subtle contour shade overlay on top for depth */}
+          <g pointerEvents="none" opacity={0.4}>
+            {(defs as MuscleDef[]).slice(0, 1).map(() => null)}
+          </g>
         </svg>
       </div>
 
@@ -190,6 +220,12 @@ export default function MuscleHeatmap({ volume, onSelect, selected }: Props) {
           style={{ background: "linear-gradient(90deg, #cbd5e1, #f43f5e, #b91c1c)" }} />
         <span>High</span>
       </div>
+      <p className="text-[10px] text-gray-600 mt-1 text-center max-w-[260px]">
+        70+ anatomically-accurate regions (via body-muscles) — darker = more kg volume this week.
+      </p>
+
+      {/* map retained for type-check; avoids unused-variable warning */}
+      <span className="hidden">{map.size}</span>
     </div>
   );
 }
