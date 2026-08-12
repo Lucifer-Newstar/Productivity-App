@@ -12,7 +12,7 @@ Last audited against the 149-feature checklist (35 cali + 45 gym + 22 cardio +
 | # | Feature | Status |
 |---|---|---|
 | 1 | Progression Chain Tracker | ✅ 4 seeded chains, click-to-toggle, auto-suggest on PR triggered via ActiveWorkout |
-| 2 | Skill Tree Visualization | 🟡 Flat skill cards; hierarchical tree visual not yet drawn |
+| 2 | Skill Tree Visualization | ✅ Branched SVG viz on Skills page — one vertical branch per skill, filled nodes + dashed "current" ring, gradient progress fill up the trunk; clickable nodes toggle completion |
 | 3 | AMRAP Logger | ✅ Timer + rounds + reps, persists to `intervalLogs` |
 | 4 | Grease-the-Groove Tracker | ✅ 7am–6pm hourly grid, wired to store |
 | 5 | Freestyle Flow Logger | ✅ Name + moves + quality 1–10, persisted |
@@ -170,7 +170,7 @@ Last audited against the 149-feature checklist (35 cali + 45 gym + 22 cardio +
 |40 | Program Log | ✅ Routines attach to `programId` |
 |41 | Custom Metrics | ✅ `customMetrics[]` + entries per session |
 |42 | Data Export (CSV) | ✅ One-click export covering strength sets + cardio logs |
-|43 | Data Import | ❌ |
+|43 | Data Import | ✅ CSV import on Global/Tools tab — mirrors export format, auto-creates sessions per date, imports new exercises, respects ad-hoc blocks |
 |44 | Backup | ❌ |
 |45 | Rest Day Logger | ✅ 5 reason chips + custom note |
 |46 | Motivation Board | ✅ Add/delete custom quotes/PRs/goals, seeded with 3 entries |
@@ -215,4 +215,7 @@ model (89-region anatomical SVG).
 - ✅ **12-week volume trend sparkline** on Overview: filled SVG area chart with 12 weekly points, average/this-week/delta stat line, pink dot for latest week.
 - ✅ **RPE trend + per-session volume bars** added to `ExerciseHistoryDrawer`. Drawer now resolves sets from both routine and ad-hoc blocks (so freestyle sets show up).
 - ✅ Minor gap-fill: bar-spin, sticking point, and mental-state selectors were typed but not rendered in the set-details panel — now visible; updated status rows accordingly.
+- ✅ **Hierarchical skill tree SVG**: branched visualization on the Skills page. Each skill is a vertical branch with progression nodes bottom-to-top, completed nodes filled lime with checkmark, the next-in-line node gets a dashed amber ring, future nodes are dim. A gradient bar fills the trunk up to the highest completed progression. Skill names label the top node. Nodes are clickable to toggle.
+- ✅ **CSV import**: new `importSession()` store action inserts a fully-formed session into state (with ad-hoc block resolution, totalVolumeKg, streak recompute). The Tools page now has Import CSV next to Export: parses the same CSV columns the export writes, groups rows by date into sessions, auto-creates unknown exercises as "misc", assigns ad-hoc block ids per exercise, and commits one session per date via `importSession()`.
+- ✅ **Data card** on Tools page with Import/Export CSV buttons.
 

@@ -326,6 +326,7 @@ interface StoreState {
   addAdHocBlock: (sessionId: string, block: WorkoutBlock) => void;
   updateSession: (sessionId: string, patch: Partial<WorkoutSession>) => void;
   finishSession: (sessionId: string) => void; discardSession: (sessionId: string) => void;
+  importSession: (session: Omit<WorkoutSession, "id"> & { id?: string }) => string;
   // wellness
   logReadiness: (r: Omit<WorkoutReadiness, "score" | "date">) => void;
   logBodyweight: (weightKg: number) => void;
@@ -647,6 +648,24 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     setWorkout((w) => ({ ...w, sessions: w.sessions.filter((s) => s.id !== sid),
       activeSessionId: w.activeSessionId === sid ? undefined : w.activeSessionId })), [setWorkout]);
 
+  /** Import an externally-constructed session (e.g. from CSV) — id is auto-assigned unless supplied. */
+  const importSession = useCallback<StoreState["importSession"]>((sess) => {
+    const id = sess.id ?? uid();
+    const incoming: WorkoutSession = { ...sess, id };
+    const totalVolumeKg = incoming.totalVolumeKg
+      ?? incoming.sets.reduce((n, set) => n + ((set.weight ?? 0) * set.value), 0);
+    setWorkout((w) => {
+      let next = { ...w, sessions: [{ ...incoming, totalVolumeKg }, ...w.sessions].slice(0, 300) };
+      // Recompute streaks if imported session's date is newer than last
+      const finished = next.sessions.filter((s) => s.endedAt);
+      if (finished[0] && (!w.lastWorkoutDate || finished[0].date >= w.lastWorkoutDate)) {
+        next = applyStreak(next, finished[0].date);
+      }
+      return next;
+    });
+    return id;
+  }, [setWorkout]);
+
   // ---- Wellness ----
   const logReadiness = useCallback<StoreState["logReadiness"]>((r) => {
     const today = todayIso();
@@ -820,7 +839,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     workout, addExercise, updateExercise, deleteExercise,
     logPR, deletePR, addSkill, deleteSkill, addProgression, toggleProgressionDone, updateProgression, deleteProgression,
     addRoutine, updateRoutine, deleteRoutine, addBlock, updateBlock, deleteBlock,
-    startSession, logSet, addAdHocBlock, updateSession, finishSession, discardSession,
+    startSession, logSet, addAdHocBlock, updateSession, finishSession, discardSession, importSession,
     logReadiness, logBodyweight, updateWorkoutSettings, exportWorkoutCSV, getExerciseForBlock,
     toggleChainProgression, updateCaliChainProgression, addCaliSkill, logCaliAttempt, logCaliFail,
     toggleCaliSkillArchived, unlockCaliSkill, addFlow, deleteFlow, toggleGtG, logIsometric,

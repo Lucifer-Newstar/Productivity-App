@@ -20,10 +20,12 @@
  */
 
 import { useEffect, useMemo, useRef, useState } from "react";
+// useRef already imported above, ensure it's there.
+
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Flame, Calendar as CalIcon, Dumbbell, Timer as TimerIcon, Shuffle, Star,
-  Droplet, Coffee, Users, Music, Target, Sparkles, BookOpen, Award, Trash2, Plus,
+  Droplet, Coffee, Users, Music, Target, Sparkles, BookOpen, Award, Trash2, Plus, Upload, Download,
 } from "lucide-react";
 import { useStore } from "../../lib/store";
 import { weeklyStats, frequencyByDay, timePreference, consistencyScore, shouldDeload, goalProgress } from "../../lib/workoutAnalytics";
@@ -37,11 +39,160 @@ const CROWD: { id: "empty"|"light"|"moderate"|"packed"; label: string }[] = [
 
 export default function WorkoutGlobal() {
   const {
-    workout, logBodyweight, updateWorkoutSettings,
+    workout, logBodyweight, updateWorkoutSettings, addExercise,
     addChallenge, toggleChallengeDay, deleteChallenge,
     addJournalEntry, addBoardItem, deleteBoardItem,
-    logRestDay, addWorkoutGoal, deleteWorkoutGoal, updateWorkoutGoal, updateSession,
+    logRestDay, addWorkoutGoal, deleteWorkoutGoal, updateWorkoutGoal, updateSession, importSession,
   } = useStore();
+
+  // CSV import (mirrors export format). Creates one imported session per date
+  // found in the file, using ad-hoc blocks keyed to the matching exercise. New
+  // exercise names are added to the library under "misc" equipment.
+  function importCSV(file: File) {
+    const reader = new FileReader();
+    reader.onload = () => {
+      try {
+        const text = String(reader.result ?? "");
+        const lines = text.split(/\r?\n/).filter(Boolean);
+        if (lines.length < 2) { alert("No rows to import."); return; }
+        const parseRow = (line: string): string[] => {
+          const out: string[] = []; let cur = ""; let inQ = false;
+          for (let i = 0; i < line.length; i++) {
+            const c = line[i];
+            if (c === "\"") {
+              if (inQ && line[i+1] === "\"") { cur += "\""; i++; }
+              else inQ = !inQ;
+            } else if (c === "," && !inQ) { out.push(cur); cur = ""; }
+            else cur += c;
+          }
+          out.push(cur); return out;
+        };
+        const header = parseRow(lines[0]).map((h) => h.trim());
+        const idx = (name: string) => header.indexOf(name);
+        const rows = lines.slice(1).map(parseRow);
+
+        // 1. Ensure every referenced exercise exists; build name→id map.
+        const nameToId = new Map<string, string>();
+        const added = new Set<string>();
+        const ensureExercise = (name: string, unit: "reps"|"kg") => {
+          const key = name.toLowerCase();
+          if (nameToId.has(key)) return nameToId.get(key)!;
+          let ex = workout.exercises.find((e) => e.name.toLowerCase() === key);
+          if (!ex) {
+            const id = "imp-" + Math.random().toString(36).slice(2, 8) + Date.now().toString(36);
+            addExercise({ name, unit, equipment: "misc" });
+            // Locally stamp an id by convention; the addExercise action generates
+            // its own uid, but we'll re-resolve in the next step by name match.
+            added.add(name);
+            return id;
+          }
+          nameToId.set(key, ex.id);
+          return ex.id;
+        };
+
+        // 2. Group rows by date and collect sets per exercise.
+        const byDate = new Map<string, { sets: any[]; blocks: Map<string, string>; nameBits: Set<string> }>();
+        rows.forEach((r) => {
+          const type = r[idx("type")] ?? "";
+          if (type !== "strength") return;
+          const date = (r[idx("date")] ?? "").slice(0, 10);
+          const name = r[idx("name")] ?? "Imported";
+          const value = parseFloat(r[idx("value")] ?? "0");
+          const weight = parseFloat(r[idx("weight_kg")] ?? "");
+          const rirV = parseFloat(r[idx("rir")] ?? "");
+          const rpeV = parseFloat(r[idx("rpe")] ?? "");
+          const durV = parseFloat(r[idx("duration_s")] ?? "");
+          const note = r[idx("notes")] ?? "";
+          if (!date || !value) return;
+          const unit: "reps"|"kg" = isNaN(weight) || weight <= 0 ? "reps" : "kg";
+          ensureExercise(name, unit);
+          if (!byDate.has(date)) byDate.set(date, { sets: [], blocks: new Map(), nameBits: new Set() });
+          const bucket = byDate.get(date)!;
+          const exKey = name.toLowerCase();
+          let blockId = bucket.blocks.get(exKey);
+          if (!blockId) {
+            blockId = "impb-" + date.replace(/-/g, "") + "-" + Math.random().toString(36).slice(2, 6);
+            bucket.blocks.set(exKey, blockId);
+            bucket.nameBits.add(name);
+          }
+          const setIdx = bucket.sets.filter((s) => s.blockId === blockId).length + 1;
+          bucket.sets.push({
+            blockId, setIndex: setIdx, value,
+            weight: isNaN(weight) ? undefined : weight,
+            rir: isNaN(rirV) ? undefined : rirV,
+            rpe: isNaN(rpeV) ? undefined : rpeV,
+            durationSeconds: isNaN(durV) ? undefined : durV,
+            notes: note || undefined,
+            completed: true,
+          });
+        });
+
+        // 3. After addExercise calls settle (sync state dispatch), we use the
+        // current `workout.exercises` (pre-commit) for name→id mapping and
+        // construct full Session objects we then commit through importSession.
+        setTimeout(() => {
+          let sessionsCreated = 0, setsImported = 0;
+          byDate.forEach((bucket, date) => {
+            // Re-resolve exercise ids from current store after any adds — use a
+            // shallow read by scanning the DOM-persisted localStorage directly.
+            const raw = localStorage.getItem("kaizen.workout");
+            let exMap = new Map<string, string>();
+            if (raw) {
+              try {
+                const parsed = JSON.parse(raw);
+                (parsed.exercises ?? []).forEach((e: any) => exMap.set(e.name.toLowerCase(), e.id));
+              } catch { /* ignore */ }
+            }
+            const blocks = Array.from(bucket.blocks.entries()).map(([nameKey, bid]) => ({
+              id: bid, exerciseId: exMap.get(nameKey), type: "strength" as const, sets: 0, reps: 0, restSeconds: 90,
+            })).filter((b) => b.exerciseId);
+            if (blocks.length === 0) return;
+            const startedAt = new Date(date + "T12:00:00").getTime();
+            importSession({
+              name: `Imported · ${Array.from(bucket.nameBits).slice(0,3).join(", ")}${bucket.nameBits.size > 3 ? "…" : ""}`,
+              date, startedAt, endedAt: startedAt + 60 * 60 * 1000,
+              sets: bucket.sets, adHocBlocks: blocks, durationSeconds: 3600,
+            });
+            sessionsCreated++;
+            setsImported += bucket.sets.length;
+          });
+          alert(`Imported ${setsImported} sets across ${sessionsCreated} sessions.`);
+        }, 50);
+      } catch (e: any) { alert("Failed to parse CSV: " + e.message); }
+    };
+    reader.readAsText(file);
+  }
+
+  // CSV export (re-uses the store helper)
+  function handleExport() {
+    const csv = makeCSV();
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url; a.download = `kaizen-workouts-${new Date().toISOString().slice(0,10)}.csv`;
+    document.body.appendChild(a); a.click(); a.remove();
+    URL.revokeObjectURL(url);
+  }
+  /** Mirror of store.exportWorkoutCSV but injectable here (avoid cyclic imports). */
+  function makeCSV(): string {
+    const rows: string[][] = [["type","date","name","set_or_minute","value","value_unit","weight_kg","rir","rpe","duration_s","volume_kg","notes"]];
+    const blockToEx = (bid: string) => {
+      for (const r of workout.routines) { const b = r.blocks.find(bb=>bb.id===bid); if (b?.exerciseId) return workout.exercises.find(e=>e.id===b.exerciseId); }
+      for (const s of workout.sessions) { const b = s.adHocBlocks?.find(bb=>bb.id===bid); if (b?.exerciseId) return workout.exercises.find(e=>e.id===b.exerciseId); }
+      return undefined;
+    };
+    for (const s of workout.sessions) {
+      for (const set of s.sets) {
+        const ex = blockToEx(set.blockId);
+        rows.push(["strength", s.date, ex?.name ?? s.name, String(set.setIndex), String(set.value), ex?.unit ?? "reps",
+          set.weight != null ? String(set.weight) : "",
+          set.rir != null ? String(set.rir) : "", set.rpe != null ? String(set.rpe) : "",
+          set.durationSeconds != null ? String(set.durationSeconds) : "",
+          String((set.weight ?? 0) * set.value), set.notes ?? ""]);
+      }
+    }
+    return rows.map((r) => r.map((c) => `"${String(c).replace(/"/g,'""')}"`).join(",")).join("\n");
+  }
 
   // Goal achievement detection — fire celebration when a goal flips to achieved
   const prevAchievedRef = useRef<Set<string>>(new Set());
@@ -133,6 +284,7 @@ export default function WorkoutGlobal() {
   const rollFranken = () => setFranken([...workout.exercises].sort(() => Math.random() - 0.5).slice(0,3).map(e => e.name));
 
   /* ---- Forms ---- */
+  const importRef = useRef<HTMLInputElement | null>(null);
   const [jText, setJText] = useState("");
   const [jSearch, setJSearch] = useState("");
   const [newChallenge, setNewChallenge] = useState("");
@@ -222,6 +374,20 @@ export default function WorkoutGlobal() {
       <div className="text-xs text-gray-500 flex flex-wrap gap-3">
         <span>Preferred time: <b className="text-gray-300 capitalize">{tPref}</b></span>
         <span>Frequency: {["S","M","T","W","T","F","S"].map((d,i) => `${d}:${freqs[i]}`).join(" · ")}</span>
+      </div>
+
+      {/* Data import/export */}
+      <div className="card flex items-center justify-between gap-3 flex-wrap">
+        <div>
+          <h4 className="font-semibold text-white text-sm flex items-center gap-2"><Download size={16} className="text-cyan-400" /> Data</h4>
+          <p className="text-xs text-gray-400 mt-0.5">Export CSV for backup, or re-import to restore sessions.</p>
+        </div>
+        <div className="flex gap-2">
+          <input ref={importRef} type="file" accept=".csv,text/csv" className="hidden"
+            onChange={(e) => { const f = e.target.files?.[0]; if (f) importCSV(f); e.target.value = ""; }} />
+          <button onClick={() => importRef.current?.click()} className="btn-ghost text-sm flex items-center gap-1"><Upload size={13} /> Import CSV</button>
+          <button onClick={handleExport} className="btn-primary text-sm flex items-center gap-1"><Download size={13} /> Export CSV</button>
+        </div>
       </div>
 
       <div className="grid md:grid-cols-2 gap-4">

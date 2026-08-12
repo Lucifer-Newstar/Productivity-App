@@ -9,9 +9,9 @@
  * based on completed progressions.
  */
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Plus, Trash2, Pencil, Check, Target, ChevronDown } from "lucide-react";
+import { Plus, Trash2, Check, Target, ChevronDown, GitBranch } from "lucide-react";
 import { useStore } from "../../lib/store";
 
 export default function WorkoutSkills() {
@@ -29,6 +29,16 @@ export default function WorkoutSkills() {
     setNewSkillName("");
   };
 
+  /** Total completion across all skills for the hero tree. */
+  const totalProgs = useMemo(
+    () => workout.skills.reduce((n, s) => n + s.progressions.length, 0),
+    [workout.skills],
+  );
+  const doneProgs = useMemo(
+    () => workout.skills.reduce((n, s) => n + s.progressions.filter((p) => p.done).length, 0),
+    [workout.skills],
+  );
+
   return (
     <div className="space-y-4">
       <div>
@@ -37,6 +47,9 @@ export default function WorkoutSkills() {
         </h2>
         <p className="text-sm text-gray-500 mt-1">Progressions toward a target move — unlock the next level when you hit your target.</p>
       </div>
+
+      {/* Skill tree overview: branched SVG viz, one branch per skill */}
+      <SkillTree />
 
       {/* New skill form */}
       <form onSubmit={(e) => { e.preventDefault(); createSkill(); }} className="card flex items-center gap-2">
@@ -199,6 +212,98 @@ export default function WorkoutSkills() {
           </div>
         )}
       </div>
+    </div>
+  );
+}
+
+/** Branched SVG skill tree — each skill is a vertical branch, progressions are
+ *  circular nodes arranged bottom-to-top (basics at the bottom, master skill at
+ *  the top). Completed nodes are filled with gradient, current gets a pulsing
+ *  ring, future nodes are dim. Clicking a node toggles it (mirrors the list UI). */
+function SkillTree() {
+  const { workout, toggleProgressionDone } = useStore();
+  const skills = workout.skills;
+  if (skills.length === 0) return null;
+
+  const NODE_R = 16;
+  const Y_GAP = 40;
+  const BRANCH_W = 80;
+  const maxLen = Math.max(...skills.map((s) => s.progressions.length), 1);
+  const H = maxLen * Y_GAP + NODE_R * 2 + 30;
+  const W = Math.max(320, skills.length * BRANCH_W + 60);
+  const baseY = H - NODE_R - 20;
+
+  return (
+    <div className="card">
+      <div className="flex items-center gap-2 mb-3">
+        <GitBranch className="text-violet-400" size={16} />
+        <h4 className="font-semibold text-white text-sm">Skill tree</h4>
+      </div>
+      <div className="overflow-x-auto">
+        <svg viewBox={`0 0 ${W} ${H}`} className="w-full" style={{ minWidth: skills.length * BRANCH_W + 40 }}>
+          {skills.map((skill, si) => {
+            const cx = 30 + si * BRANCH_W + BRANCH_W / 2;
+            const n = skill.progressions.length;
+            return (
+              <g key={skill.id}>
+                {/* Vertical branch line */}
+                {n > 0 && (
+                  <line x1={cx} y1={baseY - (n - 1) * Y_GAP} x2={cx} y2={baseY}
+                    stroke="#ffffff20" strokeWidth={2} strokeLinecap="round" />
+                )}
+                {/* Progress overlay */}
+                {(() => {
+                  const doneCount = skill.progressions.filter((p) => p.done).length;
+                  if (doneCount === 0) return null;
+                  const progressTop = baseY - (Math.min(doneCount, n) - 1) * Y_GAP;
+                  return <line x1={cx} y1={progressTop} x2={cx} y2={baseY}
+                    stroke="url(#st-branch)" strokeWidth={3} strokeLinecap="round" />;
+                })()}
+                {/* Nodes */}
+                {skill.progressions.map((p, pi) => {
+                  const cy = baseY - pi * Y_GAP;
+                  const isDone = p.done;
+                  const isCurrent = !isDone && (pi === 0 || skill.progressions[pi - 1]?.done);
+                  return (
+                    <g key={p.id} style={{ cursor: "pointer" }} onClick={() => toggleProgressionDone(skill.id, p.id)}>
+                      <circle cx={cx} cy={cy} r={NODE_R * 0.4} fill="#0b0b10" />
+                      <circle cx={cx} cy={cy} r={NODE_R * 0.6}
+                        fill={isDone ? "url(#st-node)" : isCurrent ? "transparent" : "#ffffff08"}
+                        stroke={isDone ? "#a3e635" : isCurrent ? "#f59e0b" : "#ffffff20"}
+                        strokeWidth={isCurrent ? 2 : 1.5}
+                        strokeDasharray={isCurrent ? "3 2" : undefined} />
+                      {isDone && (
+                        <text x={cx} y={cy + 3} textAnchor="middle" fontSize="10" fill="#0b0b10" fontWeight="bold">✓</text>
+                      )}
+                      {pi === n - 1 && (
+                        <text x={cx} y={cy - NODE_R - 6} textAnchor="middle" fontSize="10"
+                          fill={isDone ? "#a3e635" : "#ffffffaa"} fontWeight="600">
+                          {skill.name.length > 10 ? skill.name.slice(0, 9) + "…" : skill.name}
+                        </text>
+                      )}
+                    </g>
+                  );
+                })}
+                {/* If no progressions yet, show a single empty root node */}
+                {n === 0 && (
+                  <circle cx={cx} cy={baseY} r={NODE_R * 0.6} fill="#ffffff08" stroke="#ffffff20" />
+                )}
+              </g>
+            );
+          })}
+          <defs>
+            <linearGradient id="st-branch" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="#8b5cf6" />
+              <stop offset="100%" stopColor="#06b6d4" />
+            </linearGradient>
+            <radialGradient id="st-node" cx="0.5" cy="0.5" r="0.5">
+              <stop offset="0%" stopColor="#a3e635" />
+              <stop offset="100%" stopColor="#22c55e" />
+            </radialGradient>
+          </defs>
+        </svg>
+      </div>
+      <p className="text-[10px] text-gray-500 mt-2">Click a node to toggle completion. Branches grow bottom-to-top; the top node is the target skill.</p>
     </div>
   );
 }
