@@ -323,6 +323,7 @@ interface StoreState {
   // sessions
   startSession: (name: string, routineId?: string, readinessScore?: number) => string;
   logSet: (sessionId: string, entry: Omit<WorkoutSetLog, "completed"> & { completed?: boolean }) => void;
+  addAdHocBlock: (sessionId: string, block: WorkoutBlock) => void;
   updateSession: (sessionId: string, patch: Partial<WorkoutSession>) => void;
   finishSession: (sessionId: string) => void; discardSession: (sessionId: string) => void;
   // wellness
@@ -585,6 +586,11 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
       const b = r.blocks.find((bb) => bb.id === blockId);
       if (b?.exerciseId) return workout.exercises.find((e) => e.id === b.exerciseId);
     }
+    // Fall back to ad-hoc blocks attached to sessions (freestyle/quick-start).
+    for (const s of workout.sessions) {
+      const b = s.adHocBlocks?.find((bb) => bb.id === blockId);
+      if (b?.exerciseId) return workout.exercises.find((e) => e.id === b.exerciseId);
+    }
     return undefined;
   }, [workout]);
 
@@ -603,6 +609,15 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
       const sets = existingIdx >= 0 ? s.sets.map((x,i) => i===existingIdx ? logged : x) : [...s.sets, logged];
       const totalVolumeKg = sets.reduce((n, set) => n + ((set.weight ?? 0) * set.value), 0);
       return { ...s, sets, totalVolumeKg };
+    }) }));
+  }, [setWorkout]);
+
+  /** Persist an ad-hoc block on a session (freestyle/quick-start). */
+  const addAdHocBlock = useCallback<StoreState["addAdHocBlock"]>((sid, block) => {
+    setWorkout((w) => ({ ...w, sessions: w.sessions.map((s) => {
+      if (s.id !== sid) return s;
+      if (s.adHocBlocks?.find((b) => b.id === block.id)) return s; // already added
+      return { ...s, adHocBlocks: [...(s.adHocBlocks ?? []), block] };
     }) }));
   }, [setWorkout]);
 
@@ -805,7 +820,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     workout, addExercise, updateExercise, deleteExercise,
     logPR, deletePR, addSkill, deleteSkill, addProgression, toggleProgressionDone, updateProgression, deleteProgression,
     addRoutine, updateRoutine, deleteRoutine, addBlock, updateBlock, deleteBlock,
-    startSession, logSet, updateSession, finishSession, discardSession,
+    startSession, logSet, addAdHocBlock, updateSession, finishSession, discardSession,
     logReadiness, logBodyweight, updateWorkoutSettings, exportWorkoutCSV, getExerciseForBlock,
     toggleChainProgression, updateCaliChainProgression, addCaliSkill, logCaliAttempt, logCaliFail,
     toggleCaliSkillArchived, unlockCaliSkill, addFlow, deleteFlow, toggleGtG, logIsometric,

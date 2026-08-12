@@ -554,6 +554,8 @@ export interface WorkoutSession {
   nutrition?: IntraWorkoutNutrition;
   programId?: string;
   workoutNumberInProgram?: number;
+  /** Ad-hoc blocks created during a freestyle/quick-start session (so history/CSV can resolve exercise names after refresh). */
+  adHocBlocks?: WorkoutBlock[];
 }
 
 // Programs / goals / challenges / board

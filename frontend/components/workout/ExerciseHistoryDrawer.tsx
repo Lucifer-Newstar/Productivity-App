@@ -42,13 +42,23 @@ export default function ExerciseHistoryDrawer({ exercise, onClose }: Props) {
     let totalVol = 0;
     let setCount = 0;
 
+    /** Resolve a set.blockId to an exercise id, checking routines AND ad-hoc blocks. */
+    const blockToEx = (sid: string, bid: string): string | undefined => {
+      for (const r of workout.routines) {
+        const b = r.blocks.find((bb) => bb.id === bid);
+        if (b?.exerciseId) return b.exerciseId;
+      }
+      const sess = workout.sessions.find((s) => s.id === sid);
+      const b = sess?.adHocBlocks?.find((bb) => bb.id === bid);
+      return b?.exerciseId;
+    };
+
     workout.sessions.forEach((session) => {
       if (!session.endedAt) return;
-      const routine = session.routineId ? workout.routines.find((r) => r.id === session.routineId) : null;
       session.sets.forEach((set) => {
         if (!set.completed || set.isWarmup) return;
-        const block = routine?.blocks.find((b) => b.id === set.blockId);
-        if (!block || block.exerciseId !== exercise.id) return;
+        const exId = blockToEx(session.id, set.blockId);
+        if (exId !== exercise.id) return;
         const w = set.weight ?? 0;
         const reps = set.value;
         const v = exercise.unit === "kg" && w > 0 ? epley1RM(w, reps) : reps;
@@ -93,6 +103,35 @@ export default function ExerciseHistoryDrawer({ exercise, onClose }: Props) {
     });
     return { coords, min, max };
   }, [points]);
+
+  // RPE-over-time trend (only points with an explicit RPE logged).
+  const rpeSeries = useMemo(() => {
+    const rpePts = points.filter((p) => p.set.rpe != null);
+    if (rpePts.length < 2) return null;
+    const w = 480, h = 60;
+    const step = w / Math.max(1, points.length - 1);
+    // Map every point in the full series; leave blips where RPE is missing.
+    const dots: { x: number; y: number; rpe: number }[] = [];
+    points.forEach((p, i) => {
+      if (p.set.rpe == null) return;
+      const x = i * step;
+      const y = h - ((p.set.rpe - 6) / 4) * (h - 14) - 7; // RPE 6→bottom, 10→top
+      dots.push({ x, y, rpe: p.set.rpe });
+    });
+    return { dots };
+  }, [points]);
+
+  // Volume-per-session (kg) bars
+  const volBySession = useMemo(() => {
+    if (exercise.unit !== "kg") return null;
+    const map = new Map<string, number>();
+    points.forEach((p) => {
+      map.set(p.date, (map.get(p.date) ?? 0) + ((p.weight ?? 0) * p.reps));
+    });
+    const entries = Array.from(map.entries()).sort((a, b) => a[0].localeCompare(b[0])).slice(-12);
+    if (entries.length < 2) return null;
+    return entries;
+  }, [points, exercise.unit]);
 
   return (
     <AnimatePresence>
@@ -159,6 +198,52 @@ export default function ExerciseHistoryDrawer({ exercise, onClose }: Props) {
                   ) : null;
                 })}
               </svg>
+            </div>
+          )}
+
+          {/* RPE trend */}
+          {rpeSeries && (
+            <div className="card !p-4 mb-5">
+              <p className="text-[10px] uppercase tracking-widest text-gray-500 mb-2">RPE trend (6 = easy, 10 = failure)</p>
+              <svg viewBox="0 0 480 60" className="w-full h-16">
+                {/* RPE band lines */}
+                {[6, 7, 8, 9, 10].map((r, i) => {
+                  const y = 53 - ((r - 6) / 4) * 46;
+                  return (
+                    <g key={r}>
+                      <line x1={0} x2={480} y1={y} y2={y} stroke="#ffffff08" />
+                      <text x={2} y={y - 2} className="fill-gray-600" style={{ fontSize: 8 }}>{r}</text>
+                    </g>
+                  );
+                })}
+                {rpeSeries.dots.map((d, i) => (
+                  <circle key={i} cx={d.x} cy={d.y} r={d.rpe >= 9 ? 4 : 3} fill={d.rpe >= 9 ? "#ef4444" : d.rpe >= 8 ? "#f59e0b" : "#a3e635"} />
+                ))}
+              </svg>
+            </div>
+          )}
+
+          {/* Volume-per-session bars */}
+          {volBySession && (
+            <div className="card !p-4 mb-5">
+              <p className="text-[10px] uppercase tracking-widest text-gray-500 mb-2">Last {volBySession.length} sessions (kg volume)</p>
+              <div className="flex items-end gap-1 h-20">
+                {volBySession.map(([date, v], i) => {
+                  const max = Math.max(...volBySession.map(([, vv]) => vv));
+                  const h = max > 0 ? (v / max) * 64 : 0;
+                  return (
+                    <div key={date} className="flex-1 flex flex-col items-center justify-end group">
+                      <div className="relative w-full">
+                        <div className="rounded-t bg-gradient-to-t from-cyan-500 to-pink-500 transition-all"
+                          style={{ height: `${h}px` }} />
+                        <div className="opacity-0 group-hover:opacity-100 absolute -top-5 left-1/2 -translate-x-1/2 text-[9px] text-white bg-black/70 px-1 rounded whitespace-nowrap">
+                          {Math.round(v)} kg
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
             </div>
           )}
 

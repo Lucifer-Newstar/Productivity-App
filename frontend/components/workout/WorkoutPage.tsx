@@ -17,6 +17,7 @@ import { useCallback, useMemo, useState } from "react";
 import { useRouter } from "next/router";
 import WorkoutShell, { WORKOUT_NAV, type WorkoutSectionId } from "./WorkoutShell";
 import ActiveWorkout from "./ActiveWorkout";
+import FreestyleWorkout from "./FreestyleWorkout";
 import { useStore } from "../../lib/store";
 import { weeklyMuscleVolume } from "../../lib/workoutAnalytics";
 
@@ -60,8 +61,11 @@ export default function WorkoutPage({ section, children }: Props) {
     startSession("Quick Session", undefined, todayReadiness?.score);
   }, [todayReadiness, startSession]);
 
-  // Active-session takeover
+  // Active-session takeover — use freestyle logger when no routine is attached
+  // (Quick Start / session created without routineId), otherwise the block-driven one.
   if (workout.activeSessionId) {
+    const activeSession = workout.sessions.find((s) => s.id === workout.activeSessionId);
+    const isFreestyle = !activeSession?.routineId;
     return (
       <div className="dark min-h-screen w-full text-gray-100 flex items-center justify-center p-4 md:p-8"
         style={{
@@ -71,11 +75,19 @@ export default function WorkoutPage({ section, children }: Props) {
             "#08080d",
         }}>
         <div className="w-full max-w-4xl">
-          <ActiveWorkout
-            sessionId={workout.activeSessionId}
-            onFinish={() => router.push("/workout/overview")}
-            onDiscard={() => router.push("/workout/schedule")}
-          />
+          {isFreestyle ? (
+            <FreestyleWorkout
+              sessionId={workout.activeSessionId}
+              onFinish={() => router.push("/workout/overview")}
+              onDiscard={() => router.push("/workout/overview")}
+            />
+          ) : (
+            <ActiveWorkout
+              sessionId={workout.activeSessionId}
+              onFinish={() => router.push("/workout/overview")}
+              onDiscard={() => router.push("/workout/schedule")}
+            />
+          )}
         </div>
       </div>
     );

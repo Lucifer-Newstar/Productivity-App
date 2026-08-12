@@ -639,6 +639,72 @@ export function calibrateRpe(sets: WorkoutSetLog[]): RpeCalibration {
   return { samples: errs.length, meanError: mean, personalMultiplier: 1 + mean };
 }
 
+// ---------- Joint-pain → accessory recommendations ----------
+/** Map joint-pain tags logged post-session to recommended accessory/prehab work. */
+export const JOINT_ACCESSORY_RECS: Record<string, { title: string; tips: string[] }> = {
+  shoulders: { title: "Shoulder prehab", tips: [
+    "Band pull-aparts 3×20",
+    "Face pulls 3×15 (cable/band)",
+    "Wall slides 2×12",
+    "Empty-bar overhead dislocates 2×10",
+  ]},
+  elbows: { title: "Elbow care", tips: [
+    "Hammer curls 3×12 (light, slow eccentric)",
+    "Tricep pushdowns (straight bar) 2×15 warm-up",
+    "Wrist extensor/flexor work 2×15 with light dumbbell",
+  ]},
+  wrists: { title: "Wrist rehab", tips: [
+    "Wrist circles 2×30s each direction",
+    "Wrist push-ups (kneeling) 2×10",
+    "Prayer stretch 3×30s",
+  ]},
+  neck: { title: "Neck care", tips: [
+    "Gentle neck isometrics (front/back/side) 3×10s each",
+    "Chin tucks 3×10",
+    "Upper-trap release with a lacrosse ball",
+  ]},
+  "upper back": { title: "Upper-back activation", tips: [
+    "Band pull-aparts 3×20",
+    "Prone Y-T-W raises 2×10 each",
+    "Foam-roll T-spine 2 min",
+  ]},
+  "lower back": { title: "Lower-back recovery", tips: [
+    "Cat-cow 2×10",
+    "Bird-dogs 2×8/side",
+    "Glute bridges 3×15",
+    "Child's pose 90s",
+  ]},
+  hips: { title: "Hip mobility", tips: [
+    "90/90 hip switches 2×10/side",
+    "Pigeon pose 60s/side",
+    "Clamshells 2×15/side",
+    "Hip flexor stretches 60s/side",
+  ]},
+  knees: { title: "Knee prehab", tips: [
+    "Terminal knee extensions 3×15 (banded)",
+    "Bodyweight ATG split squats 2×8/side",
+    "Hamstring curls (band/physio-ball) 3×12",
+    "Copenhagen side plank 2×20s/side",
+  ]},
+  ankles: { title: "Ankle mobility", tips: [
+    "Banded ankle dorsiflexion 2×15/side",
+    "Calf raises 3×20 (slow eccentric)",
+    "Single-leg balance 3×30s/side",
+  ]},
+  shins: { title: "Shin care (shin splints)", tips: [
+    "Tibialis raises (against wall) 3×15",
+    "Calf stretches 60s/side",
+    "Surface check: avoid concrete; increase mileage <10%/week",
+  ]},
+};
+
+export function recommendedAccessories(jointPain?: string[]): { joint: string; title: string; tips: string[] }[] {
+  if (!jointPain || jointPain.length === 0) return [];
+  return jointPain
+    .filter((j) => j !== "none" && JOINT_ACCESSORY_RECS[j])
+    .map((j) => ({ joint: j, ...JOINT_ACCESSORY_RECS[j] }));
+}
+
 // ---------- Cali weakness analysis ----------
 // Map common fail reasons → accessory work recommendations.
 const WEAKNESS_RULES: { keywords: string[]; tip: string }[] = [

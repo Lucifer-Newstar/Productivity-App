@@ -52,7 +52,7 @@ Last audited against the 149-feature checklist (35 cali + 45 gym + 22 cardio +
 | # | Feature | Status |
 |---|---|---|
 | 1 | Progressive Overload | ✅ Core logging via ActiveWorkout (weight × reps × sets, RIR, RPE) |
-| 2 | History Drawer | ✅ Last 5 sessions card (per session; per-exercise drawer pending) |
+| 2 | History Drawer | ✅ Per-exercise drawer: total sets, best set, total volume, Epley 1RM sparkline w/ PR dots, RPE-trend chart, last-12-session volume bars, recent-sets list with RPE/RIR/flags; resolves both routine blocks and ad-hoc (freestyle) blocks |
 | 3 | 1RM Calculator (Epley) | ✅ Live |
 | 4 | Plate Calculator | ✅ Greedy kg Olympic plate fit incl. 0.25 kg microplates |
 | 5 | Warm-up Set Toggle | ✅ `isWarmup` per-set flag + generated warm-up list in Gym tab; warmup sets excluded from 1RM math |
@@ -70,7 +70,7 @@ Last audited against the 149-feature checklist (35 cali + 45 gym + 22 cardio +
 |17 | Feeling Check-in Per Set | ✅ `feeling` field (fast/normal/slow/grind) |
 |18 | EMOM Logger (gym) | ✅ Generic EMOM in cali tab usable for any modality |
 |19 | Cluster Set Builder | ✅ `clusterReps[]` + `clusterRestSec` |
-|20 | Barbell Spin Check | 🟡 Not yet surfaced as a checkbox |
+|20 | Barbell Spin Check | ✅ Checkbox in set-details panel, persisted to `barSpinOk` |
 |21 | Grip Type Logger | ✅ Overhand/underhand/mixed/hook/straps toggle |
 |22 | Pause Variant Logger | ✅ `isPaused` + `pauseSec` (1/2/3/5) |
 |23 | Belt/Knee Sleeves Logger | ✅ Per-set toggles |
@@ -81,18 +81,18 @@ Last audited against the 149-feature checklist (35 cali + 45 gym + 22 cardio +
 |28 | Intensity Calculator | ✅ `weeklyStats().avgIntensity` = mean % of 1RM across working sets |
 |29 | Strength-to-Weight | ✅ Live calc |
 |30 | Wilks Score | ✅ Wilks 2020, male/female toggle |
-|31 | Symmetric Strength Graph | ❌ |
+|31 | Symmetric Strength Graph | ✅ Gym tab chart: squat=1.00/bench=0.75/dead=1.25/OHP=0.45 ratios, ghost target bar vs solid actual, balance % |
 |32 | Barbell Speed Logger | ✅ `speed` field (fast/normal/slow/grind) |
-|33 | Lockout vs Sticking Point | 🟡 `stickingPoint` typed; selector pending UI |
+|33 | Lockout vs Sticking Point | ✅ Chip selector (none/off-floor/mid-range/lockout/transition) in set-details |
 |34 | Asymmetry Tracker | ✅ `asymmetry` flag (left-weak/right-weak/none) |
 |35 | Injury Pain Scale Per Set | ✅ `pain` 0–5 scale |
-|36 | Mental State Per Set | ✅ `mental` field; UI for locked-in/distracted/anxious/tired pending |
+|36 | Mental State Per Set | ✅ Chip selector (locked-in/distracted/anxious/tired) in set-details |
 |37 | Intra-workout Nutrition | ✅ `nutrition: {carbsG, bcaaG, electrolytes, waterMl}` on session |
 |38 | Workout Number in Program | ✅ `workoutNumberInProgram` on session |
 |39 | Deload Indicator | ✅ 12-session / 6-week rule, surfaces in Global tab |
 |40 | Training Max Calculator | ✅ 0.9 × 1RM |
-|41 | RPE Auto-calibration | ❌ |
-|42 | RIR History | 🟡 Stored per set; no dedicated chart |
+|41 | RPE Auto-calibration | ✅ Gym tab card: ≥3 RPE-flagged sets → sample count, mean error vs. standard table, personal multiplier |
+|42 | RIR History | ✅ Per-set storage + RPE-over-time sparkline in Exercise History drawer; RIR tag shown per set |
 |43 | AMRAP Projection | ✅ Inverted Epley in Gym tab |
 |44 | Workout Comparison | ❌ Side-by-side not implemented |
 |45 | Gym Music Playlist Logger | ✅ Session-level playlist field in Global metadata card |
@@ -113,7 +113,7 @@ Last audited against the 149-feature checklist (35 cali + 45 gym + 22 cardio +
 |10 | Jump Rope Logger | ✅ Jumps + misses |
 |11 | HR Zone Bars | ✅ Z1–Z5 colored bars |
 |12 | Max HR Calculator | ✅ 220 − age |
-|13 | Anaerobic Threshold | ❌ Estimation not exposed |
+|13 | Anaerobic Threshold | ✅ Lactate threshold card: LT1 (~77% MHR) / LT2 (~90% trained / 85% untrained) shown |
 |14 | VO2 Max | ✅ Cooper 12-min inline |
 |15 | Running Economy | ✅ `runningEconomy()` (pace/HR ratio) |
 |16 | Run Power | 🟡 Field present; no Stryd import |
@@ -130,7 +130,7 @@ Last audited against the 149-feature checklist (35 cali + 45 gym + 22 cardio +
 |---|---|---|
 | 1 | Bodyweight Popup | ✅ Modal on first-open per day, skip/log buttons, sessionStorage ack |
 | 2 | Rest Timer | ✅ Sticky bottom-floating, 60/90/120/180 presets, WebAudio beep |
-| 3 | Injury Log | 🟡 Per-session `jointPain[]` post-workout prompt coming |
+| 3 | Injury Log | ✅ Post-session joint-pain multi-select (shoulders/elbows/wrists/neck/upper back/lower back/hips/knees/ankles/shins) → persists to `jointPain[]`; surfaces prehab accessory recs on Overview via `recommendedAccessories()` |
 | 4 | Hormonal Cycle Sync | ❌ |
 | 5 | Frankenstein Workout | ✅ 3 random exercises from library |
 | 6 | Year Heatmap | ✅ 365-day GitHub-style, 5 intensity levels |
@@ -144,13 +144,13 @@ Last audited against the 149-feature checklist (35 cali + 45 gym + 22 cardio +
 |14 | Pre-Workout Supplement | ✅ Checkbox + caffeine mg field |
 |15 | Training Phase Tag | ✅ Bulking/Cutting/Maintenance/Deload/Peak, persisted to settings |
 |16 | Workout Rating 1–10 | ✅ Selector, persisted to session |
-|17 | Next Workout Suggestions | 🟡 Readiness intensity multiplier surfaces a recommendation; routine-level next suggestion pending |
-|18 | Program Management | ✅ `programs[]` CRUD actions exist in store |
+|17 | Next Workout Suggestions | ✅ `suggestNextWorkout()` picks today's routine w/ intensity note, or most undertrained muscle avoiding yesterday's; shown as "Suggested today" card |
+|18 | Program Management | ✅ Program create form on Schedule (name/weeks/days/week), Week-X-of-Y progress bar, auto-tags new sessions with programId + workoutNumber |
 |19 | Deload Calculator | ✅ (same as gym #39) |
 |20 | PR Celebration Banner | ✅ Confetti burst on PR in ActiveWorkout |
 |21 | Streak Counter | ✅ `currentStreak` / `longestStreak` |
 |22 | Weekly Volume | ✅ Card in Global |
-|23 | Joint Pain Check | 🟡 Post-session check pending |
+|23 | Joint Pain Check | ✅ Post-session multi-select; accessory/prehab recs on Overview |
 |24 | Soreness Rating | ✅ Daily readiness slider 1–10 |
 |25 | Completion Timeline | ❌ |
 |26 | Calendar View | ✅ Month view with prev/next, pink workout-day cells |
@@ -163,10 +163,10 @@ Last audited against the 149-feature checklist (35 cali + 45 gym + 22 cardio +
 |33 | Time Preference | ✅ `timePreference()` shows most common bucket |
 |34 | Unified Journal | ✅ Add/delete/search entries |
 |35 | Notes Search | ✅ Client-side full-text filter |
-|36 | Trend Analysis | 🟡 52-week heatmap shows volume trends; dedicated chart pending |
-|37 | Goal Tracking | ✅ Create/delete goal cards; achievement badge fires on `achieved: true` |
-|38 | Goal Celebration | 🟡 Uses generic badge path |
-|39 | Program Progress (Week X of Y) | ❌ Dedicated UI pending |
+|36 | Trend Analysis | ✅ 52-week heatmap + 12-week volume sparkline on Overview (with avg/this-week/Δ); RPE trend + per-session volume bars in Exercise History drawer |
+|37 | Goal Tracking | ✅ Expanded create form: metric selector (workouts/streak/volume-kg/bodyweight-kg/1rm-kg), target, by-date, exercise picker for 1RM goals; auto-achievement detection |
+|38 | Goal Celebration | ✅ Dedicated lime CelebrationModal ("🎯 Goal achieved!") |
+|39 | Program Progress (Week X of Y) | ✅ Week-X-of-Y chip + progress bar on Schedule; auto workoutNumber tagging on start |
 |40 | Program Log | ✅ Routines attach to `programId` |
 |41 | Custom Metrics | ✅ `customMetrics[]` + entries per session |
 |42 | Data Export (CSV) | ✅ One-click export covering strength sets + cardio logs |
@@ -204,4 +204,15 @@ model (89-region anatomical SVG).
 - ✅ **RPE auto-calibration** card: after 3+ sets logged with RPE, shows sample count, mean error vs. standard RPE table, and a personal multiplier.
 - ✅ **Goal progress bars + auto-achievement**: each goal shows current/target with progress bar; progress computed via `goalProgress()` for workouts/streak/volume/bodyweight/1RM; when a goal flips to achieved it's stamped with `achievedAt`, crossed out in lime, and triggers the celebration modal.
 - ✅ **Dependencies** bumped within the pinned React 18 / Next 14 line: next 14.2.35 (latest 14.x patch, fixes many GHSAs), postcss 8.5.26, lucide-react & framer-motion latest. Removed unused `body-muscles` package.
+
+## Latest batch (continuing)
+
+- ✅ **Freestyle / Quick-start logger**: sessions created without a routine (e.g. Quick start, Frankenstein) no longer hit the dead "All sets done" screen. A new `FreestyleWorkout.tsx` component drives a free-form session: search + muscle/equipment filters to pick exercises, per-exercise set logging with all RPE/RIR/warmup flags, rest timer between sets, blocks are persisted to `session.adHocBlocks[]` so history/CSV/refresh resolves names correctly. Re-selecting an existing exercise returns to its running counter.
+- ✅ **Freestyle persistence**: new `session.adHocBlocks?: WorkoutBlock[]` field + `addAdHocBlock()` store action. `getExerciseForBlock()` now scans both routine blocks AND session ad-hoc blocks, so every downstream feature (history drawer, CSV, volume heatmaps) works for freestyle sets.
+- ✅ **Program Week X of Y** card on Schedule: active program card shows week X of Y chip, workouts/total count, start date, gradient progress bar. New-program form (name/weeks/days/week, starts today). Starting any routine while a program is active auto-tags the session with `programId` + `workoutNumberInProgram`.
+- ✅ **Goal creation form** expanded: metric selector (workouts / streak / volume-kg / bodyweight-kg / 1rm-kg), numeric target, optional by-date, exercise picker when metric is 1RM. Collapsible form (New goal / Close).
+- ✅ **Joint-pain → accessory recommender**: `recommendedAccessories()` maps each joint tag (shoulders/elbows/wrists/neck/upper-back/lower-back/hips/knees/ankles/shins) to 3–4 specific prehab/accessory tips. Shown automatically on Overview after a session that logged pain.
+- ✅ **12-week volume trend sparkline** on Overview: filled SVG area chart with 12 weekly points, average/this-week/delta stat line, pink dot for latest week.
+- ✅ **RPE trend + per-session volume bars** added to `ExerciseHistoryDrawer`. Drawer now resolves sets from both routine and ad-hoc blocks (so freestyle sets show up).
+- ✅ Minor gap-fill: bar-spin, sticking point, and mental-state selectors were typed but not rendered in the set-details panel — now visible; updated status rows accordingly.
 

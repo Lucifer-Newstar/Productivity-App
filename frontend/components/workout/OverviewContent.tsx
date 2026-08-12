@@ -6,12 +6,12 @@
  */
 
 import { useMemo, useState } from "react";
-import { motion } from "framer-motion";
-import { Dumbbell, Play, Download, Zap, Flame, Award, Sparkles } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Dumbbell, Play, Download, Zap, Flame, Award, Sparkles, AlertCircle } from "lucide-react";
 import { useRouter } from "next/router";
 import MuscleHeatmap from "./MuscleHeatmap";
 import { useStore } from "../../lib/store";
-import { intensityMultiplier, weeklyMuscleVolume, suggestNextWorkout } from "../../lib/workoutAnalytics";
+import { intensityMultiplier, weeklyMuscleVolume, suggestNextWorkout, recommendedAccessories } from "../../lib/workoutAnalytics";
 import type { MuscleGroup } from "../../lib/types";
 
 const BADGE_META: Record<string, { icon: string; label: string; color: string }> = {
@@ -83,6 +83,13 @@ export default function OverviewContent() {
     blockToExercise: getExerciseForBlock,
   }), [workout.sessions, workout.routines, workout.exercises, todayReadiness, getExerciseForBlock]);
 
+  // Most recently finished session (for pain-rec accessory recs)
+  const lastFinished = useMemo(
+    () => workout.sessions.find((s) => s.endedAt),
+    [workout.sessions],
+  );
+  const recs = useMemo(() => recommendedAccessories(lastFinished?.jointPain), [lastFinished]);
+
   return (
     <div className="space-y-6">
       {/* Hero */}
@@ -121,6 +128,32 @@ export default function OverviewContent() {
           <Stat label="Total volume" value={`${Math.round(stats.totalVolume).toLocaleString()} kg`} color="#8b5cf6" />
         </div>
       </motion.div>
+
+      {/* Joint-pain accessory recommendations (only if last session flagged pain) */}
+      <AnimatePresence>
+        {recs.length > 0 && (
+          <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
+            className="card border-red-500/30 bg-red-500/5">
+            <div className="flex items-center gap-2 mb-3">
+              <AlertCircle className="text-red-400" size={18} />
+              <h3 className="font-semibold text-red-200 text-sm">Prehab for logged joint pain</h3>
+              <span className="text-xs text-red-300/70 ml-auto">
+                From {lastFinished && new Date(lastFinished.date).toLocaleDateString()}
+              </span>
+            </div>
+            <div className="grid md:grid-cols-2 gap-3">
+              {recs.map((r) => (
+                <div key={r.joint} className="rounded-lg p-3 bg-black/30 border border-white/5">
+                  <p className="text-xs uppercase tracking-widest text-red-300/80 mb-1">{r.title}</p>
+                  <ul className="space-y-0.5 text-sm text-gray-300">
+                    {r.tips.map((t, i) => <li key={i}>• {t}</li>)}
+                  </ul>
+                </div>
+              ))}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       <OverviewBody
         volume={volume as Partial<Record<MuscleGroup, number>>}
@@ -198,6 +231,9 @@ function OverviewBody({ volume, readiness, onLogReadiness, badges, streak, longe
             </div>
           </div>
         </div>
+
+        {/* 12-Week Volume Trend */}
+        <WeeklyVolumeSparkline />
 
         <div className="card">
           <h3 className="font-semibold text-white flex items-center gap-2 mb-3">
@@ -293,6 +329,84 @@ function OverviewBody({ volume, readiness, onLogReadiness, badges, streak, longe
           </p>
         </div>
       </div>
+    </div>
+  );
+}
+
+/** 12-week rolling volume trend sparkline (pure SVG, no deps). */
+function WeeklyVolumeSparkline() {
+  const { workout } = useStore();
+  const weeks = 12;
+  const data = useMemo(() => {
+    const now = Date.now();
+    const out: { label: string; volume: number }[] = [];
+    for (let i = weeks - 1; i >= 0; i--) {
+      const end = now - i * 7 * 86400000;
+      const start = end - 7 * 86400000;
+      const vol = workout.sessions
+        .filter((s) => s.endedAt && s.startedAt >= start && s.startedAt < end)
+        .reduce((n, s) => n + (s.totalVolumeKg ?? 0), 0);
+      const d = new Date(start);
+      out.push({ label: `${d.getMonth() + 1}/${d.getDate()}`, volume: Math.round(vol) });
+    }
+    return out;
+  }, [workout.sessions]);
+
+  const W = 480, H = 110, PAD = 24;
+  const maxV = Math.max(1, ...data.map((d) => d.volume));
+  const step = (W - PAD * 2) / Math.max(1, data.length - 1);
+  const points = data.map((d, i) => {
+    const x = PAD + i * step;
+    const y = H - PAD - ((H - PAD * 2) * (d.volume / maxV));
+    return [x, y] as const;
+  });
+  const path = points.map((p, i) => `${i === 0 ? "M" : "L"} ${p[0]} ${p[1]}`).join(" ");
+  const area = `${path} L ${points[points.length - 1][0]} ${H - PAD} L ${points[0][0]} ${H - PAD} Z`;
+  const avg = data.reduce((n, d) => n + d.volume, 0) / data.length;
+  const latest = data[data.length - 1].volume;
+  const delta = data.length >= 2 ? latest - data[data.length - 2].volume : 0;
+
+  return (
+    <div className="card">
+      <div className="flex items-center justify-between mb-2 flex-wrap gap-2">
+        <h3 className="font-semibold text-white flex items-center gap-2">
+          <Flame className="text-cyan-400" size={18} /> 12-Week Volume Trend
+        </h3>
+        <div className="flex items-center gap-3 text-xs">
+          <span className="text-gray-400">Avg <span className="text-white font-mono">{Math.round(avg).toLocaleString()} kg</span></span>
+          <span className="text-gray-400">This week <span className="text-white font-mono">{Math.round(latest).toLocaleString()} kg</span></span>
+          <span className={delta >= 0 ? "text-lime-400" : "text-red-400"}>
+            {delta >= 0 ? "▲" : "▼"} {Math.abs(Math.round(delta)).toLocaleString()}
+          </span>
+        </div>
+      </div>
+      <svg viewBox={`0 0 ${W} ${H}`} className="w-full h-28">
+        <defs>
+          <linearGradient id="vol-grad" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="#06b6d4" stopOpacity="0.4" />
+            <stop offset="100%" stopColor="#06b6d4" stopOpacity="0" />
+          </linearGradient>
+        </defs>
+        {[0.25, 0.5, 0.75].map((f, i) => (
+          <line key={i} x1={PAD} x2={W - PAD} y1={PAD + (H - PAD * 2) * f} y2={PAD + (H - PAD * 2) * f}
+            stroke="#ffffff10" strokeDasharray="3 4" />
+        ))}
+        <path d={area} fill="url(#vol-grad)" />
+        <path d={path} fill="none" stroke="#06b6d4" strokeWidth="2.5" strokeLinejoin="round" strokeLinecap="round" />
+        {points.map((p, i) => (
+          <circle key={i} cx={p[0]} cy={p[1]} r={i === points.length - 1 ? 4 : 2}
+            fill={i === points.length - 1 ? "#ec4899" : "#06b6d4"} />
+        ))}
+        {data.filter((_, i) => i % 3 === 0 || i === data.length - 1).map((d, k) => {
+          const i = k * 3 < data.length - 1 ? k * 3 : data.length - 1;
+          const p = points[i];
+          return (
+            <text key={i} x={p[0]} y={H - 6} textAnchor="middle" className="fill-gray-500" style={{ fontSize: 9 }}>
+              {d.label}
+            </text>
+          );
+        })}
+      </svg>
     </div>
   );
 }

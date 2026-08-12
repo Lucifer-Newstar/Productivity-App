@@ -136,8 +136,14 @@ export default function WorkoutGlobal() {
   const [jText, setJText] = useState("");
   const [jSearch, setJSearch] = useState("");
   const [newChallenge, setNewChallenge] = useState("");
-  const [newGoal, setNewGoal] = useState("");
   const [boardText, setBoardText] = useState("");
+  // Goal-creation form state
+  const [goalTitle, setGoalTitle] = useState("");
+  const [goalMetric, setGoalMetric] = useState<"workouts"|"streak"|"volume-kg"|"bodyweight-kg"|"1rm-kg">("workouts");
+  const [goalTarget, setGoalTarget] = useState<number>(20);
+  const [goalByDate, setGoalByDate] = useState<string>("");
+  const [goalExerciseId, setGoalExerciseId] = useState<string>("");
+  const [goalOpen, setGoalOpen] = useState(false);
   const [restReason, setRestReason] = useState("");
   const [rating, setRating] = useState(0);
   const [crowd, setCrowd] = useState<"empty"|"light"|"moderate"|"packed">("light");
@@ -361,12 +367,73 @@ export default function WorkoutGlobal() {
 
       {/* Goals */}
       <div className="card">
-        <h4 className="font-semibold text-white mb-3 flex items-center gap-2"><Target size={16} className="text-lime-400" /> Goals</h4>
-        <form onSubmit={(e) => { e.preventDefault(); if (!newGoal.trim()) return; addWorkoutGoal({ title: newGoal, target: 1, unit: "rep", metric: "workouts" }); setNewGoal(""); }}
-          className="flex gap-2 mb-3">
-          <input value={newGoal} onChange={e=>setNewGoal(e.target.value)} placeholder="New goal…" className="input-base flex-1 text-sm" />
-          <button className="btn-primary text-sm">Add</button>
-        </form>
+        <div className="flex items-center justify-between mb-3">
+          <h4 className="font-semibold text-white flex items-center gap-2"><Target size={16} className="text-lime-400" /> Goals</h4>
+          <button onClick={() => setGoalOpen((v) => !v)} className="text-xs font-semibold text-lime-400 hover:text-lime-300 flex items-center gap-1">
+            <Plus size={12} /> {goalOpen ? "Close" : "New goal"}
+          </button>
+        </div>
+        <AnimatePresence>
+          {goalOpen && (
+            <motion.form
+              initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }}
+              onSubmit={(e) => {
+                e.preventDefault();
+                if (!goalTitle.trim()) return;
+                const unit = goalMetric === "workouts" ? "workouts"
+                  : goalMetric === "streak" ? "days"
+                  : goalMetric === "volume-kg" ? "kg"
+                  : goalMetric === "bodyweight-kg" ? "kg"
+                  : "kg";
+                if (goalMetric === "1rm-kg" && !goalExerciseId) return;
+                addWorkoutGoal({
+                  title: goalTitle.trim(),
+                  target: goalTarget,
+                  unit,
+                  metric: goalMetric,
+                  exerciseId: goalMetric === "1rm-kg" ? goalExerciseId : undefined,
+                  byDate: goalByDate || undefined,
+                });
+                setGoalTitle(""); setGoalTarget(20); setGoalByDate(""); setGoalExerciseId(""); setGoalOpen(false);
+              }}
+              className="space-y-2 mb-4 p-3 rounded-xl bg-white/5 border border-white/5 overflow-hidden">
+              <input value={goalTitle} onChange={(e) => setGoalTitle(e.target.value)}
+                placeholder="Goal title (e.g. First 100kg bench)" className="input-base w-full text-sm" />
+              <div className="grid grid-cols-2 gap-2">
+                <label className="block text-[11px] text-gray-400">Metric
+                  <select value={goalMetric} onChange={(e) => setGoalMetric(e.target.value as any)}
+                    className="input-base w-full mt-1 text-xs">
+                    <option value="workouts">Workouts completed</option>
+                    <option value="streak">Streak (days)</option>
+                    <option value="volume-kg">Weekly volume (kg)</option>
+                    <option value="bodyweight-kg">Bodyweight (kg)</option>
+                    <option value="1rm-kg">1RM — specific exercise</option>
+                  </select>
+                </label>
+                <label className="block text-[11px] text-gray-400">Target
+                  <input type="number" min={1} value={goalTarget} onChange={(e) => setGoalTarget(parseInt(e.target.value) || 1)}
+                    className="input-base w-full mt-1 text-xs" />
+                </label>
+              </div>
+              {goalMetric === "1rm-kg" && (
+                <label className="block text-[11px] text-gray-400">Exercise
+                  <select value={goalExerciseId} onChange={(e) => setGoalExerciseId(e.target.value)}
+                    className="input-base w-full mt-1 text-xs">
+                    <option value="">Select exercise…</option>
+                    {workout.exercises.filter((ex) => ex.unit === "kg").map((ex) => (
+                      <option key={ex.id} value={ex.id}>{ex.name}</option>
+                    ))}
+                  </select>
+                </label>
+              )}
+              <label className="block text-[11px] text-gray-400">By date (optional)
+                <input type="date" value={goalByDate} onChange={(e) => setGoalByDate(e.target.value)}
+                  className="input-base w-full mt-1 text-xs" />
+              </label>
+              <button className="btn-primary w-full text-sm">Create goal</button>
+            </motion.form>
+          )}
+        </AnimatePresence>
         <div className="space-y-2">
           {workout.goals.length === 0 && <p className="text-sm text-gray-500 italic">No goals yet.</p>}
           {workout.goals.map(g => {

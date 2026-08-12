@@ -12,10 +12,10 @@
  *   `workout.activeSessionId` is set, in place of the tabbed view).
  */
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  Calendar, Plus, Trash2, Play, X, Dumbbell, Coffee, ChevronDown,
+  Calendar, Plus, Trash2, Play, X, Dumbbell, Coffee, ChevronDown, Target,
 } from "lucide-react";
 import { useStore } from "../../lib/store";
 import { MUSCLE_GROUPS } from "../../lib/types";
@@ -33,19 +33,34 @@ type BlockDraft = {
 };
 
 export default function WorkoutSchedule() {
-  const { workout, addRoutine, deleteRoutine, addBlock, updateBlock, deleteBlock, startSession } = useStore();
-  const { routines, exercises, activeSessionId } = workout;
+  const { workout, addRoutine, deleteRoutine, addBlock, updateBlock, deleteBlock, startSession, addProgram, updateProgram, deleteProgram, updateSession } = useStore();
+  const { routines, exercises, activeSessionId, programs, sessions } = workout;
 
   const [newRoutineName, setNewRoutineName] = useState("");
   const [newRoutineDay, setNewRoutineDay] = useState<number | undefined>(undefined);
+  const [newProgName, setNewProgName] = useState("");
+  const [newProgWeeks, setNewProgWeeks] = useState(8);
+  const [newProgDays, setNewProgDays] = useState(4);
+
+  // Active program = the one currently in progress (most recent startDate), for auto-tagging sessions.
+  const activeProgram = useMemo(() => {
+    const started = programs.filter((p) => p.startDate);
+    if (!started.length) return undefined;
+    return [...started].sort((a, b) => (b.startDate ?? "").localeCompare(a.startDate ?? ""))[0];
+  }, [programs]);
 
   const startWorkout = (routineId: string) => {
     const r = routines.find((x) => x.id === routineId);
     if (!r) return;
-    // Pass today's readiness score (if any) into the session
     const today = new Date().toISOString().slice(0, 10);
     const ready = workout.readiness.find((rd) => rd.date === today);
-    startSession(r.name, routineId, ready?.score);
+    const sid = startSession(r.name, routineId, ready?.score);
+    if (activeProgram) {
+      const completed = sessions.filter((s) => s.programId === activeProgram.id && s.endedAt).length;
+      // Patch immediately — startSession is synchronous set-state, but React will batch the patch fine
+      // because updateSession is also a state-setter call (both operate on the same reducer).
+      updateSession(sid, { programId: activeProgram.id, workoutNumberInProgram: completed + 1 });
+    }
   };
 
   // Sort routines by day-of-week for nicer display
@@ -96,6 +111,48 @@ export default function WorkoutSchedule() {
         <button disabled={!newRoutineName.trim()} className="btn-primary py-1.5 px-4 text-sm">Add</button>
       </form>
 
+      {/* Active programs */}
+      {programs.length > 0 && (
+        <div className="space-y-3">
+          <h3 className="text-sm uppercase tracking-widest text-gray-500 flex items-center gap-2">
+            <Target size={14} /> Programs
+          </h3>
+          {programs.map((p) => {
+            // Workouts completed against this program = sessions whose programId matches AND that have endedAt.
+            const completed = sessions.filter((s) => s.programId === p.id && s.endedAt).length;
+            const total = p.weeks * p.daysPerWeek;
+            const pct = total > 0 ? Math.min(100, Math.round((completed / total) * 100)) : 0;
+            const week = Math.min(p.weeks, Math.floor(completed / Math.max(1, p.daysPerWeek)) + 1);
+            return (
+              <div key={p.id} className="card border-violet-500/20">
+                <div className="flex items-start gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-violet-500/20 text-violet-300 flex items-center justify-center shrink-0">
+                    <Target size={18} />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <h4 className="font-semibold text-white">{p.name}</h4>
+                      <span className="chip bg-violet-500/20 text-violet-200">Week {week} of {p.weeks}</span>
+                    </div>
+                    <p className="text-xs text-gray-400 mt-0.5">
+                      {completed}/{total} workouts · {p.daysPerWeek} days/week
+                      {p.startDate && <span className="ml-2">· started {p.startDate}</span>}
+                    </p>
+                    <div className="h-2 bg-white/5 rounded-full overflow-hidden mt-3">
+                      <div className="h-full bg-gradient-to-r from-violet-500 to-pink-500 rounded-full transition-all" style={{ width: `${pct}%` }} />
+                    </div>
+                  </div>
+                  <button onClick={() => { if (confirm(`Delete program "${p.name}"?`)) deleteProgram(p.id); }}
+                    className="p-1.5 rounded text-gray-400 hover:text-red-400 hover:bg-red-500/10">
+                    <Trash2 size={14} />
+                  </button>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+
       {/* Routines */}
       <div className="space-y-4">
         {sorted.map((r) => (
@@ -117,6 +174,41 @@ export default function WorkoutSchedule() {
           </div>
         )}
       </div>
+
+      {/* Add program */}
+      <form
+        onSubmit={(e) => {
+          e.preventDefault();
+          if (!newProgName.trim()) return;
+          addProgram({
+            name: newProgName.trim(),
+            weeks: newProgWeeks,
+            daysPerWeek: newProgDays,
+            routineIds: [],
+            startDate: new Date().toISOString().slice(0, 10),
+          });
+          setNewProgName(""); setNewProgWeeks(8); setNewProgDays(4);
+        }}
+        className="card flex flex-wrap items-center gap-2 border-dashed"
+      >
+        <Target size={18} className="text-violet-400" />
+        <input value={newProgName} onChange={(e) => setNewProgName(e.target.value)}
+          placeholder="New program (e.g. nSuns 5/3/1, 5x5, Starting Strength)"
+          className="flex-1 min-w-[200px] bg-transparent outline-none text-gray-100 placeholder:text-gray-500 text-sm" />
+        <label className="text-xs text-gray-400 flex items-center gap-1">
+          Weeks
+          <input type="number" min={1} max={52} value={newProgWeeks}
+            onChange={(e) => setNewProgWeeks(parseInt(e.target.value) || 1)}
+            className="input-base w-14 py-1 text-xs text-center ml-1" />
+        </label>
+        <label className="text-xs text-gray-400 flex items-center gap-1">
+          Days/wk
+          <input type="number" min={1} max={7} value={newProgDays}
+            onChange={(e) => setNewProgDays(parseInt(e.target.value) || 1)}
+            className="input-base w-12 py-1 text-xs text-center ml-1" />
+        </label>
+        <button disabled={!newProgName.trim()} className="btn-primary py-1.5 px-4 text-sm">Start program</button>
+      </form>
     </div>
   );
 }
