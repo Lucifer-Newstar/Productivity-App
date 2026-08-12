@@ -72,13 +72,12 @@ export default function ActiveWorkout({ sessionId, onFinish, onDiscard }: Props)
   const currentExercise: WorkoutExercise | undefined =
     currentBlock?.exerciseId ? getExerciseForBlock(currentBlock.id) : undefined;
 
-  // ---- Input state (reps/weight/rir) ----
+  // ---- Input state (reps/weight/rir + rich per-set metadata) ----
   const prevLogged = currentBlock
     ? session?.sets.filter((s) => s.blockId === currentBlock.id && s.completed) ?? []
     : [];
   const lastLogged = prevLogged[prevLogged.length - 1];
 
-  // Resolve sensible defaults for input fields based on block type + last set.
   const defaultReps = useMemo(() => {
     if (currentBlock?.type === "cardio" || currentBlock?.type === "rest") return "0";
     if (lastLogged) return String(lastLogged.value);
@@ -89,12 +88,34 @@ export default function ActiveWorkout({ sessionId, onFinish, onDiscard }: Props)
   const [reps, setReps] = useState<string>(defaultReps);
   const [weight, setWeight] = useState<string>(defaultWeight);
   const [rir, setRir] = useState<number | undefined>(undefined);
+  const [rpe, setRpe] = useState<number | undefined>(undefined);
+  // Per-set flags
+  const [isWarmup, setIsWarmup] = useState(false);
+  const [isJoker, setIsJoker] = useState(false);
+  const [isDrop, setIsDrop] = useState(false);
+  const [isAMRAP, setIsAMRAP] = useState(false);
+  const [isPaused, setIsPaused] = useState(false);
+  const [pauseSec, setPauseSec] = useState(2);
+  const [belt, setBelt] = useState(false);
+  const [sleeves, setSleeves] = useState(false);
+  const [wraps, setWraps] = useState(false);
+  const [grip, setGrip] = useState<"overhand"|"underhand"|"mixed"|"hook"|"straps"|"">("");
+  const [quality, setQuality] = useState<""|"perfect"|"good"|"decent"|"bad">("");
+  const [speed, setSpeed] = useState<""|"fast"|"normal"|"slow"|"grind">("");
+  const [feeling, setFeeling] = useState<""|"fast"|"normal"|"slow"|"grind">("");
+  const [pain, setPain] = useState(0);
+  const [setNote, setSetNote] = useState("");
+  const [showMeta, setShowMeta] = useState(false);
 
   // Reset inputs when position changes
   useEffect(() => {
     setReps(defaultReps);
     setWeight(defaultWeight);
-    setRir(undefined);
+    setRir(undefined); setRpe(undefined);
+    setIsWarmup(false); setIsJoker(false); setIsDrop(false); setIsAMRAP(false);
+    setIsPaused(false); setPauseSec(2); setBelt(false); setSleeves(false); setWraps(false);
+    setGrip(""); setQuality(""); setSpeed(""); setFeeling(""); setPain(0); setSetNote("");
+    setShowMeta(false);
   }, [defaultReps, defaultWeight, currentBlock?.id, currentSetNum]);
 
   // ---- Timer (set wall-clock + rest) ----
@@ -167,24 +188,31 @@ export default function ActiveWorkout({ sessionId, onFinish, onDiscard }: Props)
       value,
       weight: w,
       rir,
+      rpe,
       durationSeconds: elapsed || undefined,
+      isWarmup, isJoker, isDrop, isAMRAP,
+      isPaused, pauseSec: isPaused ? pauseSec : undefined,
+      belt, kneeSleeves: sleeves, wristWraps: wraps,
+      grip: grip || undefined,
+      quality: quality || undefined,
+      speed: speed || undefined,
+      feeling: feeling || undefined,
+      pain: pain > 0 ? pain : undefined,
+      notes: setNote || undefined,
     };
     logSet(sessionId, entry);
 
-    // PR auto-log (kg uses 1RM, others use raw value; only for non-rest blocks)
-    if (currentBlock.type !== "rest" && currentExercise && isNewPR(w, value)) {
-      if (currentExercise.unit === "kg" && w) {
-        logPR(currentExercise.id, w, value, rir);
-      } else if (currentExercise.unit !== "kg") {
-        logPR(currentExercise.id, value, undefined, rir);
-      }
+    // PR auto-log (skip warmups)
+    if (!isWarmup && currentBlock.type !== "rest" && currentExercise && isNewPR(w, value)) {
+      if (currentExercise.unit === "kg" && w) logPR(currentExercise.id, w, value, rir, rpe);
+      else if (currentExercise.unit !== "kg") logPR(currentExercise.id, value, undefined, rir, rpe);
       setShowConfetti(true);
       setTimeout(() => setShowConfetti(false), 2500);
       if (sound) { playBeep(1200, 200); setTimeout(() => playBeep(1600, 300), 200); }
     }
 
-    // Reset + start rest
-    setRunning(false); setStartRef.current = null; setElapsedState(0); setRir(undefined);
+    setRunning(false); setStartRef.current = null; setElapsedState(0);
+    setRir(undefined); setRpe(undefined);
     if (currentBlock.restSeconds > 0) {
       setResting(true);
       setRestRemain(currentBlock.restSeconds);
@@ -370,18 +398,105 @@ export default function ActiveWorkout({ sessionId, onFinish, onDiscard }: Props)
                 </div>
               )}
 
-              {/* RIR */}
+              {/* RIR + RPE */}
               {!isTimed && !minimal && (
-                <div className="flex items-center justify-center gap-1 mb-4">
-                  <span className="text-[10px] uppercase tracking-widest text-gray-500 mr-1">RIR</span>
-                  {[0, 1, 2, 3, 4].map((n) => (
-                    <button key={n} onClick={() => setRir(rir === n ? undefined : n)}
-                      className={`w-8 h-8 rounded-lg text-xs font-bold transition ${
-                        rir === n
-                          ? "bg-gradient-to-br from-violet-500 to-pink-500 text-white"
-                          : "bg-white/5 text-gray-400 hover:bg-white/10"
-                      }`}>{n}</button>
-                  ))}
+                <div className="flex flex-col items-center gap-2 mb-4">
+                  <div className="flex items-center justify-center gap-1">
+                    <span className="text-[10px] uppercase tracking-widest text-gray-500 mr-1">RIR</span>
+                    {[0, 1, 2, 3, 4].map((n) => (
+                      <button key={n} onClick={() => setRir(rir === n ? undefined : n)}
+                        className={`w-8 h-8 rounded-lg text-xs font-bold transition ${
+                          rir === n ? "bg-gradient-to-br from-violet-500 to-pink-500 text-white"
+                            : "bg-white/5 text-gray-400 hover:bg-white/10"
+                        }`}>{n}</button>
+                    ))}
+                  </div>
+                  <div className="flex items-center justify-center gap-1">
+                    <span className="text-[10px] uppercase tracking-widest text-gray-500 mr-1">RPE</span>
+                    {[6, 7, 8, 9, 10].map((n) => (
+                      <button key={n} onClick={() => setRpe(rpe === n ? undefined : n)}
+                        className={`w-8 h-8 rounded-lg text-xs font-bold transition ${
+                          rpe === n ? "bg-gradient-to-br from-amber-500 to-pink-500 text-white"
+                            : "bg-white/5 text-gray-400 hover:bg-white/10"
+                        }`}>{n}</button>
+                    ))}
+                  </div>
+                  <button onClick={() => setShowMeta(v => !v)}
+                    className="text-[10px] text-gray-500 hover:text-gray-300 underline mt-1">
+                    {showMeta ? "Hide set details" : "Set details (belt/grip/warmup/drop…)"}
+                  </button>
+                  <AnimatePresence>
+                    {showMeta && (
+                      <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }}
+                        className="w-full space-y-2 overflow-hidden">
+                        <div className="flex flex-wrap gap-1 justify-center">
+                          {[["warmup", isWarmup, setIsWarmup, "Warmup"],
+                            ["joker", isJoker, setIsJoker, "Joker"],
+                            ["drop", isDrop, setIsDrop, "Drop"],
+                            ["amrap", isAMRAP, setIsAMRAP, "AMRAP"],
+                            ["paused", isPaused, setIsPaused, "Paused"]]
+                            .map(([key, val, setter, label]: any) => (
+                              <button key={key} onClick={() => setter(!val)}
+                                className={`px-2 py-1 rounded text-[10px] font-semibold border ${val
+                                  ? "border-violet-500/50 bg-violet-500/20 text-violet-200"
+                                  : "border-white/10 bg-white/5 text-gray-400"}`}>{label}</button>
+                            ))}
+                        </div>
+                        {isPaused && (
+                          <div className="flex items-center justify-center gap-2">
+                            <span className="text-[10px] text-gray-400">Pause (s)</span>
+                            {[1, 2, 3, 5].map(n => (
+                              <button key={n} onClick={() => setPauseSec(n)}
+                                className={`w-7 h-7 rounded text-[10px] font-bold ${pauseSec===n?"bg-cyan-500/30 text-cyan-200":"bg-white/5 text-gray-400"}`}>{n}</button>
+                            ))}
+                          </div>
+                        )}
+                        <div className="flex flex-wrap gap-1 justify-center">
+                          {[["belt", belt, setBelt, "Belt"],
+                            ["sleeves", sleeves, setSleeves, "Knee sleeves"],
+                            ["wraps", wraps, setWraps, "Wrist wraps"]]
+                            .map(([key, val, setter, label]: any) => (
+                              <button key={key} onClick={() => setter(!val)}
+                                className={`px-2 py-1 rounded text-[10px] font-semibold border ${val
+                                  ? "border-amber-500/50 bg-amber-500/20 text-amber-200"
+                                  : "border-white/10 bg-white/5 text-gray-400"}`}>{label}</button>
+                            ))}
+                        </div>
+                        <div className="flex flex-wrap gap-1 justify-center">
+                          {(["overhand","underhand","mixed","hook","straps"] as const).map(g => (
+                            <button key={g} onClick={() => setGrip(grip===g?"":g)}
+                              className={`px-2 py-1 rounded text-[10px] font-semibold capitalize border ${grip===g
+                                ? "border-lime-500/50 bg-lime-500/20 text-lime-200"
+                                : "border-white/10 bg-white/5 text-gray-400"}`}>{g}</button>
+                          ))}
+                        </div>
+                        <div className="flex flex-wrap gap-1 justify-center">
+                          <span className="text-[10px] text-gray-400 mr-1">Speed:</span>
+                          {(["fast","normal","slow","grind"] as const).map(s => (
+                            <button key={s} onClick={() => setSpeed(speed===s?"":s)}
+                              className={`px-2 py-1 rounded text-[10px] capitalize ${speed===s?"bg-pink-500/20 text-pink-200":"bg-white/5 text-gray-400"}`}>{s}</button>
+                          ))}
+                        </div>
+                        <div className="flex flex-wrap gap-1 justify-center">
+                          <span className="text-[10px] text-gray-400 mr-1">Quality:</span>
+                          {(["perfect","good","decent","bad"] as const).map(q => (
+                            <button key={q} onClick={() => setQuality(quality===q?"":q)}
+                              className={`px-2 py-1 rounded text-[10px] capitalize ${quality===q?"bg-emerald-500/20 text-emerald-200":"bg-white/5 text-gray-400"}`}>{q}</button>
+                          ))}
+                        </div>
+                        <div className="flex items-center justify-center gap-2">
+                          <span className="text-[10px] text-gray-400">Pain</span>
+                          {[0,1,2,3,4,5].map(n => (
+                            <button key={n} onClick={() => setPain(pain===n?0:n)}
+                              className={`w-6 h-6 rounded text-[10px] font-bold ${pain===n?"bg-red-500/30 text-red-200":"bg-white/5 text-gray-400"}`}>{n}</button>
+                          ))}
+                        </div>
+                        <input value={setNote} onChange={e=>setSetNote(e.target.value)}
+                          placeholder="Set note…"
+                          className="input-base text-[11px] w-full" />
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
                 </div>
               )}
 

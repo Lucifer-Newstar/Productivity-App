@@ -134,7 +134,7 @@ export default function WorkoutGym() {
               </div>
               <p className="text-xs text-gray-400 mb-2">Plates per side (20 kg bar):</p>
               <div className="flex flex-wrap gap-1.5">
-                {plates?.platesPerSide.length ? plates.platesPerSide.map((p, i) => (
+                {plates && plates.length ? plates.map((p, i) => (
                   <span key={i} className="chip bg-white/5 text-gray-200 text-sm px-2 py-1 rounded-md font-mono">
                     {p} kg
                   </span>
