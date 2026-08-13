@@ -30,7 +30,11 @@ const uid = () => Math.random().toString(36).slice(2,10);
 const today = () => new Date().toISOString().slice(0,10);
 
 export default function PortfolioSection() {
+  // Theme reactivity: blueprint light mode is auto-handled by the [data-lt] override
+  // block in CareerShell; we read `isDark` only for gradient banners which the
+  // override flips to solid ink.
   const isDark = useTheme().theme === "dark";
+  void isDark; // used inline via style expressions
   const { career, updateCareer } = useStore();
   const [tab, setTab] = useState<"achievements"|"projects"|"bullets"|"testimonials">("achievements");
   const [cat, setCat] = useState<AchievementCategory|"all">("all");
@@ -249,6 +253,12 @@ export default function PortfolioSection() {
                 <textarea value={pDraft.results??""} onChange={e=>setPDraft(d=>({...d,results:e.target.value}))} placeholder="Results (metrics & impact)" rows={2}
                   className="w-full bg-transparent px-3 py-2 rounded text-sm outline-none resize-none"
                   style={{border:"1px solid rgba(163,230,53,0.3)"}}/>
+                <textarea value={pDraft.challenges??""} onChange={e=>setPDraft(d=>({...d,challenges:e.target.value}))} placeholder="Hardest challenge / problem solved" rows={2}
+                  className="w-full bg-transparent px-3 py-2 rounded text-sm outline-none resize-none"
+                  style={{border:"1px solid rgba(251,146,60,0.3)"}}/>
+                <textarea value={pDraft.learnings??""} onChange={e=>setPDraft(d=>({...d,learnings:e.target.value}))} placeholder="Key learnings / takeaways" rows={2}
+                  className="w-full bg-transparent px-3 py-2 rounded text-sm outline-none resize-none"
+                  style={{border:"1px solid rgba(34,211,238,0.3)"}}/>
                 <div className="flex gap-2">
                   <input value={techInput} onChange={e=>setTechInput(e.target.value)} onKeyDown={e=>{if(e.key==="Enter"){e.preventDefault();addTech(null);}}} placeholder="Add tech tag + Enter"
                     className="flex-1 bg-transparent px-3 py-2 rounded text-xs outline-none"
@@ -290,8 +300,20 @@ export default function PortfolioSection() {
                   <button onClick={()=>upP(p.id,{private:!p.private})} className="p-1 rounded hover:bg-white/10 text-gray-400">{p.private?<EyeOff size={12}/>:<Eye size={12}/>}</button>
                   <button onClick={()=>delP(p.id)} className="p-1 rounded hover:bg-red-500/20 text-red-400"><Trash2 size={12}/></button>
                 </div>
-                {p.summary && <p className="text-[11px] serif-body italic mt-2" style={{color:"#8b9eb0"}}>{p.summary}</p>}
-                {p.results && <p className="text-xs mt-2" style={{color:"#a3e635"}}>⚡ {p.results}</p>}
+                {p.summary && <p className="text-[11px] italic mt-2" style={{color:"var(--cr-fgMuted)"}}>{p.summary}</p>}
+                {p.results && <p className="text-xs mt-2 font-bold" style={{color:"var(--cr-accent3)"}}>⚡ {p.results}</p>}
+                {p.challenges && (
+                  <div className="text-[11px] mt-2">
+                    <span className="text-[9px] tracking-widest font-bold mr-1" style={{color:"var(--cr-accent2)"}}>CHALLENGE</span>
+                    <span style={{color:"var(--cr-fg)"}}>{p.challenges}</span>
+                  </div>
+                )}
+                {p.learnings && (
+                  <div className="text-[11px] mt-1">
+                    <span className="text-[9px] tracking-widest font-bold mr-1" style={{color:"var(--cr-accent)"}}>LEARNED</span>
+                    <span style={{color:"var(--cr-fg)"}}>{p.learnings}</span>
+                  </div>
+                )}
                 {p.technologies && p.technologies.length>0 && (
                   <div className="flex flex-wrap gap-1 mt-2">
                     {p.technologies.map((t,i) => <span key={i} className="text-[9px] emperor-title px-1.5 py-0.5 rounded" style={{background:"rgba(6,182,212,0.15)",color:"#67e8f9"}}>{t}</span>)}
