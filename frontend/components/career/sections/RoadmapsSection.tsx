@@ -18,7 +18,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   Map, Plus, Check, ChevronDown, ChevronRight, Clock, Target,
   Archive, Trash2, Flame, Zap, BookOpen, FolderKanban, FlaskConical,
-  X, Star, Lock, Trophy, Sword, Circle, Percent,
+  X, Star, Lock, Trophy, Circle, Percent,
 } from "lucide-react";
 import { useStore } from "../../../lib/store";
 import { TEMPLATE_LIST, cloneTemplate } from "../../../lib/careerRoadmaps";
@@ -98,7 +98,7 @@ function collectMilestoneMap(r: CareerRoadmap) {
 /*  Small visual primitives                                            */
 /* ------------------------------------------------------------------ */
 
-function Donut({ value, max, color, size = 56, stroke = 6, track = "rgba(255,255,255,0.08)" }:
+function Donut({ value, max, color, size = 56, stroke = 6, track = "var(--cr-borderSoft)" }:
   { value: number; max: number; color: string; size?: number; stroke?: number; track?: string }) {
   const pct = max > 0 ? Math.min(1, value / max) : 0;
   const r = (size - stroke) / 2;
@@ -115,8 +115,8 @@ function Donut({ value, max, color, size = 56, stroke = 6, track = "rgba(255,255
         transform={`rotate(-90 ${size/2} ${size/2})`}
         style={{ filter: `drop-shadow(0 0 6px ${color}aa)` }} />
       <text x="50%" y="50%" textAnchor="middle" dominantBaseline="central"
-        fontSize={size * 0.28} fontWeight={800} fill="#f3e9d2"
-        fontFamily="Cinzel,serif">
+        fontSize={size * 0.28} fontWeight={800} fill="var(--cr-fg)"
+        fontFamily="ui-monospace, JetBrains Mono, monospace">
         {Math.round(pct * 100)}%
       </text>
     </svg>
@@ -124,18 +124,17 @@ function Donut({ value, max, color, size = 56, stroke = 6, track = "rgba(255,255
 }
 
 function HoursDonut({ roadmaps }: { roadmaps: CareerRoadmap[] }) {
-  const isDark = true;
   const active = roadmaps.filter((r) => r.status === "active" && r.weeklyHoursTarget > 0);
   const total = active.reduce((n, r) => n + r.weeklyHoursTarget, 0);
   const R = 48; const C = 2 * Math.PI * R;
   let offset = 0;
   return (
-    <div className="rounded-2xl p-4 md:p-5 flex items-center gap-4"
-      style={{ background: "linear-gradient(145deg, rgba(12,26,34,0.9), rgba(10,20,24,0.85))",
-        border: "1px solid rgba(103,232,249,0.25)" }}>
+    <div className="rounded-sm p-4 md:p-5 hud-corner relative flex items-center gap-4"
+      style={{ background: "var(--cr-card)", border: "1px solid var(--cr-border)" }}>
+      <span className="c-tr"/><span className="c-bl"/>
       <div className="relative shrink-0">
         <svg width={120} height={120}>
-          <circle cx={60} cy={60} r={R} fill="none" stroke="rgba(255,255,255,0.06)" strokeWidth={14} />
+          <circle cx={60} cy={60} r={R} fill="none" stroke="var(--cr-borderSoft)" strokeWidth={14} />
           {active.map((r) => {
             const frac = total > 0 ? r.weeklyHoursTarget / total : 0;
             const seg = C * frac;
@@ -154,27 +153,27 @@ function HoursDonut({ roadmaps }: { roadmaps: CareerRoadmap[] }) {
             return el;
           })}
           <text x="60" y="56" textAnchor="middle" fontSize="10"
-            fill="#8b9eb0" fontFamily="Cinzel,serif" letterSpacing="1">H/WK</text>
+            fill="var(--cr-fgMuted)" fontWeight={700} letterSpacing={1}>H/WK</text>
           <text x="60" y="74" textAnchor="middle" fontSize="22" fontWeight={800}
-            fill="#67e8f9" fontFamily="Cinzel,serif">{total}</text>
+            fill="var(--cr-accent)" fontFamily="ui-monospace, monospace">{total}</text>
         </svg>
       </div>
       <div className="min-w-0 flex-1">
-        <div className="text-[10px] emperor-title tracking-[0.3em]" style={{ color: "#67e8f9" }}>
+        <div className="text-[10px] font-bold tracking-[0.3em]" style={{ color: "var(--cr-accent)" }}>
           ALLOCATION
         </div>
-        <div className="serif-body italic text-xs mt-0.5" style={{ color: "#a8b8c8" }}>
+        <div className="text-xs mt-0.5 italic" style={{ color: "var(--cr-fgMuted)" }}>
           Hours per week, split across active tracks.
         </div>
         <div className="mt-2 space-y-1 max-h-[84px] overflow-y-auto pr-1">
           {active.map((r) => (
             <div key={r.id} className="flex items-center gap-2 text-[11px]">
               <span className="w-2 h-2 rounded-sm" style={{ background: r.color, boxShadow: `0 0 6px ${r.color}` }} />
-              <span className="truncate flex-1" style={{ color: "#e2e8f0" }}>{r.name}</span>
+              <span className="truncate flex-1" style={{ color: "var(--cr-fg)" }}>{r.name}</span>
               <span style={{ color: r.color }}>{r.weeklyHoursTarget}h</span>
             </div>
           ))}
-          {active.length === 0 && <div className="text-[11px] italic" style={{ color: "#6b7280" }}>No active roadmaps.</div>}
+          {active.length === 0 && <div className="text-[11px] italic" style={{ color: "var(--cr-fgMuted)" }}>No active roadmaps.</div>}
         </div>
       </div>
     </div>
@@ -193,10 +192,11 @@ function Badge({ label, color }: { label: string; color: string }) {
 /* ------------------------------------------------------------------ */
 
 function MilestoneRow({
-  ms, index, color, locked, onToggle, onLogHours, onQuiz, onSelfRate,
+  ms, index, color, locked, allById, onToggle, onLogHours, onQuiz, onSelfRate,
   onToggleLab, onToggleResource, onToggleProject,
 }: {
   ms: CareerMilestone; index: number; color: string; locked: string[] | null;
+  allById: Record<string, CareerMilestone>;
   onToggle: () => void;
   onLogHours: (h: number) => void;
   onQuiz: (id: string, a: "yes"|"partial"|"no") => void;
@@ -232,34 +232,34 @@ function MilestoneRow({
   };
 
   return (
-    <div className="rounded-lg overflow-hidden relative"
+    <div className="rounded-lg overflow-hidden relative hud-corner"
       style={{
-        background: locked ? "rgba(100,116,139,0.08)"
-          : ms.done ? "rgba(163,230,53,0.06)"
-          : (isDark ? "rgba(255,255,255,0.03)" : "rgba(255,255,255,0.5)"),
-        border: `1px solid ${locked ? "rgba(100,116,139,0.35)"
-          : ms.done ? "rgba(163,230,53,0.35)" : "rgba(255,255,255,0.06)"}`,
+        background: locked ? "var(--cr-card2)"
+          : ms.done ? "rgba(52,211,153,0.06)"
+          : "var(--cr-card)",
+        border: `1px solid ${locked ? "var(--cr-borderSoft)"
+          : ms.done ? "rgba(52,211,153,0.35)" : "var(--cr-borderSoft)"}`,
       }}>
       <div className="flex items-center gap-3 p-3">
         <button disabled={!!locked} onClick={onToggle}
           className={`w-6 h-6 rounded-md shrink-0 flex items-center justify-center transition ${locked ? "cursor-not-allowed" : ""}`}
           style={{
             background: ms.done ? color : "transparent",
-            border: `2px solid ${ms.done ? color : locked ? "#64748b" : "rgba(255,255,255,0.25)"}`,
-            color: "#0a0709",
+            border: `2px solid ${ms.done ? color : locked ? "var(--cr-fgMuted)" : "var(--cr-border)"}`,
+            color: "var(--cr-bg)",
             boxShadow: ms.done ? `0 0 10px ${color}88` : "none",
             opacity: locked ? 0.5 : 1,
           }}>
           {locked ? <Lock size={12} /> : ms.done ? <Check size={13} strokeWidth={3} /> : null}
         </button>
         <div className="flex-1 min-w-0">
-          <div className={`text-sm ${ms.done ? "line-through opacity-60" : ""}`} style={{ color: "#f3e9d2" }}>
-            <span className="text-[10px] emperor-title mr-2" style={{ color: locked ? "#64748b" : color }}>
+          <div className={`text-sm ${ms.done ? "line-through opacity-60" : ""}`} style={{ color: "var(--cr-fg)" }}>
+            <span className="text-[10px] font-bold tracking-widest mr-2" style={{ color: locked ? "var(--cr-fgMuted)" : color }}>
               {String(index + 1).padStart(2, "0")}
             </span>
             {ms.title}
           </div>
-          <div className="flex items-center gap-3 mt-1 text-[10px] emperor-title flex-wrap" style={{ color: "#8b9eb0" }}>
+          <div className="flex items-center gap-3 mt-1 text-[10px] font-bold tracking-widest flex-wrap" style={{ color: "var(--cr-fgMuted)" }}>
             <span className="flex items-center gap-1"><Clock size={10}/>
               {ms.hoursActual|0}/{ms.hoursEstimate}h
             </span>
@@ -274,8 +274,13 @@ function MilestoneRow({
             )}
           </div>
           {locked && (
-            <div className="text-[10px] mt-1 flex items-center gap-1" style={{ color: "#94a3b8" }}>
+            <div className="text-[10px] mt-1 flex items-center gap-1 flex-wrap" style={{ color: "var(--cr-fgMuted)" }}>
               <Lock size={9}/> Complete prerequisites first
+              {locked.slice(0,3).map(id => {
+                const b = allById[id];
+                return b ? <span key={id} className="px-1 py-0.5 rounded-sm"
+                  style={{background:"var(--cr-card2)",color:"var(--cr-fgMuted)",border:"1px solid var(--cr-borderSoft)"}}>{b.title.length>20?b.title.slice(0,20)+"…":b.title}</span> : null;
+              })}
             </div>
           )}
         </div>
@@ -290,35 +295,35 @@ function MilestoneRow({
           <motion.div initial={{ height: 0, opacity: 0 }}
             animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }}
             transition={{ duration: 0.2 }} className="overflow-hidden">
-            <div className="px-4 pb-4 pt-1 space-y-3 text-[12px]" style={{ color: "#c4cfd9" }}>
+            <div className="px-4 pb-4 pt-1 space-y-3 text-[12px]" style={{ color: "var(--cr-fg)" }}>
               {ms.description && (
-                <p className="serif-body italic" style={{ color: "#a8b8c8" }}>{ms.description}</p>
+                <p className="italic" style={{ color: "var(--cr-fgMuted)" }}>{ms.description}</p>
               )}
 
               {/* Self-rating & logging */}
               <div className="grid grid-cols-2 gap-2">
-                <RatingRow label="Before" value={ms.selfRatingBefore ?? ms.targetProficiency - 3} color="#f59e0b"
+                <RatingRow label="Before" value={ms.selfRatingBefore ?? Math.max(1, (ms.targetProficiency||5) - 3)} color="#fb923c"
                   onChange={(v) => onSelfRate("selfRatingBefore", v)} />
                 <RatingRow label="After" value={ms.selfRatingAfter ?? ms.targetProficiency} color={color}
                   onChange={(v) => onSelfRate("selfRatingAfter", v)} target={ms.targetProficiency} />
               </div>
 
               {/* Log hours */}
-              <div className="flex items-center gap-2">
-                <span className="text-[10px] emperor-title tracking-widest" style={{ color: "#d4af37" }}>LOG HOURS</span>
+              <div className="flex items-center gap-2 flex-wrap">
+                <span className="text-[10px] font-bold tracking-widest" style={{ color: "var(--cr-accent2)" }}>LOG HOURS</span>
                 <input type="number" min={0.5} step={0.5} value={hourInput} onChange={(e)=>setHourInput(e.target.value)}
                   placeholder="0.5"
-                  className="w-16 bg-transparent px-2 py-1 rounded text-sm outline-none text-center"
-                  style={{ border: "1px solid rgba(255,255,255,0.1)" }} />
+                  className="w-16 bg-transparent px-2 py-1 rounded-sm text-sm outline-none text-center"
+                  style={{ border: "1px solid var(--cr-borderSoft)", color: "var(--cr-fg)" }} />
                 <div className="flex gap-1">
                   {[0.5,1,2].map((h) => (
                     <button key={h} onClick={()=>onLogHours(h)}
-                      className="text-[10px] px-2 py-1 rounded"
-                      style={{ background: "rgba(6,182,212,0.15)", color: "#67e8f9" }}>+{h}h</button>
+                      className="text-[10px] tracking-widest font-bold px-2 py-1 rounded-sm"
+                      style={{ background: "rgba(34,211,238,0.15)", color: "var(--cr-accent)", border: `1px solid ${color}55` }}>+{h}h</button>
                   ))}
                   <button onClick={()=>{const v=parseFloat(hourInput); if (!isNaN(v)&&v>0) onLogHours(v); setHourInput("");}}
-                    className="text-[10px] emperor-title px-2 py-1 rounded"
-                    style={{ background: "#0e7490", color: "#cffafe" }}>ADD</button>
+                    className="text-[10px] font-bold tracking-widest px-2 py-1 rounded-sm"
+                    style={{ background: "var(--cr-accent)", color: "var(--cr-bg)" }}>ADD</button>
                 </div>
               </div>
 
@@ -433,8 +438,8 @@ function RatingRow({ label, value, color, onChange, target }:
   { label: string; value: number; color: string; onChange: (v: number) => void; target?: number }) {
   return (
     <div>
-      <div className="flex items-center justify-between text-[10px] emperor-title tracking-widest mb-1">
-        <span style={{ color: "#8b9eb0" }}>{label.toUpperCase()}</span>
+      <div className="flex items-center justify-between text-[10px] font-bold tracking-widest mb-1">
+        <span style={{ color: "var(--cr-fgMuted)" }}>{label.toUpperCase()}</span>
         <span style={{ color }}>{value}/10{target ? ` → ${target}` : ""}</span>
       </div>
       <div className="flex gap-0.5">
@@ -442,7 +447,7 @@ function RatingRow({ label, value, color, onChange, target }:
           <button key={n} onClick={()=>onChange(n)}
             className="flex-1 h-3 rounded-sm transition"
             style={{
-              background: n <= value ? color : "rgba(255,255,255,0.08)",
+              background: n <= value ? color : "var(--cr-borderSoft)",
               boxShadow: n <= value ? `0 0 6px ${color}aa` : "none",
             }} />
         ))}
@@ -463,43 +468,43 @@ function Celebration({ roadmap, onClose }: { roadmap: CareerRoadmap; onClose: ()
       <motion.div initial={{ scale: 0.7, y: 40, rotateX: -20 }} animate={{ scale: 1, y: 0, rotateX: 0 }}
         exit={{ scale: 0.8, opacity: 0 }}
         transition={{ type: "spring", stiffness: 260, damping: 22 }}
-        className="relative rounded-3xl p-8 md:p-12 max-w-lg text-center overflow-hidden"
+        className="relative rounded-sm p-8 md:p-12 max-w-lg text-center overflow-hidden hud-corner"
         style={{
-          background: "linear-gradient(145deg,#0c1a22,#0a1418)",
+          background: "radial-gradient(ellipse at top, #0a1624, #02050a)",
           border: "2px solid rgba(212,175,55,0.6)",
-          boxShadow: "0 30px 100px -20px rgba(212,175,55,0.6), inset 0 1px 0 rgba(253,230,138,0.3)",
+          boxShadow: "0 30px 100px -20px rgba(34,211,238,0.4), inset 0 1px 0 rgba(253,230,138,0.3)",
         }}>
-        {/* slash */}
+        <span className="c-tr"/><span className="c-bl"/>
         <motion.div aria-hidden
           initial={{ clipPath: "inset(0 100% 100% 0)" }}
           animate={{ clipPath: "inset(0 -10% -10% 0)", opacity: [0,1,1,0] }}
           transition={{ duration: 0.7, delay: 0.1 }}
           className="absolute inset-0 pointer-events-none"
           style={{
-            background: "linear-gradient(135deg,transparent 46%,rgba(253,230,138,0.85) 49%,#fff 50%,rgba(253,230,138,0.85) 51%,transparent 55%)",
-            filter: "drop-shadow(0 0 16px rgba(253,230,138,1))",
+            background: "linear-gradient(135deg,transparent 46%,rgba(34,211,238,0.85) 49%,#fff 50%,rgba(34,211,238,0.85) 51%,transparent 55%)",
+            filter: "drop-shadow(0 0 16px rgba(34,211,238,1))",
           }} />
         <div className="text-6xl mb-2">{roadmap.icon}</div>
         <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ delay: 0.4, type: "spring" }}>
-          <Trophy size={64} className="mx-auto mb-3" style={{ color: "#d4af37", filter: "drop-shadow(0 0 20px rgba(212,175,55,0.8))" }} />
+          <Trophy size={64} className="mx-auto mb-3" style={{ color: "#facc15", filter: "drop-shadow(0 0 20px rgba(250,204,21,0.8))" }} />
         </motion.div>
-        <h2 className="imperial-name text-3xl md:text-4xl font-black" style={{
-          background: "linear-gradient(135deg,#fde68a,#d4af37,#fde68a)",
+        <h2 className="text-3xl md:text-4xl font-black tracking-widest" style={{
+          background: "linear-gradient(135deg,#fde68a,#facc15,#a78bfa)",
           WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text",
         }}>ROADMAP COMPLETE</h2>
-        <p className="serif-body italic text-sm mt-2" style={{ color: "#a8b8c8" }}>
-          You have mastered <span className="emperor-title not-italic" style={{ color: "#fde68a" }}>{roadmap.name}</span>.
+        <p className="text-sm italic mt-2" style={{ color: "#94a3b8" }}>
+          You have mastered <span className="not-italic font-bold" style={{ color: "#facc15" }}>{roadmap.name}</span>.
           Every milestone laid to rest. On to the next summit, commander.
         </p>
-        <div className="k-blade my-4" style={{ opacity: 0.5 }} />
+        <div className="my-4 h-px" style={{background:"linear-gradient(90deg,transparent,#facc15,transparent)"}}/>
         <button onClick={onClose}
-          className="emperor-title text-xs tracking-[0.3em] px-6 py-3 rounded-xl flex items-center gap-2 mx-auto font-black"
+          className="text-xs tracking-[0.3em] font-bold px-6 py-3 rounded-sm flex items-center gap-2 mx-auto"
           style={{
-            background: "linear-gradient(135deg,#d4af37,#9c7a1a)",
-            color: "#1a0f0a", border: "1.5px solid rgba(253,230,138,0.7)",
-            boxShadow: "0 8px 24px -8px rgba(212,175,55,0.9)",
+            background: "linear-gradient(135deg,#22d3ee,#a78bfa)",
+            color: "#02050a", border: "1.5px solid rgba(34,211,238,0.7)",
+            boxShadow: "0 8px 24px -8px rgba(34,211,238,0.9)",
           }}>
-          <Sword size={14}/> CLAIM VICTORY
+          <Target size={14}/> CLAIM VICTORY
         </button>
       </motion.div>
     </motion.div>
@@ -559,21 +564,23 @@ export default function RoadmapsSection() {
       {/* Header */}
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
-          <h2 className="text-2xl md:text-3xl imperial-name" style={{ color: isDark ? "#fde68a" : "#1a0f0a" }}>
-            Roadmaps
+          <h2 className="text-2xl md:text-3xl font-black tracking-wider flex items-center gap-2"
+            style={{ color: "var(--cr-fg)" }}>
+            <Map size={22} style={{color:"var(--cr-accent)"}}/> roadmaps.forge
           </h2>
-          <p className="text-sm serif-body italic mt-1" style={{ color: isDark ? "#a8b8c8" : "#7c5a44" }}>
-            Mastery in parallel — five pre-forged tracks, or forge your own.
+          <p className="text-[11px] tracking-widest mt-1 italic" style={{ color: "var(--cr-fgMuted)" }}>
+            &gt; mastery in parallel — five pre-forged tracks or forge your own
           </p>
         </div>
         <button onClick={() => setPicking(true)}
-          className="emperor-title text-xs tracking-[0.25em] px-4 py-2.5 rounded-xl flex items-center gap-2 font-black transition hover:scale-105"
+          className="text-[11px] tracking-[0.25em] font-bold px-4 py-2.5 rounded-sm hud-corner relative flex items-center gap-2 transition hover:scale-105"
           style={{
-            background: "linear-gradient(135deg,#0e7490,#164e63)",
-            color: "#cffafe",
-            border: "1.5px solid rgba(103,232,249,0.6)",
-            boxShadow: "0 8px 20px -8px rgba(6,182,212,0.8)",
+            background: "var(--cr-accent)",
+            color: "var(--cr-bg)",
+            border: "1.5px solid var(--cr-accent)",
+            boxShadow: "0 8px 20px -8px color-mix(in srgb, var(--cr-accent) 80%, transparent)",
           }}>
+          <span className="c-tr"/><span className="c-bl"/>
           <Plus size={15} /> FORGE ROADMAP
         </button>
       </div>
@@ -581,13 +588,13 @@ export default function RoadmapsSection() {
       {/* Hours donut + stats */}
       <div className="grid md:grid-cols-3 gap-3">
         <HoursDonut roadmaps={career.roadmaps} />
-        <div className="rounded-2xl p-4 md:col-span-2 grid grid-cols-2 md:grid-cols-4 gap-3"
-          style={{ background: isDark ? "linear-gradient(145deg,rgba(12,26,34,0.9),rgba(10,20,24,0.85))" : "rgba(255,248,228,0.95)",
-            border: "1px solid rgba(212,175,55,0.25)" }}>
-          <StatTile label="ACTIVE" value={career.roadmaps.filter(r=>r.status==="active").length} color="#67e8f9" icon={<Flame size={14}/>}/>
-          <StatTile label="COMPLETE" value={career.roadmaps.filter(r=>progressOf(r).pct===100).length} color="#a3e635" icon={<Trophy size={14}/>}/>
-          <StatTile label="TOTAL HRS" value={Math.round(career.roadmaps.reduce((n,r)=>n+r.phases.reduce((m,p)=>m+p.milestones.reduce((k,ms)=>k+ms.hoursEstimate,0),0),0))} color="#d4af37" icon={<Clock size={14}/>}/>
-          <StatTile label="MILESTONES" value={career.roadmaps.reduce((n,r)=>n+r.phases.reduce((m,p)=>m+p.milestones.length,0),0)} color="#ec4899" icon={<Target size={14}/>}/>
+        <div className="rounded-sm p-4 md:col-span-2 grid grid-cols-2 md:grid-cols-4 gap-3 hud-corner relative"
+          style={{ background: "var(--cr-card)", border: "1px solid var(--cr-border)" }}>
+          <span className="c-tr"/><span className="c-bl"/>
+          <StatTile label="ACTIVE" value={career.roadmaps.filter(r=>r.status==="active").length} color="var(--cr-accent)" icon={<Flame size={14}/>}/>
+          <StatTile label="COMPLETE" value={career.roadmaps.filter(r=>progressOf(r).pct===100).length} color="var(--cr-accent3)" icon={<Trophy size={14}/>}/>
+          <StatTile label="TOTAL HRS" value={Math.round(career.roadmaps.reduce((n,r)=>n+r.phases.reduce((m,p)=>m+p.milestones.reduce((k,ms)=>k+ms.hoursEstimate,0),0),0))} color="#facc15" icon={<Clock size={14}/>}/>
+          <StatTile label="MILESTONES" value={career.roadmaps.reduce((n,r)=>n+r.phases.reduce((m,p)=>m+p.milestones.length,0),0)} color="#f472b6" icon={<Target size={14}/>}/>
         </div>
       </div>
 
@@ -600,16 +607,15 @@ export default function RoadmapsSection() {
             <motion.button key={r.id}
               onClick={() => { setOpenId(isOpen ? null : r.id); if (!isOpen) setOpenPhaseId(null); }}
               whileHover={{ y: -3 }}
-              className="text-left relative rounded-2xl p-5 overflow-hidden transition"
+              className="text-left relative rounded-sm p-5 overflow-hidden transition hud-corner"
               style={{
-                background: isDark
-                  ? "linear-gradient(145deg, rgba(12,26,34,0.95), rgba(10,20,24,0.85))"
-                  : "linear-gradient(145deg, rgba(255,248,228,0.95), rgba(242,230,201,0.9))",
-                border: `1.5px solid ${isOpen ? r.color : (isDark ? "rgba(103,232,249,0.22)" : "rgba(6,182,212,0.25)")}`,
+                background: "var(--cr-card)",
+                border: `1.5px solid ${isOpen ? r.color : "var(--cr-borderSoft)"}`,
                 boxShadow: isOpen
                   ? `0 16px 40px -12px ${r.color}aa, inset 0 1px 0 ${r.color}55`
-                  : "0 6px 18px -10px rgba(0,0,0,0.7)",
+                  : "none",
               }}>
+              <span className="c-tr"/><span className="c-bl"/>
               <span aria-hidden className="absolute left-0 top-0 bottom-0 w-[3px]"
                 style={{ background: `linear-gradient(180deg, ${r.color}, ${r.color}90)`, boxShadow: `0 0 12px ${r.color}aa` }} />
 
@@ -617,17 +623,17 @@ export default function RoadmapsSection() {
                 <Donut value={prog.done} max={prog.total || 1} color={r.color} />
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-2 flex-wrap">
-                    <h3 className="emperor-title text-base font-black tracking-wide truncate"
-                      style={{ color: isDark ? "#f3e9d2" : "#1a0f0a" }}>
+                    <h3 className="text-base font-black tracking-wide truncate"
+                      style={{ color: "var(--cr-fg)" }}>
                       <span className="mr-1">{r.icon}</span>{r.name}
                     </h3>
-                    <div className="flex items-center gap-0.5 text-[10px] emperor-title px-1.5 py-0.5 rounded"
+                    <div className="flex items-center gap-0.5 text-[10px] font-bold tracking-widest px-1.5 py-0.5 rounded-sm"
                       style={{ color: r.color, background: `${r.color}18`, border: `1px solid ${r.color}40` }}>
-                      <Star size={9}/> {r.priority}
+                      <Star size={9}/> P{r.priority}
                     </div>
                   </div>
-                  <div className="flex items-center gap-2 mt-1 text-[11px] flex-wrap"
-                    style={{ color: isDark ? "#8b9eb0" : "#6b513d" }}>
+                  <div className="flex items-center gap-2 mt-1 text-[11px] flex-wrap tracking-wide"
+                    style={{ color: "var(--cr-fgMuted)" }}>
                     <span className="flex items-center gap-0.5"><Clock size={11}/>{r.weeklyHoursTarget}h/wk</span>
                     <span>·</span>
                     <span>Phase {prog.currentPhaseIdx + 1}/{r.phases.length}</span>
@@ -635,8 +641,8 @@ export default function RoadmapsSection() {
                     <span style={{ color: r.color }}>{prog.pct}%</span>
                   </div>
                   {r.description && (
-                    <p className="text-[11px] mt-1.5 line-clamp-2 serif-body italic"
-                      style={{ color: isDark ? "#8b9eb0" : "#6b513d" }}>
+                    <p className="text-[11px] mt-1.5 line-clamp-2 italic"
+                      style={{ color: "var(--cr-fgMuted)" }}>
                       {r.description}
                     </p>
                   )}
@@ -646,14 +652,14 @@ export default function RoadmapsSection() {
               {/* Horizontal progress */}
               <div className="mt-4">
                 <div className="h-1 rounded-full overflow-hidden"
-                  style={{ background: isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.08)" }}>
+                  style={{ background: "var(--cr-borderSoft)" }}>
                   <motion.div initial={{ width: 0 }} animate={{ width: `${prog.pct}%` }}
                     transition={{ duration: 0.8, ease: [0.22,1,0.36,1] }}
                     className="h-full rounded-full"
                     style={{ background: `linear-gradient(90deg, ${r.color}, ${r.color}cc)`, boxShadow: `0 0 10px ${r.color}` }} />
                 </div>
-                <div className="flex items-center justify-between mt-1.5 text-[10px] emperor-title tracking-wider"
-                  style={{ color: isDark ? "#8b9eb0" : "#6b513d" }}>
+                <div className="flex items-center justify-between mt-1.5 text-[10px] font-bold tracking-wider"
+                  style={{ color: "var(--cr-fgMuted)" }}>
                   <span>{prog.done}/{prog.total} milestones</span>
                   <span>{prog.hoursDone|0}/{prog.hoursTotal}h</span>
                 </div>
@@ -662,13 +668,13 @@ export default function RoadmapsSection() {
               {/* Action row */}
               <div className="flex items-center justify-between mt-3">
                 <span className="text-[10px] emperor-title px-2 py-1 rounded"
-                  style={{
-                    color: r.status === "active" ? "#67e8f9" : r.status === "paused" ? "#f59e0b" : prog.pct===100 ? "#a3e635" : "#6b7280",
-                    background: r.status === "active" ? "rgba(103,232,249,0.12)"
-                      : r.status === "paused" ? "rgba(245,158,11,0.12)"
-                      : prog.pct===100 ? "rgba(163,230,53,0.15)" : "rgba(107,114,128,0.1)",
-                    border: `1px solid ${r.status === "active" ? "rgba(103,232,249,0.35)" : r.status === "paused" ? "rgba(245,158,11,0.3)" : prog.pct===100 ? "rgba(163,230,53,0.4)" : "rgba(107,114,128,0.25)"}`,
-                  }}>
+          style={{
+                color: r.status === "active" ? "var(--cr-accent)" : r.status === "paused" ? "var(--cr-accent2)" : prog.pct===100 ? "var(--cr-accent3)" : "var(--cr-fgMuted)",
+                background: r.status === "active" ? "rgba(34,211,238,0.12)"
+                  : r.status === "paused" ? "rgba(251,146,60,0.12)"
+                  : prog.pct===100 ? "rgba(52,211,153,0.15)" : "rgba(100,116,139,0.1)",
+                border: `1px solid ${r.status === "active" ? "rgba(34,211,238,0.35)" : r.status === "paused" ? "rgba(251,146,60,0.3)" : prog.pct===100 ? "rgba(52,211,153,0.4)" : "rgba(100,116,139,0.25)"}`,
+              }}>
                   {prog.pct===100 ? "COMPLETE" : r.status.toUpperCase()}
                 </span>
                 <div className="flex items-center gap-1 opacity-60 hover:opacity-100 transition">
@@ -824,7 +830,7 @@ export default function RoadmapsSection() {
                                 return (
                                   <div id={`ms-${ms.id}`} key={ms.id}>
                                     <MilestoneRow
-                                      ms={ms} index={mi} color={active.color} locked={locked}
+                                      ms={ms} index={mi} color={active.color} locked={locked} allById={msMap}
                                       onToggle={() => {
                                         if (locked) return;
                                         toggleMilestoneDone(active.id, ph.id, ms.id);
@@ -929,13 +935,14 @@ export default function RoadmapsSection() {
 
 function StatTile({ label, value, color, icon }: { label: string; value: number | string; color: string; icon: React.ReactNode }) {
   return (
-    <div className="rounded-xl p-3 flex items-center gap-3"
-      style={{ background: "rgba(0,0,0,0.2)", border: `1px solid ${color}33` }}>
-      <div className="w-9 h-9 rounded-lg flex items-center justify-center"
+    <div className="rounded-sm p-3 flex items-center gap-3 hud-corner relative"
+      style={{ background: "var(--cr-card2)", border: `1px solid ${color}55` }}>
+      <span className="c-tr"/><span className="c-bl"/>
+      <div className="w-9 h-9 rounded-sm flex items-center justify-center"
         style={{ background: `${color}22`, color }}>{icon}</div>
       <div>
-        <div className="text-[9px] emperor-title tracking-widest" style={{ color: "#8b9eb0" }}>{label}</div>
-        <div className="text-xl font-black leading-tight" style={{ color: "#f3e9d2" }}>{value}</div>
+        <div className="text-[9px] font-bold tracking-widest" style={{ color: "var(--cr-fgMuted)" }}>{label}</div>
+        <div className="text-xl font-black leading-tight" style={{ color: "var(--cr-fg)" }}>{value}</div>
       </div>
     </div>
   );
