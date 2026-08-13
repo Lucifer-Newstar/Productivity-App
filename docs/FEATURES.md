@@ -1,11 +1,24 @@
-# Workout Feature Status
+# Kaizen Feature Status
 
-Last audited against the 149-feature checklist (35 cali + 45 gym + 22 cardio +
-47 global). Legend:
+Last audited against code on `career` branch. Two independent spaces ship today:
+**Workout** (battle-tested on `main`) and **Career** (active build on `career`).
+Both use the same Kaizen obsidian/gold/crimson imperial theme, the floating
+command-button nav pattern (⚔ BATTLE for workout, ⚔ COMMAND for career), the
+inline (non-modal) GoldenDragon card with katana slashes, and `SectionSlash`
+katana-flash transitions between sub-pages.
+
+Legend:
 
 - ✅ Shipped, wired to the store, persists across refresh
-- 🟡 Present in the UI but local-state-only, or scaffold/placeholder, or missing a calculation
+- 🟡 Present in the UI but scaffold/local-only or missing a calculation
 - ❌ Not yet implemented
+
+---
+
+# Workout Feature Status
+
+Audited against the 149-feature checklist (35 cali + 45 gym + 22 cardio +
+47 global).
 
 ## Calisthenics (35)
 
@@ -35,7 +48,7 @@ Last audited against the 149-feature checklist (35 cali + 45 gym + 22 cardio +
 |22 | Rest-Pause for Cali | ✅ `isRestPause` / `restPauseAttempts` fields on attempts |
 |23 | Accessory Linker | ✅ `accessoryIds[]` per skill |
 |24 | Test Day Logger | ✅ `isTestDay` flag on attempts |
-|25 | EMOM Tracker | ✅ Running MM:SS timer, per-minute rep input, perMinuteReps persisted to intervalLogs, WebAudio beep each minute
+|25 | EMOM Tracker | ✅ Running MM:SS timer, per-minute rep input, perMinuteReps persisted to intervalLogs, WebAudio beep each minute |
 |26 | AMRAP Tracker | ✅ Cap timer, rounds+reps entry, auto-beep at cap, persisted to intervalLogs with notes |
 |27 | Flow Sequence + Quality | ✅ (same as #5) |
 |28 | Mind-Muscle Connection | ✅ `mmc` 1–10 field on attempts |
@@ -102,7 +115,7 @@ Last audited against the 149-feature checklist (35 cali + 45 gym + 22 cardio +
 | # | Feature | Status |
 |---|---|---|
 | 1 | Distance & Time | ✅ All 8 type chips + distance + duration |
-| 2 | Route Name & Comparison | ✅ Route stored; comparison view coming |
+| 2 | Route Name & Comparison | 🟡 Route stored; no side-by-side comparison view |
 | 3 | HR Recovery | ✅ avgHR − 2min-post computed live |
 | 4 | Cadence Tracker | ✅ SPM field |
 | 5 | Negative Split Tracker | ✅ `isNegativeSplit()` helper + `splitsSec[]` field |
@@ -124,7 +137,7 @@ Last audited against the 149-feature checklist (35 cali + 45 gym + 22 cardio +
 |21 | Brick Workout | ✅ Toggle + chip + `brickNextType` |
 |22 | Cardio Injury Notes | ✅ Free-text + `injuryTags[]` (shin/ITB/achilles/plantar) |
 
-## Global (47)
+## Global workout (47)
 
 | # | Feature | Status |
 |---|---|---|
@@ -152,7 +165,7 @@ Last audited against the 149-feature checklist (35 cali + 45 gym + 22 cardio +
 |22 | Weekly Volume | ✅ Card in Global |
 |23 | Joint Pain Check | ✅ Post-session multi-select; accessory/prehab recs on Overview |
 |24 | Soreness Rating | ✅ Daily readiness slider 1–10 |
-|25 | Completion Timeline | ✅ "Recent sessions" timeline on Overview shows last 10 completed sessions reverse-chronological with volume/duration/sets/rating; full history available via individual exercise drawers + CSV export |
+|25 | Completion Timeline | ✅ "Recent sessions" timeline on Overview shows last 10 completed sessions reverse-chronological with volume/duration/sets/rating; full history via exercise drawers + CSV export |
 |26 | Calendar View | ✅ Month view with prev/next, pink workout-day cells |
 |27 | Global Streak | ✅ |
 |28 | Consistency Score | ✅ `consistencyScore()` shows % in stat card |
@@ -163,7 +176,7 @@ Last audited against the 149-feature checklist (35 cali + 45 gym + 22 cardio +
 |33 | Time Preference | ✅ `timePreference()` shows most common bucket |
 |34 | Unified Journal | ✅ Add/delete/search entries |
 |35 | Notes Search | ✅ Client-side full-text filter |
-|36 | Trend Analysis | ✅ 52-week heatmap + 12-week volume sparkline on Overview (with avg/this-week/Δ); RPE trend + per-session volume bars in Exercise History drawer |
+|36 | Trend Analysis | ✅ 52-week heatmap + 12-week volume sparkline on Overview (with avg/this-week/Δ); RPE trend + per-session volume bars in Exercise History drawer; Charts page adds 12-week area, 14-day muscle donut, weekday freq, duration histogram, RPE distribution, split bars, bodyweight line, PR grid |
 |37 | Goal Tracking | ✅ Expanded create form: metric selector (workouts/streak/volume-kg/bodyweight-kg/1rm-kg), target, by-date, exercise picker for 1RM goals; auto-achievement detection |
 |38 | Goal Celebration | ✅ Dedicated lime CelebrationModal ("🎯 Goal achieved!") |
 |39 | Program Progress (Week X of Y) | ✅ Week-X-of-Y chip + progress bar on Schedule; auto workoutNumber tagging on start |
@@ -176,104 +189,255 @@ Last audited against the 149-feature checklist (35 cali + 45 gym + 22 cardio +
 |46 | Motivation Board | ✅ Add/delete custom quotes/PRs/goals, seeded with 3 entries |
 |47 | Challenge Logger | ✅ Create 30-day challenges, toggle days, persisted |
 
-## Core workout features (pre-existing)
+## Workout routes shipped
 
-All of the "Ultimate Workout App Checklist" tier-0 items are shipped: PRs with
-history + 1RM, skills/progressions, multi-unit exercises (reps / seconds /
-meters / kg) with equipment/level/pattern filters, schedule w/ sets × reps, per-set
-timer + rest timer w/ beep, RIR, 7-day muscle heatmap, CSV export, warm-up
-generator, cooldown, achievement badges with confetti, streaks, readiness,
-dark mode, glove mode, minimal mode, one-thumb nav during sessions, 3D muscle
-model (89-region anatomical SVG).
+| URL | File | Purpose |
+|---|---|---|
+| `/workout` | `pages/workout/index.tsx` | redirect → `/workout/overview` |
+| `/workout/overview` | `pages/workout/overview.tsx` | Today at a glance (heatmap, badges, next-workout, recent timeline, 12-wk trend) |
+| `/workout/library` | `pages/workout/library.tsx` | Exercise library + mini muscle-map + pattern browser |
+| `/workout/calisthenics` | `pages/workout/calisthenics.tsx` | Chains, skills, iso/AMRAP/EMOM/GtG/flows/mobility/rest-day |
+| `/workout/gym` | `pages/workout/gym.tsx` | Weights logging + calculators (1RM/plate/DB-BB/Wilks/LT/RPE/symmetric) |
+| `/workout/cardio` | `pages/workout/cardio.tsx` | 8 cardio types + zones/VO2/economy/injury tags |
+| `/workout/charts` | `pages/workout/charts.tsx` | 10-panel SVG analytics dashboard |
+| `/workout/kanban` | `pages/workout/kanban.tsx` | 5-column weekly planner (Backlog/This Week/Today/In Progress/Done) with HTML5 DnD |
+| `/workout/prs` | `pages/workout/prs.tsx` | Personal records by exercise |
+| `/workout/skills` | `pages/workout/skills.tsx` | Hierarchical skill-tree SVG |
+| `/workout/schedule` | `pages/workout/schedule.tsx` | Routines/splits + program manager + block reorder |
+| `/workout/tools` | `pages/workout/tools.tsx` | Timers, journal, challenges, quotes, CSV import/export, demo-data loader |
 
-## Updated this session
+## Workout remaining backlog (intentionally deferred)
 
-- ✅ **Real sub-pages**: `/workout/overview`, `/workout/library`, `/workout/calisthenics`, `/workout/gym`, `/workout/cardio`, `/workout/prs`, `/workout/skills`, `/workout/schedule`, `/workout/tools` — each is its own file in `pages/workout/` using the `WorkoutPage` HOC with `fullScreen = true`; index redirects to `/overview`. AnimatePresence cross-fades between them; left-rail + mobile bottom-tab nav uses `router.push` with `scroll:false` for instant feel.
-- ✅ **Expanded exercise library**: ~120 seeded movements across chest / back / shoulders / arms / legs / core / cali skills / cardio. Each tagged with primary + secondary muscles, equipment, level, movement pattern, and 2–4 form cues. Replaces the previous 15-exercise seed.
-- ✅ **Mini muscle-map on the Library**: compact (200px) sticky sidebar rendering of the anatomical SVG. Clicking a region filters the grid to exercises targeting that muscle (primary OR secondary). Hovering an exercise card highlights its primary muscle on the map via the `highlight` prop. Quick-filter chips + equipment/level/pattern chips + search sit below.
-- ✅ **Back muscle SVG bug fixed**: `<g transform="translate(-34,0)">` on the back group + widened viewBox `-8 -28 48 125` so back muscles (authored at x≈32..67) render in frame.
-- ✅ **UI comfort pass**: cards bumped to p-6 with gap-7 between sections, hero panels have 8 px internal padding, larger 28px hero icons, ambient colored blobs tuned, hover glow on exercise cards matches the muscle color, transitions 0.2–0.28s eased.
-- ✅ **Backend** Express server (port 4000): `/api/health`, full CRUD on `/api/exercises`, session helpers (`/api/sessions/:id/sets` auto-tallies volume; `PATCH /api/sessions/:id/finish` sets duration), `/api/analytics/*`, `/api/sync`. CORS open to :3000. `tsc` passes.
-- ✅ **ActiveWorkout Set Details**: bar-spin OK, sticking-point selector (off-floor/mid-range/lockout/transition), mental state (locked-in/distracted/anxious/tired), tempo string (e.g. 3-1-2-1), superset/giant/cluster/myo-rep/unilateral toggles (cluster accepts comma-separated micro-set reps + inter-set rest; myo-rep RPE stop selector; unilateral captures L/R reps).
-- ✅ **Post-session check-in** modal pops on finish: 1–10 session rating, joint-pain multi-select, crowd level, training phase, free-text note — all persisted to the session.
-- ✅ **Per-exercise history drawer** (clock icon on library cards): total sets, best set, total volume, sparkline of estimated 1RM over time with PR dots, recent-sets list with RPE/RIR/flags.
-- ✅ **Next-workout suggestion engine** (`suggestNextWorkout()`): picks today's scheduled routine with an intensity note (deload/easy/normal/push/PR based on readiness + deload detection), otherwise picks the most undertrained major muscle group from last 5 days avoiding yesterday's muscles; shown as "Suggested today" card on overview.
-- ✅ **CelebrationModal** reusable spring-animated full-screen overlay used for PRs and goal achievement.
-- ✅ **Symmetric Strength chart** on Gym tab: best squat/bench/deadlift/OHP 1RM vs powerlifting-standard ratios (1.00/0.75/1.25/0.45), animated fill, balance percentage color-coded.
-- ✅ **Lactate threshold** card: age input + trained toggle → Max HR, LT1 (~77%), LT2 (~90% trained).
-- ✅ **RPE auto-calibration** card: after 3+ sets logged with RPE, shows sample count, mean error vs. standard RPE table, and a personal multiplier.
-- ✅ **Goal progress bars + auto-achievement**: each goal shows current/target with progress bar; progress computed via `goalProgress()` for workouts/streak/volume/bodyweight/1RM; when a goal flips to achieved it's stamped with `achievedAt`, crossed out in lime, and triggers the celebration modal.
-- ✅ **Dependencies** bumped within the pinned React 18 / Next 14 line: next 14.2.35 (latest 14.x patch, fixes many GHSAs), postcss 8.5.26, lucide-react & framer-motion latest. Removed unused `body-muscles` package.
-
-## Latest batch (continuing)
-
-- ✅ **Freestyle / Quick-start logger**: sessions created without a routine (e.g. Quick start, Frankenstein) no longer hit the dead "All sets done" screen. A new `FreestyleWorkout.tsx` component drives a free-form session: search + muscle/equipment filters to pick exercises, per-exercise set logging with all RPE/RIR/warmup flags, rest timer between sets, blocks are persisted to `session.adHocBlocks[]` so history/CSV/refresh resolves names correctly. Re-selecting an existing exercise returns to its running counter.
-- ✅ **Freestyle persistence**: new `session.adHocBlocks?: WorkoutBlock[]` field + `addAdHocBlock()` store action. `getExerciseForBlock()` now scans both routine blocks AND session ad-hoc blocks, so every downstream feature (history drawer, CSV, volume heatmaps) works for freestyle sets.
-- ✅ **Program Week X of Y** card on Schedule: active program card shows week X of Y chip, workouts/total count, start date, gradient progress bar. New-program form (name/weeks/days/week, starts today). Starting any routine while a program is active auto-tags the session with `programId` + `workoutNumberInProgram`.
-- ✅ **Goal creation form** expanded: metric selector (workouts / streak / volume-kg / bodyweight-kg / 1rm-kg), numeric target, optional by-date, exercise picker when metric is 1RM. Collapsible form (New goal / Close).
-- ✅ **Joint-pain → accessory recommender**: `recommendedAccessories()` maps each joint tag (shoulders/elbows/wrists/neck/upper-back/lower-back/hips/knees/ankles/shins) to 3–4 specific prehab/accessory tips. Shown automatically on Overview after a session that logged pain.
-- ✅ **12-week volume trend sparkline** on Overview: filled SVG area chart with 12 weekly points, average/this-week/delta stat line, pink dot for latest week.
-- ✅ **RPE trend + per-session volume bars** added to `ExerciseHistoryDrawer`. Drawer now resolves sets from both routine and ad-hoc blocks (so freestyle sets show up).
-- ✅ Minor gap-fill: bar-spin, sticking point, and mental-state selectors were typed but not rendered in the set-details panel — now visible; updated status rows accordingly.
-- ✅ **Hierarchical skill tree SVG**: branched visualization on the Skills page. Each skill is a vertical branch with progression nodes bottom-to-top, completed nodes filled lime with checkmark, the next-in-line node gets a dashed amber ring, future nodes are dim. A gradient bar fills the trunk up to the highest completed progression. Skill names label the top node. Nodes are clickable to toggle.
-- ✅ **CSV import**: new `importSession()` store action inserts a fully-formed session into state (with ad-hoc block resolution, totalVolumeKg, streak recompute). The Tools page now has Import CSV next to Export: parses the same CSV columns the export writes, groups rows by date into sessions, auto-creates unknown exercises as "misc", assigns ad-hoc block ids per exercise, and commits one session per date via `importSession()`.
-- ✅ **Data card** on Tools page with Import/Export CSV buttons.
-- ✅ **AMRAP history chart** in Exercise History drawer: per-session max-reps bar chart for sessions with AMRAP-flagged sets (last 15), hover shows rep count.
-- ✅ **In-session history button** (clock icon) in the current-exercise hero of both ActiveWorkout and FreestyleWorkout opens the per-exercise drawer mid-session without interrupting the timer.
-- ✅ **Movement Pattern Library browser** on Library page: 9-pattern grid card with one-line descriptions and per-pattern exercise counts; clicking a pattern card filters the grid.
-- ✅ **Cali unlock celebration**: added 🎉 lime "Skill milestone" celebration firing via the generic CelebrationModal when a progression is toggled to 100% of a skill (handled in WorkoutSkills).
-
-## QA batch (workout branch)
-
-- ✅ **Mock-data generator** (`frontend/lib/mockData.ts`): `generateSeedData({exercises, routines})` returns ~12 weeks of realistic training history — Push/Pull/Leg split + occasional cardio with linear progression noise, PRs, daily readiness, bodyweight trending 72→70.5 kg, journal entries, 3 goals, and a 30-day push-up challenge (~20 days in). Intended for QA and live demos.
-- ✅ **`seedDemoData()` / `resetWorkoutData()`** store actions: lazy-imports the generator (zero cost on production bundles) and overwrites sessions/prs/readiness/bodyweight/goals/challenges/journal while preserving the exercise library, routines, skills, chains, and settings. Streaks are recomputed from the imported sessions. Reset returns logs to the pristine seed.
-- ✅ **Demo / QA Data card on Tools**: gradient purple card with "Load demo data" (with confirm) and "Reset" buttons; makes the mock dataset one click away.
-- ✅ **Block reorder in Schedule**: ↑/↓ hover buttons on each block call `reorderBlocks(rid,from,to)` so routines can be rearranged without delete/re-add.
-- ✅ **Superset auto-skip rest** in ActiveWorkout: when the next block shares a `supersetGroupId`, the rest timer is skipped, a 660 Hz / 150 ms chirp plays, and a "→ superset" chip appears next to the set counter. Giant sets (≥3 blocks in a group) work identically and get a GIANT badge.
-- ✅ **Unilateral asymmetry auto-tag**: when Unilateral is enabled and L/R rep counts differ by ≥2, `asymmetry` is auto-set to `left-weak` or `right-weak` (else `none`).
-- ✅ **RIR trend strip** added to ExerciseHistoryDrawer alongside the existing RPE strip, with bandlines and color-coded dots (red at RIR ≤1).
-- ✅ **Recent sessions timeline** added to Overview's left column: last 10 completed sessions, reverse-chronological, with volume/duration/set count/rating.
-- ✅ **Type-safety fixes**: asymmetry IIFE now returns a properly-narrowed union; mockData resolves `find()?.id ?? …` to `string | undefined` (was `string | null`); `reorderBlocks` verified present in the value object export. `tsc --noEmit` and `next build` both clean.
-- ✅ **Docs**: new `docs/qa/TEST-REPORT.md` with build status, shipped list, bug fixes, and a QA walkthrough script.
-
-### Remaining backlog (intentionally deferred)
 - Hormonal cycle sync
 - Side-by-side workout comparison
-- Cloud backup/sync UI (backend `/api/sync` already exists; no UI planned)
-- GtG long-horizon trend (7-day sparkline + streak ship now; 30/90-day deferred)
+- Cloud backup/sync UI (backend `/api/sync` exists; no UI planned)
+- GtG 30/90-day long-horizon trend (7-day sparkline ships)
 - Auto assistance-reduction suggester for cali progressions
 - Keyboard shortcuts during ActiveWorkout (snoozed)
 - Notifications dropdown / bell logic (snoozed)
 - Run power / Stryd `.fit` import (field reserved, no importer)
 - Cardio route comparison view (route name logged, no side-by-side chart)
 
+---
 
-## Polishing pass
+# Career Feature Status
 
-- ✅ **Bodyweight popup ack → localStorage** (was sessionStorage, so a same-day hard refresh re-prompted).
-- ✅ **Cali tab fully wired to the store** (previously ~half the UI was local-only stubs):
-    - Chain toggles → `toggleChainProgression` with a WebAudio chirp on first unlock.
-    - Skills tab reads from `caliSkills[]`, shows bestAttempt (reps / holdSec / ringHeight), last fail, archived state with delete.
-    - **Log attempt modal**: reps, hold-seconds, ring-height slider (80–260 cm, only for ring skills), assistance text, MMC 1–10, tempo string, quality chips, test-day flag, rest-pause + mini-set reps. Persists via `logCaliAttempt` which now also stamps `firstAttemptDate` + updates `bestAttempt` automatically.
-    - **Log fail modal**: free-text reason + quick-tag chips (grip/core/shoulders/wrists/balance/mobility), persists via `logCaliFail`.
-    - **First-unlock celebration**: distinct amber modal "🔥 Unlocked: <skill>!" fires on the first ≥1-rep attempt, then calls `unlockCaliSkill`.
-    - **Isometric timer** beeps on start/stop, Log button writes to `isometricLogs`; recent entries shown inline.
-    - **AMRAP**: cap timer with auto-beep at time cap, rounds + extra-reps fields, Save writes an `intervalLogs` entry with summary notes.
-    - **EMOM**: running MM:SS clock, minute-beep every 60s, per-minute rep logger, Stop & Save writes to `intervalLogs` with `perMinuteReps[]`.
-    - **GtG**: hourly grid now reads/writes via `toggleGtG(exercise, reps)` with custom exercise name + default reps inputs, 7-day volume sparkline, auto-computed day streak.
-    - **Flows**: wired to `addFlow`/`deleteFlow` (previously local state), with hover-reveal delete.
-    - **Mobility**: checkboxes write to `logMobility` and render recent sessions from the store; "+" adds custom drills via `addMobilityDrill`.
-    - **Rest day**: chips write to `logRestDay` and show recent entries from the store.
-- ✅ **logCaliAttempt** now stamps `firstAttemptDate` on first attempt and updates `bestAttempt` (reps/holdSec/ringHeight) when a new best is hit.
-- ✅ **Add-skill form on Cali tab**: collapsible form for custom skills — name, movement pattern, difficulty 1–10, equipment multi-select (rings/bar/parallettes/bands/vest/dip-bars/none), optional **baseline ring-height slider (80–260 cm)** shown when rings are selected, optional video URL. Writes via `addCaliSkill`, which auto-fills attempts/failLog/archived.
-- ✅ **Empty-state CTAs across the workout pages**: every italic \"No X yet\" line replaced with a consistent dashed-card empty state containing an icon, a helpful one-line hint, and a contextual primary CTA (Start workout / Build a routine / Load demo data / Add X above). Covers Overview (heatmap, badges, recent timeline), Calisthenics (chains / skills / flows / mobility), Cardio, Gym history, Tools (goals / challenges / journal / franken), Schedule, Skills, Library/Exercises. Inline \"no PR yet\" and drawer \"no sets\" spans left as-is (not full-page empties).
-- ✅ **Ring-height baseline** surfaced on both skill creation (add form) and every Log-attempt modal for ring skills, with the slider pre-filled to the skill's stored `ringHeightCm`. Best-attempt stamp includes the cm value.
-- ✅ **Cardio logs now persist to the store** (were previously local-state-only and lost on refresh). `WorkoutCardio` now reads/writes through `addCardioLog` / `deleteCardioLog` against `workout.cardioLogs`, so entries survive refresh, appear in CSV export, and populate from `seedDemoData` (4 seeded runs: 12/7/3/1 days ago with progressing pace).
-- ✅ **GtG toggle fix**: hour-slot matching is now by `date+hour` only (ignores exercise name) so changing the name in the input doesn't create orphaned entries; clicking the same hour toggles off correctly, otherwise it overwrites reps/name.
-- ✅ **Reset now clears all log slices** (cardioLogs, GtG, iso, interval, cali flows, mobility sessions, planche entries) not just sessions/PRs/goals/journal/challenges, so `Reset` truly returns to a clean state.
-- ✅ **PRs page** empty-state upgraded with the same dashed-card pattern + Load-demo CTA.
-- ✅ **Charts page** (`/workout/charts`): pure-SVG analytics dashboard — KPI strip (sessions/total volume/minutes/PRs), 12-week filled area chart of weekly volume, 14-day muscle-group volume donut, weekday frequency bars, session-duration histogram, RPE distribution bars, strength/cardio/rest split horizontal bars, 90-day bodyweight line chart, and a PR-progression sparkline grid. No chart libraries added.
-- ✅ **Kanban board** (`/workout/kanban`): 5-column weekly planner (Backlog / This Week / Today / In Progress / Done) with native HTML5 drag-and-drop, quick-add bar with type selector (strength/cardio/cali/mobility/rest/other), per-card notes editor, color-coded type tags, completion checkbox (moves card to Done), delete, "Clear done" bulk action, and progress bar showing weekly completion %. Persists to `workout.kanban`.
-- ✅ **Expanded cali skills seed** (researched): now 13 canonical bodyweight moves — L-sit, Pistol Squat, Bar Muscle-up, Ring Muscle-up (baseline 190cm rings), Planche, Front Lever, Back Lever, HSPU, Human Flag, One-Arm Pull-up, V-sit, Ring Dip (150cm baseline), Nordic Curl. Difficulty 5–10, equipment properly tagged (rings/parallettes/bar/none) with ring-height baselines where rings are used.
-- ✅ **Expanded generic Skills seed**: added Pistol Squat, Planche, Front Lever, Ring Dips alongside existing Pull-up and Handstand, each with research-backed progressions (e.g. pistol: assisted-box → negative → assisted → full → weighted).
-- ✅ **Nav additions**: Charts (cyan analytics icon) and Board (pink kanban icon) added to left rail; Board added to mobile bottom bar as a primary tab.
+The `/career` space ships 8 sections under one COMMAND-navigated shell. The
+floating ⚔ COMMAND button (cyan/gold palette, mirroring workout's BATTLE) opens
+the inline GoldenDragon CommandCard, which presents the 8 sections as
+numbered Roman-sigil tiles (成長 kanji in header). Tsuba-giri katana slashes
+transition between sections; Escape closes the card; the active section dot
+uses Framer Motion `layoutId`. Auto-seeded on first visit: 5 pre-built roadmap
+templates (DevOps, Networking, Linux, MLOps, Cloud) cloned with full phases,
+milestones, resources, projects, labs, and hours.
+
+## 1. Roadmaps (template forge + parallel trackers)
+
+| # | Feature | Status |
+|---|---|---|
+| 1 | Template forge (5 curated templates) | ✅ DevOps (8 phases), Networking (6), Linux (7), MLOps (8), Cloud (8) — full phases/milestones/resources/projects/labs/hours/proficiency targets in `lib/careerRoadmaps.ts`, `cloneTemplate()` re-IDs all children |
+| 2 | Parallel roadmaps | ✅ Any number active simultaneously; list + drilldown |
+| 3 | Weekly hours allocation (donut) | ✅ `HoursDonut` SVG multi-segment ring across all active roadmaps + per-roadmap weekly-hours slider |
+| 4 | Priority 1-10 | ✅ Shown as badge; 🟡 no drag-rank UI yet (numeric input future) |
+| 5 | Phases | ✅ Collapsible chevron per phase; per-phase progress `done/total · h` |
+| 6 | Milestones | ✅ Title, est/actual hours, before/after self-rating 1-10, resources, projects, lab checklist, mastery quiz |
+| 7 | Dependencies + locking | ✅ `dependsOn[]`; locked milestones render 🔒 with disabled checkbox + prereq note |
+| 8 | Dependency graph/edges | ❌ Lock works; no visual edge lines between milestones yet |
+| 9 | Resources toggle | ✅ Checkbox per resource marks complete |
+|10 | Projects toggle | ✅ Checkbox per project marks complete |
+|11 | Lab checklist | ✅ Per-item toggle |
+|12 | Mastery self-check (quiz) | ✅ Default 3-question yes/partial/no seeded on expand; % score color-coded |
+|13 | Log hours | ✅ Input + +0.5/+1/+2 quick add; persists to `hoursActual` |
+|14 | Before/after proficiency | ✅ Two 1-10 sliders with small bar viz |
+|15 | Estimated vs actual hours | ✅ `hoursEstimated` in templates; actual accumulated via log |
+|16 | Donut progress ring per roadmap | ✅ SVG ring top-left of each card shows % complete |
+|17 | 4-tile stat header | ✅ ACTIVE / COMPLETE / TOTAL HRS / MILESTONES |
+|18 | Completion celebration | ✅ Fixed-overlay `Celebration` modal with trophy, katana slash, "CLAIM VICTORY" button; fires on 100% via effect |
+|19 | Next Action button | ✅ Scrolls to `#ms-<id>` and auto-opens the first undone milestone's phase |
+|20 | Archive / delete | ✅ `archiveRoadmap` / `deleteRoadmap` actions wired |
+|21 | Skill cross-links | 🟡 `skillTags[]` field exists on milestones; no auto-bump UI when milestone completes yet |
+|22 | Global resources library | ❌ |
+|23 | Drag-rank priority UI | ❌ Priority number displayed but not draggable |
+
+## 2. Skills inventory
+
+| # | Feature | Status |
+|---|---|---|
+| 1 | 1-10 proficiency slider | ✅ |
+| 2 | Confidence slider | ✅ |
+| 3 | Interest slider | ✅ |
+| 4 | Usage frequency | ✅ daily/weekly/monthly/rarely dropdown |
+| 5 | Category grouping | ✅ Technical/Leadership/Communication/Design/Domain/Other |
+| 6 | "Used today" touch | ✅ Button stamps `lastUsedAt = now` |
+| 7 | Decay 90-day warning | ✅ Yellow STALE badge >90d, red ROTTING >180d with days-ago |
+| 8 | Radar/spider chart | ✅ `SkillRadar` SVG, up to 8 axes (sorted by proficiency), concentric decagons, dashed gold confidence overlay, hover tooltips |
+| 9 | Mind-map graph | ❌ Radar done; graph links deferred |
+|10 | Growth chart | ✅ `GrowthChart` 21-day sparkline with peak/avg/low band, carry-forward interpolation |
+|11 | Top skills leaderboard | ✅ `TopSkills` ranked top-5 with ▲/▼ delta since first growth point |
+|12 | Growth history | ✅ Daily growth points deduped by date; auto-appended when proficiency changes |
+|13 | Confidence | ✅ (on radar overlay) |
+|14 | Interest | ✅ Slider; not yet visualized in its own chart |
+|15 | Mentor field | 🟡 Field typed in `CareerSkill`; no UI yet |
+|16 | Portfolio links | 🟡 Field typed; no UI yet |
+|17 | Gap analysis (desiredLevel) | 🟡 Field typed; no viz yet |
+|18 | Cert/project linking | ❌ |
+|19 | Decay recommendation | ❌ No recommended-action text yet |
+
+## 3. Certs & Courses
+
+| # | Feature | Status |
+|---|---|---|
+| 1 | Add/edit/delete | ✅ |
+| 2 | Provider | ✅ |
+| 3 | Start/end date | ✅ |
+| 4 | Cert-received toggle | ✅ Checkbox in add form |
+| 5 | Expiry date | ✅ |
+| 6 | Expiry countdown <90d | ✅ Yellow warning; <30d/expired red; warning pill on each card |
+| 7 | Expiry warning stat | ✅ 5th stat chip shows count of certs in warning window |
+| 8 | Hours invested | ✅ |
+| 9 | Rating 1-10 | ✅ Dropdown in add form; ⭐ shown on card |
+|10 | Key takeaways | ✅ Field on add form + displayed on card |
+|11 | Application notes | ✅ Field on add form + displayed on card (amber label) |
+|12 | Notes | ✅ Field + italic serif rendering |
+|13 | Visual countdown timer (progress bar) | ❌ Text only; bar future |
+
+## 4. Network
+
+| # | Feature | Status |
+|---|---|---|
+| 1 | Add/edit/delete contacts | ✅ |
+| 2 | Relationship groups filter | ✅ Mentor/Peer/Report/Client/Prospect/Recruiter/Friend + All chip |
+| 3 | Health score 1-10 | ✅ Slider + pill |
+| 4 | Influence score 1-10 | ✅ Slider + pill |
+| 5 | Last-contact staleness | ✅ STALE >90d amber; COLD >180d red; days-ago shown |
+| 6 | Favor bank (given/received) | ✅ +1 Given / +1 Received buttons; imbalance ≥3 highlighted red/amber |
+| 7 | Interaction log | ✅ Per-contact entries: date, type, summary, gold nuggets; last 5 shown |
+| 8 | Gold nuggets | ✅ Quoted amber italic "💬 ..." |
+| 9 | Company/role fields | ✅ Inline inputs in expanded card |
+|10 | "Touch base today" quick button | ✅ Stamps `lastContactAt = now` |
+|11 | Reach-out priority queue | ✅ Auto top-5 ranked by `daysSince*2 - health*3`, red/amber chips, click opens card |
+|12 | Birthday | ❌ Field not in schema yet |
+|13 | Preferred comms | ❌ |
+|14 | Interests/hobbies | ❌ |
+|15 | Follow-up reminders | 🟡 `nextFollowUpAt` not in schema |
+|16 | Referral log | ❌ |
+|17 | Job-change tracking | ❌ |
+|18 | Network graph viz | ❌ |
+|19 | Next-talk prep notes | ❌ (use interaction summary for now) |
+
+## 5. Jobs campaign
+
+| # | Feature | Status |
+|---|---|---|
+| 1 | 8-stage kanban | ✅ Researching/Applied/Phone/Tech/Onsite/Offer/Rejected/Ghosted |
+| 2 | Auto-ghost 14d | ✅ 14 days with no `lastContactAt` update → ghost column (visual move; doesn't mutate stage) |
+| 3 | Stage chips in card | ✅ 8 chips to advance/retreat stage; "Heard back" button stamps today |
+| 4 | Notes | ✅ textarea per app |
+| 5 | Salary tracker (base/bonus/final TC) | ✅ Three numeric inputs; Best-offer stat card |
+| 6 | Vibe score 1-5 stars | ✅ ⭐ row on each card |
+| 7 | Ghost badge | ✅ Ghost icon + days-since on auto-ghosted cards |
+| 8 | Recruiter field | ✅ |
+| 9 | Days-since contact | ✅ `Xd` shown in meta row |
+|10 | Interview Q bank | ✅ Dedicated tab: add Q with tags, search, tag-filter chips, frequency stars (1-3), answer area, green-check when answer >20 chars, "+ Question" on app card auto-jumps to bank pre-tagged |
+|11 | Company dossiers | ✅ Dedicated tab, auto-created on new app (deduped by name): products, funding, recent news, competitors, culture notes, pros, cons; deep-link from app card |
+|12 | Stats (active/offers/ghosted/conv/best offer) | ✅ 5-chip stat row |
+|13 | Offer/negotiation log | 🟡 Final TC field only; counter-offer/rejection feedback fields typed but no UI |
+|14 | Weighted decision matrix | ❌ `decisionWeight` typed; no UI yet |
+|15 | Culture check survey | ❌ `cultureChecks[]` typed; no UI yet |
+|16 | Time-spent tracking | 🟡 `timeSpentMin` typed; no timer/input |
+
+## 6. Portfolio
+
+| # | Feature | Status |
+|---|---|---|
+| 1 | Achievement vault timeline | ✅ Vertical timeline with colored dot per category, icon, title, date, impact line, category chip |
+| 2 | 7 categories | ✅ Technical/Leadership/Sales/Product/Process/Personal/Other with color chips + filter |
+| 3 | Icon picker (14 icons) | ✅ Icon palette in add form |
+| 4 | Impact metric field | ✅ ⚡ gold line per achievement |
+| 5 | Date picker | ✅ |
+| 6 | Projects grid | ✅ Title, role, URL, summary, results, tech tags, private toggle, private eye badge |
+| 7 | Project tech-tag chips | ✅ Inline add with Enter |
+| 8 | Resume bullet vault | ✅ Dedicated BULLETS tab; inline-edit textareas, comma tags, one-click COPY to clipboard |
+| 9 | ATS keyword scanner | ✅ Sticky side panel: paste comma-separated JD keywords → scored 0-100% against bullets+achievements+projects; color-coded progress bar; missing-keyword chips; glowing % |
+|10 | Testimonials | ✅ Dedicated tab; from/role/quote cards with large pink quote-mark; date stamp |
+|11 | Project categories | ❌ (all projects in one grid for now) |
+|12 | Resume versioning | 🟡 `ResumeVersion` typed with tailored-checklist; no UI yet |
+|13 | ATS score resume-specific | 🟡 Global ATS against vault works; version-specific not yet |
+|14 | Auto case-study builder | ❌ |
+|15 | Challenges/learnings fields per project | 🟡 Fields typed; not yet surfaced in project card |
+|16 | Project sorting | ❌ |
+
+## 7. Daily workflow
+
+| # | Feature | Status |
+|---|---|---|
+| 1 | Auto-create today | ✅ useEffect seeds empty day on first load |
+| 2 | Day navigator (date picker) | ✅ Jump to any date; timer disabled on past days |
+| 3 | Streak counter | ✅ Flame badge in header, counts consecutive days with content |
+| 4 | Standup (3 bullets) | ✅ Y/T/B textarea |
+| 5 | Deep-work live timer | ✅ MM:SS monospaced, Play/Pause/Reset, gold glow running, auto-persist every 15s and on pause; disabled for past days |
+| 6 | Focus minutes manual +quick-add | ✅ Read-only total + +15/+30/+60/+90 |
+| 7 | Meeting entries | ✅ Add/delete per day: title, duration, attendees, agenda, discussion, decisions, action items |
+| 8 | Meeting ROI 1-5 | ✅ Color-coded buttons per meeting; card border color reflects ROI |
+| 9 | Time-allocation doughnut | ✅ 7-segment SVG (meetings/focus/coding/writing/emails/planning/other) with inline minute editors |
+|10 | Mood 1-10 slider | ✅ Icon swaps smile/meh/frown based on value |
+|11 | Stress 1-10 slider | ✅ |
+|12 | Wins quick-list | ✅ Add/delete items; autoscroll |
+|13 | Learnings quick-list | ✅ |
+|14 | Challenges quick-list | ✅ |
+|15 | Work log free-text | ✅ |
+|16 | Recent days history | ✅ Last 10 days listed with preview, mood, focus hrs, meeting count |
+|17 | Avg mood/stress stats | ✅ Across all days |
+|18 | Meeting minutes template editor | 🟡 Agenda/discussion/decisions/action-items textareas exist per meeting; no saved template |
+|19 | Live deep-work session history graph | ❌ Cumulative total works; per-session graph deferred |
+|20 | Focus-block planner / agenda tracker | ❌ |
+|21 | Meeting ROI stat in header | ✅ Meetings count + avg ROI chip |
+
+## 8. Global career
+
+| # | Feature | Status |
+|---|---|---|
+| 1 | Timeline | ✅ Auto-aggregates achievements + projects + manual events; typed 9 event kinds |
+| 2 | Weekly satisfaction | ✅ `WeekSatisfaction[]` typed + UI in Global tab |
+| 3 | Maslach burnout inventory (6 subscales) | ✅ 6 sliders → LOW/MILD/MOD/HIGH classification |
+| 4 | Sabbatical planner | ✅ Target date + duration fields |
+| 5 | Retirement planner | ✅ Target age + monthly contribution fields |
+| 6 | Vision board masonry | ✅ Image-item grid + add |
+| 7 | Wellbeing tab | ✅ Satisfaction + burnout together |
+| 8 | Freedom tab | ✅ Sabbatical + retirement |
+| 9 | IP log | ❌ Schema field; no UI |
+|10 | Speaking events | ❌ Schema field; no UI |
+|11 | Side-hustles | ❌ Schema field; no UI |
+|12 | Vision board images | 🟡 URL-based items; no file upload |
+|13 | Pro photos | ❌ |
+|14 | Work-life balance aggregate | ❌ (would combine daily stress/mood + satisfaction) |
+
+## Cross-cutting
+
+| Area | Status |
+|---|---|
+| Dark theme (obsidian/ink/crimson/gold/cyan/pink) | ✅ Full palette shared with workout; uses `useTheme()` |
+| Parchment/light mode | 🟡 Partial — parchment overrides applied at shell level; several inner cards hardcode dark rgba backgrounds (polish pass pending) |
+| LocalStorage persistence (`kaizen.*` keys) | ✅ Via `useLocalState` in `StoreProvider` |
+| Backend CRUD routes | ✅ `/api/career/*` prefixed in Express (roadmaps/skills/courses/contacts/applications/companies/questions/achievements/projects/resumes/bullets/testimonials/days/timeline/satisfaction/burnout/sabbaticals/side-hustles/ip/speaking/vision-board/tracks/goals/notes) — untested (no node_modules in sandbox); frontend does not yet call them (offline-first) |
+| Migration `migrateCareer` | ✅ Seeds 5 roadmap templates on first visit for legacy users, normalizes achievements, lifts legacy `resumeBullets` to `bullets[]` deduplicated |
+| Section transitions | ✅ `SectionSlash` katana diagonal flash between sub-pages |
+| COMMAND button + card | ✅ Cyan/gold palette; GoldenDragon (animated pathLength dragon with 改善+善 watermark, embers, dragon-fire, sword slashes) renders only while open via AnimatePresence |
+| Typography: Cinzel (imperial-name, emperor-title), Cormorant Garamond (serif-body), Shippori Mincho (font-jp), Inter, JetBrains Mono | ✅ Applied via globals.css utilities |
+| 8-tile COMMAND nav | ✅ Numerals I-VIII, Roman sigils, stagger animations, active-dot layoutId |
+| Hotkeys | ✅ Escape closes command card |
+| Projects hub page (connecting cross-space projects) | ❌ Roadmaps/projects/portfolio/jobs reference projects but no unified hub yet |
+
+---
+
+# Docs index
+
+| File | Covers |
+|---|---|
+| `docs/FEATURES.md` | This file — shipped/partial/missing for Workout + Career |
+| `docs/CAREER.md` | Career data model, 8-section spec, palette, typography, migration notes, roadmap dependency graph |
+| `docs/API.md` | Backend REST reference for both `/api/exercises|sessions|...` (workout) and `/api/career/*` (career) |
+| `docs/ARCHITECTURE.md` | Frontend stack, state model, store shape |
+| `docs/ALGORITHMS.md` | 1RM/Wilks/RPE/volume/etc formulas |
+| `docs/DATA-MODEL.md` | Workout domain model |
+| `docs/qa/TEST-REPORT.md` | QA walkthrough, build status, bug log |
