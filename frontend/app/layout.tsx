@@ -4,8 +4,8 @@ import { StoreProvider } from "../lib/store";
 import { ThemeProvider } from "../lib/theme";
 
 export const metadata: Metadata = {
-  title: "Kaizen — Continuous Improvement",
-  description: "Your all-in-one life OS — tasks, notes, focus, habits, and more.",
+  title: "Kaizen — Rule Your Realm",
+  description: "Kaizen: your all-in-one life OS. Conquer tasks, training, notes, and focus like an emperor.",
 };
 
 /**
