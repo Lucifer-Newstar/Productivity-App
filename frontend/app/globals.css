@@ -2,7 +2,11 @@
 @tailwind components;
 @tailwind utilities;
 
-@import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap");
+/* ---------- Fonts ----------
+ * Inter + JetBrains Mono stay for UI/monospace.
+ * Shippori Mincho + Yuji Syuku + Noto Serif JP give the Japanese brush/serif feel.
+ */
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&family=Shippori+Mincho:wght@400;500;600;700;800&family=Yuji+Syuku&family=Noto+Serif+JP:wght@400;600;700;900&display=swap");
 
 * {
   -webkit-font-smoothing: antialiased;
@@ -14,144 +18,426 @@ html, body {
   min-height: 100vh;
 }
 
-/* ---------- Theme backgrounds ----------
- * Dark mode (default, .dark on <html>): uses the existing deep violet mesh.
- * Light mode: clean soft off-white with subtle violet/cyan mesh tint.
- */
-html {
-  background: #0a0a0f;
-}
+/* ============================================================
+ *  THEME BACKGROUNDS
+ * ============================================================*/
+html { background: #0a0709; }
+
+/* --- DARK (Kuro / Sumi ink) --- */
 html.dark body {
-  background: #0a0a0f;
-  color: #e5e7eb;
+  background: #0a0709;
+  color: #f3e9d2; /* warm parchment-on-ink */
   background-image:
-    radial-gradient(at 20% 20%, rgba(139, 92, 246, 0.12) 0px, transparent 50%),
-    radial-gradient(at 80% 10%, rgba(6, 182, 212, 0.08) 0px, transparent 50%),
-    radial-gradient(at 0% 90%, rgba(236, 72, 153, 0.08) 0px, transparent 50%);
+    /* Gold + red + sakura radial mesh */
+    radial-gradient(at 15% 10%,  rgba(200, 29, 37, 0.18) 0px, transparent 45%),
+    radial-gradient(at 85% 5%,   rgba(212, 175, 55, 0.15) 0px, transparent 40%),
+    radial-gradient(at 80% 90%,  rgba(244, 114, 182, 0.12) 0px, transparent 45%),
+    radial-gradient(at 10% 85%,  rgba(203, 213, 225, 0.05) 0px, transparent 40%),
+    /* Subtle gold-paper grain via noise */
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.83 0 0 0 0 0.69 0 0 0 0 0.22 0 0 0 0.06 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
   background-attachment: fixed;
-}
-html:not(.dark) body {
-  background: #f7f7fb;
-  color: #0f172a;
-  background-image:
-    radial-gradient(at 20% 20%, rgba(139, 92, 246, 0.08) 0px, transparent 50%),
-    radial-gradient(at 80% 10%, rgba(6, 182, 212, 0.06) 0px, transparent 50%),
-    radial-gradient(at 0% 90%, rgba(236, 72, 153, 0.05) 0px, transparent 50%);
-  background-attachment: fixed;
+  background-size: auto, auto, auto, auto, 200px 200px;
 }
 
-/* Custom scrollbar — theme-aware */
-::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+/* --- LIGHT (Washi rice paper) --- */
+html:not(.dark) body {
+  background: #f5efe4;
+  color: #1a1216;
+  background-image:
+    radial-gradient(at 15% 10%,  rgba(200, 29, 37, 0.10) 0px, transparent 45%),
+    radial-gradient(at 85% 5%,   rgba(184, 134, 11, 0.10) 0px, transparent 40%),
+    radial-gradient(at 80% 90%,  rgba(244, 114, 182, 0.08) 0px, transparent 45%),
+    /* Washi fiber texture */
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.55 0 0 0 0 0.32 0 0 0 0 0.18 0 0 0 0.08 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+  background-attachment: fixed;
+  background-size: auto, auto, auto, 200px 200px;
 }
-::-webkit-scrollbar-track {
-  background: transparent;
-}
-.dark ::-webkit-scrollbar-track {
-  background: #12121a;
-}
+
+/* ============================================================
+ *  SCROLLBAR — gold-crimson gradient in dark, ink in light
+ * ============================================================*/
+::-webkit-scrollbar        { width: 8px; height: 8px; }
+::-webkit-scrollbar-track  { background: transparent; }
+.dark ::-webkit-scrollbar-track { background: #140d10; }
 ::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
+  background: linear-gradient(180deg, #c81d25, #d4af37);
   border-radius: 4px;
 }
-.dark ::-webkit-scrollbar-thumb {
-  background: linear-gradient(180deg, #8b5cf6, #06b6d4);
+html:not(.dark) ::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #8b0000, #b8860b);
 }
-::-webkit-scrollbar-thumb:hover {
-  background: #94a3b8;
-}
-.dark ::-webkit-scrollbar-thumb:hover {
-  background: linear-gradient(180deg, #a78bfa, #22d3ee);
-}
+::-webkit-scrollbar-thumb:hover { filter: brightness(1.2); }
 
+/* ============================================================
+ *  SELECTION — gold-on-red
+ * ============================================================*/
 @layer base {
-  /* Selection color */
   ::selection {
-    background: rgba(139, 92, 246, 0.35);
+    background: rgba(212, 175, 55, 0.45);
     color: inherit;
   }
 }
 
+/* ============================================================
+ *  COMPONENT CLASSES
+ * ============================================================*/
 @layer components {
-  /* Glass surface — white frosted in light, dark translucent in dark */
+
+  /* ---------- Glass surfaces (washi + ink variants) ---------- */
   .glass {
-    @apply bg-white/70 dark:bg-bg-card/60 backdrop-blur-xl border border-gray-200/60 dark:border-white/5;
+    @apply backdrop-blur-xl border shadow-sm transition-colors;
+    background: rgba(245, 239, 228, 0.72);
+    border-color: rgba(26, 18, 22, 0.08);
   }
-  .glow-violet {
-    box-shadow: 0 0 40px -10px rgba(139, 92, 246, 0.5);
+  .dark .glass {
+    background: rgba(26, 17, 20, 0.55);
+    border-color: rgba(212, 175, 55, 0.15);
+    box-shadow:
+      0 1px 0 rgba(255,255,255,0.03) inset,
+      0 20px 40px -20px rgba(0,0,0,0.6);
   }
-  .glow-cyan {
-    box-shadow: 0 0 40px -10px rgba(6, 182, 212, 0.5);
+
+  /* ---------- Lacquered card: deeper, with gold inner ring ---------- */
+  .card-lacquer {
+    @apply rounded-2xl p-6 relative overflow-hidden transition-all;
+    background: linear-gradient(145deg, #1a1114 0%, #0f0a0d 100%);
+    border: 1px solid rgba(212, 175, 55, 0.25);
+    box-shadow:
+      inset 0 1px 0 rgba(212, 175, 55, 0.15),
+      0 20px 50px -25px rgba(0, 0, 0, 0.9);
   }
+  html:not(.dark) .card-lacquer {
+    background: linear-gradient(145deg, #ffffff 0%, #f5efe4 100%);
+    border: 1px solid rgba(200, 29, 37, 0.18);
+    box-shadow:
+      inset 0 1px 0 rgba(255,255,255,0.8),
+      0 20px 40px -25px rgba(139, 0, 0, 0.25);
+    color: #1a1216;
+  }
+  .card-lacquer::before {
+    /* gold foil edge highlight */
+    content: "";
+    position: absolute; inset: 0;
+    border-radius: inherit;
+    padding: 1px;
+    background: linear-gradient(135deg, rgba(212,175,55,0.5), transparent 40%, rgba(212,175,55,0.3) 90%);
+    -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor; mask-composite: exclude;
+    pointer-events: none;
+    opacity: .6;
+  }
+
+  .card {
+    @apply glass rounded-2xl p-6 transition-all hover:-translate-y-0.5;
+  }
+  .dark .card:hover { border-color: rgba(212, 175, 55, 0.35); }
+  html:not(.dark) .card:hover { border-color: rgba(200, 29, 37, 0.25); }
+
+  /* ---------- Glow utilities ---------- */
+  .glow-gold  { box-shadow: 0 0 40px -10px rgba(212, 175, 55, 0.55); }
+  .glow-red   { box-shadow: 0 0 40px -10px rgba(200, 29, 37, 0.55); }
+  .glow-sakura{ box-shadow: 0 0 40px -10px rgba(244, 114, 182, 0.5); }
+  .glow-silver{ box-shadow: 0 0 40px -10px rgba(203, 213, 225, 0.35); }
+
+  /* ---------- Gradient text: gold -> crimson -> sakura ---------- */
   .gradient-text {
     @apply bg-clip-text text-transparent;
-    background-image: linear-gradient(135deg, #8b5cf6 0%, #06b6d4 50%, #ec4899 100%);
+    background-image: linear-gradient(135deg, #fbbf24 0%, #c81d25 45%, #ec4899 100%);
   }
+  .gold-text {
+    @apply bg-clip-text text-transparent;
+    background-image: linear-gradient(135deg, #fde68a 0%, #d4af37 50%, #9c7a1a 100%);
+  }
+  .vermilion-text {
+    @apply bg-clip-text text-transparent;
+    background-image: linear-gradient(135deg, #fca5a5 0%, #dc2626 50%, #7f1d1d 100%);
+  }
+  .silver-text {
+    @apply bg-clip-text text-transparent;
+    background-image: linear-gradient(135deg, #f8fafc 0%, #cbd5e1 50%, #64748b 100%);
+  }
+
+  /* ---------- Display / kanji headings ---------- */
+  .jp-title {
+    font-family: "Shippori Mincho", "Noto Serif JP", serif;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+  }
+  .jp-stamp {
+    font-family: "Yuji Syuku", "Shippori Mincho", serif;
+    color: #fff;
+    background: #c81d25;
+    display: inline-flex; align-items: center; justify-content: center;
+    border-radius: 6px;
+    padding: 2px 8px;
+    box-shadow: 0 2px 10px -2px rgba(200,29,37,0.6);
+    transform: rotate(-4deg);
+  }
+
+  /* ---------- Buttons ---------- */
   .btn-primary {
-    @apply relative overflow-hidden rounded-xl px-5 py-2.5 font-medium text-white transition-all
-      bg-gradient-to-r from-accent to-accent-cyan
-      hover:shadow-lg hover:shadow-accent/30 hover:-translate-y-0.5
-      active:translate-y-0 disabled:opacity-50 disabled:cursor-not-allowed;
+    @apply relative overflow-hidden rounded-xl px-5 py-2.5 font-semibold text-white transition-all
+      hover:-translate-y-0.5 active:translate-y-0 disabled:opacity-50 disabled:cursor-not-allowed;
+    background: linear-gradient(135deg, #c81d25 0%, #8b0000 100%);
+    border: 1px solid rgba(253, 230, 138, 0.3);
+    box-shadow: 0 8px 24px -8px rgba(200, 29, 37, 0.7);
   }
+  .btn-primary::after {
+    /* moving gold shimmer */
+    content: "";
+    position: absolute; inset: 0;
+    background: linear-gradient(110deg, transparent 30%, rgba(253,230,138,0.35) 50%, transparent 70%);
+    background-size: 200% 100%;
+    animation: shimmer 3.5s linear infinite;
+    pointer-events: none;
+  }
+  .btn-primary:hover { box-shadow: 0 12px 30px -8px rgba(200,29,37,0.8), 0 0 20px -4px rgba(212,175,55,0.4); }
+
+  .btn-gold {
+    @apply relative overflow-hidden rounded-xl px-5 py-2.5 font-semibold transition-all
+      hover:-translate-y-0.5 active:translate-y-0;
+    color: #1a1216;
+    background: linear-gradient(135deg, #fde68a 0%, #d4af37 60%, #9c7a1a 100%);
+    border: 1px solid rgba(156, 122, 26, 0.6);
+    box-shadow: 0 8px 24px -8px rgba(212, 175, 55, 0.6);
+  }
+  .btn-gold::after {
+    content: "";
+    position: absolute; inset: 0;
+    background: linear-gradient(110deg, transparent 30%, rgba(255,255,255,0.55) 50%, transparent 70%);
+    background-size: 200% 100%;
+    animation: shimmer 3s linear infinite;
+    pointer-events: none;
+  }
+
   .btn-ghost {
-    @apply rounded-xl px-4 py-2 font-medium text-gray-700 dark:text-gray-300 transition-all
-      bg-black/5 dark:bg-white/5 hover:bg-black/10 dark:hover:bg-white/10 border border-black/5 dark:border-white/5
-      hover:border-black/10 dark:hover:border-white/10;
+    @apply rounded-xl px-4 py-2 font-medium transition-all border;
+    color: #1a1216;
+    background: rgba(26, 18, 22, 0.04);
+    border-color: rgba(26, 18, 22, 0.08);
   }
-  .card {
-    @apply glass rounded-2xl p-6 transition-all hover:border-black/10 dark:hover:border-white/10 shadow-sm;
+  .btn-ghost:hover { background: rgba(26, 18, 22, 0.08); border-color: rgba(200,29,37,0.3); }
+  .dark .btn-ghost {
+    color: #f3e9d2;
+    background: rgba(253, 230, 138, 0.05);
+    border-color: rgba(212, 175, 55, 0.2);
   }
+  .dark .btn-ghost:hover {
+    background: rgba(253, 230, 138, 0.10);
+    border-color: rgba(212,175,55,0.45);
+    box-shadow: 0 0 20px -8px rgba(212,175,55,0.5);
+  }
+
+  /* ---------- Chip / pill ---------- */
   .chip {
     @apply inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-medium;
   }
-  /* Themed input (used by task add forms, search, etc.) */
+  .chip-gold {
+    background: linear-gradient(135deg, rgba(212,175,55,0.2), rgba(212,175,55,0.05));
+    color: #fde68a;
+    border: 1px solid rgba(212,175,55,0.35);
+  }
+  .dark .chip-gold { color: #fde68a; }
+  html:not(.dark) .chip-gold { color: #9c7a1a; }
+  .chip-red {
+    background: rgba(200,29,37,0.15);
+    color: #fca5a5;
+    border: 1px solid rgba(200,29,37,0.35);
+  }
+  html:not(.dark) .chip-red { color: #8b0000; }
+
+  /* ---------- Themed input ---------- */
   .input-base {
-    @apply bg-black/5 dark:bg-white/5 border border-black/5 dark:border-white/5 rounded-xl px-3 py-2
-      text-sm text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500
-      outline-none focus:border-accent/50 transition;
+    @apply rounded-xl px-3 py-2 text-sm outline-none transition;
+    background: rgba(26, 18, 22, 0.04);
+    border: 1px solid rgba(26, 18, 22, 0.1);
+    color: #1a1216;
+  }
+  .input-base::placeholder { color: #94a3b8; }
+  .input-base:focus {
+    border-color: #c81d25;
+    box-shadow: 0 0 0 3px rgba(200,29,37,0.12);
+  }
+  .dark .input-base {
+    background: rgba(253, 230, 138, 0.04);
+    border-color: rgba(212, 175, 55, 0.2);
+    color: #f3e9d2;
+  }
+  .dark .input-base::placeholder { color: #64748b; }
+  .dark .input-base:focus {
+    border-color: #d4af37;
+    box-shadow: 0 0 0 3px rgba(212,175,55,0.18);
+  }
+
+  /* ---------- Vertical / horizontal dividers (torii-red / gold) ---------- */
+  .divider-gold {
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(212,175,55,0.5), transparent);
+  }
+  .divider-red {
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(200,29,37,0.5), transparent);
   }
 }
 
-/* Checkbox custom — theme-aware outline, gradient fill when checked */
+/* ============================================================
+ *  CHECKBOX — vermilion/gold
+ * ============================================================*/
 .checkbox-custom {
   appearance: none;
-  width: 22px;
-  height: 22px;
-  border: 2px solid rgba(0, 0, 0, 0.15);
+  width: 22px; height: 22px;
+  border: 2px solid rgba(26,18,22,0.2);
   border-radius: 6px;
-  cursor: pointer;
-  position: relative;
+  cursor: pointer; position: relative;
   transition: all 0.2s;
   flex-shrink: 0;
   background: transparent;
 }
-.dark .checkbox-custom {
-  border-color: rgba(255, 255, 255, 0.15);
-}
-.checkbox-custom:hover {
-  border-color: #8b5cf6;
-}
+.dark .checkbox-custom { border-color: rgba(212,175,55,0.35); }
+.checkbox-custom:hover { border-color: #c81d25; }
+.dark .checkbox-custom:hover { border-color: #d4af37; }
 .checkbox-custom:checked {
-  background: linear-gradient(135deg, #8b5cf6, #06b6d4);
+  background: linear-gradient(135deg, #c81d25, #d4af37);
   border-color: transparent;
 }
 .checkbox-custom:checked::after {
   content: "✓";
-  position: absolute;
-  color: white;
-  font-size: 14px;
-  font-weight: bold;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
+  position: absolute; color: #fff; font-size: 14px; font-weight: bold;
+  top: 50%; left: 50%; transform: translate(-50%, -50%);
+  text-shadow: 0 1px 2px rgba(0,0,0,0.5);
 }
 
-/* Subtle page-in animation utility */
+/* ============================================================
+ *  PAGE IN + FANCY ANIMATIONS
+ * ============================================================*/
 @keyframes fadeUp {
-  from { opacity: 0; transform: translateY(8px); }
+  from { opacity: 0; transform: translateY(10px); }
   to   { opacity: 1; transform: translateY(0); }
 }
-.animate-fade-up {
-  animation: fadeUp 0.35s ease-out both;
+.animate-fade-up { animation: fadeUp 0.4s ease-out both; }
+
+/* Ink-spread reveal for major titles */
+@keyframes inkReveal {
+  0%   { clip-path: inset(0 100% 0 0); opacity: 0; }
+  100% { clip-path: inset(0 0 0 0);     opacity: 1; }
 }
+.animate-ink-reveal { animation: inkReveal 0.8s cubic-bezier(.2,.8,.2,1) both; }
+
+/* Gold foil hover — apply to any text; on hover sweeps a gold highlight */
+.hover-gold-sweep {
+  background-image: linear-gradient(90deg, currentColor 0%, currentColor 50%, #d4af37 50%, #fde68a 100%);
+  background-size: 200% 100%;
+  background-position: 0% 0%;
+  -webkit-background-clip: text;
+          background-clip: text;
+  transition: background-position 0.45s ease;
+}
+.hover-gold-sweep:hover { background-position: -100% 0%; }
+
+/* ============================================================
+ *  GLITTER PARTICLE LAYER (used via .glitter-bg on a container)
+ * ============================================================*/
+.glitter-bg {
+  position: absolute; inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+  z-index: 0;
+}
+.glitter-bg::before,
+.glitter-bg::after {
+  content: "";
+  position: absolute; inset: -50%;
+  background-image:
+    radial-gradient(2px 2px at 20% 30%,  rgba(253,230,138,0.9), transparent 60%),
+    radial-gradient(1.5px 1.5px at 70% 80%, rgba(244,114,182,0.8), transparent 60%),
+    radial-gradient(1px 1px at 40% 60%,  rgba(203,213,225,0.9), transparent 60%),
+    radial-gradient(2px 2px at 85% 20%,  rgba(253,230,138,0.7), transparent 60%),
+    radial-gradient(1px 1px at 10% 80%,  rgba(244,114,182,0.6), transparent 60%),
+    radial-gradient(1.5px 1.5px at 55% 15%, rgba(203,213,225,0.7), transparent 60%),
+    radial-gradient(1px 1px at 30% 90%,  rgba(253,230,138,0.8), transparent 60%),
+    radial-gradient(1px 1px at 95% 60%,  rgba(244,114,182,0.6), transparent 60%);
+  background-size: 600px 600px;
+  animation: shimmer 18s linear infinite;
+  opacity: .55;
+}
+.glitter-bg::after {
+  background-size: 400px 400px;
+  animation-duration: 26s;
+  animation-direction: reverse;
+  opacity: .35;
+}
+.dark .glitter-bg::before, .dark .glitter-bg::after { opacity: .7; }
+html:not(.dark) .glitter-bg::before, html:not(.dark) .glitter-bg::after { opacity: .4; }
+
+/* Asanoha (hemp-leaf) pattern — very subtle decorative overlay */
+.asanoha-pattern {
+  background-image:
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='60' height='60' viewBox='0 0 60 60'><g fill='none' stroke='%23d4af37' stroke-opacity='0.08' stroke-width='1'><path d='M30 0 L60 30 L30 60 L0 30 Z'/><path d='M30 0 L30 60 M0 30 L60 30 M15 15 L45 45 M45 15 L15 45'/></g></svg>");
+  background-size: 60px 60px;
+}
+html:not(.dark) .asanoha-pattern {
+  background-image:
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='60' height='60' viewBox='0 0 60 60'><g fill='none' stroke='%23c81d25' stroke-opacity='0.06' stroke-width='1'><path d='M30 0 L60 30 L30 60 L0 30 Z'/><path d='M30 0 L30 60 M0 30 L60 30 M15 15 L45 45 M45 15 L15 45'/></g></svg>");
+}
+
+/* Seigaiha (wave) pattern — for headers */
+.seigaiha-pattern {
+  background-image:
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='80' height='40' viewBox='0 0 80 40'><g fill='none' stroke='%23d4af37' stroke-opacity='0.15' stroke-width='1'><path d='M-20 40 Q0 10 20 40 T60 40 T100 40'/><path d='M-20 32 Q-5 12 20 32 T60 32 T100 32'/></g></svg>");
+  background-size: 80px 40px;
+}
+
+/* ============================================================
+ *  WORKOUT CONTENT — LIGHT-MODE (Washi) OVERRIDES
+ *  Many workout components hardcode colors like text-white / bg-white/5
+ *  (designed for the dark dojo). The shell adds a `.washi` class in light
+ *  mode; these overrides flip those tokens to ink-on-paper so we don't
+ *  have to rewrite every component.
+ * ============================================================*/
+.washi .text-white,
+.washi .text-gray-50,
+.washi .text-gray-100,
+.washi .text-gray-200 { color: #1a1216 !important; }
+.washi .text-gray-300 { color: #4a2c2a !important; }
+.washi .text-gray-400 { color: #7c5a44 !important; }
+.washi .text-gray-500 { color: #9c7a1a !important; }
+
+.washi .bg-white\/5   { background: rgba(139,0,0,0.05) !important; }
+.washi .bg-white\/10  { background: rgba(139,0,0,0.08) !important; }
+.washi .bg-black\/20,
+.washi .bg-black\/30,
+.washi .bg-black\/40,
+.washi .bg-black\/60,
+.washi .bg-black\/70 { background: rgba(245,239,228,0.85) !important; }
+
+.washi .border-white\/5,
+.washi .border-white\/10,
+.washi .border-white\/15 { border-color: rgba(200,29,37,0.18) !important; }
+
+/* Keep full-screen modals and the ActiveWorkout stage dark & theatrical */
+.washi .fixed.inset-0.bg-black\/70,
+.washi .fixed.inset-0.bg-black\/80 { background: rgba(26,18,22,0.65) !important; }
+.washi [data-stage="active-workout"],
+.washi [data-stage="freestyle-workout"] {
+  color: #f3e9d2;
+}
+.washi [data-stage="active-workout"] .text-white,
+.washi [data-stage="freestyle-workout"] .text-white,
+.washi [data-stage="active-workout"] .text-gray-100,
+.washi [data-stage="freestyle-workout"] .text-gray-100,
+.washi [data-stage="active-workout"] .text-gray-200,
+.washi [data-stage="freestyle-workout"] .text-gray-200,
+.washi [data-stage="active-workout"] .text-gray-300,
+.washi [data-stage="freestyle-workout"] .text-gray-300,
+.washi [data-stage="active-workout"] .text-gray-400,
+.washi [data-stage="freestyle-workout"] .text-gray-400,
+.washi [data-stage="active-workout"] .text-gray-500,
+.washi [data-stage="freestyle-workout"] .text-gray-500 { color: revert !important; }
+.washi [data-stage="active-workout"] .bg-white\/5,
+.washi [data-stage="freestyle-workout"] .bg-white\/5,
+.washi [data-stage="active-workout"] .bg-white\/10,
+.washi [data-stage="freestyle-workout"] .bg-white\/10 { background: revert !important; }
+.washi [data-stage="active-workout"] .border-white\/5,
+.washi [data-stage="freestyle-workout"] .border-white\/5,
+.washi [data-stage="active-workout"] .border-white\/10,
+.washi [data-stage="freestyle-workout"] .border-white\/10 { border-color: revert !important; }

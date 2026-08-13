@@ -347,7 +347,7 @@ export default function ActiveWorkout({ sessionId, onFinish, onDiscard }: Props)
   const showWarmup = session.sets.length === 0 && currentExercise;
 
   return (
-    <div className="max-w-xl mx-auto">
+    <div data-stage="active-workout" className="max-w-xl mx-auto">
       <Confetti active={showConfetti} />
 
       {/* Header */}

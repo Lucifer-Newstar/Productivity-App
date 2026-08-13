@@ -175,11 +175,15 @@ export default function WorkoutCharts() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h2 className="text-2xl font-bold text-white flex items-center gap-2">
-          <BarChart3 className="text-cyan-400" size={22} /> Charts
-        </h2>
-        <p className="text-sm text-gray-400 mt-1">Progress analytics — pure-SVG, no external chart libs.</p>
+      <div className="flex items-end justify-between flex-wrap gap-2">
+        <div>
+          <h2 className="text-3xl font-jp font-bold flex items-center gap-3">
+            <BarChart3 size={24} style={{ color: "#d4af37", filter: "drop-shadow(0 0 8px rgba(212,175,55,0.5))" }} />
+            <span className="gold-text">Charts</span>
+            <span className="jp-stamp text-[11px] animate-[sealStamp_0.6s_ease-out_both]">統計</span>
+          </h2>
+          <p className="text-sm text-gray-400 mt-1">Progress analytics — pure-SVG, no external chart libs.</p>
+        </div>
       </div>
 
       {/* KPI row */}
@@ -274,17 +278,37 @@ export default function WorkoutCharts() {
 
 function KPI({ icon, label, value }: { icon: React.ReactNode; label: string; value: string | number }) {
   return (
-    <div className="rounded-xl p-4 bg-white/5 border border-white/5">
-      <div className="flex items-center gap-1.5 text-[10px] uppercase tracking-widest text-gray-500">{icon}{label}</div>
-      <div className="text-2xl font-bold text-white mt-1 font-mono">{value}</div>
+    <div className="card-lacquer p-4 relative overflow-hidden group hover:-translate-y-0.5 transition-transform">
+      {/* gold top stripe */}
+      <div aria-hidden className="absolute top-0 left-0 right-0 h-[2px]"
+        style={{ background: "linear-gradient(90deg, transparent, #d4af37, transparent)" }} />
+      <div className="flex items-center gap-1.5 text-[10px] uppercase tracking-[0.25em]"
+        style={{ color: "#d4af37" }}>
+        {icon}{label}
+      </div>
+      <div className="text-2xl font-bold mt-1 font-jp"
+        style={{
+          background: "linear-gradient(135deg, #fde68a 0%, #d4af37 100%)",
+          WebkitBackgroundClip: "text",
+          WebkitTextFillColor: "transparent",
+          backgroundClip: "text",
+        }}>
+        {value}
+      </div>
     </div>
   );
 }
 
 function Card({ title, icon, children }: { title: string; icon: React.ReactNode; children: React.ReactNode }) {
   return (
-    <div className="card">
-      <h4 className="font-semibold text-white mb-2 flex items-center gap-2 text-sm">{icon}{title}</h4>
+    <div className="card-lacquer relative overflow-hidden group hover:-translate-y-0.5 transition-transform p-6">
+      {/* Top gold edge */}
+      <div aria-hidden className="absolute top-0 left-0 right-0 h-[1px]"
+        style={{ background: "linear-gradient(90deg, transparent, rgba(212,175,55,0.6), transparent)" }} />
+      <h4 className="font-jp font-semibold mb-3 flex items-center gap-2 text-sm tracking-wide"
+        style={{ color: "#fde68a" }}>
+        {icon}{title}
+      </h4>
       {children}
     </div>
   );

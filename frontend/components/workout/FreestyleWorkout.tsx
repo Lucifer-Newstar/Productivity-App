@@ -282,7 +282,7 @@ export default function FreestyleWorkout({ sessionId, onFinish, onDiscard }: Pro
   const totalVolume = session.totalVolumeKg ?? 0;
 
   return (
-    <div className="max-w-xl mx-auto">
+    <div data-stage="freestyle-workout" className="max-w-xl mx-auto">
       <Confetti active={showConfetti} />
 
       {/* Header */}

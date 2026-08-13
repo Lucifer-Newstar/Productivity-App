@@ -29,12 +29,12 @@ const TYPE_META: Record<KanbanCardType, { label: string; color: string; icon: an
   other:    { label: "Other",    color: "#64748b", icon: MoreHorizontal },
 };
 
-const COL_TITLES: Record<KanbanColumn["id"], { title: string; hint: string; accent: string }> = {
-  "backlog":     { title: "Backlog",      hint: "Someday",                 accent: "#64748b" },
-  "this-week":   { title: "This Week",   hint: "Plan for the week",       accent: "#8b5cf6" },
-  "today":       { title: "Today",       hint: "On deck",                 accent: "#06b6d4" },
-  "in-progress": { title: "In Progress", hint: "Currently doing",         accent: "#f59e0b" },
-  "done":        { title: "Done",        hint: "Completed this week",     accent: "#22c55e" },
+const COL_TITLES: Record<KanbanColumn["id"], { title: string; kanji: string; hint: string; accent: string }> = {
+  "backlog":     { title: "Backlog",      kanji: "溜", hint: "Someday",             accent: "#cbd5e1" },
+  "this-week":   { title: "This Week",   kanji: "週", hint: "Plan for the week",   accent: "#c81d25" },
+  "today":       { title: "Today",       kanji: "日", hint: "On deck",             accent: "#d4af37" },
+  "in-progress": { title: "In Progress", kanji: "中", hint: "Currently doing",     accent: "#ec4899" },
+  "done":        { title: "Done",        kanji: "了", hint: "Completed this week", accent: "#22c55e" },
 };
 
 export default function WorkoutKanban() {
@@ -83,11 +83,15 @@ export default function WorkoutKanban() {
 
   return (
     <div className="space-y-4">
-      <div>
-        <h2 className="text-2xl font-bold text-white flex items-center gap-2">
-          <KanbanIcon className="text-pink-400" size={22} /> Workout Board
-        </h2>
-        <p className="text-sm text-gray-400 mt-1">Drag cards between columns to plan your week. Persists automatically.</p>
+      <div className="flex items-end justify-between flex-wrap gap-2">
+        <div>
+          <h2 className="text-3xl font-jp font-bold flex items-center gap-3">
+            <KanbanIcon size={24} style={{ color: "#c81d25", filter: "drop-shadow(0 0 8px rgba(200,29,37,0.5))" }} />
+            <span className="vermilion-text">Board</span>
+            <span className="jp-stamp text-[11px] animate-[sealStamp_0.6s_ease-out_both]">看板</span>
+          </h2>
+          <p className="text-sm text-gray-400 mt-1">Drag cards between columns to plan your week. Persists automatically.</p>
+        </div>
       </div>
 
       {/* Progress bar + quick-add */}
@@ -146,15 +150,33 @@ export default function WorkoutKanban() {
               onDragOver={(e) => { e.preventDefault(); setDragOver(col.id); }}
               onDragLeave={() => setDragOver(null)}
               onDrop={() => onDrop(col.id)}
-              className={`rounded-2xl p-3 min-h-[280px] border transition ${
-                isOver ? "border-pink-400/60 bg-pink-500/5" : "border-white/5 bg-white/[0.02]"
-              }`}>
+              className={`relative rounded-2xl p-3 min-h-[280px] transition overflow-hidden ${
+                isOver ? "ring-2" : ""
+              }`}
+              style={{
+                background: isOver
+                  ? "linear-gradient(145deg, rgba(200,29,37,0.15), rgba(15,10,13,0.6))"
+                  : "linear-gradient(145deg, rgba(26,17,20,0.6), rgba(15,10,13,0.4))",
+                border: `1px solid ${isOver ? meta.accent : "rgba(212,175,55,0.2)"}`,
+                boxShadow: isOver
+                  ? `0 0 30px -8px ${meta.accent}, inset 0 1px 0 rgba(212,175,55,0.15)`
+                  : "inset 0 1px 0 rgba(212,175,55,0.1), 0 10px 30px -20px rgba(0,0,0,0.8)",
+              }}>
+              {/* Gold top edge */}
+              <div aria-hidden className="absolute top-0 left-3 right-3 h-[1px]"
+                style={{ background: "linear-gradient(90deg, transparent, rgba(212,175,55,0.5), transparent)" }} />
               <div className="flex items-center gap-2 mb-3">
-                <span className="w-2 h-2 rounded-full" style={{ background: meta.accent }} />
-                <h4 className="text-sm font-semibold text-white">{meta.title}</h4>
-                <span className="text-[10px] text-gray-500 font-mono ml-auto">{col.cards.length}</span>
+                <span className="w-2 h-2 rounded-full" style={{ background: meta.accent, boxShadow: `0 0 8px ${meta.accent}` }} />
+                <h4 className="text-sm font-jp font-semibold flex items-center gap-2" style={{ color: "#fde68a" }}>
+                  {meta.title}
+                  <span className="text-[9px] font-jp px-1 py-0.5 rounded"
+                    style={{ background: "rgba(212,175,55,0.1)", color: "#d4af37", border: "1px solid rgba(212,175,55,0.25)" }}>
+                    {meta.kanji}
+                  </span>
+                </h4>
+                <span className="text-[10px] font-mono ml-auto" style={{ color: "#d4af37" }}>{col.cards.length}</span>
               </div>
-              <p className="text-[10px] text-gray-500 mb-2 -mt-1">{meta.hint}</p>
+              <p className="text-[10px] mb-2 -mt-1" style={{ color: "#9c7a1a" }}>{meta.hint}</p>
 
               <div className="space-y-2">
                 <AnimatePresence initial={false}>
@@ -170,12 +192,23 @@ export default function WorkoutKanban() {
                         draggable
                         onDragStart={() => onDragStart(c.id)}
                         onDragEnd={onDragEnd}
-                        className={`group rounded-xl p-3 border text-sm cursor-grab active:cursor-grabbing transition ${
-                          isDone ? "bg-emerald-500/5 border-emerald-500/20" : "bg-white/5 border-white/5 hover:border-white/15"
+                        className={`group rounded-xl p-3 text-sm cursor-grab active:cursor-grabbing transition hover:-translate-y-0.5 ${
+                          isDone ? "" : ""
                         }`}
-                        style={{ borderLeftWidth: 3, borderLeftColor: tm.color }}>
+                        style={{
+                          background: isDone
+                            ? "linear-gradient(145deg, rgba(34,197,94,0.08), rgba(15,10,13,0.4))"
+                            : "linear-gradient(145deg, rgba(26,17,20,0.7), rgba(15,10,13,0.5))",
+                          border: "1px solid",
+                          borderColor: isDone ? "rgba(34,197,94,0.35)" : "rgba(212,175,55,0.2)",
+                          borderLeft: `3px solid ${tm.color}`,
+                          boxShadow: isDone
+                            ? `inset 0 1px 0 rgba(34,197,94,0.2), 0 6px 16px -10px ${tm.color}`
+                            : `inset 0 1px 0 rgba(212,175,55,0.15), 0 6px 20px -12px rgba(0,0,0,0.7)`,
+                        }}>
                         <div className="flex items-start gap-2">
-                          <GripVertical size={12} className="text-gray-600 mt-1 shrink-0 opacity-0 group-hover:opacity-100 transition" />
+                          <GripVertical size={12} className="mt-1 shrink-0 opacity-0 group-hover:opacity-100 transition"
+                            style={{ color: "#d4af37" }} />
                           <button onClick={() => {
                             if (isDone) moveKanbanCard(c.id, "today");
                             else moveKanbanCard(c.id, "done");
@@ -184,7 +217,8 @@ export default function WorkoutKanban() {
                               className={isDone ? "text-emerald-400" : "text-gray-600 hover:text-emerald-400"} />
                           </button>
                           <div className="flex-1 min-w-0">
-                            <p className={`text-white leading-snug ${isDone ? "line-through text-gray-400" : ""}`}>{c.title}</p>
+                            <p className={`leading-snug font-medium ${isDone ? "line-through" : ""}`}
+                              style={{ color: isDone ? "#64748b" : "#f3e9d2" }}>{c.title}</p>
                             <div className="flex items-center gap-1.5 mt-1.5 flex-wrap">
                               <span className="chip text-[10px]" style={{ background: `${tm.color}25`, color: tm.color }}>
                                 <Icon size={10} /> {tm.label}

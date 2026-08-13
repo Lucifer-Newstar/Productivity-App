@@ -2,18 +2,7 @@
 
 /**
  * TopNav — horizontal top navigation bar for cross-page navigation.
- *
- * Lives at the top of every page. Contains:
- *   - Kaizen brand logo (links home)
- *   - The five Spaces (Projects, Workout, Career, Entertainment, Health) as real
- *     next/link routes — these are the "pages" you navigate between.
- *   - Right cluster: search, theme toggle (sun/moon), notifications, avatar.
- *
- * In-app section switching (Dashboard / Tasks / Pomodoro / ...) lives in the
- * SideNav component, which is only rendered on the home ("/") page.
- *
- * A single shared Framer Motion `layoutId` ("nav-pill") slides between spaces
- * so the active highlight animates smoothly.
+ * Japanese lacquer + gold + vermilion styling, full light/dark support.
  */
 
 import Link from "next/link";
@@ -30,35 +19,62 @@ export default function TopNav() {
   const { theme, toggle } = useTheme();
   const pathname = usePathname() || "/";
   const [query, setQuery] = useState("");
+  const isDark = theme === "dark";
 
-  // Active space derived from URL; "/" means home (no space active)
   const activeSpace: string = pathname === "/" ? "" : pathname.replace(/^\//, "").replace(/\/$/, "");
 
   return (
-    <header className="sticky top-0 z-40 w-full backdrop-blur-xl bg-white/70 dark:bg-bg/70 border-b border-gray-200/60 dark:border-white/5 shadow-sm">
-      <div className="max-w-[1600px] mx-auto px-4 md:px-6 h-16 flex items-center gap-4">
-        {/* Brand */}
+    <header
+      className="sticky top-0 z-40 w-full backdrop-blur-xl border-b relative overflow-hidden"
+      style={{
+        background: isDark
+          ? "linear-gradient(90deg, rgba(15,10,13,0.85) 0%, rgba(20,13,16,0.75) 100%)"
+          : "linear-gradient(90deg, rgba(255,255,255,0.78) 0%, rgba(245,239,228,0.72) 100%)",
+        borderColor: isDark ? "rgba(212,175,55,0.2)" : "rgba(200,29,37,0.15)",
+        boxShadow: isDark
+          ? "0 4px 20px -10px rgba(0,0,0,0.6)"
+          : "0 4px 20px -10px rgba(139,0,0,0.15)",
+      }}
+    >
+      {/* Seigaiha wave decoration along bottom */}
+      <div aria-hidden className="absolute bottom-0 left-0 right-0 h-3 seigaiha-pattern opacity-60 pointer-events-none" />
+
+      <div className="max-w-[1600px] mx-auto px-4 md:px-6 h-16 flex items-center gap-4 relative">
+        {/* Brand — hanko-style seal logo */}
         <Link href="/" className="flex items-center gap-2.5 shrink-0 group">
-          <div className="relative w-9 h-9 rounded-xl bg-gradient-to-br from-accent to-accent-cyan flex items-center justify-center glow-violet transition-transform group-hover:scale-105">
-            <Sparkles size={18} className="text-white" />
-            <div className="absolute inset-0 rounded-xl bg-gradient-to-br from-accent to-accent-cyan blur-md opacity-40 -z-10" />
+          <div className="relative w-10 h-10 rounded-xl flex items-center justify-center transition-transform group-hover:scale-105 group-hover:rotate-[-2deg]"
+            style={{
+              background: "linear-gradient(135deg, #c81d25 0%, #8b0000 100%)",
+              border: "1.5px solid rgba(253,230,138,0.4)",
+              boxShadow: "0 6px 20px -6px rgba(200,29,37,0.7), inset 0 1px 0 rgba(253,230,138,0.3)",
+            }}>
+            <span className="font-jp text-amber-100 text-lg font-bold">改</span>
+            <div aria-hidden className="absolute inset-0 rounded-xl"
+              style={{
+                background: "linear-gradient(135deg, rgba(253,230,138,0.2), transparent 50%)",
+                pointerEvents: "none",
+              }} />
           </div>
           <div className="hidden sm:block">
-            <h1 className="text-lg font-bold gradient-text tracking-tight leading-none">Kaizen</h1>
-            <p className="text-[9px] text-gray-500 dark:text-gray-500 uppercase tracking-widest mt-0.5">Continuous growth</p>
+            <h1 className="text-xl font-jp font-bold gradient-text tracking-wide leading-none">
+              Kaizen
+            </h1>
+            <p className="text-[9px] uppercase tracking-[0.3em] mt-0.5 flex items-center gap-1"
+              style={{ color: isDark ? "#d4af37" : "#9c7a1a" }}>
+              <Sparkles size={9} /> 改善・継続
+            </p>
           </div>
         </Link>
 
-        {/* Divider */}
-        <div className="h-6 w-px bg-gray-200 dark:bg-white/10 hidden md:block" />
+        <div className="h-6 w-px" style={{ background: isDark ? "rgba(212,175,55,0.2)" : "rgba(200,29,37,0.15)" }} />
 
-        {/* Spaces (cross-page nav) */}
+        {/* Spaces */}
         <nav className="flex items-center gap-1 flex-1 min-w-0 overflow-x-auto">
-          {/* Home link on non-home pages so users can jump back visually */}
           {pathname !== "/" && (
             <Link
               href="/"
-              className="hidden md:inline-flex relative items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors group shrink-0 text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white"
+              className={`hidden md:inline-flex relative items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors group shrink-0
+                ${isDark ? "text-gray-400 hover:text-amber-200" : "text-gray-600 hover:text-red-900"}`}
             >
               🏠 Home
             </Link>
@@ -75,21 +91,33 @@ export default function TopNav() {
                 {active && (
                   <motion.div
                     layoutId="nav-pill"
-                    className="absolute inset-0 rounded-lg border"
-                    style={{ background: `${s.color}20`, borderColor: `${s.color}50` }}
+                    className="absolute inset-0 rounded-lg"
+                    style={{
+                      background: isDark ? `${s.color}25` : `${s.color}18`,
+                      border: `1px solid ${s.color}${isDark ? "55" : "40"}`,
+                      boxShadow: `0 6px 20px -10px ${s.color}${isDark ? "99" : "66"}`,
+                    }}
                     transition={{ type: "spring", bounce: 0.2, duration: 0.4 }}
                   />
                 )}
-                <span className={`relative z-10 text-base ${active ? "" : "grayscale opacity-80 group-hover:grayscale-0 group-hover:opacity-100 transition"}`}>
+                <span className={`relative z-10 text-base transition ${active ? "" : "grayscale opacity-70 group-hover:grayscale-0 group-hover:opacity-100"}`}>
                   {s.emoji}
                 </span>
-                <span className={`relative z-10 ${active ? "text-gray-900 dark:text-white" : "text-gray-700 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-white"}`}>
+                <span className={`relative z-10 ${
+                  active
+                    ? (isDark ? "text-amber-100" : "text-red-900")
+                    : (isDark ? "text-gray-300 group-hover:text-amber-100" : "text-gray-700 group-hover:text-red-900")
+                }`}>
                   {s.name}
                 </span>
                 {count > 0 && (
                   <span
-                    className="relative z-10 ml-0.5 text-[10px] font-semibold px-1.5 py-0.5 rounded-full text-white"
-                    style={{ background: s.color }}
+                    className="relative z-10 ml-0.5 text-[10px] font-bold px-1.5 py-0.5 rounded-full text-amber-50"
+                    style={{
+                      background: "linear-gradient(135deg, #c81d25, #8b0000)",
+                      border: "1px solid rgba(253,230,138,0.3)",
+                      boxShadow: "0 2px 8px -2px rgba(200,29,37,0.6)",
+                    }}
                   >
                     {count}
                   </span>
@@ -101,38 +129,58 @@ export default function TopNav() {
 
         {/* Right cluster */}
         <div className="flex items-center gap-2 ml-auto">
-          {/* Search */}
           <div className="relative hidden sm:block">
-            <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" />
+            <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none"
+              style={{ color: isDark ? "#d4af37" : "#9c7a1a" }} />
             <input
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder="Search..."
-              className="w-40 md:w-52 bg-gray-100/80 dark:bg-white/5 border border-gray-200 dark:border-white/5 rounded-xl pl-9 pr-3 py-1.5 text-sm text-gray-900 dark:text-white placeholder:text-gray-500 outline-none focus:border-accent/50 transition"
+              className="w-40 md:w-52 rounded-xl pl-9 pr-3 py-1.5 text-sm outline-none transition"
+              style={{
+                background: isDark ? "rgba(253,230,138,0.05)" : "rgba(26,18,22,0.04)",
+                border: `1px solid ${isDark ? "rgba(212,175,55,0.2)" : "rgba(26,18,22,0.1)"}`,
+                color: isDark ? "#f3e9d2" : "#1a1216",
+              }}
             />
           </div>
 
-          {/* Theme toggle */}
           <button
             onClick={toggle}
             aria-label="Toggle theme"
-            className="p-2 rounded-xl bg-gray-100/80 dark:bg-white/5 hover:bg-gray-200 dark:hover:bg-white/10 border border-gray-200 dark:border-white/5 transition text-gray-700 dark:text-gray-300"
+            title={`Switch to ${isDark ? "light" : "dark"}`}
+            className="p-2 rounded-xl transition"
+            style={{
+              background: isDark ? "rgba(253,230,138,0.05)" : "rgba(26,18,22,0.04)",
+              border: `1px solid ${isDark ? "rgba(212,175,55,0.2)" : "rgba(26,18,22,0.1)"}`,
+              color: isDark ? "#fde68a" : "#8b0000",
+            }}
           >
-            {theme === "dark" ? <Sun size={17} className="text-amber-500" /> : <Moon size={17} />}
+            {isDark ? <Sun size={17} /> : <Moon size={17} />}
           </button>
 
-          {/* Notifications */}
           <button
             aria-label="Notifications"
-            className="relative p-2 rounded-xl bg-gray-100/80 dark:bg-white/5 hover:bg-gray-200 dark:hover:bg-white/10 border border-gray-200 dark:border-white/5 transition text-gray-700 dark:text-gray-300"
+            className="relative p-2 rounded-xl transition"
+            style={{
+              background: isDark ? "rgba(253,230,138,0.05)" : "rgba(26,18,22,0.04)",
+              border: `1px solid ${isDark ? "rgba(212,175,55,0.2)" : "rgba(26,18,22,0.1)"}`,
+              color: isDark ? "#f3e9d2" : "#1a1216",
+            }}
           >
             <Bell size={17} />
-            <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-accent-pink" />
+            <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full"
+              style={{ background: "#c81d25", boxShadow: "0 0 6px #c81d25" }} />
           </button>
 
-          {/* Avatar */}
-          <button className="w-9 h-9 rounded-full bg-gradient-to-br from-accent to-accent-pink flex items-center justify-center text-sm font-bold text-white ring-2 ring-white/50 dark:ring-white/10 hover:scale-105 transition shrink-0">
-            A
+          {/* Hanko avatar */}
+          <button className="relative w-9 h-9 rounded-lg flex items-center justify-center text-sm font-jp font-bold text-amber-50 shrink-0 transition hover:scale-105 hover:rotate-[-3deg]"
+            style={{
+              background: "linear-gradient(135deg, #c81d25, #8b0000)",
+              border: "1.5px solid rgba(253,230,138,0.4)",
+              boxShadow: "0 4px 14px -4px rgba(200,29,37,0.7), inset 0 1px 0 rgba(253,230,138,0.25)",
+            }}>
+            忍
           </button>
         </div>
       </div>
