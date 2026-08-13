@@ -210,9 +210,13 @@ export interface JobApplication {
   offerFinal?: number;
   counterOffer?: number;
   rejectionFeedback?: string;
+  rejectionReason?: string;
+  learnings?: string;
   vibeScore?: number;
   decisionWeight?: { salary: number; culture: number; growth: number; commute: number; benefits: number; title: number };
+  decisionMatrix?: { comp: number; growth: number; wlb: number; team: number; mission: number; location: number };
   followUpReminderAt?: number;
+  nextFollowUpAt?: string;
   timeSpentMin?: number;
 }
 
