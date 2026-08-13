@@ -15,6 +15,7 @@
  */
 
 import Link from "next/link";
+import { useRouter } from "next/router";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   ArrowLeft, Terminal, Sun, Moon, Bell, Map, Brain, Award, Users, Briefcase,
@@ -24,6 +25,17 @@ import type { LucideIcon } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useTheme } from "../../lib/theme";
 import { useStore } from "../../lib/store";
+
+const SECTION_ROUTE: Record<CareerSectionId, string> = {
+  roadmaps:  "/career/roadmaps",
+  skills:    "/career/skills",
+  certs:     "/career/certs",
+  network:   "/career/network",
+  jobs:      "/career/jobs",
+  portfolio: "/career/portfolio",
+  daily:     "/career/daily",
+  global:    "/career/command",
+};
 
 export type CareerSectionId =
   | "roadmaps" | "skills" | "certs" | "network" | "jobs"
@@ -71,6 +83,7 @@ function Clock() {
 }
 
 export default function CareerShell({ section, commandButton, commandCard, children }: Props) {
+  const router = useRouter();
   // Career space always forces dark. Light/parchment theme is for the imperial workout space;
   // a cyber HUD looks wrong on parchment. We still expose toggle for cross-space parity but style neutral.
   const { toggle } = useTheme();
