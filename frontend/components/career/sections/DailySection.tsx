@@ -261,6 +261,8 @@ export default function DailySection() {
           </div>
         </Card>
 
+        <FocusHistory days={career.days} color={COLORS.green} warnColor={COLORS.orange} goalMin={120}/>
+
         <div className="md:col-span-2 grid md:grid-cols-3 gap-3">
           <QuickList title="Wins" color={COLORS.green} items={entry.wins??[]} onAdd={t=>arrUpd("wins",t)} onDel={i=>arrDel("wins",i)}/>
           <QuickList title="Learnings" color={COLORS.cyan} items={entry.learnings??[]} onAdd={t=>arrUpd("learnings",t)} onDel={i=>arrDel("learnings",i)}/>
@@ -527,6 +529,60 @@ function Stat({label,value,color}:{label:string;value:number|string;color:string
       <span className="c-tr"/><span className="c-bl"/>
       <div className="text-[9px] tracking-widest font-bold" style={{color}}>{label.toUpperCase()}</div>
       <div className="text-lg font-black leading-tight mt-0.5 truncate" style={{color:"var(--cr-fg)"}}>{value}</div>
+    </div>
+  );
+}
+
+/**
+ * FocusHistory — 14-day deep-focus bar chart. Each bar is
+ *   green  → met/exceeded 2h goal
+ *   orange → 1–2h
+ *   red    → <1h
+ *   muted  → 0 minutes logged
+ */
+function FocusHistory({ days, color, warnColor, goalMin = 120 }:
+  { days: WorkDayEntry[]; color: string; warnColor: string; goalMin?: number }) {
+  const series = useMemo(() => {
+    const out: { date: string; min: number }[] = [];
+    const byDate = new Map(days.map(d => [d.date, d.focusSessionsMinutes || 0]));
+    const d = new Date();
+    for (let i = 13; i >= 0; i--) {
+      const dt = new Date(d); dt.setDate(d.getDate() - i);
+      const iso = dt.toISOString().slice(0,10);
+      out.push({ date: iso, min: byDate.get(iso) || 0 });
+    }
+    return out;
+  }, [days]);
+  const max = Math.max(goalMin, ...series.map(s => s.min));
+  return (
+    <div className="rounded-sm p-4 hud-corner relative"
+      style={{background:"var(--cr-card)",border:`1px solid ${color}55`}}>
+      <span className="c-tr"/><span className="c-bl"/>
+      <div className="flex items-center gap-2 text-[10px] tracking-widest font-bold mb-2" style={{color}}>
+        <Flame size={12}/> FOCUS · 14D
+      </div>
+      <div className="flex items-end gap-1 h-20">
+        {series.map((s, i) => {
+          const h = max > 0 ? Math.max(2, (s.min / max) * 72) : 2;
+          const c = s.min === 0 ? "var(--cr-borderSoft)"
+            : s.min >= goalMin ? color
+            : s.min >= goalMin/2 ? warnColor
+            : "#f87171";
+          return (
+            <div key={s.date} className="flex-1 flex flex-col items-center gap-1 group relative">
+              <div className="w-full rounded-sm transition-all"
+                style={{ height: h, background: c, boxShadow: s.min >= goalMin ? `0 0 8px ${c}88` : "none" }}/>
+              <div className="opacity-0 group-hover:opacity-100 transition absolute -top-7 text-[9px] tracking-widest font-bold px-1.5 py-0.5 rounded-sm whitespace-nowrap"
+                style={{background:"var(--cr-card2)",color:"var(--cr-fg)",border:"1px solid var(--cr-border)"}}>
+                {s.date.slice(5)} · {Math.round(s.min/60*10)/10}h
+              </div>
+            </div>
+          );
+        })}
+      </div>
+      <div className="flex justify-between text-[9px] tracking-widest font-bold mt-1" style={{color:"var(--cr-fgMuted)"}}>
+        <span>-14d</span><span>-7d</span><span>today</span>
+      </div>
     </div>
   );
 }
