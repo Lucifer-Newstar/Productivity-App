@@ -438,8 +438,8 @@ Routes: `/career` → redirect to `/career/roadmaps`; `/career/roadmaps`,
 
 | Area | Status |
 |---|---|
-| Theme (cyber HUD) | ✅ Distinct from workout: dark-navy gradient, animated cyan grid, scanlines, sweep beam, corner brackets, mono font, blinking cursors, cyan/indigo/acid-green/violet accents, horizontal scan-flash transitions (no katana slash, no crown, no kanji) |
-| Parchment/light mode | ❌ Career forces dark HUD; light mode doesn't fit the aesthetic (toggle present but neutral-styled) |
+| Themes — two unique modes | ✅ **Night HUD (dark, default):** deep navy→black gradient, animated cyan grid, scanlines, sweep beam, corner brackets, cyan/indigo/green/violet accents, glowing dots, blurred orbs. **Blueprint (light):** cream blueprint-paper (#f5f1e6→#ddd3ba), static two-layer technical grid (fine 20px + major 100px), deep cyan-blue (#0c4a6e) structural lines, orange-red (#c2410c) pencil-markup accents, paper-grain noise, registration corners. Both use mono font; neither shares palette/typography/ornament with workout (no gold/crimson, no Cinzel serif, no kanji/dragon/katana) |
+| Theme toggle | ✅ Sun/Moon in header swaps night ↔ blueprint; persists to `kaizen.theme`; footer labels active mode |
 | LocalStorage persistence (`kaizen.*` keys) | ✅ Via `useLocalState` in `StoreProvider` |
 | Hydration safety | ✅ Mounted guard in `/career` index prevents SSR/client `Date.now()` mismatches; boot splash shown pre-mount |
 | Backend CRUD routes | ✅ `/api/career/*` prefixed in Express (roadmaps/skills/courses/contacts/applications/companies/questions/achievements/projects/resumes/bullets/testimonials/days/timeline/satisfaction/burnout/sabbaticals/side-hustles/ip/speaking/vision-board/tracks/goals/notes) — untested (no node_modules in sandbox); frontend does not yet call them (offline-first) |
