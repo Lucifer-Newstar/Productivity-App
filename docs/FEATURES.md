@@ -416,9 +416,10 @@ milestones, resources, projects, labs, and hours.
 
 | Area | Status |
 |---|---|
-| Dark theme (obsidian/ink/crimson/gold/cyan/pink) | ✅ Full palette shared with workout; uses `useTheme()` |
-| Parchment/light mode | 🟡 Partial — parchment overrides applied at shell level; several inner cards hardcode dark rgba backgrounds (polish pass pending) |
+| Theme (cyber HUD) | ✅ Distinct from workout: dark-navy gradient, animated cyan grid, scanlines, sweep beam, corner brackets, mono font, blinking cursors, cyan/indigo/acid-green/violet accents, horizontal scan-flash transitions (no katana slash, no crown, no kanji) |
+| Parchment/light mode | ❌ Career forces dark HUD; light mode doesn't fit the aesthetic (toggle present but neutral-styled) |
 | LocalStorage persistence (`kaizen.*` keys) | ✅ Via `useLocalState` in `StoreProvider` |
+| Hydration safety | ✅ Mounted guard in `/career` index prevents SSR/client `Date.now()` mismatches; boot splash shown pre-mount |
 | Backend CRUD routes | ✅ `/api/career/*` prefixed in Express (roadmaps/skills/courses/contacts/applications/companies/questions/achievements/projects/resumes/bullets/testimonials/days/timeline/satisfaction/burnout/sabbaticals/side-hustles/ip/speaking/vision-board/tracks/goals/notes) — untested (no node_modules in sandbox); frontend does not yet call them (offline-first) |
 | Migration `migrateCareer` | ✅ Seeds 5 roadmap templates on first visit for legacy users, normalizes achievements, lifts legacy `resumeBullets` to `bullets[]` deduplicated |
 | Section transitions | ✅ `SectionSlash` katana diagonal flash between sub-pages |
