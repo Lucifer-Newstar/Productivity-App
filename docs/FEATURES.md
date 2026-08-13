@@ -206,6 +206,24 @@ Audited against the 149-feature checklist (35 cali + 45 gym + 22 cardio +
 | `/workout/schedule` | `pages/workout/schedule.tsx` | Routines/splits + program manager + block reorder |
 | `/workout/tools` | `pages/workout/tools.tsx` | Timers, journal, challenges, quotes, CSV import/export, demo-data loader |
 
+## Career routes shipped
+
+| URL | File | Purpose |
+|---|---|---|
+| `/career` | `pages/career/index.tsx` | redirect → `/career/roadmaps` |
+| `/career/roadmaps` | `pages/career/roadmaps.tsx` | Roadmap forge + parallel trackers (5 templates, donuts, dependency locks, celebration) |
+| `/career/skills` | `pages/career/skills.tsx` | Skill inventory + radar chart + growth sparkline + top-5 leaderboard |
+| `/career/certs` | `pages/career/certs.tsx` | Courses/certifications tracker with expiry countdown |
+| `/career/network` | `pages/career/network.tsx` | Contacts, favor bank, interaction log, gold nuggets, reach-out queue |
+| `/career/jobs` | `pages/career/jobs.tsx` | Kanban pipeline + interview Q bank + company dossiers |
+| `/career/portfolio` | `pages/career/portfolio.tsx` | Achievement vault + projects + resume bullets + ATS scanner + testimonials |
+| `/career/daily` | `pages/career/daily.tsx` | Standup, live focus timer, meetings w/ ROI, time-allocation donut, mood/stress |
+| `/career/command` | `pages/career/command.tsx` | Global: timeline, weekly satisfaction, Maslach burnout, vision, sabbatical/retirement |
+
+All routes use the shared `components/career/CareerPage.tsx` HOC, which mounts
+`CareerShell` + `CommandNav` + `CommandCard` + `HudFlash` (the career analog of
+`WorkoutPage.tsx` / `WorkoutShell` / `BattleNav` / `BattleCard` / `SectionSlash`).
+
 ## Workout remaining backlog (intentionally deferred)
 
 - Hormonal cycle sync
@@ -222,14 +240,18 @@ Audited against the 149-feature checklist (35 cali + 45 gym + 22 cardio +
 
 # Career Feature Status
 
-The `/career` space ships 8 sections under one COMMAND-navigated shell. The
-floating ⚔ COMMAND button (cyan/gold palette, mirroring workout's BATTLE) opens
-the inline GoldenDragon CommandCard, which presents the 8 sections as
-numbered Roman-sigil tiles (成長 kanji in header). Tsuba-giri katana slashes
-transition between sections; Escape closes the card; the active section dot
-uses Framer Motion `layoutId`. Auto-seeded on first visit: 5 pre-built roadmap
-templates (DevOps, Networking, Linux, MLOps, Cloud) cloned with full phases,
-milestones, resources, projects, labs, and hours.
+The `/career` space ships 8 module subpages under a cyber/HUD COMMAND shell. The
+floating `> cmd_` trigger opens an inline terminal-styled CommandCard which
+presents the 8 modules as numbered 01–08 tiles. A horizontal cyan scan-flash
+transitions between routes; Escape closes the card; the ACTIVE dot uses Framer
+Motion `layoutId`. Auto-seeded on first visit: 5 pre-built roadmap templates
+(DevOps, Networking, Linux, MLOps, Cloud) cloned with full phases, milestones,
+resources, projects, labs, and hours. Career uses its own HUD theme (navy/cyan/
+indigo/green mono) distinct from workout's imperial Japanese aesthetic.
+
+Routes: `/career` → redirect to `/career/roadmaps`; `/career/roadmaps`,
+`/career/skills`, `/career/certs`, `/career/network`, `/career/jobs`,
+`/career/portfolio`, `/career/daily`, `/career/command`.
 
 ## 1. Roadmaps (template forge + parallel trackers)
 
@@ -422,10 +444,11 @@ milestones, resources, projects, labs, and hours.
 | Hydration safety | ✅ Mounted guard in `/career` index prevents SSR/client `Date.now()` mismatches; boot splash shown pre-mount |
 | Backend CRUD routes | ✅ `/api/career/*` prefixed in Express (roadmaps/skills/courses/contacts/applications/companies/questions/achievements/projects/resumes/bullets/testimonials/days/timeline/satisfaction/burnout/sabbaticals/side-hustles/ip/speaking/vision-board/tracks/goals/notes) — untested (no node_modules in sandbox); frontend does not yet call them (offline-first) |
 | Migration `migrateCareer` | ✅ Seeds 5 roadmap templates on first visit for legacy users, normalizes achievements, lifts legacy `resumeBullets` to `bullets[]` deduplicated |
-| Section transitions | ✅ `SectionSlash` katana diagonal flash between sub-pages |
-| COMMAND button + card | ✅ Cyan/gold palette; GoldenDragon (animated pathLength dragon with 改善+善 watermark, embers, dragon-fire, sword slashes) renders only while open via AnimatePresence |
-| Typography: Cinzel (imperial-name, emperor-title), Cormorant Garamond (serif-body), Shippori Mincho (font-jp), Inter, JetBrains Mono | ✅ Applied via globals.css utilities |
-| 8-tile COMMAND nav | ✅ Numerals I-VIII, Roman sigils, stagger animations, active-dot layoutId |
+| Section transitions | ✅ HudFlash horizontal cyan scan-sweep on route change (no katana slash in career) |
+| COMMAND button + card | ✅ Terminal `> cmd_` prompt with blinking caret; inline `> select_module()` card with 01–08 numbered tiles, scanlines, corner brackets, rotating CPU icon — no GoldenDragon/kanji in career |
+| Typography (career) | ✅ Mono (JetBrains Mono) enforced across career via `.career-root` scoped overrides; imperial serif fonts only used inside `/workout` |
+| 8-module COMMAND nav | ✅ Code-prefixed tiles 01..08, color-coded, stagger animations, ACTIVE layoutId dot |
+| Subpage routes | ✅ Real Next.js pages `/career/roadmaps|skills|certs|network|jobs|portfolio|daily|command`; `/career` redirects to `/career/roadmaps`; shared `CareerPage` HOC (mirrors `WorkoutPage`) |
 | Hotkeys | ✅ Escape closes command card |
 | Projects hub page (connecting cross-space projects) | ❌ Roadmaps/projects/portfolio/jobs reference projects but no unified hub yet |
 
