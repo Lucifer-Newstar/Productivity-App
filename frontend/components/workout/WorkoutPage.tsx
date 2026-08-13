@@ -3,26 +3,22 @@
 /**
  * WorkoutPage — shared wrapper for all /workout/* sub-routes.
  *
- * Responsibilities:
- *  - BattleGate intro (full-screen obsidian throne room with the BATTLE
- *    button + dragon-fire/sword-slash reveal) on first visit per session.
- *  - Handles ActiveWorkout full-screen takeover when a session is live.
- *  - Handles the mandatory daily bodyweight modal.
- *  - Wraps children in <WorkoutShell> (left rail + top strip + animated transitions).
- *  - Plays a SectionSlash (katana swipe + ember burst) between sub-page navigations.
- *  - Provides Start-today's-routine CTA wiring + "Retreat" button to re-seal gate.
- *
- * Gate state is persisted in sessionStorage under `kaizer.gateOpen` so a
- * refresh keeps the shell open; closing the tab and revisiting re-triggers
- * the battle intro.
+ * - Mounts WorkoutShell (top strip + content only — no left rail / bottom tabs).
+ * - BattleNav (the floating ⚔ BATTLE ⚔ button and its summoned card with every
+ *   sub-page link + sword-slash/dragon-fire reveal) is injected into the top
+ *   strip via shell's battleButton prop. Picking a section navigates with
+ *   router.push.
+ * - SectionSlash overlay plays between sub-page navigations.
+ * - Active-session takeover (ActiveWorkout / FreestyleWorkout) renders full-screen
+ *   without the shell.
  */
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/router";
 import WorkoutShell, { WORKOUT_NAV, type WorkoutSectionId } from "./WorkoutShell";
 import ActiveWorkout from "./ActiveWorkout";
 import FreestyleWorkout from "./FreestyleWorkout";
-import BattleGate from "./BattleGate";
+import BattleNav from "./BattleNav";
 import SectionSlash from "./SectionSlash";
 import { AnimatePresence } from "framer-motion";
 import { useStore } from "../../lib/store";
@@ -32,47 +28,23 @@ interface Props {
   children: React.ReactNode;
 }
 
-const GATE_KEY = "kaizer.gateOpen";
-
 export default function WorkoutPage({ section, children }: Props) {
   const router = useRouter();
   const { workout, startSession } = useStore();
 
-  // Gate starts closed and opens after the BATTLE animation. We hydrate from
-  // sessionStorage after mount (avoid SSR mismatch).
-  const [gateOpen, setGateOpen] = useState(false);
-  const [gateReady, setGateReady] = useState(false); // flip true after mount
   const [slashing, setSlashing] = useState(false);
-  const prevSection = useRefValue(section);
+  const prevSection = useRef<WorkoutSectionId | null>(null);
 
+  // Section-slash on section change
   useEffect(() => {
-    const stored = typeof window !== "undefined" ? window.sessionStorage.getItem(GATE_KEY) : null;
-    setGateOpen(stored === "1");
-    setGateReady(true);
-  }, []);
-
-  // Play section-slash when the section changes (and gate is open)
-  useEffect(() => {
-    if (!gateReady || !gateOpen) return;
     if (prevSection.current && prevSection.current !== section) {
       setSlashing(true);
       const t = window.setTimeout(() => setSlashing(false), 450);
       return () => window.clearTimeout(t);
     }
     prevSection.current = section;
-  }, [section, gateOpen, gateReady]);
+  }, [section]);
 
-  const openGate = useCallback(() => {
-    setGateOpen(true);
-    if (typeof window !== "undefined") window.sessionStorage.setItem(GATE_KEY, "1");
-  }, []);
-  const closeGate = useCallback(() => {
-    setGateOpen(false);
-    if (typeof window !== "undefined") window.sessionStorage.removeItem(GATE_KEY);
-  }, []);
-
-  // When user clicks a nav item, client-side transition to that route (slash
-  // animates between via the useEffect above).
   const onSectionChange = useCallback((s: WorkoutSectionId) => {
     const route =
       s === "overview"     ? "/workout/overview" :
@@ -90,10 +62,7 @@ export default function WorkoutPage({ section, children }: Props) {
     router.push(route, undefined, { scroll: false });
   }, [router]);
 
-  const todaysRoutine = useMemo(
-    () => workout.routines.find((r) => r.dayOfWeek === new Date().getDay()),
-    [workout.routines],
-  );
+  const todaysRoutine = workout.routines.find((r) => r.dayOfWeek === new Date().getDay());
   const todayIso = new Date().toISOString().slice(0,10);
   const todayReadiness = workout.readiness.find((r) => r.date === todayIso);
 
@@ -105,7 +74,7 @@ export default function WorkoutPage({ section, children }: Props) {
     startSession("Quick Session", undefined, todayReadiness?.score);
   }, [todayReadiness, startSession]);
 
-  // Active-session takeover — freestyle logger when no routine, block-driven otherwise.
+  // Active-session takeover
   if (workout.activeSessionId) {
     const activeSession = workout.sessions.find((s) => s.id === workout.activeSessionId);
     const isFreestyle = !activeSession?.routineId;
@@ -121,14 +90,14 @@ export default function WorkoutPage({ section, children }: Props) {
           {isFreestyle ? (
             <FreestyleWorkout
               sessionId={workout.activeSessionId}
-              onFinish={() => { setGateOpen(true); window.sessionStorage.setItem(GATE_KEY,"1"); router.push("/workout/overview"); }}
-              onDiscard={() => { setGateOpen(true); window.sessionStorage.setItem(GATE_KEY,"1"); router.push("/workout/overview"); }}
+              onFinish={() => router.push("/workout/overview")}
+              onDiscard={() => router.push("/workout/overview")}
             />
           ) : (
             <ActiveWorkout
               sessionId={workout.activeSessionId}
-              onFinish={() => { setGateOpen(true); window.sessionStorage.setItem(GATE_KEY,"1"); router.push("/workout/overview"); }}
-              onDiscard={() => { setGateOpen(true); window.sessionStorage.setItem(GATE_KEY,"1"); router.push("/workout/schedule"); }}
+              onFinish={() => router.push("/workout/overview")}
+              onDiscard={() => router.push("/workout/schedule")}
             />
           )}
         </div>
@@ -136,44 +105,22 @@ export default function WorkoutPage({ section, children }: Props) {
     );
   }
 
+  const battleButton = <BattleNav current={section} onPick={onSectionChange} />;
+
   return (
     <>
       <WorkoutShell
         section={section}
-        onSectionChange={onSectionChange}
-        onStartTodaysRoutine={handleStartTodays}
-        onQuickStart={handleQuickStart}
-        todaysRoutineName={todaysRoutine?.name}
-        onRetreat={closeGate}
+        battleButton={battleButton}
       >
-        <div className="max-w-6xl mx-auto w-full">{children}</div>
+        {children}
       </WorkoutShell>
 
-      {/* Section slash overlay */}
       <AnimatePresence>
-        {slashing && gateOpen && <SectionSlash />}
+        {slashing && <SectionSlash />}
       </AnimatePresence>
-
-      {/* Battle gate overlay (renders on top until opened) */}
-      {gateReady && !gateOpen && (
-        <BattleGate
-          onOpen={openGate}
-          todaysRoutineName={todaysRoutine?.name}
-          onQuickStart={handleQuickStart}
-          onStartTodays={handleStartTodays}
-        />
-      )}
     </>
   );
 }
 
-// Tiny ref hook for tracking the previous value of a prop/state.
-import { useRef } from "react";
-function useRefValue<T>(v: T) {
-  const r = useRef<T>(v);
-  useEffect(() => { r.current = v; });
-  return r;
-}
-
-// Helper used by pages to set the static fullScreen flag.
 export const FULLSCREEN = true;
