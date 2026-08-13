@@ -13,7 +13,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Plus, Trophy, Trash2, Link2, Eye, EyeOff, ExternalLink, Sparkles, Star } from "lucide-react";
 import { useStore } from "../../../lib/store";
 import { useTheme } from "../../../lib/theme";
-import type { Achievement, AchievementCategory, PortfolioProject } from "../../../lib/careerTypes";
+import type { Achievement, AchievementCategory, PortfolioProject, ResumeBullet, Testimonial } from "../../../lib/careerTypes";
 
 const CATS: { id: AchievementCategory; label: string; color: string }[] = [
   { id: "technical", label: "Technical", color: "#06b6d4" },
@@ -32,10 +32,14 @@ const today = () => new Date().toISOString().slice(0,10);
 export default function PortfolioSection() {
   const isDark = useTheme().theme === "dark";
   const { career, updateCareer } = useStore();
-  const [tab, setTab] = useState<"achievements"|"projects">("achievements");
+  const [tab, setTab] = useState<"achievements"|"projects"|"bullets"|"testimonials">("achievements");
   const [cat, setCat] = useState<AchievementCategory|"all">("all");
   const [addingA, setAddingA] = useState(false);
   const [addingP, setAddingP] = useState(false);
+  const [bulletDraft, setBulletDraft] = useState("");
+  const [bulletTags, setBulletTags] = useState("");
+  const [testDraft, setTestDraft] = useState<Partial<Testimonial>>({ from:"", role:"", quote:"" });
+  const [atsKeywords, setAtsKeywords] = useState("");
   const [aDraft, setADraft] = useState<Partial<Achievement>>({ title:"", category:"technical", date:today(), icon:"🏆" });
   const [pDraft, setPDraft] = useState<Partial<PortfolioProject>>({ title:"", role:"", summary:"", technologies:[], private:false });
   const [techInput, setTechInput] = useState("");
@@ -70,6 +74,38 @@ export default function PortfolioSection() {
   const upP = (id: string, patch: Partial<PortfolioProject>) => updateCareer(s => ({ projects: s.projects.map(p => p.id===id ? { ...p, ...patch } : p) }));
   const delP = (id: string) => { if (confirm("Delete project?")) updateCareer(s => ({ projects: s.projects.filter(p => p.id!==id) })); };
   const delA = (id: string) => { if (confirm("Delete achievement?")) updateCareer(s => ({ achievements: s.achievements.filter(a => a.id!==id) })); };
+  const upB = (id: string, patch: Partial<ResumeBullet>) => updateCareer(s => ({ bullets: s.bullets.map(b => b.id===id ? { ...b, ...patch } : b) }));
+  const delB = (id: string) => updateCareer(s => ({ bullets: s.bullets.filter(b => b.id!==id) }));
+  const addB = () => {
+    if (!bulletDraft.trim()) return;
+    const b: ResumeBullet = {
+      id: uid(), text: bulletDraft.trim(),
+      tags: bulletTags ? bulletTags.split(",").map(s=>s.trim()).filter(Boolean) : [],
+    };
+    updateCareer(s => ({ bullets: [b, ...s.bullets] }));
+    setBulletDraft(""); setBulletTags("");
+  };
+  const addT = () => {
+    if (!testDraft.from?.trim() || !testDraft.quote?.trim()) return;
+    const t: Testimonial = { id: uid(), from: testDraft.from!.trim(), role: testDraft.role, quote: testDraft.quote!.trim(), date: today() };
+    updateCareer(s => ({ testimonials: [t, ...s.testimonials] }));
+    setTestDraft({ from:"", role:"", quote:"" });
+  };
+  const delT = (id: string) => updateCareer(s => ({ testimonials: s.testimonials.filter(t => t.id!==id) }));
+
+  // ATS scorer: combines bullets + achievements + projects into a text blob and scores against comma keywords.
+  const atsScore = useMemo(() => {
+    const kws = atsKeywords.split(",").map(s=>s.trim().toLowerCase()).filter(Boolean);
+    if (kws.length === 0) return { score: 0, hits: 0, total: 0, miss: [] as string[] };
+    const blob = [
+      ...career.bullets.map(b => b.text + " " + (b.tags||[]).join(" ")),
+      ...career.achievements.map(a => a.title + " " + (a.description||"") + " " + (a.impact||"")),
+      ...career.projects.map(p => [p.title,p.role,p.summary,p.results,p.challenges,p.learnings,...(p.technologies||[])].filter(Boolean).join(" ")),
+    ].join(" ").toLowerCase();
+    const hits = kws.filter(k => blob.includes(k));
+    const miss = kws.filter(k => !blob.includes(k));
+    return { score: Math.round((hits.length/kws.length)*100), hits: hits.length, total: kws.length, miss };
+  }, [atsKeywords, career.bullets, career.achievements, career.projects]);
   const addTech = (id: string | null) => {
     if (!techInput.trim()) return;
     if (id) {
@@ -90,9 +126,11 @@ export default function PortfolioSection() {
             Every win stored — quantified, tagged, ready for your resume.
           </p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex gap-2 flex-wrap">
           <TabBtn active={tab==="achievements"} color="#a3e635" onClick={()=>setTab("achievements")}>Vault ({career.achievements.length})</TabBtn>
           <TabBtn active={tab==="projects"} color="#d4af37" onClick={()=>setTab("projects")}>Projects ({career.projects.length})</TabBtn>
+          <TabBtn active={tab==="bullets"} color="#06b6d4" onClick={()=>setTab("bullets")}>Bullets ({career.bullets.length})</TabBtn>
+          <TabBtn active={tab==="testimonials"} color="#ec4899" onClick={()=>setTab("testimonials")}>Testimonials ({career.testimonials.length})</TabBtn>
         </div>
       </div>
 
@@ -260,6 +298,140 @@ export default function PortfolioSection() {
                   </div>
                 )}
               </motion.div>
+            ))}
+          </div>
+        </>
+      )}
+
+      {tab === "bullets" && (
+        <>
+          <div className="grid md:grid-cols-[1fr_320px] gap-4">
+            <div className="space-y-2">
+              <div className="rounded-xl p-3 space-y-2"
+                style={{background:isDark?"rgba(12,26,34,0.8)":"rgba(255,248,228,0.9)",border:"1px solid rgba(6,182,212,0.4)"}}>
+                <textarea value={bulletDraft} onChange={e=>setBulletDraft(e.target.value)} rows={2}
+                  placeholder="Strong resume bullet: 'Led migration of X to Y reducing latency by 40% for 2M users...'"
+                  className="w-full bg-transparent text-sm p-2 rounded outline-none resize-none"
+                  style={{border:"1px solid rgba(255,255,255,0.1)"}}/>
+                <div className="flex gap-2 flex-wrap items-center">
+                  <input value={bulletTags} onChange={e=>setBulletTags(e.target.value)} placeholder="tags (aws, leadership, ...)"
+                    className="flex-1 min-w-[180px] bg-transparent text-xs px-2 py-1.5 rounded outline-none"
+                    style={{border:"1px solid rgba(255,255,255,0.1)"}}/>
+                  <button onClick={addB} className="emperor-title text-[10px] tracking-widest px-3 py-1.5 rounded"
+                    style={{background:"#0e7490",color:"#cffafe"}}>ADD BULLET</button>
+                </div>
+              </div>
+
+              {career.bullets.length === 0 && (
+                <div className="rounded-xl p-8 text-center text-xs italic serif-body" style={{color:"#6b7280",border:"1px dashed rgba(6,182,212,0.25)"}}>
+                  No bullets. Store polished, metric-driven lines ready to paste into any resume.
+                </div>
+              )}
+              {career.bullets.map(b => (
+                <div key={b.id} className="rounded-xl p-3 group"
+                  style={{background:"rgba(12,26,34,0.55)",border:"1px solid rgba(6,182,212,0.25)"}}>
+                  <textarea defaultValue={b.text} onBlur={e=>upB(b.id,{text:e.target.value})} rows={2}
+                    className="w-full bg-transparent text-sm serif-body p-1 rounded outline-none resize-none"
+                    style={{color:"#f3e9d2"}}/>
+                  <div className="flex items-center gap-2 mt-1 flex-wrap">
+                    {(b.tags||[]).map((t,i)=>(
+                      <span key={i} className="text-[9px] emperor-title tracking-widest px-1.5 py-0.5 rounded" style={{background:"rgba(6,182,212,0.15)",color:"#67e8f9"}}>{t}</span>
+                    ))}
+                    <button onClick={()=>{
+                      navigator.clipboard?.writeText(b.text).catch(()=>{});
+                    }} className="ml-auto text-[9px] emperor-title tracking-widest px-2 py-1 rounded"
+                      style={{background:"rgba(212,175,55,0.15)",color:"#d4af37"}}>COPY</button>
+                    <button onClick={()=>delB(b.id)} className="text-[9px] emperor-title px-2 py-1 rounded text-red-400">DEL</button>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* ATS Panel */}
+            <div className="rounded-xl p-4 h-fit sticky top-4"
+              style={{background:"linear-gradient(145deg,rgba(12,26,34,0.85),rgba(10,20,24,0.7))",border:"1px solid rgba(212,175,55,0.4)"}}>
+              <h3 className="emperor-title text-xs tracking-[0.3em] mb-2 flex items-center gap-2" style={{color:"#d4af37"}}>
+                <Sparkles size={14}/> ATS · SCANNER
+              </h3>
+              <p className="text-[10px] serif-body italic mb-3" style={{color:"#8b9eb0"}}>
+                Paste a JD's keywords, comma-separated. We score your vault + bullets + projects against them.
+              </p>
+              <textarea value={atsKeywords} onChange={e=>setAtsKeywords(e.target.value)} rows={3}
+                placeholder="aws, kubernetes, leadership, ci/cd, python, postgres, ..."
+                className="w-full bg-transparent text-xs p-2 rounded outline-none resize-none"
+                style={{border:"1px solid rgba(255,255,255,0.1)"}}/>
+
+              {atsScore.total > 0 && (
+                <div className="mt-3">
+                  <div className="flex items-end justify-between">
+                    <span className="text-[10px] emperor-title tracking-widest" style={{color:"#8b9eb0"}}>MATCH</span>
+                    <span className="text-3xl font-black" style={{
+                      color: atsScore.score>=80?"#a3e635":atsScore.score>=50?"#fbbf24":"#ef4444",
+                      textShadow: `0 0 12px ${atsScore.score>=80?"#a3e63588":atsScore.score>=50?"#fbbf2488":"#ef444488"}`,
+                    }}>{atsScore.score}%</span>
+                  </div>
+                  <div className="h-1.5 mt-1 rounded-full overflow-hidden" style={{background:"rgba(255,255,255,0.08)"}}>
+                    <div className="h-full rounded-full transition-all" style={{width:`${atsScore.score}%`,
+                      background: `linear-gradient(90deg, ${atsScore.score>=80?"#a3e635":atsScore.score>=50?"#fbbf24":"#ef4444"}, #d4af37)`}}/>
+                  </div>
+                  <div className="text-[10px] mt-2 flex justify-between" style={{color:"#8b9eb0"}}>
+                    <span>{atsScore.hits}/{atsScore.total} keywords hit</span>
+                  </div>
+                  {atsScore.miss.length > 0 && (
+                    <div className="mt-2">
+                      <div className="text-[10px] emperor-title tracking-widest mb-1" style={{color:"#f87171"}}>MISSING</div>
+                      <div className="flex flex-wrap gap-1">
+                        {atsScore.miss.slice(0,20).map(k => (
+                          <span key={k} className="text-[9px] px-1.5 py-0.5 rounded" style={{background:"rgba(239,68,68,0.15)",color:"#fca5a5"}}>{k}</span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          </div>
+        </>
+      )}
+
+      {tab === "testimonials" && (
+        <>
+          <div className="rounded-xl p-3 grid md:grid-cols-3 gap-2"
+            style={{background:isDark?"rgba(12,26,34,0.8)":"rgba(255,248,228,0.9)",border:"1px solid rgba(236,72,153,0.4)"}}>
+            <input value={testDraft.from||""} onChange={e=>setTestDraft(d=>({...d,from:e.target.value}))} placeholder="From (name)"
+              className="bg-transparent text-sm px-2 py-1.5 rounded outline-none"
+              style={{border:"1px solid rgba(255,255,255,0.1)"}}/>
+            <input value={testDraft.role||""} onChange={e=>setTestDraft(d=>({...d,role:e.target.value}))} placeholder="Their role"
+              className="bg-transparent text-sm px-2 py-1.5 rounded outline-none"
+              style={{border:"1px solid rgba(255,255,255,0.1)"}}/>
+            <button onClick={addT} className="emperor-title text-[10px] tracking-widest rounded"
+              style={{background:"#be185d",color:"#fce7f3"}}>ADD QUOTE</button>
+            <div className="md:col-span-3">
+              <textarea value={testDraft.quote||""} onChange={e=>setTestDraft(d=>({...d,quote:e.target.value}))} rows={2}
+                placeholder="Their words about working with you..."
+                className="w-full bg-transparent text-sm p-2 rounded outline-none resize-none serif-body italic"
+                style={{border:"1px solid rgba(255,255,255,0.1)"}}/>
+            </div>
+          </div>
+
+          {career.testimonials.length === 0 && (
+            <div className="rounded-xl p-8 text-center text-xs italic serif-body" style={{color:"#6b7280",border:"1px dashed rgba(236,72,153,0.25)"}}>
+              No testimonials yet. Save recommendations from peers, managers, clients here.
+            </div>
+          )}
+          <div className="grid md:grid-cols-2 gap-3">
+            {career.testimonials.map(t => (
+              <div key={t.id} className="rounded-xl p-4 relative"
+                style={{background:"linear-gradient(145deg,rgba(12,26,34,0.7),rgba(10,20,24,0.5))",border:"1px solid rgba(236,72,153,0.3)"}}>
+                <div className="text-4xl serif-body leading-none mb-1" style={{color:"#ec4899",fontFamily:"serif"}}>"</div>
+                <p className="text-sm serif-body italic" style={{color:"#f3e9d2"}}>{t.quote}</p>
+                <div className="mt-2 flex items-center gap-2 text-[11px]">
+                  <span className="font-bold" style={{color:"#fbcfe8"}}>— {t.from}</span>
+                  {t.role && <span style={{color:"#8b9eb0"}}>{t.role}</span>}
+                  {t.date && <span className="ml-auto" style={{color:"#6b7280"}}>{t.date}</span>}
+                </div>
+                <button onClick={()=>delT(t.id)} className="absolute top-2 right-2 text-red-400 p-1"><Trash2 size={11}/></button>
+              </div>
             ))}
           </div>
         </>

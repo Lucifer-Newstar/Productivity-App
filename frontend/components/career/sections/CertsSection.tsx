@@ -72,10 +72,11 @@ export default function CertsSection() {
         </button>
       </div>
 
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
         <Stat label="Tracked" value={career.courses.length} color="#06b6d4"/>
         <Stat label="Completed" value={completed} color="#a3e635"/>
         <Stat label="Certs earned" value={earned} color="#d4af37"/>
+        <Stat label="Expiring" value={expiring} color={expiring>0?"#ef4444":"#6b7280"}/>
         <Stat label="Total hours" value={totalHours} color="#ec4899"/>
       </div>
 
