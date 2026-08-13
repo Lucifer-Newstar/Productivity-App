@@ -1,12 +1,12 @@
 "use client";
 
 /**
- * CommandCard — the big navigation card summoned by the COMMAND button.
- * Inline in the page (not a modal). Terminal/HUD style: no dragon, no kanji,
- * angular corner brackets, mono font, scanline overlay, numbered tiles.
+ * CommandCard — the module picker summoned by cmd button.
+ * Terminal/HUD style. Uses CSS variables so night/blueprint themes both work.
  */
 
 import { AnimatePresence, motion } from "framer-motion";
+import { useTheme } from "../../lib/theme";
 import { CAREER_NAV, type CareerSectionId } from "./CareerShell";
 import { Terminal, Cpu } from "lucide-react";
 
@@ -16,6 +16,8 @@ interface Props {
 }
 
 export default function CommandCard({ current, onPick }: Props) {
+  const { theme } = useTheme();
+  const light = theme === "light";
   return (
     <motion.div
       key="career-command-card"
@@ -25,64 +27,68 @@ export default function CommandCard({ current, onPick }: Props) {
       transition={{ duration: 0.35, ease: [0.22,1,0.36,1] }}
       className="relative w-full max-w-5xl mx-auto rounded-sm p-6 md:p-8 overflow-hidden hud-corner font-mono"
       style={{
-        color: "#cbd5e1",
-        background: "linear-gradient(180deg, rgba(8,18,30,0.97) 0%, rgba(4,10,18,0.98) 100%)",
-        border: "1px solid rgba(34,211,238,0.45)",
-        boxShadow:
-          "0 30px 80px -20px rgba(0,0,0,0.9), inset 0 1px 0 rgba(34,211,238,0.2), 0 0 60px -15px rgba(34,211,238,0.35)",
+        color: "var(--cr-fg)",
+        background: light ? "rgba(255,252,244,0.9)" : "linear-gradient(180deg, rgba(8,18,30,0.97) 0%, rgba(4,10,18,0.98) 100%)",
+        border: `1px solid ${light ? "rgba(12,74,110,0.5)" : "rgba(34,211,238,0.45)"}`,
+        boxShadow: light
+          ? "0 30px 80px -20px rgba(0,0,0,0.25), 0 0 0 1px rgba(12,74,110,0.15)"
+          : "0 30px 80px -20px rgba(0,0,0,0.9), 0 0 60px -15px rgba(34,211,238,0.35)",
       }}>
       <span className="c-tr"/><span className="c-bl"/>
 
-      {/* Grid + scanlines */}
+      {/* Grid overlay */}
       <div aria-hidden className="pointer-events-none absolute inset-0 career-hud-grid opacity-40" />
-      <div aria-hidden className="pointer-events-none absolute inset-0 career-scanlines" />
+      {!light && <div aria-hidden className="pointer-events-none absolute inset-0 career-scanlines" />}
+      {light && (
+        <div aria-hidden className="absolute top-0 right-0 w-20 h-20 pointer-events-none"
+          style={{ background: "linear-gradient(135deg, transparent 50%, rgba(194,65,12,0.12) 50%)" }}/>
+      )}
 
-      {/* Top status lines (terminal-esque) */}
-      <div className="relative z-10 flex flex-wrap items-center gap-x-4 gap-y-1 text-[10px] tracking-widest" style={{color:"#475569"}}>
-        <span style={{color:"#34d399"}}>●</span> session::active
+      {/* Terminal status header */}
+      <div className="relative z-10 flex flex-wrap items-center gap-x-4 gap-y-1 text-[10px] tracking-widest" style={{color:"var(--cr-fgMuted)"}}>
+        <span style={{color:"var(--cr-accent3)"}}>●</span> session::active
         <span>|</span>
-        <span>user: <span style={{color:"#22d3ee"}}>k</span></span>
+        <span>user: <span style={{color:"var(--cr-accent)"}}>k</span></span>
         <span>|</span>
-        <span>sector: <span style={{color:"#a78bfa"}}>career</span></span>
+        <span>sector: <span style={{color:"var(--cr-accent4)"}}>career</span></span>
         <span>|</span>
-        <span>modules: <span style={{color:"#facc15"}}>{CAREER_NAV.length}</span></span>
-        <span className="ml-auto hidden md:inline">press <kbd className="px-1 rounded-sm" style={{border:"1px solid rgba(34,211,238,0.4)",color:"#22d3ee"}}>esc</kbd> to dismiss</span>
+        <span>modules: <span style={{color:"var(--cr-accent2)"}}>{CAREER_NAV.length}</span></span>
+        <span className="ml-auto hidden md:inline">press <kbd className="px-1 rounded-sm" style={{border:"1px solid var(--cr-border)",color:"var(--cr-accent)"}}>esc</kbd> to dismiss</span>
       </div>
 
       {/* Header */}
       <div className="relative z-10 mt-5 mb-6 flex flex-col md:flex-row md:items-end gap-4">
         <div className="min-w-0">
-          <div className="flex items-center gap-2 text-[10px] md:text-xs tracking-[0.4em]" style={{color:"#22d3ee"}}>
+          <div className="flex items-center gap-2 text-[10px] md:text-xs tracking-[0.4em]" style={{color:"var(--cr-accent)"}}>
             <Terminal size={13}/>
             <span>CAREER::COMMAND</span>
-            <span className="inline-block w-2 h-4" style={{background:"#22d3ee",animation:"k-blink 1s steps(2) infinite"}}/>
+            <span className="inline-block w-2 h-4" style={{background:"var(--cr-accent)",animation:"k-blink 1s steps(2) infinite"}}/>
           </div>
           <h2 className="text-3xl md:text-5xl font-black tracking-tight mt-2 leading-none"
             style={{
-              color: "#e2e8f0",
-              textShadow: "0 0 18px rgba(34,211,238,0.3)",
-              letterSpacing: "-0.02em",
+              color: "var(--cr-fg)",
+              textShadow: light ? "none" : "0 0 18px rgba(34,211,238,0.3)",
             }}>
-            <span style={{color:"#22d3ee"}}>{">"}</span> select_module
-            <span className="text-cyan-400/40">()</span>
+            <span style={{color:"var(--cr-accent)"}}>{">"}</span> select_module
+            <span style={{color:"var(--cr-accent)",opacity:0.5}}>()</span>
           </h2>
-          <p className="text-xs md:text-sm mt-3 max-w-xl leading-relaxed" style={{color:"#64748b"}}>
-            <span style={{color:"#a78bfa"}}>/*</span>{" "}
+          <p className="text-xs md:text-sm mt-3 max-w-xl leading-relaxed" style={{color:"var(--cr-fgMuted)"}}>
+            <span style={{color:"var(--cr-accent4)"}}>/*</span>{" "}
             Choose your sector. Every track mastered, every contact mapped,
             every application queued. Run one command at a time.{" "}
-            <span style={{color:"#a78bfa"}}>*/</span>
+            <span style={{color:"var(--cr-accent4)"}}>*/</span>
           </p>
         </div>
         <div className="flex items-center gap-2 md:ml-auto shrink-0">
           <div className="relative w-14 h-14 rounded-sm hud-corner flex items-center justify-center"
-            style={{color:"#22d3ee",borderColor:"#22d3ee",background:"rgba(34,211,238,0.08)"}}>
+            style={{color:"var(--cr-accent)",borderColor:"var(--cr-accent)",background:"transparent"}}>
             <span className="c-tr"/><span className="c-bl"/>
             <Cpu size={22}/>
             <motion.div aria-hidden
               className="absolute inset-[-3px] rounded-sm pointer-events-none"
               animate={{ rotate: 360 }}
               transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
-              style={{ border: "1px dashed rgba(167,139,250,0.4)" }} />
+              style={{ border: `1px dashed ${light ? "rgba(109,40,217,0.4)" : "rgba(167,139,250,0.4)"}` }} />
           </div>
         </div>
       </div>
@@ -90,24 +96,26 @@ export default function CommandCard({ current, onPick }: Props) {
       {/* Grid */}
       <div className="relative z-10 grid grid-cols-2 md:grid-cols-4 gap-2.5 md:gap-3">
         {CAREER_NAV.map((item, i) => (
-          <NavTile key={item.id} item={item} active={item.id === current} delay={0.12 + i * 0.05} onPick={onPick} index={i}/>
+          <NavTile key={item.id} item={item} active={item.id === current}
+            delay={0.12 + i*0.05} onPick={onPick} index={i} light={light}/>
         ))}
       </div>
 
       {/* Footer */}
       <div className="relative z-10 mt-6 pt-4 flex flex-wrap items-center justify-between gap-2 text-[10px] tracking-widest"
-        style={{color:"#475569",borderTop:"1px dashed rgba(34,211,238,0.2)"}}>
-        <span>kaizen.career // v2.0</span>
+        style={{color:"var(--cr-fgMuted)",borderTop:"1px dashed var(--cr-borderSoft)"}}>
+        <span>kaizen.career // v2.0 — {light ? "blueprint" : "night"}</span>
         <span>hint: click a module to route</span>
-        <span style={{color:"#34d399"}}>sys::ready</span>
+        <span style={{color:"var(--cr-accent3)"}}>sys::ready</span>
       </div>
     </motion.div>
   );
 }
 
-function NavTile({ item, active, delay, onPick, index }:
-  { item: typeof CAREER_NAV[number]; active: boolean; delay: number; onPick: (s: CareerSectionId) => void; index: number }) {
+function NavTile({ item, active, delay, onPick, index, light }:
+  { item: typeof CAREER_NAV[number]; active: boolean; delay: number; onPick: (s: CareerSectionId)=>void; index: number; light: boolean }) {
   const Icon = item.icon;
+  const color = light ? item.colorLight : item.color;
   return (
     <motion.button onClick={() => onPick(item.id)}
       initial={{ opacity: 0, y: 18 }}
@@ -117,43 +125,43 @@ function NavTile({ item, active, delay, onPick, index }:
       whileTap={{ scale: 0.98 }}
       className="relative group rounded-sm p-3 md:p-4 text-left overflow-hidden hud-corner font-mono"
       style={{
-        color: active ? "#05080d" : "#cbd5e1",
+        color: active ? (light ? "#fff" : "#05080d") : "var(--cr-fg)",
         background: active
-          ? `linear-gradient(135deg, ${item.color}, ${item.color}cc)`
-          : "rgba(8,18,30,0.6)",
-        border: `1px solid ${active ? item.color : `${item.color}55`}`,
+          ? `linear-gradient(135deg, ${color}, ${color}cc)`
+          : (light ? "rgba(255,252,244,0.5)" : "rgba(8,18,30,0.6)"),
+        border: `1px solid ${active ? color : `${color}55`}`,
         boxShadow: active
-          ? `0 10px 30px -10px ${item.color}cc, inset 0 0 20px -8px rgba(0,0,0,0.4), 0 0 20px -5px ${item.color}55`
-          : `inset 0 0 0 1px rgba(34,211,238,0.04)`,
+          ? `0 10px 30px -10px ${color}cc, 0 0 20px -5px ${color}55`
+          : "none",
       }}>
       <span className="c-tr"/><span className="c-bl"/>
-      {/* Hover shimmer */}
       <span aria-hidden className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none"
         style={{
-          background: `linear-gradient(135deg, transparent 0%, ${item.color}15 50%, transparent 100%)`,
-        }} />
-      {/* Left code-line accent */}
-      <div aria-hidden className="absolute left-0 top-0 bottom-0 w-[3px]" style={{background:item.color,opacity:active?1:0.5}}/>
+          background: light
+            ? `linear-gradient(135deg, transparent 0%, ${color}15 50%, transparent 100%)`
+            : `linear-gradient(135deg, transparent 0%, ${color}20 50%, transparent 100%)`,
+        }}/>
+      <div aria-hidden className="absolute left-0 top-0 bottom-0 w-[3px]" style={{background:color,opacity:active?1:0.5}}/>
 
       <div className="flex items-start gap-3">
         <div className="shrink-0 flex flex-col items-center justify-center w-10 h-10 rounded-sm"
           style={{
-            background: active ? "rgba(0,0,0,0.2)" : `${item.color}18`,
-            border: `1px solid ${active ? "rgba(0,0,0,0.2)" : item.color + "80"}`,
-            color: active ? "#05080d" : item.color,
+            background: active ? "rgba(0,0,0,0.2)" : `${color}18`,
+            border: `1px solid ${active ? "rgba(0,0,0,0.2)" : `${color}80`}`,
+            color: active ? (light ? "#fff" : "#05080d") : color,
           }}>
           <Icon size={17}/>
         </div>
         <div className="min-w-0 flex-1">
           <div className="flex items-baseline gap-2">
-            <span className="text-[9px] tracking-widest font-bold" style={{color: active ? "#05080d" : item.color,opacity:0.7}}>
+            <span className="text-[9px] tracking-widest font-bold" style={{color:active?"inherit":color,opacity:active?0.85:0.7}}>
               {item.code}
             </span>
             <span className="font-bold text-sm tracking-wide truncate">{item.label.toLowerCase()}</span>
           </div>
           {item.description && (
             <p className="text-[10px] mt-1 tracking-wider leading-snug"
-              style={{color: active ? "rgba(5,8,13,0.7)" : "#475569"}}>
+              style={{color:active?"rgba(255,255,255,0.85)":"var(--cr-fgMuted)"}}>
               {item.description}
             </p>
           )}
@@ -163,7 +171,7 @@ function NavTile({ item, active, delay, onPick, index }:
       {active && (
         <motion.span layoutId="career-active-dot"
           className="absolute top-2.5 right-2.5 flex items-center gap-1 text-[9px] tracking-widest font-bold">
-          <span className="w-1.5 h-1.5 rounded-full" style={{background:"#05080d",boxShadow:`0 0 8px ${item.color}`}}/>
+          <span className="w-1.5 h-1.5 rounded-full" style={{background:light?"#fff":"#05080d",boxShadow:`0 0 8px ${color}`}}/>
           ACTIVE
         </motion.span>
       )}

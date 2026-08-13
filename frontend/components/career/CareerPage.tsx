@@ -34,6 +34,7 @@ const ROUTE_MAP: Record<CareerSectionId, string> = {
 };
 
 // Terminal-style horizontal scan-flash (HUD career version of SectionSlash).
+// Uses CSS variable so it inherits the correct theme color.
 function HudFlash() {
   return (
     <motion.div aria-hidden
@@ -44,7 +45,7 @@ function HudFlash() {
       className="fixed inset-0 pointer-events-none z-50"
       style={{
         background:
-          "linear-gradient(180deg, transparent 48%, rgba(34,211,238,0.6) 49.5%, #fff 50%, rgba(34,211,238,0.6) 50.5%, transparent 52%)",
+          "linear-gradient(180deg, transparent 48%, var(--cr-accent) 49.5%, #fff 50%, var(--cr-accent) 50.5%, transparent 52%)",
         mixBlendMode: "screen",
       }}/>
   );
