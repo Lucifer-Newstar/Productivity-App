@@ -26,6 +26,7 @@ import type {
   WorkoutBlock, WorkoutExercise, StickingPoint, MentalState, CrowdLevel, TrainingPhase,
   Equipment, MuscleGroup,
 } from "../../lib/types";
+// asymmetry type imported via type-only below
 import { MUSCLE_GROUPS, EQUIPMENT } from "../../lib/types";
 import Confetti from "./Confetti";
 import CelebrationModal from "./CelebrationModal";

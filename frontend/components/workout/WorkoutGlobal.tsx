@@ -26,6 +26,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   Flame, Calendar as CalIcon, Dumbbell, Timer as TimerIcon, Shuffle, Star,
   Droplet, Coffee, Users, Music, Target, Sparkles, BookOpen, Award, Trash2, Plus, Upload, Download,
+  Database, RefreshCcw,
 } from "lucide-react";
 import { useStore } from "../../lib/store";
 import { weeklyStats, frequencyByDay, timePreference, consistencyScore, shouldDeload, goalProgress } from "../../lib/workoutAnalytics";
@@ -43,6 +44,7 @@ export default function WorkoutGlobal() {
     addChallenge, toggleChallengeDay, deleteChallenge,
     addJournalEntry, addBoardItem, deleteBoardItem,
     logRestDay, addWorkoutGoal, deleteWorkoutGoal, updateWorkoutGoal, updateSession, importSession,
+    seedDemoData, resetWorkoutData,
   } = useStore();
 
   // CSV import (mirrors export format). Creates one imported session per date
@@ -387,6 +389,37 @@ export default function WorkoutGlobal() {
             onChange={(e) => { const f = e.target.files?.[0]; if (f) importCSV(f); e.target.value = ""; }} />
           <button onClick={() => importRef.current?.click()} className="btn-ghost text-sm flex items-center gap-1"><Upload size={13} /> Import CSV</button>
           <button onClick={handleExport} className="btn-primary text-sm flex items-center gap-1"><Download size={13} /> Export CSV</button>
+        </div>
+      </div>
+
+      {/* QA / demo data card — quickly load rich mock history so every chart/
+          metric card has content to display during QA or demos. */}
+      <div className="card flex items-center justify-between gap-3 flex-wrap border-violet-500/30 bg-violet-500/5">
+        <div>
+          <h4 className="font-semibold text-white text-sm flex items-center gap-2"><Database size={16} className="text-violet-400" /> Demo / QA Data</h4>
+          <p className="text-xs text-gray-400 mt-0.5">
+            Load 12 weeks of mock sessions, PRs & readiness (overwrites logs) — or reset back to clean.
+          </p>
+        </div>
+        <div className="flex gap-2">
+          <button
+            onClick={() => {
+              if (confirm("Load demo data? This will overwrite your current workout history (sessions, PRs, readiness, goals).")) {
+                seedDemoData();
+              }
+            }}
+            className="btn-primary text-sm flex items-center gap-1 !bg-gradient-to-r !from-violet-500 !to-fuchsia-500">
+            <Database size={13} /> Load demo data
+          </button>
+          <button
+            onClick={() => {
+              if (confirm("Reset workout logs? This clears all sessions/PRs/goals/journal (exercises & routines are kept).")) {
+                resetWorkoutData();
+              }
+            }}
+            className="btn-ghost text-sm flex items-center gap-1">
+            <RefreshCcw size={13} /> Reset
+          </button>
         </div>
       </div>
 

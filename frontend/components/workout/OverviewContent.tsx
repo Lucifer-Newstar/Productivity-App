@@ -7,7 +7,7 @@
 
 import { useMemo, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Dumbbell, Play, Download, Zap, Flame, Award, Sparkles, AlertCircle } from "lucide-react";
+import { Dumbbell, Play, Download, Zap, Flame, Award, Sparkles, AlertCircle, History } from "lucide-react";
 import { useRouter } from "next/router";
 import MuscleHeatmap from "./MuscleHeatmap";
 import { useStore } from "../../lib/store";
@@ -235,6 +235,9 @@ function OverviewBody({ volume, readiness, onLogReadiness, badges, streak, longe
         {/* 12-Week Volume Trend */}
         <WeeklyVolumeSparkline />
 
+        {/* Recent sessions timeline */}
+        <RecentTimeline />
+
         <div className="card">
           <h3 className="font-semibold text-white flex items-center gap-2 mb-3">
             <Award className="text-amber-400" size={18} /> Achievements <span className="text-xs text-gray-500 font-normal ml-1">{badges.length} earned</span>
@@ -329,6 +332,54 @@ function OverviewBody({ volume, readiness, onLogReadiness, badges, streak, longe
           </p>
         </div>
       </div>
+    </div>
+  );
+}
+
+/** Recent sessions timeline — shows the last 10 completed workouts in
+ *  reverse-chronological order with volume/duration so there's an at-a-glance
+ *  completion history on the overview. */
+function RecentTimeline() {
+  const { workout } = useStore();
+  const recent = useMemo(
+    () => [...workout.sessions].filter((s) => s.endedAt).slice(0, 10),
+    [workout.sessions],
+  );
+
+  const fmtDur = (sec?: number) => {
+    if (!sec) return "—";
+    const m = Math.round(sec / 60);
+    return `${m}m`;
+  };
+
+  return (
+    <div className="card">
+      <h3 className="font-semibold text-white flex items-center gap-2 mb-3">
+        <History className="text-violet-400" size={18} /> Recent sessions
+      </h3>
+      {recent.length === 0 ? (
+        <p className="text-sm text-gray-500 italic">No sessions yet — start a workout or load demo data.</p>
+      ) : (
+        <div className="space-y-2">
+          {recent.map((s, i) => (
+            <div key={s.id} className="flex items-center gap-3 p-2 rounded-lg bg-white/5 border border-white/5">
+              <div className="w-1.5 h-10 rounded-full"
+                style={{ background: i === 0 ? "linear-gradient(180deg,#ec4899,#8b5cf6)" : "#8b5cf640" }} />
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium text-white truncate">{s.name}</p>
+                <p className="text-[11px] text-gray-500 font-mono">{s.date}</p>
+              </div>
+              <div className="text-right text-xs font-mono">
+                <p className="text-lime-300">{Math.round(s.totalVolumeKg ?? 0).toLocaleString()} kg</p>
+                <p className="text-gray-500">{fmtDur(s.durationSeconds)} · {s.sets.length} sets</p>
+              </div>
+              {s.rating && (
+                <span className="text-[10px] px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-300 font-bold">{s.rating}/10</span>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

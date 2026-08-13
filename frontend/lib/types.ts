@@ -248,6 +248,8 @@ export interface WorkoutBlock {
   sets: number;
   reps: number;
   restSeconds: number;
+  /** Superset/giant-set group id — adjacent blocks sharing an id are performed back-to-back with zero rest. */
+  supersetGroupId?: string;
 }
 export interface WorkoutRoutine {
   id: string;

@@ -111,13 +111,31 @@ export default function ExerciseHistoryDrawer({ exercise, onClose }: Props) {
     if (rpePts.length < 2) return null;
     const w = 480, h = 60;
     const step = w / Math.max(1, points.length - 1);
-    // Map every point in the full series; leave blips where RPE is missing.
+    // Map every point in the full series; leave gaps where RPE is missing.
     const dots: { x: number; y: number; rpe: number }[] = [];
     points.forEach((p, i) => {
       if (p.set.rpe == null) return;
       const x = i * step;
       const y = h - ((p.set.rpe - 6) / 4) * (h - 14) - 7; // RPE 6→bottom, 10→top
       dots.push({ x, y, rpe: p.set.rpe });
+    });
+    return { dots };
+  }, [points]);
+
+  // RIR-over-time trend (reps in reserve; 0 = failure → top, 4 = easy → bottom).
+  const rirSeries = useMemo(() => {
+    const rirPts = points.filter((p) => p.set.rir != null);
+    if (rirPts.length < 2) return null;
+    const w = 480, h = 60;
+    const step = w / Math.max(1, points.length - 1);
+    const dots: { x: number; y: number; rir: number }[] = [];
+    points.forEach((p, i) => {
+      if (p.set.rir == null) return;
+      const x = i * step;
+      // RIR 0 (failure) → top, RIR 4 → bottom; clamp to [0,4].
+      const clamped = Math.max(0, Math.min(4, p.set.rir));
+      const y = 7 + ((clamped) / 4) * (h - 14);
+      dots.push({ x, y, rir: p.set.rir });
     });
     return { dots };
   }, [points]);
@@ -218,11 +236,11 @@ export default function ExerciseHistoryDrawer({ exercise, onClose }: Props) {
 
           {/* RPE trend */}
           {rpeSeries && (
-            <div className="card !p-4 mb-5">
+            <div className="card !p-4 mb-3">
               <p className="text-[10px] uppercase tracking-widest text-gray-500 mb-2">RPE trend (6 = easy, 10 = failure)</p>
               <svg viewBox="0 0 480 60" className="w-full h-16">
                 {/* RPE band lines */}
-                {[6, 7, 8, 9, 10].map((r, i) => {
+                {[6, 7, 8, 9, 10].map((r) => {
                   const y = 53 - ((r - 6) / 4) * 46;
                   return (
                     <g key={r}>
@@ -233,6 +251,28 @@ export default function ExerciseHistoryDrawer({ exercise, onClose }: Props) {
                 })}
                 {rpeSeries.dots.map((d, i) => (
                   <circle key={i} cx={d.x} cy={d.y} r={d.rpe >= 9 ? 4 : 3} fill={d.rpe >= 9 ? "#ef4444" : d.rpe >= 8 ? "#f59e0b" : "#a3e635"} />
+                ))}
+              </svg>
+            </div>
+          )}
+
+          {/* RIR trend */}
+          {rirSeries && (
+            <div className="card !p-4 mb-5">
+              <p className="text-[10px] uppercase tracking-widest text-gray-500 mb-2">RIR trend (0 = failure, 4 = easy)</p>
+              <svg viewBox="0 0 480 60" className="w-full h-16">
+                {[0, 1, 2, 3, 4].map((r) => {
+                  const y = 7 + ((r) / 4) * 46;
+                  return (
+                    <g key={r}>
+                      <line x1={0} x2={480} y1={y} y2={y} stroke="#ffffff08" />
+                      <text x={2} y={y + 8} className="fill-gray-600" style={{ fontSize: 8 }}>{r}</text>
+                    </g>
+                  );
+                })}
+                {rirSeries.dots.map((d, i) => (
+                  <circle key={i} cx={d.x} cy={d.y} r={d.rir <= 1 ? 4 : 3}
+                    fill={d.rir <= 0 ? "#ef4444" : d.rir <= 1 ? "#f59e0b" : "#06b6d4"} />
                 ))}
               </svg>
             </div>

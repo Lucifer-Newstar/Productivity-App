@@ -178,6 +178,11 @@ export default function ActiveWorkout({ sessionId, onFinish, onDiscard }: Props)
     }
   }, [restRemain, resting, sound]);
 
+  // ---- Superset/giant-set: next block shares supersetGroupId? ----
+  const nextBlock = blocks[currentBlockIdx + 1];
+  const isInSuperset = !!(currentBlock as any)?.supersetGroupId;
+  const supersetBuddy = nextBlock && (nextBlock as any)?.supersetGroupId === (currentBlock as any)?.supersetGroupId;
+
   // ---- Suggestion ("beat your last") ----
   const suggestion = currentExercise ? suggestProgression(currentExercise, prevLogged) : null;
 
@@ -244,6 +249,15 @@ export default function ActiveWorkout({ sessionId, onFinish, onDiscard }: Props)
       unilateral: isUnilat || undefined,
       leftValue: isUnilat && leftVal ? parseInt(leftVal, 10) : undefined,
       rightValue: isUnilat && rightVal ? parseInt(rightVal, 10) : undefined,
+      // Auto-detect asymmetry ≥ 2 reps between L/R. Returns a typed asymmetry flag
+      // (none / left-weak / right-weak) which is auto-set from the L/R rep diff.
+      asymmetry: (() => {
+        if (!isUnilat || !leftVal || !rightVal) return undefined;
+        const L = parseInt(leftVal, 10), R = parseInt(rightVal, 10);
+        if (isNaN(L) || isNaN(R)) return undefined;
+        if (Math.abs(L - R) < 2) return "none";
+        return L > R ? "left-weak" : "right-weak";
+      })() as "none" | "left-weak" | "right-weak" | undefined,
       pain: pain > 0 ? pain : undefined,
       notes: setNote || undefined,
     };
@@ -270,7 +284,11 @@ export default function ActiveWorkout({ sessionId, onFinish, onDiscard }: Props)
 
     setRunning(false); setStartRef.current = null; setElapsedState(0);
     setRir(undefined); setRpe(undefined);
-    if (currentBlock.restSeconds > 0) {
+    // If next block is in the same superset/giant group, skip the rest timer entirely.
+    if (supersetBuddy) {
+      setResting(false); setRestRemain(0);
+      if (sound) playBeep(660, 150); // short "next up" chirp
+    } else if (currentBlock.restSeconds > 0) {
       setResting(true);
       setRestRemain(currentBlock.restSeconds);
     }
@@ -426,6 +444,7 @@ export default function ActiveWorkout({ sessionId, onFinish, onDiscard }: Props)
             <>
               <p className="text-xs uppercase tracking-widest text-gray-400 mb-1">
                 {currentBlock.type === "cardio" ? "Cardio" : "Set"} {currentSetNum} of {currentBlock.sets}
+                {supersetBuddy && <span className="ml-2 text-pink-300">→ superset</span>}
               </p>
               <div className="flex items-center justify-center gap-2 mb-2">
                 <h3 className={`${glove ? "text-4xl" : "text-3xl"} font-bold text-white`}>

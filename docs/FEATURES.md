@@ -65,8 +65,8 @@ Last audited against the 149-feature checklist (35 cali + 45 gym + 22 cardio +
 |12 | RIR Tracker | ✅ 0–4 RIR buttons per set, persisted |
 |13 | AMRAP Last Set Mode | ✅ `isAMRAP` flag |
 |14 | Drop Set Logger | ✅ `isDrop` flag + `dropFromWeight` |
-|15 | Superset Pairing | 🟡 `isSuperset` / `supersetGroupId` fields; UI toggle pending |
-|16 | Giant Set Logger | 🟡 `isGiant` flag |
+|15 | Superset Pairing | ✅ `Link2` toggle between adjacent blocks in Schedule; `supersetGroupId` propagated; ActiveWorkout skips rest + plays 660 Hz chirp + shows "→ superset" chip between linked blocks |
+|16 | Giant Set Logger | ✅ Auto-detects groups of ≥3 adjacent linked blocks and shows GIANT badge; same zero-rest flow as supersets |
 |17 | Feeling Check-in Per Set | ✅ `feeling` field (fast/normal/slow/grind) |
 |18 | EMOM Logger (gym) | ✅ Generic EMOM in cali tab usable for any modality |
 |19 | Cluster Set Builder | ✅ `clusterReps[]` + `clusterRestSec` |
@@ -84,7 +84,7 @@ Last audited against the 149-feature checklist (35 cali + 45 gym + 22 cardio +
 |31 | Symmetric Strength Graph | ✅ Gym tab chart: squat=1.00/bench=0.75/dead=1.25/OHP=0.45 ratios, ghost target bar vs solid actual, balance % |
 |32 | Barbell Speed Logger | ✅ `speed` field (fast/normal/slow/grind) |
 |33 | Lockout vs Sticking Point | ✅ Chip selector (none/off-floor/mid-range/lockout/transition) in set-details |
-|34 | Asymmetry Tracker | ✅ `asymmetry` flag (left-weak/right-weak/none) |
+|34 | Asymmetry Tracker | ✅ `asymmetry` flag (left-weak/right-weak/none) auto-set in ActiveWorkout when unilateral L/R reps differ by ≥2; manual tag still possible via metadata |
 |35 | Injury Pain Scale Per Set | ✅ `pain` 0–5 scale |
 |36 | Mental State Per Set | ✅ Chip selector (locked-in/distracted/anxious/tired) in set-details |
 |37 | Intra-workout Nutrition | ✅ `nutrition: {carbsG, bcaaG, electrolytes, waterMl}` on session |
@@ -92,7 +92,7 @@ Last audited against the 149-feature checklist (35 cali + 45 gym + 22 cardio +
 |39 | Deload Indicator | ✅ 12-session / 6-week rule, surfaces in Global tab |
 |40 | Training Max Calculator | ✅ 0.9 × 1RM |
 |41 | RPE Auto-calibration | ✅ Gym tab card: ≥3 RPE-flagged sets → sample count, mean error vs. standard table, personal multiplier |
-|42 | RIR History | ✅ Per-set storage + RPE-over-time sparkline in Exercise History drawer; RIR tag shown per set |
+|42 | RIR History | ✅ Per-set storage + dedicated RIR trend strip in Exercise History drawer (0=failure→top red, 4=easy→bottom cyan); RIR tag shown per set in the recent list |
 |43 | AMRAP Projection | ✅ Inverted Epley in Gym tab |
 |44 | Workout Comparison | ❌ Side-by-side not implemented |
 |45 | Gym Music Playlist Logger | ✅ Session-level playlist field in Global metadata card |
@@ -152,7 +152,7 @@ Last audited against the 149-feature checklist (35 cali + 45 gym + 22 cardio +
 |22 | Weekly Volume | ✅ Card in Global |
 |23 | Joint Pain Check | ✅ Post-session multi-select; accessory/prehab recs on Overview |
 |24 | Soreness Rating | ✅ Daily readiness slider 1–10 |
-|25 | Completion Timeline | ❌ |
+|25 | Completion Timeline | ✅ "Recent sessions" timeline on Overview shows last 10 completed sessions reverse-chronological with volume/duration/sets/rating; full history available via individual exercise drawers + CSV export |
 |26 | Calendar View | ✅ Month view with prev/next, pink workout-day cells |
 |27 | Global Streak | ✅ |
 |28 | Consistency Score | ✅ `consistencyScore()` shows % in stat card |
@@ -222,4 +222,26 @@ model (89-region anatomical SVG).
 - ✅ **In-session history button** (clock icon) in the current-exercise hero of both ActiveWorkout and FreestyleWorkout opens the per-exercise drawer mid-session without interrupting the timer.
 - ✅ **Movement Pattern Library browser** on Library page: 9-pattern grid card with one-line descriptions and per-pattern exercise counts; clicking a pattern card filters the grid.
 - ✅ **Cali unlock celebration**: added 🎉 lime "Skill milestone" celebration firing via the generic CelebrationModal when a progression is toggled to 100% of a skill (handled in WorkoutSkills).
+
+## QA batch (workout branch)
+
+- ✅ **Mock-data generator** (`frontend/lib/mockData.ts`): `generateSeedData({exercises, routines})` returns ~12 weeks of realistic training history — Push/Pull/Leg split + occasional cardio with linear progression noise, PRs, daily readiness, bodyweight trending 72→70.5 kg, journal entries, 3 goals, and a 30-day push-up challenge (~20 days in). Intended for QA and live demos.
+- ✅ **`seedDemoData()` / `resetWorkoutData()`** store actions: lazy-imports the generator (zero cost on production bundles) and overwrites sessions/prs/readiness/bodyweight/goals/challenges/journal while preserving the exercise library, routines, skills, chains, and settings. Streaks are recomputed from the imported sessions. Reset returns logs to the pristine seed.
+- ✅ **Demo / QA Data card on Tools**: gradient purple card with "Load demo data" (with confirm) and "Reset" buttons; makes the mock dataset one click away.
+- ✅ **Block reorder in Schedule**: ↑/↓ hover buttons on each block call `reorderBlocks(rid,from,to)` so routines can be rearranged without delete/re-add.
+- ✅ **Superset auto-skip rest** in ActiveWorkout: when the next block shares a `supersetGroupId`, the rest timer is skipped, a 660 Hz / 150 ms chirp plays, and a "→ superset" chip appears next to the set counter. Giant sets (≥3 blocks in a group) work identically and get a GIANT badge.
+- ✅ **Unilateral asymmetry auto-tag**: when Unilateral is enabled and L/R rep counts differ by ≥2, `asymmetry` is auto-set to `left-weak` or `right-weak` (else `none`).
+- ✅ **RIR trend strip** added to ExerciseHistoryDrawer alongside the existing RPE strip, with bandlines and color-coded dots (red at RIR ≤1).
+- ✅ **Recent sessions timeline** added to Overview's left column: last 10 completed sessions, reverse-chronological, with volume/duration/set count/rating.
+- ✅ **Type-safety fixes**: asymmetry IIFE now returns a properly-narrowed union; mockData resolves `find()?.id ?? …` to `string | undefined` (was `string | null`); `reorderBlocks` verified present in the value object export. `tsc --noEmit` and `next build` both clean.
+- ✅ **Docs**: new `docs/qa/TEST-REPORT.md` with build status, shipped list, bug fixes, and a QA walkthrough script.
+
+### Remaining backlog (intentionally deferred)
+- Hormonal cycle sync
+- Side-by-side workout comparison
+- Cloud backup/sync UI (backend `/api/sync` already exists)
+- GtG week-over-week sparkline
+- Ring-height slider UI for cali skills
+- Auto assistance-reduction suggester for cali progressions
+- Distinct cali "first-time unlocked" celebration (current path fires at full mastery)
 

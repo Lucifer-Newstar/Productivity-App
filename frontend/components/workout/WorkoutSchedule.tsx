@@ -16,6 +16,7 @@ import { useMemo, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Calendar, Plus, Trash2, Play, X, Dumbbell, Coffee, ChevronDown, Target,
+  Link2, ArrowUp, ArrowDown,
 } from "lucide-react";
 import { useStore } from "../../lib/store";
 import { MUSCLE_GROUPS } from "../../lib/types";
@@ -33,7 +34,7 @@ type BlockDraft = {
 };
 
 export default function WorkoutSchedule() {
-  const { workout, addRoutine, deleteRoutine, addBlock, updateBlock, deleteBlock, startSession, addProgram, updateProgram, deleteProgram, updateSession } = useStore();
+  const { workout, addRoutine, deleteRoutine, addBlock, updateBlock, deleteBlock, reorderBlocks, startSession, addProgram, updateProgram, deleteProgram, updateSession } = useStore();
   const { routines, exercises, activeSessionId, programs, sessions } = workout;
 
   const [newRoutineName, setNewRoutineName] = useState("");
@@ -164,6 +165,7 @@ export default function WorkoutSchedule() {
             onAddBlock={(b) => addBlock(r.id, b)}
             onUpdateBlock={(bid, patch) => updateBlock(r.id, bid, patch)}
             onDeleteBlock={(bid) => deleteBlock(r.id, bid)}
+            onReorder={(from, to) => reorderBlocks(r.id, from, to)}
             isActive={activeSessionId !== undefined}
             exercises={exercises}
           />
@@ -214,13 +216,14 @@ export default function WorkoutSchedule() {
 }
 
 /** A single routine card with collapsible block editor */
-function RoutineCard({ routine, onDelete, onStart, onAddBlock, onUpdateBlock, onDeleteBlock, isActive, exercises }: {
+function RoutineCard({ routine, onDelete, onStart, onAddBlock, onUpdateBlock, onDeleteBlock, onReorder, isActive, exercises }: {
   routine: any;
   onDelete: () => void;
   onStart: () => void;
   onAddBlock: (b: Omit<WorkoutBlock, "id">) => void;
   onUpdateBlock: (bid: string, patch: Partial<WorkoutBlock>) => void;
   onDeleteBlock: (bid: string) => void;
+  onReorder: (from: number, to: number) => void;
   isActive: boolean;
   exercises: any[];
 }) {
@@ -228,6 +231,41 @@ function RoutineCard({ routine, onDelete, onStart, onAddBlock, onUpdateBlock, on
   const [draft, setDraft] = useState<BlockDraft>({
     exerciseId: "", label: "", type: "strength", sets: 3, reps: 10, restSeconds: 90,
   });
+  // Superset/giant-set groups: adjacent blocks with matching non-empty supersetGroupId
+  // are considered linked (zero-rest transition). We model groups as a string id
+  // starting at the first block and toggled via the link button.
+  const supersetStartIdx = useMemo(() => {
+    const starts = new Set<number>();
+    let cur: string | null = null;
+    routine.blocks.forEach((b: WorkoutBlock, i: number) => {
+      const sid = (b as any).supersetGroupId as string | undefined;
+      if (sid && sid !== cur) { starts.add(i); cur = sid; }
+      else if (!sid) cur = null;
+    });
+    return starts;
+  }, [routine.blocks]);
+  const isGiant = useMemo(() => {
+    // giant = group of >=3 blocks
+    const counts = new Map<string, number>();
+    routine.blocks.forEach((b: any) => {
+      if (b.supersetGroupId) counts.set(b.supersetGroupId, (counts.get(b.supersetGroupId) ?? 0) + 1);
+    });
+    return (id: string) => (counts.get(id) ?? 0) >= 3;
+  }, [routine.blocks]);
+  function toggleLink(i: number) {
+    // Toggle the block after i into i's superset group.
+    if (i >= routine.blocks.length - 1) return;
+    const a = routine.blocks[i] as any;
+    const b = routine.blocks[i + 1] as any;
+    const gid = a.supersetGroupId ?? `ss-${a.id}`;
+    if (a.supersetGroupId && b.supersetGroupId === a.supersetGroupId) {
+      // Break link: remove group from b (and any later blocks with same id only reachable through it)
+      onUpdateBlock(b.id, { supersetGroupId: undefined } as any);
+      return;
+    }
+    onUpdateBlock(a.id, { supersetGroupId: gid } as any);
+    onUpdateBlock(b.id, { supersetGroupId: gid, restSeconds: 0 } as any);
+  }
 
   return (
     <motion.div layout className="card">
@@ -271,23 +309,55 @@ function RoutineCard({ routine, onDelete, onStart, onAddBlock, onUpdateBlock, on
                 const color = ex?.muscleGroup
                   ? MUSCLE_GROUPS.find((m) => m.id === ex.muscleGroup)?.color
                   : "#64748b";
+                const isLinked = !!(b as any).supersetGroupId;
+                const isNextLinked = i < routine.blocks.length - 1
+                  && (routine.blocks[i + 1] as any)?.supersetGroupId === (b as any).supersetGroupId
+                  && isLinked;
+                const giant = isLinked && isGiant((b as any).supersetGroupId!);
                 return (
-                  <div key={b.id} className="group flex items-center gap-2 p-2 rounded-lg bg-white/5">
-                    <span className="w-5 text-[10px] font-bold text-gray-500 text-center">{i + 1}</span>
-                    {ex ? (
-                      <span className="w-2 h-2 rounded-full shrink-0" style={{ background: color }} />
-                    ) : null}
-                    <span className="flex-1 text-sm text-white truncate">
-                      {ex?.name ?? b.label ?? (b.type === "rest" ? "Rest" : "Block")}
-                    </span>
-                    <span className="text-xs text-gray-400">
-                      {b.sets}×{b.reps}{b.type === "cardio" || b.type === "rest" ? "s" : ""}
-                    </span>
-                    <span className="text-xs text-gray-500">· {b.restSeconds}s rest</span>
-                    <button onClick={() => onDeleteBlock(b.id)}
-                      className="p-1 rounded text-gray-400 hover:text-red-400 opacity-0 group-hover:opacity-100">
-                      <X size={12} />
-                    </button>
+                  <div key={b.id} className="flex items-center gap-2">
+                    {/* Superset connector */}
+                    {i > 0 && (routine.blocks[i - 1] as any).supersetGroupId === (b as any).supersetGroupId && (b as any).supersetGroupId ? (
+                      <span className="w-2 h-2 rounded-full bg-pink-500/60 shrink-0" title="Superset" />
+                    ) : (
+                      <span className="w-5 text-[10px] font-bold text-gray-500 text-center shrink-0">{i + 1}</span>
+                    )}
+                    <div className={`group flex items-center gap-2 p-2 rounded-lg flex-1 ${
+                      isLinked ? "bg-pink-500/10 border border-pink-500/20" : "bg-white/5"
+                    }`}>
+                      {ex ? (<span className="w-2 h-2 rounded-full shrink-0" style={{ background: color }} />) : null}
+                      <span className="flex-1 text-sm text-white truncate">
+                        {ex?.name ?? b.label ?? (b.type === "rest" ? "Rest" : "Block")}
+                      </span>
+                      {giant && <span className="chip bg-fuchsia-500/20 text-fuchsia-200 !text-[9px]">GIANT</span>}
+                      {isLinked && !giant && <span className="chip bg-pink-500/20 text-pink-200 !text-[9px]">SUPERSET</span>}
+                      <span className="text-xs text-gray-400">
+                        {b.sets}×{b.reps}{b.type === "cardio" || b.type === "rest" ? "s" : ""}
+                      </span>
+                      <span className="text-xs text-gray-500 hidden sm:inline">· {b.restSeconds}s rest</span>
+                      {i > 0 && (
+                        <button onClick={() => onReorder(i, i - 1)} title="Move up"
+                          className="p-1 rounded text-gray-500 hover:text-white hover:bg-white/10 opacity-0 group-hover:opacity-100">
+                          <ArrowUp size={12} />
+                        </button>
+                      )}
+                      {i < routine.blocks.length - 1 && (
+                        <>
+                          <button onClick={() => toggleLink(i)} title="Link as superset/giant"
+                            className={`p-1 rounded opacity-0 group-hover:opacity-100 ${isNextLinked ? "text-pink-300 bg-pink-500/20" : "text-gray-500 hover:text-pink-300 hover:bg-pink-500/10"}`}>
+                            <Link2 size={12} />
+                          </button>
+                          <button onClick={() => onReorder(i, i + 1)} title="Move down"
+                            className="p-1 rounded text-gray-500 hover:text-white hover:bg-white/10 opacity-0 group-hover:opacity-100">
+                            <ArrowDown size={12} />
+                          </button>
+                        </>
+                      )}
+                      <button onClick={() => onDeleteBlock(b.id)}
+                        className="p-1 rounded text-gray-400 hover:text-red-400 opacity-0 group-hover:opacity-100">
+                        <X size={12} />
+                      </button>
+                    </div>
                   </div>
                 );
               })}

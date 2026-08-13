@@ -320,6 +320,7 @@ interface StoreState {
   addBlock: (routineId: string, block: Omit<WorkoutBlock, "id">) => void;
   updateBlock: (routineId: string, blockId: string, patch: Partial<WorkoutBlock>) => void;
   deleteBlock: (routineId: string, blockId: string) => void;
+  reorderBlocks: (routineId: string, from: number, to: number) => void;
   // sessions
   startSession: (name: string, routineId?: string, readinessScore?: number) => string;
   logSet: (sessionId: string, entry: Omit<WorkoutSetLog, "completed"> & { completed?: boolean }) => void;
@@ -334,6 +335,11 @@ interface StoreState {
   updateWorkoutSettings: (patch: Partial<WorkoutSettings>) => void;
   exportWorkoutCSV: () => string;
   getExerciseForBlock: (blockId: string) => WorkoutExercise | undefined;
+  // Demo data seeding (QA/demo). Replaces sessions, PRs, readiness, bodyweight,
+  // goals, challenges, journal with rich mock data without touching the library
+  // or routines. resetWorkoutData wipes logs back to seed (keeps exercises/routines).
+  seedDemoData: () => void;
+  resetWorkoutData: () => void;
   // calisthenics
   toggleChainProgression: (chainId: string, progId: string) => void;
   updateCaliChainProgression: (chainId: string, progId: string, patch: Partial<any>) => void;
@@ -580,6 +586,17 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     setWorkout((w) => ({ ...w, routines: w.routines.map((r) => r.id === rid ? { ...r, blocks: r.blocks.map((b) => b.id === bid ? { ...b, ...patch } : b) } : r) })), [setWorkout]);
   const deleteBlock = useCallback((rid: string, bid: string) =>
     setWorkout((w) => ({ ...w, routines: w.routines.map((r) => r.id === rid ? { ...r, blocks: r.blocks.filter((b) => b.id !== bid) } : r) })), [setWorkout]);
+
+  const reorderBlocks = useCallback<StoreState["reorderBlocks"]>((rid, from, to) => {
+    setWorkout((w) => ({ ...w, routines: w.routines.map((r) => {
+      if (r.id !== rid) return r;
+      const blocks = [...r.blocks];
+      if (from < 0 || from >= blocks.length || to < 0 || to >= blocks.length) return r;
+      const [moved] = blocks.splice(from, 1);
+      blocks.splice(to, 0, moved);
+      return { ...r, blocks };
+    }) }));
+  }, [setWorkout]);
 
   // ---- Sessions ----
   const getExerciseForBlock = useCallback((blockId: string): WorkoutExercise | undefined => {
@@ -828,6 +845,63 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
   const logRestDay = useCallback<StoreState["logRestDay"]>((reason) =>
     setWorkout((w) => ({ ...w, restDays: [{ date: todayIso(), reason }, ...w.restDays.filter(r=>r.date!==todayIso())] })), [setWorkout]);
 
+  // seedDemoData: lazy-imports the mock generator and overwrites logs (keeps
+  // library / routines / settings) with ~12 weeks of realistic history for QA.
+  const seedDemoData = useCallback<StoreState["seedDemoData"]>(() => {
+    import("./mockData").then(({ generateSeedData }) => {
+      setWorkout((w) => {
+        const data = generateSeedData({ exercises: w.exercises, routines: w.routines });
+        const finished = [...data.sessions].filter((s) => s.endedAt).sort(
+          (a, b) => a.date.localeCompare(b.date),
+        );
+        let currentStreak = 0, longestStreak = 0, prev: string | undefined;
+        for (const s of finished) {
+          if (prev === undefined) currentStreak = 1;
+          else {
+            const diff = Math.round((new Date(s.date).getTime() - new Date(prev).getTime()) / DAY);
+            currentStreak = diff === 1 ? currentStreak + 1 : 1;
+          }
+          longestStreak = Math.max(longestStreak, currentStreak);
+          prev = s.date;
+        }
+        return {
+          ...w,
+          sessions: data.sessions,
+          prs: data.prs,
+          readiness: data.readiness,
+          bodyweight: data.bodyweight,
+          goals: data.goals,
+          challenges: data.challenges,
+          journal: data.journal,
+          currentStreak,
+          longestStreak: Math.max(longestStreak, w.longestStreak ?? 0),
+          lastWorkoutDate: finished[finished.length - 1]?.date,
+          activeSessionId: undefined,
+        };
+      });
+    });
+  }, [setWorkout]);
+
+  // resetWorkoutData: clears logs back to a pristine state; keeps library,
+  // routines, skills, settings intact.
+  const resetWorkoutData = useCallback<StoreState["resetWorkoutData"]>(() => {
+    setWorkout((w) => ({
+      ...w,
+      sessions: SEED_WORKOUT.sessions,
+      prs: SEED_WORKOUT.prs,
+      readiness: SEED_WORKOUT.readiness,
+      bodyweight: SEED_WORKOUT.bodyweight,
+      goals: SEED_WORKOUT.goals,
+      challenges: SEED_WORKOUT.challenges,
+      journal: SEED_WORKOUT.journal,
+      restDays: SEED_WORKOUT.restDays,
+      currentStreak: 0,
+      longestStreak: 0,
+      lastWorkoutDate: undefined,
+      activeSessionId: undefined,
+    }));
+  }, [setWorkout]);
+
   const value: StoreState = {
     tasks, notes, addTask, toggleTask, deleteTask, updateTask,
     addNote, updateNote, deleteNote, togglePinNote,
@@ -838,9 +912,10 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     addAchievement, deleteAchievement, setLinkedin,
     workout, addExercise, updateExercise, deleteExercise,
     logPR, deletePR, addSkill, deleteSkill, addProgression, toggleProgressionDone, updateProgression, deleteProgression,
-    addRoutine, updateRoutine, deleteRoutine, addBlock, updateBlock, deleteBlock,
+    addRoutine, updateRoutine, deleteRoutine, addBlock, updateBlock, deleteBlock, reorderBlocks,
     startSession, logSet, addAdHocBlock, updateSession, finishSession, discardSession, importSession,
     logReadiness, logBodyweight, updateWorkoutSettings, exportWorkoutCSV, getExerciseForBlock,
+    seedDemoData, resetWorkoutData,
     toggleChainProgression, updateCaliChainProgression, addCaliSkill, logCaliAttempt, logCaliFail,
     toggleCaliSkillArchived, unlockCaliSkill, addFlow, deleteFlow, toggleGtG, logIsometric,
     addIntervalLog, logMobility, addMobilityDrill, logPlanche,
