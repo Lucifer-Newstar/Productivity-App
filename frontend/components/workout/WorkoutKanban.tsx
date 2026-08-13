@@ -29,12 +29,12 @@ const TYPE_META: Record<KanbanCardType, { label: string; color: string; icon: an
   other:    { label: "Other",    color: "#64748b", icon: MoreHorizontal },
 };
 
-const COL_TITLES: Record<KanbanColumn["id"], { title: string; kanji: string; hint: string; accent: string }> = {
-  "backlog":     { title: "Backlog",      kanji: "溜", hint: "Someday",             accent: "#cbd5e1" },
-  "this-week":   { title: "This Week",   kanji: "週", hint: "Plan for the week",   accent: "#c81d25" },
-  "today":       { title: "Today",       kanji: "日", hint: "On deck",             accent: "#d4af37" },
-  "in-progress": { title: "In Progress", kanji: "中", hint: "Currently doing",     accent: "#ec4899" },
-  "done":        { title: "Done",        kanji: "了", hint: "Completed this week", accent: "#22c55e" },
+const COL_TITLES: Record<KanbanColumn["id"], { title: string; sigil: string; hint: string; accent: string }> = {
+  "backlog":     { title: "Backlog",      sigil: "A", hint: "Campaigns to plan",    accent: "#cbd5e1" },
+  "this-week":   { title: "This Week",   sigil: "B", hint: "Marches this week",    accent: "#b91c1c" },
+  "today":       { title: "Today",       sigil: "C", hint: "On the battlefield",    accent: "#d4af37" },
+  "in-progress": { title: "In Progress", sigil: "D", hint: "Currently clashing",    accent: "#ec4899" },
+  "done":        { title: "Done",        sigil: "✓", hint: "Trophies collected",    accent: "#22c55e" },
 };
 
 export default function WorkoutKanban() {
@@ -85,12 +85,14 @@ export default function WorkoutKanban() {
     <div className="space-y-4">
       <div className="flex items-end justify-between flex-wrap gap-2">
         <div>
-          <h2 className="text-3xl font-jp font-bold flex items-center gap-3">
-            <KanbanIcon size={24} style={{ color: "#c81d25", filter: "drop-shadow(0 0 8px rgba(200,29,37,0.5))" }} />
-            <span className="vermilion-text">Board</span>
-            <span className="jp-stamp text-[11px] animate-[sealStamp_0.6s_ease-out_both]">看板</span>
+          <h2 className="text-4xl imperial-name flex items-center gap-3">
+            <KanbanIcon size={28} style={{ color: "#b91c1c", filter: "drop-shadow(0 0 10px rgba(185,28,28,0.6))" }} />
+            <span className="crimson-text">Board</span>
+            <span className="seal-stamp text-[11px] animate-[sealStamp_0.6s_ease-out_both]">VII · War Table</span>
           </h2>
-          <p className="text-sm text-gray-400 mt-1">Drag cards between columns to plan your week. Persists automatically.</p>
+          <p className="text-sm mt-2 serif-body italic" style={{ color: "#9c7a1a" }}>
+            Plan your campaign. Drag cards between columns — conquest awaits.
+          </p>
         </div>
       </div>
 
@@ -146,38 +148,10 @@ export default function WorkoutKanban() {
           const meta = COL_TITLES[col.id];
           const isOver = dragOver === col.id;
           return (
-            <div key={col.id}
+            <KanbanColumnView key={col.id} col={col} meta={meta} isOver={!!isOver}
               onDragOver={(e) => { e.preventDefault(); setDragOver(col.id); }}
               onDragLeave={() => setDragOver(null)}
-              onDrop={() => onDrop(col.id)}
-              className={`relative rounded-2xl p-3 min-h-[280px] transition overflow-hidden ${
-                isOver ? "ring-2" : ""
-              }`}
-              style={{
-                background: isOver
-                  ? "linear-gradient(145deg, rgba(200,29,37,0.15), rgba(15,10,13,0.6))"
-                  : "linear-gradient(145deg, rgba(26,17,20,0.6), rgba(15,10,13,0.4))",
-                border: `1px solid ${isOver ? meta.accent : "rgba(212,175,55,0.2)"}`,
-                boxShadow: isOver
-                  ? `0 0 30px -8px ${meta.accent}, inset 0 1px 0 rgba(212,175,55,0.15)`
-                  : "inset 0 1px 0 rgba(212,175,55,0.1), 0 10px 30px -20px rgba(0,0,0,0.8)",
-              }}>
-              {/* Gold top edge */}
-              <div aria-hidden className="absolute top-0 left-3 right-3 h-[1px]"
-                style={{ background: "linear-gradient(90deg, transparent, rgba(212,175,55,0.5), transparent)" }} />
-              <div className="flex items-center gap-2 mb-3">
-                <span className="w-2 h-2 rounded-full" style={{ background: meta.accent, boxShadow: `0 0 8px ${meta.accent}` }} />
-                <h4 className="text-sm font-jp font-semibold flex items-center gap-2" style={{ color: "#fde68a" }}>
-                  {meta.title}
-                  <span className="text-[9px] font-jp px-1 py-0.5 rounded"
-                    style={{ background: "rgba(212,175,55,0.1)", color: "#d4af37", border: "1px solid rgba(212,175,55,0.25)" }}>
-                    {meta.kanji}
-                  </span>
-                </h4>
-                <span className="text-[10px] font-mono ml-auto" style={{ color: "#d4af37" }}>{col.cards.length}</span>
-              </div>
-              <p className="text-[10px] mb-2 -mt-1" style={{ color: "#9c7a1a" }}>{meta.hint}</p>
-
+              onDrop={() => onDrop(col.id)}>
               <div className="space-y-2">
                 <AnimatePresence initial={false}>
                   {col.cards.map((c) => {
@@ -186,45 +160,30 @@ export default function WorkoutKanban() {
                     const isDone = col.id === "done";
                     const Icon = tm.icon;
                     return (
-                      <motion.div key={c.id} layout
+                      <KanbanCardView key={c.id} layout
                         initial={{ opacity: 0, y: 4 }} animate={{ opacity: isDragging ? 0.3 : 1, y: 0 }}
                         exit={{ opacity: 0, scale: 0.95 }}
                         draggable
                         onDragStart={() => onDragStart(c.id)}
                         onDragEnd={onDragEnd}
-                        className={`group rounded-xl p-3 text-sm cursor-grab active:cursor-grabbing transition hover:-translate-y-0.5 ${
-                          isDone ? "" : ""
-                        }`}
-                        style={{
-                          background: isDone
-                            ? "linear-gradient(145deg, rgba(34,197,94,0.08), rgba(15,10,13,0.4))"
-                            : "linear-gradient(145deg, rgba(26,17,20,0.7), rgba(15,10,13,0.5))",
-                          border: "1px solid",
-                          borderColor: isDone ? "rgba(34,197,94,0.35)" : "rgba(212,175,55,0.2)",
-                          borderLeft: `3px solid ${tm.color}`,
-                          boxShadow: isDone
-                            ? `inset 0 1px 0 rgba(34,197,94,0.2), 0 6px 16px -10px ${tm.color}`
-                            : `inset 0 1px 0 rgba(212,175,55,0.15), 0 6px 20px -12px rgba(0,0,0,0.7)`,
-                        }}>
+                        tm={tm} isDone={isDone}>
                         <div className="flex items-start gap-2">
-                          <GripVertical size={12} className="mt-1 shrink-0 opacity-0 group-hover:opacity-100 transition"
-                            style={{ color: "#d4af37" }} />
+                          <GripVertical size={12} className="mt-1 shrink-0 opacity-0 group-hover:opacity-100 transition text-gold" />
                           <button onClick={() => {
                             if (isDone) moveKanbanCard(c.id, "today");
                             else moveKanbanCard(c.id, "done");
                           }} className="shrink-0 mt-0.5">
                             <CheckCircle2 size={14}
-                              className={isDone ? "text-emerald-400" : "text-gray-600 hover:text-emerald-400"} />
+                              className={isDone ? "text-emerald-400" : "text-gray-600 dark:text-gray-500 hover:text-emerald-400"} />
                           </button>
                           <div className="flex-1 min-w-0">
-                            <p className={`leading-snug font-medium ${isDone ? "line-through" : ""}`}
-                              style={{ color: isDone ? "#64748b" : "#f3e9d2" }}>{c.title}</p>
+                            <p className={`leading-snug font-medium ${isDone ? "line-through text-gray-400 dark:text-gray-500" : "text-gray-900 dark:text-amber-50"}`}>{c.title}</p>
                             <div className="flex items-center gap-1.5 mt-1.5 flex-wrap">
                               <span className="chip text-[10px]" style={{ background: `${tm.color}25`, color: tm.color }}>
                                 <Icon size={10} /> {tm.label}
                               </span>
                               {c.sets && c.reps && (
-                                <span className="text-[10px] text-gray-400 font-mono">
+                                <span className="text-[10px] text-gray-500 font-mono">
                                   {c.sets}×{c.reps}{c.weightKg ? ` @ ${c.weightKg}kg` : ""}
                                 </span>
                               )}
@@ -233,42 +192,101 @@ export default function WorkoutKanban() {
                               <div className="mt-2 space-y-1">
                                 <textarea autoFocus value={editNotes}
                                   onChange={e => setEditNotes(e.target.value)}
-                                  placeholder="Notes…"
+                                  placeholder="Campaign notes…"
                                   className="input-base w-full text-xs h-14" />
                                 <div className="flex gap-1">
-                                  <button onClick={() => saveEdit(c)} className="btn-primary text-[10px] py-1 px-2">Save</button>
-                                  <button onClick={() => setEditing(null)} className="btn-ghost text-[10px] py-1 px-2">Cancel</button>
+                                  <button onClick={() => saveEdit(c)} className="btn-primary text-[10px] py-1 px-2">Seal</button>
+                                  <button onClick={() => setEditing(null)} className="btn-ghost text-[10px] py-1 px-2">Stand down</button>
                                 </div>
                               </div>
                             ) : c.notes ? (
-                              <p className="text-[11px] text-gray-500 mt-1.5 whitespace-pre-wrap">{c.notes}</p>
+                              <p className="text-[11px] text-gray-500 dark:text-gray-400 mt-1.5 whitespace-pre-wrap serif-body italic">{c.notes}</p>
                             ) : null}
                           </div>
                           <button onClick={() => deleteKanbanCard(c.id)}
-                            className="text-gray-600 hover:text-red-400 opacity-0 group-hover:opacity-100 transition shrink-0">
+                            className="text-gray-500 hover:text-red-500 opacity-0 group-hover:opacity-100 transition shrink-0">
                             <Trash2 size={12} />
                           </button>
                         </div>
                         {editing !== c.id && (
                           <button onClick={() => openEdit(c)}
-                            className="mt-2 text-[10px] text-gray-500 hover:text-gray-300 opacity-0 group-hover:opacity-100 transition">
-                            {c.notes ? "Edit notes" : "+ notes"}
+                            className="mt-2 text-[10px] text-gray-500 hover:text-amber-600 dark:hover:text-amber-300 opacity-0 group-hover:opacity-100 transition font-imperial tracking-widest uppercase">
+                            {c.notes ? "Edit decree" : "+ notes"}
                           </button>
                         )}
-                      </motion.div>
+                      </KanbanCardView>
                     );
                   })}
                 </AnimatePresence>
                 {col.cards.length === 0 && (
-                  <div className="text-center text-[11px] text-gray-600 py-6 border border-dashed border-white/5 rounded-xl">
-                    Drop cards here
+                  <div className="text-center text-[11px] text-gray-500 py-6 border border-dashed rounded-xl dark:border-amber-300/15 border-red-900/15 serif-body italic">
+                    Plans yet to be forged…
                   </div>
                 )}
               </div>
-            </div>
+            </KanbanColumnView>
           );
         })}
       </div>
     </div>
+  );
+}
+
+/* ---------- Kanban column (themed dark/light) ---------- */
+function KanbanColumnView({
+  col, meta, isOver, children, ...rest
+}: {
+  col: KanbanColumn; meta: { title: string; sigil: string; hint: string; accent: string };
+  isOver: boolean; children: React.ReactNode;
+} & React.HTMLAttributes<HTMLDivElement>) {
+  return (
+    <div {...rest}
+      className={`relative rounded-2xl p-3 min-h-[280px] transition overflow-hidden card-lacquer ${
+        isOver ? "ring-2" : ""
+      }`}
+      style={isOver ? { boxShadow: `0 0 30px -8px ${meta.accent}`, borderColor: meta.accent } as React.CSSProperties : undefined}>
+      {/* Gold top edge */}
+      <div aria-hidden className="absolute top-0 left-3 right-3 h-[1px]"
+        style={{ background: "linear-gradient(90deg, transparent, var(--k-gold-deep, #d4af37), transparent)" }} />
+      <div className="flex items-center gap-2 mb-3 relative z-10">
+        <span className="w-2 h-2 rounded-full" style={{ background: meta.accent, boxShadow: `0 0 8px ${meta.accent}` }} />
+        <h4 className="text-sm font-imperial font-bold uppercase tracking-[0.15em] flex items-center gap-2"
+          style={{ color: "var(--k-gold, #fde68a)" }}>
+          {meta.title}
+          <span className="text-[9px] font-imperial px-1.5 py-0.5 rounded"
+            style={{ background: "rgba(212,175,55,0.12)", color: "var(--k-gold-deep, #d4af37)", border: "1px solid rgba(212,175,55,0.25)" }}>
+            {meta.sigil}
+          </span>
+        </h4>
+        <span className="text-[10px] font-mono ml-auto" style={{ color: "var(--k-gold-deep, #d4af37)" }}>{col.cards.length}</span>
+      </div>
+      <p className="text-[10px] mb-2 -mt-1 serif-body italic relative z-10"
+        style={{ color: "var(--k-gold-deep, #9c7a1a)", opacity: 0.8 }}>{meta.hint}</p>
+      {children}
+    </div>
+  );
+}
+
+/* ---------- Kanban card (themed dark/light via card-lacquer variables) ---------- */
+function KanbanCardView({
+  tm, isDone, children, ...rest
+}: {
+  tm: { color: string; label: string }; isDone: boolean; children: React.ReactNode;
+} & React.ComponentProps<typeof motion.div>) {
+  return (
+    <motion.div {...rest}
+      className={`group rounded-xl p-3 text-sm cursor-grab active:cursor-grabbing transition hover:-translate-y-0.5 relative overflow-hidden`}
+      style={{
+        background: "var(--k-card-bg, linear-gradient(145deg, rgba(26,17,20,0.7), rgba(15,10,13,0.5)))",
+        border: "1px solid",
+        borderColor: isDone ? "rgba(34,197,94,0.35)" : "var(--k-gold-deep, rgba(212,175,55,0.25))",
+        borderLeft: `3px solid ${tm.color}`,
+        boxShadow: isDone
+          ? `inset 0 1px 0 rgba(34,197,94,0.2), 0 6px 16px -10px ${tm.color}`
+          : `inset 0 1px 0 var(--k-gold, rgba(212,175,55,0.15)), 0 6px 20px -12px rgba(0,0,0,0.4)`,
+        ["--k-card-bg" as string]: "linear-gradient(145deg, rgba(26,17,20,0.7), rgba(15,10,13,0.5))",
+      } as React.CSSProperties}>
+      {children}
+    </motion.div>
   );
 }

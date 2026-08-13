@@ -177,12 +177,14 @@ export default function WorkoutCharts() {
     <div className="space-y-6">
       <div className="flex items-end justify-between flex-wrap gap-2">
         <div>
-          <h2 className="text-3xl font-jp font-bold flex items-center gap-3">
-            <BarChart3 size={24} style={{ color: "#d4af37", filter: "drop-shadow(0 0 8px rgba(212,175,55,0.5))" }} />
+          <h2 className="text-4xl imperial-name flex items-center gap-3">
+            <BarChart3 size={28} style={{ color: "#d4af37", filter: "drop-shadow(0 0 10px rgba(212,175,55,0.6))" }} />
             <span className="gold-text">Charts</span>
-            <span className="jp-stamp text-[11px] animate-[sealStamp_0.6s_ease-out_both]">統計</span>
+            <span className="seal-stamp text-[11px] animate-[sealStamp_0.6s_ease-out_both]">VI · Stats</span>
           </h2>
-          <p className="text-sm text-gray-400 mt-1">Progress analytics — pure-SVG, no external chart libs.</p>
+          <p className="text-sm mt-2 serif-body italic" style={{ color: "#9c7a1a" }}>
+            “Numbers are the scars of effort — read them and grow stronger.”
+          </p>
         </div>
       </div>
 
@@ -281,18 +283,12 @@ function KPI({ icon, label, value }: { icon: React.ReactNode; label: string; val
     <div className="card-lacquer p-4 relative overflow-hidden group hover:-translate-y-0.5 transition-transform">
       {/* gold top stripe */}
       <div aria-hidden className="absolute top-0 left-0 right-0 h-[2px]"
-        style={{ background: "linear-gradient(90deg, transparent, #d4af37, transparent)" }} />
-      <div className="flex items-center gap-1.5 text-[10px] uppercase tracking-[0.25em]"
-        style={{ color: "#d4af37" }}>
+        style={{ background: "linear-gradient(90deg, transparent, var(--k-gold-deep), transparent)" }} />
+      <div className="flex items-center gap-1.5 text-[10px] font-imperial uppercase tracking-[0.3em]"
+        style={{ color: "var(--k-gold-deep)" }}>
         {icon}{label}
       </div>
-      <div className="text-2xl font-bold mt-1 font-jp"
-        style={{
-          background: "linear-gradient(135deg, #fde68a 0%, #d4af37 100%)",
-          WebkitBackgroundClip: "text",
-          WebkitTextFillColor: "transparent",
-          backgroundClip: "text",
-        }}>
+      <div className="text-2xl font-bold mt-1 font-imperial tracking-wider gold-text">
         {value}
       </div>
     </div>
@@ -304,9 +300,9 @@ function Card({ title, icon, children }: { title: string; icon: React.ReactNode;
     <div className="card-lacquer relative overflow-hidden group hover:-translate-y-0.5 transition-transform p-6">
       {/* Top gold edge */}
       <div aria-hidden className="absolute top-0 left-0 right-0 h-[1px]"
-        style={{ background: "linear-gradient(90deg, transparent, rgba(212,175,55,0.6), transparent)" }} />
-      <h4 className="font-jp font-semibold mb-3 flex items-center gap-2 text-sm tracking-wide"
-        style={{ color: "#fde68a" }}>
+        style={{ background: "linear-gradient(90deg, transparent, var(--k-gold-deep), transparent)" }} />
+      <h4 className="font-imperial font-semibold mb-3 flex items-center gap-2 text-sm tracking-[0.15em] uppercase"
+        style={{ color: "var(--k-gold)" }}>
         {icon}{title}
       </h4>
       {children}
