@@ -1,15 +1,25 @@
 "use client";
 
+/**
+ * SpaceTasks — reusable task list scoped to a single space.
+ * Used by each of the five space pages (Projects, Workout, Career, Entertainment,
+ * Health) when they only need a simple task list (Career has its own rich page).
+ *
+ * Provides per-space add form (color-themed to the space), priority chips, and a
+ * grouped list with active tasks above completed ones.
+ */
+
 import { useState } from "react";
+import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
-import { Plus, Trash2, Flag, Calendar, CheckCircle2 } from "lucide-react";
+import { Plus, Trash2, Flag, Calendar, ArrowLeft } from "lucide-react";
 import { useStore, useSpace } from "../lib/store";
 import type { Priority, SpaceId } from "../lib/types";
 
 const priorityStyles: Record<Priority, { bg: string; text: string; label: string }> = {
-  high:   { bg: "bg-pink-500/20",   text: "text-pink-400",   label: "High" },
-  medium: { bg: "bg-amber-500/20",  text: "text-amber-400",  label: "Medium" },
-  low:    { bg: "bg-lime-500/20",   text: "text-lime-400",   label: "Low" },
+  high:   { bg: "bg-pink-500/20",   text: "text-pink-500 dark:text-pink-400",   label: "High" },
+  medium: { bg: "bg-amber-500/20",  text: "text-amber-600 dark:text-amber-400",  label: "Medium" },
+  low:    { bg: "bg-lime-500/20",   text: "text-lime-600 dark:text-lime-400",   label: "Low" },
 };
 
 interface SpaceTasksProps {
@@ -27,6 +37,7 @@ export default function SpaceTasks({ space, heading, compact = false }: SpaceTas
   const spaceTasks = tasks.filter((t) => t.space === space);
   const active = spaceTasks.filter((t) => !t.completed);
   const done   = spaceTasks.filter((t) => t.completed);
+  const pct    = spaceTasks.length ? Math.round((done.length / spaceTasks.length) * 100) : 0;
 
   const submit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -37,36 +48,68 @@ export default function SpaceTasks({ space, heading, compact = false }: SpaceTas
   };
 
   return (
-    <div className="space-y-6">
-      <div className={`flex items-center gap-4 ${compact ? "" : "mt-2"}`}>
-        <div
-          className="w-14 h-14 rounded-2xl flex items-center justify-center text-2xl shadow-lg"
-          style={{ background: `linear-gradient(135deg, ${meta.color}, ${meta.color}aa)`, boxShadow: `0 10px 40px -10px ${meta.color}80` }}
-        >
-          {meta.emoji}
-        </div>
-        <div>
-          <h2 className={`font-bold tracking-tight ${compact ? "text-2xl" : "text-3xl"}`} style={{ color: meta.color }}>
-            {heading ?? meta.name}
-          </h2>
-          <p className="text-sm text-gray-400">
-            {active.length} active · {done.length} done
-          </p>
-        </div>
-      </div>
+    <div className="space-y-6 max-w-3xl mx-auto">
+      {/* Back link */}
+      <Link href="/" className="inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-900 dark:hover:text-gray-200 transition">
+        <ArrowLeft size={14} /> Back to Dashboard
+      </Link>
 
+      {/* Hero header */}
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        className={`relative overflow-hidden rounded-3xl p-6 md:p-8 glass border border-black/10 dark:border-white/10 shadow-sm`}
+        style={{ borderColor: `${meta.color}40` }}
+      >
+        <div
+          className="absolute -top-20 -right-20 w-64 h-64 rounded-full blur-3xl opacity-40"
+          style={{ background: meta.color }}
+        />
+        <div className="relative flex items-center gap-4">
+          <div
+            className="w-14 h-14 rounded-2xl flex items-center justify-center text-2xl shadow-lg shrink-0"
+            style={{ background: `linear-gradient(135deg, ${meta.color}, ${meta.color}aa)`, boxShadow: `0 10px 40px -10px ${meta.color}80` }}
+          >
+            {meta.emoji}
+          </div>
+          <div className="flex-1 min-w-0">
+            <h2 className={`font-bold tracking-tight text-gray-900 dark:text-white ${compact ? "text-2xl" : "text-3xl"}`} style={{ color: meta.color }}>
+              {heading ?? meta.name}
+            </h2>
+            <p className="text-sm text-gray-500 dark:text-gray-400">
+              {active.length} active · {done.length} done
+            </p>
+          </div>
+          <div className="hidden sm:block text-right">
+            <p className="text-2xl font-bold" style={{ color: meta.color }}>{pct}%</p>
+            <p className="text-[11px] text-gray-500 dark:text-gray-400 uppercase tracking-wider">complete</p>
+          </div>
+        </div>
+        {/* Progress bar */}
+        <div className="relative h-1.5 rounded-full bg-black/5 dark:bg-white/5 overflow-hidden mt-6">
+          <motion.div
+            initial={{ width: 0 }}
+            animate={{ width: `${pct}%` }}
+            transition={{ duration: 0.6, ease: "easeOut" }}
+            className="h-full rounded-full"
+            style={{ background: `linear-gradient(90deg, ${meta.color}, ${meta.color}aa)` }}
+          />
+        </div>
+      </motion.div>
+
+      {/* Add task form */}
       <form
         onSubmit={submit}
         className="card space-y-3"
-        style={{ borderColor: `${meta.color}30` }}
+        style={{ borderColor: `${meta.color}25` }}
       >
         <div className="flex items-center gap-3">
-          <Plus size={20} className="text-gray-500" />
+          <Plus size={20} className="text-gray-400 dark:text-gray-500" />
           <input
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             placeholder={`Add a task to ${meta.name}...`}
-            className="flex-1 bg-transparent text-white placeholder:text-gray-500 outline-none text-base"
+            className="flex-1 bg-transparent text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500 outline-none text-base"
           />
           <button
             type="submit"
@@ -77,7 +120,7 @@ export default function SpaceTasks({ space, heading, compact = false }: SpaceTas
             Add
           </button>
         </div>
-        <div className="flex flex-wrap gap-2 pt-2 border-t border-white/5">
+        <div className="flex flex-wrap gap-2 pt-2 border-t border-black/5 dark:border-white/5">
           {(["low", "medium", "high"] as Priority[]).map((p) => (
             <button
               key={p}
@@ -86,7 +129,7 @@ export default function SpaceTasks({ space, heading, compact = false }: SpaceTas
               className={`chip cursor-pointer transition-all ${
                 priority === p
                   ? `${priorityStyles[p].bg} ${priorityStyles[p].text}`
-                  : "bg-white/5 text-gray-500 hover:text-gray-300"
+                  : "bg-black/5 dark:bg-white/5 text-gray-500 dark:text-gray-500 hover:text-gray-800 dark:hover:text-gray-300"
               }`}
             >
               <Flag size={12} /> {priorityStyles[p].label}
@@ -95,6 +138,7 @@ export default function SpaceTasks({ space, heading, compact = false }: SpaceTas
         </div>
       </form>
 
+      {/* Task list */}
       <div className="space-y-2">
         {active.length === 0 && done.length === 0 && (
           <div className="text-center py-12 text-gray-500">
@@ -111,7 +155,7 @@ export default function SpaceTasks({ space, heading, compact = false }: SpaceTas
 
         {done.length > 0 && (
           <>
-            <p className="text-xs uppercase tracking-widest text-gray-600 pt-4 pl-1">Completed</p>
+            <p className="text-xs uppercase tracking-widest text-gray-400 dark:text-gray-600 pt-4 pl-1">Completed</p>
             <AnimatePresence mode="popLayout">
               {done.map((t) => (
                 <TaskRow key={t.id} t={t} onToggle={toggleTask} onDelete={deleteTask} />
@@ -141,7 +185,7 @@ function TaskRow({
       initial={{ opacity: 0, y: 5 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, x: -20 }}
-      className="group flex items-center gap-3 p-4 rounded-xl glass hover:border-white/15 transition-all"
+      className="group flex items-center gap-3 p-4 rounded-xl glass hover:border-black/10 dark:hover:border-white/15 transition-all"
     >
       <input
         type="checkbox"
@@ -150,18 +194,18 @@ function TaskRow({
         onChange={() => onToggle(t.id)}
       />
       <div className="flex-1 min-w-0">
-        <p className={`text-sm ${t.completed ? "text-gray-500 line-through" : "text-gray-100"}`}>{t.title}</p>
-        <div className="flex gap-2 mt-1.5 items-center">
+        <p className={`text-sm ${t.completed ? "text-gray-400 dark:text-gray-500 line-through" : "text-gray-900 dark:text-gray-100"}`}>{t.title}</p>
+        <div className="flex gap-2 mt-1.5 items-center flex-wrap">
           <span className={`chip ${pstyle.bg} ${pstyle.text}`}>
             <Flag size={10} /> {pstyle.label}
           </span>
           <span
-            className="chip text-gray-400"
+            className="chip"
             style={{ background: `${meta.color}20`, color: meta.color }}
           >
             {meta.emoji} {meta.name}
           </span>
-          <span className="chip text-gray-500 bg-white/5">
+          <span className="chip text-gray-500 bg-black/5 dark:bg-white/5">
             <Calendar size={10} />
             {new Date(t.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
           </span>
@@ -169,7 +213,7 @@ function TaskRow({
       </div>
       <button
         onClick={() => onDelete(t.id)}
-        className="opacity-0 group-hover:opacity-100 p-2 rounded-lg text-gray-500 hover:text-red-400 hover:bg-red-400/10 transition"
+        className="opacity-0 group-hover:opacity-100 p-2 rounded-lg text-gray-400 dark:text-gray-500 hover:text-red-500 hover:bg-red-500/10 transition"
       >
         <Trash2 size={16} />
       </button>

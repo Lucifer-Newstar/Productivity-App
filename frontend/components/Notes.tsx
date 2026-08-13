@@ -1,5 +1,11 @@
 "use client";
 
+/**
+ * Notes — global sticky-note board.
+ * Colorful cards with 6 color choices, pinning, search, modal editor with title +
+ * content. Uses its own slice of the store (separate from career track notes).
+ */
+
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Plus, Pin, PinOff, Trash2, X, StickyNote, Search } from "lucide-react";
@@ -36,20 +42,20 @@ export default function Notes() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 max-w-6xl mx-auto">
       <div className="flex items-center justify-between flex-wrap gap-4">
         <div>
-          <h2 className="text-3xl font-bold">Notes</h2>
-          <p className="text-gray-400 mt-1">{notes.length} notes · Capture thoughts fast.</p>
+          <h2 className="text-3xl font-bold text-gray-900 dark:text-white">Notes</h2>
+          <p className="text-gray-500 dark:text-gray-400 mt-1">{notes.length} notes · Capture thoughts fast.</p>
         </div>
         <div className="flex gap-3">
           <div className="relative">
-            <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" />
+            <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500" />
             <input
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder="Search notes..."
-              className="bg-bg-card/60 border border-white/5 rounded-xl pl-10 pr-4 py-2 text-sm text-white placeholder:text-gray-500 outline-none focus:border-accent/50 w-64"
+              className="input-base w-64 pl-10"
             />
           </div>
           <button onClick={() => setShowNew(true)} className="btn-primary flex items-center gap-2">
@@ -79,9 +85,11 @@ export default function Notes() {
             )}
             <div className="flex items-start gap-2 mb-2">
               <StickyNote size={16} style={{ color: n.color }} className="mt-0.5 shrink-0" />
-              <h3 className="font-semibold text-white truncate flex-1">{n.title}</h3>
+              <h3 className="font-semibold text-gray-900 dark:text-white truncate flex-1">{n.title}</h3>
             </div>
-            <p className="text-sm text-gray-400 line-clamp-5 whitespace-pre-wrap leading-relaxed">{n.content || "No content yet..."}</p>
+            <p className="text-sm text-gray-600 dark:text-gray-400 line-clamp-5 whitespace-pre-wrap leading-relaxed">
+              {n.content || "No content yet..."}
+            </p>
             <div className="mt-4 flex items-center justify-between">
               <p className="text-xs text-gray-500">
                 {new Date(n.updatedAt).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
@@ -89,13 +97,13 @@ export default function Notes() {
               <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition">
                 <button
                   onClick={(e) => { e.stopPropagation(); togglePinNote(n.id); }}
-                  className="p-1.5 rounded-md hover:bg-white/10 text-gray-400 hover:text-white"
+                  className="p-1.5 rounded-md hover:bg-black/10 dark:hover:bg-white/10 text-gray-500 hover:text-gray-900 dark:hover:text-white"
                 >
                   {n.pinned ? <PinOff size={13} /> : <Pin size={13} />}
                 </button>
                 <button
                   onClick={(e) => { e.stopPropagation(); deleteNote(n.id); }}
-                  className="p-1.5 rounded-md hover:bg-red-500/20 text-gray-400 hover:text-red-400"
+                  className="p-1.5 rounded-md hover:bg-red-500/20 text-gray-500 hover:text-red-500"
                 >
                   <Trash2 size={13} />
                 </button>
@@ -105,8 +113,11 @@ export default function Notes() {
         ))}
 
         {filtered.length === 0 && !showNew && (
-          <div onClick={() => setShowNew(true)} className="sm:col-span-2 lg:col-span-3 rounded-2xl border-2 border-dashed border-white/10 p-12 text-center cursor-pointer hover:border-accent/40 transition-colors">
-            <Plus size={32} className="text-gray-600 mx-auto mb-2" />
+          <div
+            onClick={() => setShowNew(true)}
+            className="sm:col-span-2 lg:col-span-3 rounded-2xl border-2 border-dashed border-black/10 dark:border-white/10 p-12 text-center cursor-pointer hover:border-accent/40 transition-colors"
+          >
+            <Plus size={32} className="text-gray-400 mx-auto mb-2" />
             <p className="text-gray-500">No notes yet — click to create your first note</p>
           </div>
         )}
@@ -114,23 +125,17 @@ export default function Notes() {
 
       <AnimatePresence>
         {showNew && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm"
-            onClick={() => setShowNew(false)}
-          >
+          <Modal onClose={() => setShowNew(false)}>
             <motion.div
               initial={{ scale: 0.95, y: 20 }}
               animate={{ scale: 1, y: 0 }}
               exit={{ scale: 0.95, y: 20 }}
               onClick={(e) => e.stopPropagation()}
-              className="w-full max-w-lg rounded-2xl p-6 glass border border-white/10"
+              className="w-full max-w-lg rounded-2xl p-6 glass border border-black/10 dark:border-white/10"
             >
               <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-semibold">New note</h3>
-                <button onClick={() => setShowNew(false)} className="p-1.5 rounded-lg hover:bg-white/10">
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white">New note</h3>
+                <button onClick={() => setShowNew(false)} className="p-1.5 rounded-lg hover:bg-black/10 dark:hover:bg-white/10 text-gray-500">
                   <X size={18} />
                 </button>
               </div>
@@ -139,14 +144,14 @@ export default function Notes() {
                 value={draftTitle}
                 onChange={(e) => setDraftTitle(e.target.value)}
                 placeholder="Title"
-                className="w-full bg-transparent text-xl font-semibold text-white placeholder:text-gray-600 outline-none mb-3"
+                className="w-full bg-transparent text-xl font-semibold text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-600 outline-none mb-3"
               />
               <textarea
                 value={draftContent}
                 onChange={(e) => setDraftContent(e.target.value)}
                 placeholder="Start writing..."
                 rows={8}
-                className="w-full bg-white/5 rounded-lg p-3 text-sm text-white placeholder:text-gray-500 outline-none resize-none border border-white/5 focus:border-white/10"
+                className="w-full bg-black/5 dark:bg-white/5 rounded-lg p-3 text-sm text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500 outline-none resize-none border border-black/5 dark:border-white/5 focus:border-black/10 dark:focus:border-white/10"
               />
               <div className="flex items-center justify-between mt-4">
                 <div className="flex gap-2">
@@ -154,7 +159,7 @@ export default function Notes() {
                     <button
                       key={c}
                       onClick={() => setDraftColor(c)}
-                      className={`w-7 h-7 rounded-full transition-transform ${draftColor === c ? "scale-110 ring-2 ring-white/60" : ""}`}
+                      className={`w-7 h-7 rounded-full transition-transform ${draftColor === c ? "scale-110 ring-2 ring-black/20 dark:ring-white/60" : ""}`}
                       style={{ background: c }}
                     />
                   ))}
@@ -162,17 +167,11 @@ export default function Notes() {
                 <button onClick={createNote} className="btn-primary">Create note</button>
               </div>
             </motion.div>
-          </motion.div>
+          </Modal>
         )}
 
         {current && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm"
-            onClick={() => setEditing(null)}
-          >
+          <Modal onClose={() => setEditing(null)}>
             <motion.div
               initial={{ scale: 0.95, y: 20 }}
               animate={{ scale: 1, y: 0 }}
@@ -180,7 +179,7 @@ export default function Notes() {
               onClick={(e) => e.stopPropagation()}
               className="w-full max-w-2xl rounded-2xl p-6"
               style={{
-                background: `linear-gradient(135deg, ${current.color}22, #12121a)`,
+                background: `linear-gradient(135deg, ${current.color}22, rgba(255,255,255,0.9))`,
                 border: `1px solid ${current.color}40`,
               }}
             >
@@ -190,17 +189,17 @@ export default function Notes() {
                   <input
                     value={current.title}
                     onChange={(e) => updateNote(current.id, { title: e.target.value })}
-                    className="flex-1 bg-transparent text-xl font-semibold text-white outline-none"
+                    className="flex-1 bg-transparent text-xl font-semibold text-gray-900 dark:text-white outline-none"
                   />
                 </div>
                 <div className="flex gap-1">
-                  <button onClick={() => togglePinNote(current.id)} className="p-2 rounded-lg hover:bg-white/10 text-gray-300">
+                  <button onClick={() => togglePinNote(current.id)} className="p-2 rounded-lg hover:bg-black/10 dark:hover:bg-white/10 text-gray-600 dark:text-gray-300">
                     {current.pinned ? <PinOff size={16} /> : <Pin size={16} />}
                   </button>
-                  <button onClick={() => { deleteNote(current.id); setEditing(null); }} className="p-2 rounded-lg hover:bg-red-500/20 text-red-400">
+                  <button onClick={() => { deleteNote(current.id); setEditing(null); }} className="p-2 rounded-lg hover:bg-red-500/20 text-red-500">
                     <Trash2 size={16} />
                   </button>
-                  <button onClick={() => setEditing(null)} className="p-2 rounded-lg hover:bg-white/10 text-gray-300">
+                  <button onClick={() => setEditing(null)} className="p-2 rounded-lg hover:bg-black/10 dark:hover:bg-white/10 text-gray-600 dark:text-gray-300">
                     <X size={18} />
                   </button>
                 </div>
@@ -210,7 +209,7 @@ export default function Notes() {
                 onChange={(e) => updateNote(current.id, { content: e.target.value })}
                 placeholder="Start writing..."
                 rows={12}
-                className="w-full bg-white/5 rounded-lg p-4 text-sm text-white placeholder:text-gray-500 outline-none resize-none border border-white/5 focus:border-white/10 leading-relaxed"
+                className="w-full bg-black/5 dark:bg-white/5 rounded-lg p-4 text-sm text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500 outline-none resize-none border border-black/5 dark:border-white/5 focus:border-black/10 dark:focus:border-white/10 leading-relaxed"
               />
               <div className="flex items-center justify-between mt-4">
                 <div className="flex gap-2">
@@ -218,7 +217,7 @@ export default function Notes() {
                     <button
                       key={c}
                       onClick={() => updateNote(current.id, { color: c })}
-                      className={`w-7 h-7 rounded-full transition-transform ${current.color === c ? "scale-110 ring-2 ring-white/60" : ""}`}
+                      className={`w-7 h-7 rounded-full transition-transform ${current.color === c ? "scale-110 ring-2 ring-black/20 dark:ring-white/60" : ""}`}
                       style={{ background: c }}
                     />
                   ))}
@@ -228,9 +227,24 @@ export default function Notes() {
                 </p>
               </div>
             </motion.div>
-          </motion.div>
+          </Modal>
         )}
       </AnimatePresence>
     </div>
+  );
+}
+
+/** Reusable modal backdrop — shared by both the "new note" and edit-note modals. */
+function Modal({ children, onClose }: { children: React.ReactNode; onClose: () => void }) {
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 dark:bg-black/70 backdrop-blur-sm"
+      onClick={onClose}
+    >
+      {children}
+    </motion.div>
   );
 }
