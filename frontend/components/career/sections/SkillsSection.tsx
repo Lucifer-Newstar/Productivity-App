@@ -26,6 +26,8 @@ export default function SkillsSection() {
   const [adding, setAdding] = useState(false);
   const [name, setName] = useState("");
   const [cat, setCat] = useState(CATEGORIES[0]);
+  const [expanded, setExpanded] = useState<string | null>(null);
+  const [linkDraft, setLinkDraft] = useState<{label:string;url:string}>({label:"",url:""});
 
   const add = () => {
     if (!name.trim()) return;
@@ -67,6 +69,7 @@ export default function SkillsSection() {
 
   const decayCount = career.skills.filter(s => s.lastUsedAt && Date.now() - s.lastUsedAt > 90*86400000).length;
   const avg = career.skills.length ? Math.round(career.skills.reduce((n,s)=>n+s.proficiency,0)/career.skills.length*10)/10 : 0;
+  const gapCount = career.skills.filter(s => (s.desiredLevel ?? 0) > s.proficiency).length;
 
   return (
     <div className="space-y-6">
@@ -85,11 +88,12 @@ export default function SkillsSection() {
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-        <Stat label="Tracked" value={career.skills.length} color="#b91c1c" />
-        <Stat label="Avg level" value={avg} color="#d4af37" />
-        <Stat label="Decaying" value={decayCount} color="#ec4899" />
-        <Stat label="Daily use" value={career.skills.filter(s=>s.usage==="daily").length} color="#06b6d4" />
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+        <Stat label="Tracked" value={career.skills.length} color="#22d3ee" />
+        <Stat label="Avg level" value={avg} color="#a78bfa" />
+        <Stat label="Decaying" value={decayCount} color="#f472b6" />
+        <Stat label="Daily use" value={career.skills.filter(s=>s.usage==="daily").length} color="#34d399" />
+        <Stat label="Gap skills" value={gapCount} color="#fb923c" />
       </div>
 
       {/* Radar + top growth */}
