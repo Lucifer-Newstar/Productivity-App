@@ -750,9 +750,22 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
 
   const logCaliAttempt = useCallback<StoreState["logCaliAttempt"]>((sid, a) => {
     setWorkout((w) => {
+      const today = todayIso();
       return { ...w, caliSkills: w.caliSkills.map((s) => {
         if (s.id !== sid) return s;
-        return { ...s, attempts: [...s.attempts, { id: uid(), date: todayIso(), ...a }] };
+        const score = (a.reps ?? 0) + (a.holdSec ?? 0);
+        const prevScore = s.bestAttempt
+          ? ((s.bestAttempt.reps ?? 0) + (s.bestAttempt.holdSec ?? 0))
+          : -1;
+        const best = score > prevScore
+          ? { reps: a.reps, holdSec: a.holdSec, ringHeightCm: a.ringHeightCm, date: today }
+          : s.bestAttempt;
+        return {
+          ...s,
+          attempts: [...s.attempts, { id: uid(), date: today, ...a }],
+          firstAttemptDate: s.firstAttemptDate ?? today,
+          bestAttempt: best,
+        };
       }) };
     });
   }, [setWorkout]);

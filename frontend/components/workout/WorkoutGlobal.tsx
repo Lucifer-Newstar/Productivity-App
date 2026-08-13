@@ -223,7 +223,9 @@ export default function WorkoutGlobal() {
   const [showBw, setShowBw] = useState(false);
   const [bwInput, setBwInput] = useState("70");
   useEffect(() => {
-    const ack = sessionStorage.getItem("kaizen.bw.ack");
+    // Ack is stored in localStorage (not sessionStorage) so a hard refresh
+    // on the same day doesn't re-prompt. Keyed by ISO date.
+    const ack = localStorage.getItem("kaizen.bw.ack");
     if (!todayBw && ack !== todayIso) setShowBw(true);
   }, [todayBw, todayIso]);
 
@@ -330,10 +332,10 @@ export default function WorkoutGlobal() {
               <input type="number" step="0.1" autoFocus value={bwInput} onChange={(e) => setBwInput(e.target.value)}
                 className="input-base w-full mt-4 text-center text-2xl font-mono" placeholder="kg" />
               <div className="flex gap-2 mt-4">
-                <button className="btn-ghost flex-1" onClick={() => { sessionStorage.setItem("kaizen.bw.ack", todayIso); setShowBw(false); }}>Skip today</button>
+                <button className="btn-ghost flex-1" onClick={() => { localStorage.setItem("kaizen.bw.ack", todayIso); setShowBw(false); }}>Skip today</button>
                 <button className="btn-primary flex-1" onClick={() => {
                   const v = parseFloat(bwInput);
-                  if (!isNaN(v) && v > 0) { logBodyweight(v); sessionStorage.setItem("kaizen.bw.ack", todayIso); setShowBw(false); }
+                  if (!isNaN(v) && v > 0) { logBodyweight(v); localStorage.setItem("kaizen.bw.ack", todayIso); setShowBw(false); }
                 }}>Log</button>
               </div>
             </motion.div>

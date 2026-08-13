@@ -115,3 +115,19 @@ docs(qa): TEST-REPORT.md for workout pass + FEATURES.md sync
 ```
 
 Sandbox cannot push (HTTPS credential issue); user copies the repo locally and runs `git push --force-with-lease origin main workout career`.
+
+---
+
+## Polish pass (follow-up)
+
+Additional items closed in this pass:
+
+- **Bodyweight popup ack** moved to `localStorage` so a same-day hard refresh doesn't re-prompt.
+- **Cali tab fully wired to store**: every button (Log attempt, Log fail, Save isometric, Save AMRAP, Stop & save EMOM, flow save, mobility log, add drill, rest-day chips, GtG hour taps) now reads/writes persisted store state rather than the local-only stubs that were present.
+- **Log-attempt modal** adds ring-height slider, assistance, MMC, tempo, quality, test-day, rest-pause mini-sets.
+- **First-unlock celebration** is distinct from mastery (🔥 amber modal, fires on first successful rep of a previously-locked Cali skill).
+- **logCaliAttempt** now updates `firstAttemptDate` + `bestAttempt` (reps/hold/ringHeight) automatically.
+- **GtG** adds an exercise-name input, default-reps input, 7-day sparkline, and an auto-computed streak.
+- **AMRAP/EMOM** beep audibly (cap/minute) and save to `intervalLogs`; recent sets show inline.
+
+Remaining backlog items now: hormonal cycle sync, side-by-side workout comparison, GtG long-horizon (30/90-day) trend, ring-height field auto-suggesting assistance drops, run power/Stryd import, route comparison view, keyboard shortcuts in ActiveWorkout, notifications dropdown, empty-state CTAs.

@@ -17,26 +17,26 @@ Last audited against the 149-feature checklist (35 cali + 45 gym + 22 cardio +
 | 4 | Grease-the-Groove Tracker | ✅ 7am–6pm hourly grid, wired to store |
 | 5 | Freestyle Flow Logger | ✅ Name + moves + quality 1–10, persisted |
 | 6 | Rest Day Log | ✅ Reason chips + custom note, persisted |
-| 7 | Isometric Hold Timer | ✅ Stopwatch + log button, persists to `isometricLogs` |
+| 7 | Isometric Hold Timer | ✅ Stopwatch with WebAudio beep on start/stop; Log button persists to `isometricLogs`, recent entries listed inline |
 | 8 | Tempo Training Mode | 🟡 Input exists in ActiveWorkout set metadata (per-set tempo field wired to store); cali tab has no specific tempo UI |
 | 9 | First/Best Attempt Logger | ✅ `firstAttemptDate` / `bestAttempt` fields; "Log attempt" button wired to `logCaliAttempt` |
 |10 | Assistance Exercise Mapper | 🟡 `accessoryIds` field per skill; no automatic "reduce assistance" suggester |
 |11 | Failed Attempt Logger | ✅ "Log fail" writes to `failLog[]`; weakness analysis reads from it |
 |12 | Mobility Warm-up Library | ✅ 6 seeded drills, checkboxes, auto-summed duration, persisted |
-|13 | Ring Height Tracker | ✅ `ringHeightCm` field exists on attempts |
+|13 | Ring Height Tracker | ✅ `ringHeightCm` field + slider UI in Log-attempt modal (80–260 cm), auto-stamped on bestAttempt |
 |14 | Unlock Checklist | ✅ 7 predefined milestones |
 |15 | Pseudo-Planche Tracker | ✅ `plancheEntries[]` — hand distance + hold seconds, persisted |
 |16 | Movement Pattern Library | ✅ Push/Pull/Squat/Hinge/Carry/Rotation/Gait/Isometric tags on exercises + chains + dedicated Pattern Library browser panel on the Library page with descriptions and per-pattern exercise counts; click a pattern card to filter |
-|17 | GtG Advanced (timeline + total vol) | ✅ Hourly grid + daily total reps; per-set timestamps implicit from hour grid |
-|18 | GtG Streak | ✅ Day counter |
+|17 | GtG Advanced (timeline + total vol) | ✅ Hourly grid + daily total reps + 7-day sparkline of daily GtG volume; custom exercise/reps inputs |
+|18 | GtG Streak | ✅ Auto-computed day streak (consecutive days with any GtG sets) |
 |19 | Skill Difficulty Rating | ✅ 1–10 stars on each progression |
-|20 | Skill Unlock Celebration | 🟡 Unlock flag; no dedicated celebration modal yet (uses confetti path) |
+|20 | Skill Unlock Celebration | ✅ Dedicated amber CelebrationModal fires "Unlocked: <skill>!" on the first logged attempt of a cali skill (distinct from full mastery on the Workout-Skills page) |
 |21 | Calisthenics Routine Builder | 🟡 Generic routine builder works for all blocks; no cali-specific flow |
 |22 | Rest-Pause for Cali | ✅ `isRestPause` / `restPauseAttempts` fields on attempts |
 |23 | Accessory Linker | ✅ `accessoryIds[]` per skill |
 |24 | Test Day Logger | ✅ `isTestDay` flag on attempts |
-|25 | EMOM Tracker | ✅ Per-minute input grid |
-|26 | AMRAP Tracker | ✅ (same as #3) |
+|25 | EMOM Tracker | ✅ Running MM:SS timer, per-minute rep input, perMinuteReps persisted to intervalLogs, WebAudio beep each minute
+|26 | AMRAP Tracker | ✅ Cap timer, rounds+reps entry, auto-beep at cap, persisted to intervalLogs with notes |
 |27 | Flow Sequence + Quality | ✅ (same as #5) |
 |28 | Mind-Muscle Connection | ✅ `mmc` 1–10 field on attempts |
 |29 | Cali Equipment Logger | ✅ `equipmentNeeded[]` per skill (bar/rings/parallettes/bands/vest/dip-bars) |
@@ -128,7 +128,7 @@ Last audited against the 149-feature checklist (35 cali + 45 gym + 22 cardio +
 
 | # | Feature | Status |
 |---|---|---|
-| 1 | Bodyweight Popup | ✅ Modal on first-open per day, skip/log buttons, sessionStorage ack |
+| 1 | Bodyweight Popup | ✅ Modal on first-open per day, skip/log buttons, localStorage ack (persists across hard refresh) |
 | 2 | Rest Timer | ✅ Sticky bottom-floating, 60/90/120/180 presets, WebAudio beep |
 | 3 | Injury Log | ✅ Post-session joint-pain multi-select (shoulders/elbows/wrists/neck/upper back/lower back/hips/knees/ankles/shins) → persists to `jointPain[]`; surfaces prehab accessory recs on Overview via `recommendedAccessories()` |
 | 4 | Hormonal Cycle Sync | ❌ |
@@ -245,3 +245,21 @@ model (89-region anatomical SVG).
 - Auto assistance-reduction suggester for cali progressions
 - Distinct cali "first-time unlocked" celebration (current path fires at full mastery)
 
+
+## Polishing pass
+
+- ✅ **Bodyweight popup ack → localStorage** (was sessionStorage, so a same-day hard refresh re-prompted).
+- ✅ **Cali tab fully wired to the store** (previously ~half the UI was local-only stubs):
+    - Chain toggles → `toggleChainProgression` with a WebAudio chirp on first unlock.
+    - Skills tab reads from `caliSkills[]`, shows bestAttempt (reps / holdSec / ringHeight), last fail, archived state with delete.
+    - **Log attempt modal**: reps, hold-seconds, ring-height slider (80–260 cm, only for ring skills), assistance text, MMC 1–10, tempo string, quality chips, test-day flag, rest-pause + mini-set reps. Persists via `logCaliAttempt` which now also stamps `firstAttemptDate` + updates `bestAttempt` automatically.
+    - **Log fail modal**: free-text reason + quick-tag chips (grip/core/shoulders/wrists/balance/mobility), persists via `logCaliFail`.
+    - **First-unlock celebration**: distinct amber modal "🔥 Unlocked: <skill>!" fires on the first ≥1-rep attempt, then calls `unlockCaliSkill`.
+    - **Isometric timer** beeps on start/stop, Log button writes to `isometricLogs`; recent entries shown inline.
+    - **AMRAP**: cap timer with auto-beep at time cap, rounds + extra-reps fields, Save writes an `intervalLogs` entry with summary notes.
+    - **EMOM**: running MM:SS clock, minute-beep every 60s, per-minute rep logger, Stop & Save writes to `intervalLogs` with `perMinuteReps[]`.
+    - **GtG**: hourly grid now reads/writes via `toggleGtG(exercise, reps)` with custom exercise name + default reps inputs, 7-day volume sparkline, auto-computed day streak.
+    - **Flows**: wired to `addFlow`/`deleteFlow` (previously local state), with hover-reveal delete.
+    - **Mobility**: checkboxes write to `logMobility` and render recent sessions from the store; "+" adds custom drills via `addMobilityDrill`.
+    - **Rest day**: chips write to `logRestDay` and show recent entries from the store.
+- ✅ **logCaliAttempt** now stamps `firstAttemptDate` on first attempt and updates `bestAttempt` (reps/holdSec/ringHeight) when a new best is hit.

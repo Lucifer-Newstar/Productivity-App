@@ -391,7 +391,7 @@ export interface CalisthenicsSkill {
   equipmentNeeded: CaliEquipment[];
   archived: boolean;
   firstAttemptDate?: string;
-  bestAttempt?: { reps?: number; holdSec?: number; date: string };
+  bestAttempt?: { reps?: number; holdSec?: number; ringHeightCm?: number; date: string };
   attempts: CaliAttempt[];
   failLog: CaliFail[];
   ringHeightCm?: number;
