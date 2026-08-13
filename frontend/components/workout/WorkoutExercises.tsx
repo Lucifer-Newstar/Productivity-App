@@ -220,8 +220,22 @@ export default function WorkoutExercises() {
       </div>
 
       {filtered.length === 0 && (
-        <div className="rounded-2xl p-10 text-center border border-dashed border-gray-300 dark:border-white/10 text-gray-500 text-sm">
-          {exercises.length === 0 ? "No exercises yet. Add your first one!" : "No exercises match those filters."}
+        <div className="rounded-2xl p-8 text-center border border-dashed border-white/10">
+          <Dumbbell className="mx-auto text-pink-400/60 mb-2" size={22} />
+          <p className="text-sm text-gray-300">
+            {exercises.length === 0 ? "No exercises in your library yet." : "No exercises match those filters."}
+          </p>
+          <p className="text-xs text-gray-500 mt-1">
+            {exercises.length === 0
+              ? "Tap + New exercise above to add your first lift, or load demo data from the Global Tools tab."
+              : "Try clearing a filter or widening your search."}
+          </p>
+          {exercises.length === 0 && (
+            <button onClick={() => setShowNew(true)}
+              className="mt-3 btn-primary text-xs inline-flex items-center gap-1">
+              <Plus size={12} /> New exercise
+            </button>
+          )}
         </div>
       )}
 

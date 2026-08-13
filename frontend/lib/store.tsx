@@ -792,9 +792,17 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     setWorkout((w) => ({ ...w, caliFlows: w.caliFlows.filter(f => f.id !== id) })), [setWorkout]);
   const toggleGtG = useCallback<StoreState["toggleGtG"]>((date, hour, exerciseName, reps) =>
     setWorkout((w) => {
-      const key = `${date}-${hour}`;
-      const existing = w.gtg.find(g => g.date===date && g.hour===hour && g.exerciseName===exerciseName);
-      if (existing) return { ...w, gtg: w.gtg.filter(g => g.id !== existing.id) };
+      // Match by date+hour only — exercise name is for display; toggling the
+      // same hour slot always removes the previous entry (regardless of name
+      // or reps value) so the hourly grid behaves like a true toggle.
+      const existing = w.gtg.find(g => g.date === date && g.hour === hour);
+      if (existing) {
+        // If we're toggling off (reps=0) OR the user clicked the same slot,
+        // remove the entry. If they're changing reps/name, overwrite.
+        if (reps <= 0) return { ...w, gtg: w.gtg.filter(g => g.id !== existing.id) };
+        return { ...w, gtg: w.gtg.map(g => g.id === existing.id ? { ...g, reps, exerciseName } : g) };
+      }
+      if (reps <= 0) return w;
       return { ...w, gtg: [...w.gtg, { id: uid(), date, hour, exerciseName, reps }] };
     }), [setWorkout]);
   const logIsometric = useCallback<StoreState["logIsometric"]>((name, seconds) =>
@@ -886,6 +894,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
           goals: data.goals,
           challenges: data.challenges,
           journal: data.journal,
+          cardioLogs: data.cardioLogs ?? [],
           currentStreak,
           longestStreak: Math.max(longestStreak, w.longestStreak ?? 0),
           lastWorkoutDate: finished[finished.length - 1]?.date,
@@ -907,7 +916,14 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
       goals: SEED_WORKOUT.goals,
       challenges: SEED_WORKOUT.challenges,
       journal: SEED_WORKOUT.journal,
+      cardioLogs: SEED_WORKOUT.cardioLogs,
       restDays: SEED_WORKOUT.restDays,
+      gtg: SEED_WORKOUT.gtg,
+      isometricLogs: SEED_WORKOUT.isometricLogs,
+      intervalLogs: SEED_WORKOUT.intervalLogs,
+      caliFlows: SEED_WORKOUT.caliFlows,
+      mobilitySessions: SEED_WORKOUT.mobilitySessions,
+      plancheEntries: SEED_WORKOUT.plancheEntries,
       currentStreak: 0,
       longestStreak: 0,
       lastWorkoutDate: undefined,

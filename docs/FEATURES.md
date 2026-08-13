@@ -239,11 +239,13 @@ model (89-region anatomical SVG).
 ### Remaining backlog (intentionally deferred)
 - Hormonal cycle sync
 - Side-by-side workout comparison
-- Cloud backup/sync UI (backend `/api/sync` already exists)
-- GtG week-over-week sparkline
-- Ring-height slider UI for cali skills
+- Cloud backup/sync UI (backend `/api/sync` already exists; no UI planned)
+- GtG long-horizon trend (7-day sparkline + streak ship now; 30/90-day deferred)
 - Auto assistance-reduction suggester for cali progressions
-- Distinct cali "first-time unlocked" celebration (current path fires at full mastery)
+- Keyboard shortcuts during ActiveWorkout (snoozed)
+- Notifications dropdown / bell logic (snoozed)
+- Run power / Stryd `.fit` import (field reserved, no importer)
+- Cardio route comparison view (route name logged, no side-by-side chart)
 
 
 ## Polishing pass
@@ -263,3 +265,10 @@ model (89-region anatomical SVG).
     - **Mobility**: checkboxes write to `logMobility` and render recent sessions from the store; "+" adds custom drills via `addMobilityDrill`.
     - **Rest day**: chips write to `logRestDay` and show recent entries from the store.
 - ✅ **logCaliAttempt** now stamps `firstAttemptDate` on first attempt and updates `bestAttempt` (reps/holdSec/ringHeight) when a new best is hit.
+- ✅ **Add-skill form on Cali tab**: collapsible form for custom skills — name, movement pattern, difficulty 1–10, equipment multi-select (rings/bar/parallettes/bands/vest/dip-bars/none), optional **baseline ring-height slider (80–260 cm)** shown when rings are selected, optional video URL. Writes via `addCaliSkill`, which auto-fills attempts/failLog/archived.
+- ✅ **Empty-state CTAs across the workout pages**: every italic \"No X yet\" line replaced with a consistent dashed-card empty state containing an icon, a helpful one-line hint, and a contextual primary CTA (Start workout / Build a routine / Load demo data / Add X above). Covers Overview (heatmap, badges, recent timeline), Calisthenics (chains / skills / flows / mobility), Cardio, Gym history, Tools (goals / challenges / journal / franken), Schedule, Skills, Library/Exercises. Inline \"no PR yet\" and drawer \"no sets\" spans left as-is (not full-page empties).
+- ✅ **Ring-height baseline** surfaced on both skill creation (add form) and every Log-attempt modal for ring skills, with the slider pre-filled to the skill's stored `ringHeightCm`. Best-attempt stamp includes the cm value.
+- ✅ **Cardio logs now persist to the store** (were previously local-state-only and lost on refresh). `WorkoutCardio` now reads/writes through `addCardioLog` / `deleteCardioLog` against `workout.cardioLogs`, so entries survive refresh, appear in CSV export, and populate from `seedDemoData` (4 seeded runs: 12/7/3/1 days ago with progressing pace).
+- ✅ **GtG toggle fix**: hour-slot matching is now by `date+hour` only (ignores exercise name) so changing the name in the input doesn't create orphaned entries; clicking the same hour toggles off correctly, otherwise it overwrites reps/name.
+- ✅ **Reset now clears all log slices** (cardioLogs, GtG, iso, interval, cali flows, mobility sessions, planche entries) not just sessions/PRs/goals/journal/challenges, so `Reset` truly returns to a clean state.
+- ✅ **PRs page** empty-state upgraded with the same dashed-card pattern + Load-demo CTA.

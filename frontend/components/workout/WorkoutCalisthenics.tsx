@@ -15,31 +15,29 @@
  *   - Freestyle flow logger → addFlow
  *   - Mobility/warmup library → logMobility + addMobilityDrill
  *   - Rest/deload day → logRestDay
- *
- * The old hard-coded CHAIN_SEEDS / UNLOCKS / MOBILITY_SEED are preserved as
- * fallbacks inside migrateWorkout if the store is empty, so new users still
- * see the seeded chains/drills without any extra bootstrapping.
  */
 
 import { useMemo, useState, useEffect, useRef } from "react";
+import { useRouter } from "next/router";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Plus, Trash2, Play, Square, Save, Target, Flame, Award, Zap, Timer,
-  Hand, RefreshCw, X,
+  Hand, RefreshCw, X, Database,
 } from "lucide-react";
 import { useStore } from "../../lib/store";
 import { playBeep } from "../../lib/workoutAnalytics";
 import CelebrationModal from "./CelebrationModal";
-import type { CalisthenicsSkill, RepQuality } from "../../lib/types";
+import type { CalisthenicsSkill, CaliEquipment, MovementPattern, RepQuality } from "../../lib/types";
 
 export default function WorkoutCalisthenics() {
   const {
     workout,
     toggleChainProgression, unlockCaliSkill,
-    logCaliAttempt, logCaliFail, toggleCaliSkillArchived,
+    logCaliAttempt, logCaliFail, toggleCaliSkillArchived, addCaliSkill,
     toggleGtG, logIsometric, addIntervalLog, addFlow, deleteFlow,
-    logMobility, logRestDay, addMobilityDrill,
+    logMobility, logRestDay, addMobilityDrill, seedDemoData,
   } = useStore();
+  const router = useRouter();
 
   const [tab, setTab] = useState<
     "chains" | "skills" | "gtg" | "iso" | "emom-amrap" | "flow" | "mobility" | "rest"
@@ -259,6 +257,33 @@ export default function WorkoutCalisthenics() {
   // ---------- Rest ----------
   const [restReason, setRestReason] = useState("");
 
+  // ---------- Add-skill form ----------
+  const [newSkillOpen, setNewSkillOpen] = useState(false);
+  const [newSkillName, setNewSkillName] = useState("");
+  const [newSkillPattern, setNewSkillPattern] = useState<MovementPattern>("Pull");
+  const [newSkillDiff, setNewSkillDiff] = useState(6);
+  const [newSkillEquip, setNewSkillEquip] = useState<CaliEquipment[]>(["pull-up-bar"]);
+  const [newSkillRingH, setNewSkillRingH] = useState(180);
+  const [newSkillVideo, setNewSkillVideo] = useState("");
+  function toggleEquip(eq: CaliEquipment) {
+    setNewSkillEquip((cur) => cur.includes(eq) ? cur.filter(x => x !== eq) : [...cur, eq]);
+  }
+  function submitNewSkill() {
+    if (!newSkillName.trim()) return;
+    addCaliSkill({
+      name: newSkillName.trim(),
+      pattern: newSkillPattern,
+      difficulty: newSkillDiff,
+      videoUrl: newSkillVideo || undefined,
+      accessoryIds: [],
+      equipmentNeeded: newSkillEquip,
+      ringHeightCm: newSkillEquip.includes("rings") ? newSkillRingH : undefined,
+    });
+    setNewSkillName(""); setNewSkillVideo(""); setNewSkillEquip(["pull-up-bar"]);
+    setNewSkillDiff(6); setNewSkillPattern("Pull"); setNewSkillRingH(180);
+    setNewSkillOpen(false);
+  }
+
   // Auto-stop the iso timer on unmount
   useEffect(() => () => setIsoRunning(false), []);
 
@@ -304,7 +329,10 @@ export default function WorkoutCalisthenics() {
       {tab === "chains" && (
         <div className="space-y-4">
           {chains.length === 0 && (
-            <div className="card text-sm text-gray-500 italic">No progression chains yet — add them from the default library or create your own.</div>
+            <EmptyState icon={<Target size={20} />} title="No progression chains yet"
+              subtitle="Chains ship with the default seed — reset data if you want the Push/Pull/Squat/Handstand starters back."
+              actionLabel="Reset demo data"
+              onAction={() => { if (confirm("Reset workout data to seed? This clears logs.")) seedDemoData(); }} />
           )}
           {chains.map((chain) => {
             const achieved = chain.progressions.filter((p) => p.achieved).length;
@@ -354,12 +382,73 @@ export default function WorkoutCalisthenics() {
 
       {/* Skills */}
       {tab === "skills" && (
-        <div className="grid md:grid-cols-2 gap-3">
-          {skills.length === 0 && (
-            <div className="card md:col-span-2 text-sm text-gray-500 italic">
-              No cali skills yet — add Planche / Front Lever / etc from the global "Add skill" flow.
-            </div>
+        <div className="space-y-3">
+          {/* Add-skill form */}
+          <div className="card">
+            <button onClick={() => setNewSkillOpen((v) => !v)}
+              className="w-full flex items-center gap-2 text-sm font-medium text-white">
+              <Plus size={16} className="text-lime-400" />
+              {newSkillOpen ? "Close" : "Add a new skill"}
+            </button>
+            <AnimatePresence>
+              {newSkillOpen && (
+                <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }}
+                  className="overflow-hidden">
+                  <div className="pt-4 space-y-2">
+                    <input value={newSkillName} onChange={(e) => setNewSkillName(e.target.value)}
+                      placeholder="Skill name (e.g. Muscle-up, Planche, Pistol squat)" className="input-base w-full text-sm" />
+                    <div className="grid grid-cols-2 gap-2">
+                      <label className="text-xs text-gray-400">Pattern
+                        <select value={newSkillPattern} onChange={(e) => setNewSkillPattern(e.target.value as MovementPattern)}
+                          className="input-base w-full mt-1 text-xs">
+                          {["Pull","Push","Squat","Hinge","Isometric","Carry","Rotation","Gait","Other"].map(p =>
+                            <option key={p} value={p}>{p}</option>)}
+                        </select>
+                      </label>
+                      <label className="text-xs text-gray-400">Difficulty (1–10)
+                        <input type="number" min={1} max={10} value={newSkillDiff}
+                          onChange={(e) => setNewSkillDiff(Math.max(1, Math.min(10, parseInt(e.target.value || "1", 10))))}
+                          className="input-base w-full mt-1 text-center text-xs" />
+                      </label>
+                    </div>
+                    <div>
+                      <p className="text-xs text-gray-400 mb-1">Equipment</p>
+                      <div className="flex flex-wrap gap-1">
+                        {(["pull-up-bar","rings","parallettes","resistance-bands","weighted-vest","dip-bars","none"] as CaliEquipment[]).map(eq => (
+                          <button key={eq} onClick={() => toggleEquip(eq)}
+                            className={`px-2 py-1 rounded text-[10px] capitalize font-semibold border ${
+                              newSkillEquip.includes(eq) ? "border-pink-500/50 bg-pink-500/20 text-pink-200" : "border-white/10 bg-white/5 text-gray-400"
+                            }`}>{eq.replace("-", " ")}</button>
+                        ))}
+                      </div>
+                    </div>
+                    {newSkillEquip.includes("rings") && (
+                      <label className="block text-xs text-gray-400">Baseline ring height (cm) — {newSkillRingH}
+                        <input type="range" min={80} max={260} value={newSkillRingH}
+                          onChange={(e) => setNewSkillRingH(parseInt(e.target.value, 10))}
+                          className="w-full accent-pink-500 mt-1" />
+                      </label>
+                    )}
+                    <label className="block text-xs text-gray-400">Video URL (optional)
+                      <input value={newSkillVideo} onChange={(e) => setNewSkillVideo(e.target.value)}
+                        placeholder="https://..." className="input-base w-full mt-1 text-xs" />
+                    </label>
+                    <button onClick={submitNewSkill} disabled={!newSkillName.trim()}
+                      className="btn-primary w-full text-sm disabled:opacity-40">Add skill</button>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+
+          {skills.filter((s) => !s.archived).length === 0 && (
+            <EmptyState
+              icon={<Award size={20} />}
+              title="No skills yet"
+              subtitle="Add your first target skill (e.g. Muscle-up, Planche) above." />
           )}
+
+          <div className="grid md:grid-cols-2 gap-3">
           {skills.filter((s) => !s.archived).map((s) => {
             const best = s.bestAttempt;
             const lastFail = s.failLog[s.failLog.length - 1];
@@ -406,6 +495,7 @@ export default function WorkoutCalisthenics() {
               </div>
             );
           })}
+          </div>
         </div>
       )}
 
@@ -609,7 +699,10 @@ export default function WorkoutCalisthenics() {
               <p className="text-sm text-gray-300 mt-1 whitespace-pre-wrap">{f.moves}</p>
             </div>
           ))}
-          {flows.length === 0 && <p className="text-sm text-gray-500 italic">No flows logged yet.</p>}
+          {flows.length === 0 && (
+            <EmptyState icon={<RefreshCw size={20} />} title="No flows yet"
+              subtitle="String together a few moves and log your first freestyle flow above." />
+          )}
         </div>
       )}
 
@@ -657,7 +750,10 @@ export default function WorkoutCalisthenics() {
           </div>
           <div className="card">
             <h4 className="font-semibold text-white mb-3">Recent sessions</h4>
-            {mobSessions.length === 0 && <p className="text-sm text-gray-500 italic">No warm-ups logged yet.</p>}
+            {mobSessions.length === 0 && (
+              <EmptyState icon={<Zap size={20} />} title="No warm-ups logged yet"
+                subtitle="Check a few drills on the left and hit Log warm-up to save today's prep." />
+            )}
             {mobSessions.slice(0, 10).map((s) => (
               <div key={s.id} className="p-2 rounded-lg bg-white/5 mb-2">
                 <div className="text-xs text-gray-400">{s.date} · {Math.round(s.durationSec/60)} min</div>
@@ -827,4 +923,30 @@ function useInterval(active: boolean, tick: () => void) {
     const id = window.setInterval(() => ref.current(), 1000);
     return () => window.clearInterval(id);
   }, [active]);
+}
+
+/** Empty state card — one line of copy + single primary CTA.
+ *  Deliberately minimal (no illustrations, no lottie) so it feels fast. */
+function EmptyState({
+  icon, title, subtitle, actionLabel, onAction,
+}: {
+  icon: React.ReactNode;
+  title: string;
+  subtitle?: string;
+  actionLabel?: string;
+  onAction?: () => void;
+}) {
+  return (
+    <div className="rounded-2xl border border-dashed border-white/10 p-8 text-center">
+      <div className="mx-auto w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center text-gray-400 mb-3">
+        {icon}
+      </div>
+      <p className="text-sm font-medium text-white">{title}</p>
+      {subtitle && <p className="text-xs text-gray-500 mt-1 max-w-xs mx-auto">{subtitle}</p>}
+      {actionLabel && onAction && (
+        <button onClick={onAction}
+          className="mt-4 btn-primary text-sm inline-flex items-center gap-1.5">{actionLabel}</button>
+      )}
+    </div>
+  );
 }

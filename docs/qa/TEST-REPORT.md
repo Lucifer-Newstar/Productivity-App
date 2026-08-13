@@ -131,3 +131,69 @@ Additional items closed in this pass:
 - **AMRAP/EMOM** beep audibly (cap/minute) and save to `intervalLogs`; recent sets show inline.
 
 Remaining backlog items now: hormonal cycle sync, side-by-side workout comparison, GtG long-horizon (30/90-day) trend, ring-height field auto-suggesting assistance drops, run power/Stryd import, route comparison view, keyboard shortcuts in ActiveWorkout, notifications dropdown, empty-state CTAs.
+
+---
+
+## Final shipping pass
+
+Items closed in this pass (per user "ship it" direction):
+
+- **Empty-state CTAs** across all workout sub-pages. Every italic "No X yet" line replaced with a consistent dashed-card pattern: icon, a one-line hint, and a contextual primary action (Start workout / Load demo data / Add X / Build a routine). Pages touched: Overview (heatmap, badges, recent timeline), Calisthenics (chains / skills / flows / mobility — already done in prior pass), Cardio, Gym history tab, Tools (goals / challenges / journal / franken), Schedule, Skills, Library/Exercises. Inline "no PR yet" spans and drawer "no sets" lines left as-is (not full-page empties).
+- **Add-skill form on the Cali tab** with name, movement pattern, difficulty 1–10, equipment multi-select, **baseline ring-height slider (80–260 cm, visible only when rings are chosen)**, and optional video URL. Collapsible with `<AnimatePresence>`. Writes via `addCaliSkill()` which auto-fills attempts/failLog/archived/unlocked.
+- **Ring-height baseline** is now captured at skill creation (add form), pre-fills the Log-attempt slider from `skill.ringHeightCm`, and is stamped onto every `bestAttempt`.
+
+### Final build verification
+
+```
+frontend: tsc --noEmit       ✅ pass (zero errors)
+frontend: next build         ✅ pass (18 static pages generated)
+```
+
+Final gzipped sizes:
+
+```
+/workout/overview      6.2 kB   187 kB
+/workout/library       5.7 kB   186 kB
+/workout/schedule      6.09 kB  176 kB
+/workout/prs           3.92 kB  173 kB
+/workout/skills        5.18 kB  175 kB
+/workout/calisthenics  10.6 kB  180 kB
+/workout/gym           7.09 kB  177 kB
+/workout/cardio        5.84 kB  175 kB
+/workout/tools         11 kB    180 kB
+```
+
+Per direction, no further features are being added — workout is ready to ship. Items explicitly cut: hormonal cycle sync, side-by-side session comparison, Stryd/.fit import, keyboard shortcuts in ActiveWorkout, tempo metronome enforcer, notifications dropdown/bell logic, GtG 30/90-day trend (GtG stays at 7-day + streak).
+
+## Final cleanup (amended into the same commit)
+
+- **Cardio persistence bug fixed**: `WorkoutCardio` was using local `useState` so entries vanished on refresh. Rewired to `addCardioLog` / `deleteCardioLog` against `workout.cardioLogs` (persists to localStorage, included in CSV export, seeded by demo data). Added delete button per row.
+- **Mock data now seeds cardio** too (4 runs across the last 12 days with progressing pace, HR, cadence, fuel, LSD flag) so the Cardio page shows populated state after Load demo.
+- **`seedDemoData` resets cardioLogs as well** (previously untouched).
+- **`resetWorkoutData` now clears every log slice**: cardioLogs, GtG, isometricLogs, intervalLogs, caliFlows, mobilitySessions, plancheEntries (previously only wiped sessions/PRs/goals/journal/challenges, leaving cali timer logs orphaned).
+- **GtG `toggleGtG` key fix**: previously matched on `date+hour+exerciseName`, so renaming the exercise in the input created orphan slots. Now matches on `date+hour` only (as documented in FEATURES.md); clicking a filled slot toggles it off, otherwise it writes/overwrites reps+name.
+- **PRs page empty-state** upgraded to the consistent dashed-card pattern with Load-demo CTA.
+- **Dev-server HTTP smoke test**: booted `next dev` on :3099 and hit `/workout/overview` / `/cardio` / `/calisthenics` / `/gym` / `/tools` — all returned 200.
+
+### Final build verification
+
+```
+tsc --noEmit                ✅ zero errors
+next build                 ✅ 18 static pages, no errors
+dev server smoke           ✅ 5/5 routes 200 OK
+```
+
+Final bundle:
+```
+/workout/overview      6.2  kB   (gzipped page JS)
+/workout/library       5.7  kB
+/workout/schedule      6.09 kB
+/workout/prs           4.15 kB
+/workout/skills        5.18 kB
+/workout/calisthenics  10.6 kB
+/workout/gym           7.09 kB
+/workout/cardio        6.06 kB
+/workout/tools         11   kB
+```
+
+Commit (HEAD on `workout`): `e97290b` — authored as Lucifer-Newstar.

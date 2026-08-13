@@ -10,7 +10,7 @@
  */
 import type {
   WorkoutSession, WorkoutSetLog, WorkoutPR, WorkoutReadiness, WorkoutBodyweight,
-  WorkoutGoal, ChallengeEntry, WorkoutNote,
+  WorkoutGoal, ChallengeEntry, WorkoutNote, CardioLog,
 } from "./types";
 
 type JournalEntry = WorkoutNote;
@@ -213,9 +213,36 @@ export function generateSeedData({ exercises, routines }: SeedDeps) {
     startDate: perDay[0].date, lengthDays: 30, perDay,
   };
 
+  // A handful of cardio sessions (3 runs over the last 2 weeks, progressing pace)
+  const cardioLogs: CardioLog[] = [];
+  [12, 7, 3, 1].forEach((dayBack, i) => {
+    const dist = 4000 + i * 400;
+    const dur = Math.round((dist / rand(2.7, 3.2)));
+    const avgHr = Math.round(145 + i * 2);
+    cardioLogs.push({
+      id: uid(),
+      date: daysAgo(dayBack),
+      type: "run",
+      routeName: i % 2 === 0 ? "River Trail" : "Neighborhood loop",
+      distanceMeters: dist,
+      durationSec: dur,
+      avgHr,
+      maxHr: avgHr + 12,
+      hrStart: avgHr - 15,
+      hrEnd: avgHr + 8,
+      hrDriftPct: +((((avgHr + 8) - (avgHr - 15)) / (avgHr - 15)) * 100).toFixed(1),
+      cadenceSpm: randi(165, 178),
+      cooldownMin: 5,
+      fuel: i === 0 ? "fasted" : "toast + coffee",
+      isLSD: i === 0,
+      paceSecPerKm: dur / (dist / 1000),
+    });
+  });
+
   return {
     sessions: sessions.sort((a,b) => b.startedAt - a.startedAt),
     prs, readiness, bodyweight, journal,
+    cardioLogs,
     goals, challenges: [challenge],
   };
 }

@@ -18,8 +18,9 @@
  */
 
 import { useMemo, useState } from "react";
+import { useRouter } from "next/router";
 import { motion, AnimatePresence } from "framer-motion";
-import { Dumbbell, Calculator, BarChart3, History, Flame } from "lucide-react";
+import { Dumbbell, Calculator, BarChart3, History, Flame, Play, Database } from "lucide-react";
 import { useStore } from "../../lib/store";
 import {
   epley1RM, trainingMax, platesForKg, dbToBbEquivalent, bbToDbEquivalent,
@@ -28,7 +29,8 @@ import {
 import { maxHR, estimateLactateThreshold, calibrateRpe } from "../../lib/workoutAnalytics";
 
 export default function WorkoutGym() {
-  const { workout } = useStore();
+  const { workout, seedDemoData } = useStore();
+  const router = useRouter();
   const [tab, setTab] = useState<"calc" | "history" | "warmup" | "metrics">("calc");
 
   // ---- Calculator state ----
@@ -209,7 +211,23 @@ export default function WorkoutGym() {
         {tab === "history" && (
           <motion.div key="h" initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="card">
             <h4 className="font-semibold text-white mb-3">Last 5 sessions</h4>
-            {history.length === 0 && <p className="text-sm text-gray-500 italic">No sessions yet.</p>}
+            {history.length === 0 ? (
+              <div className="rounded-xl border border-dashed border-white/10 p-5 text-center">
+                <History className="mx-auto text-amber-400/60 mb-2" size={22} />
+                <p className="text-sm text-gray-300">No sessions yet.</p>
+                <p className="text-xs text-gray-500 mt-1">Start a freestyle lift or load demo data to see history here.</p>
+                <div className="flex gap-2 justify-center mt-3 flex-wrap">
+                  <button onClick={() => router.push("/workout/gym/freestyle")}
+                    className="btn-primary text-xs inline-flex items-center gap-1">
+                    <Play size={12} fill="white" /> Start a workout
+                  </button>
+                  <button onClick={() => seedDemoData()}
+                    className="btn-ghost text-xs inline-flex items-center gap-1">
+                    <Database size={12} /> Load demo data
+                  </button>
+                </div>
+              </div>
+            ) : (
             <div className="space-y-2">
               {history.map((s) => (
                 <div key={s.id} className="flex items-center gap-3 p-3 rounded-lg bg-white/5">
@@ -223,6 +241,7 @@ export default function WorkoutGym() {
                 </div>
               ))}
             </div>
+            )}
           </motion.div>
         )}
 

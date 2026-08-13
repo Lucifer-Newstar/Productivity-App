@@ -7,7 +7,7 @@
 
 import { useMemo, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Dumbbell, Play, Download, Zap, Flame, Award, Sparkles, AlertCircle, History } from "lucide-react";
+import { Dumbbell, Play, Download, Zap, Flame, Award, Sparkles, AlertCircle, History, Database } from "lucide-react";
 import { useRouter } from "next/router";
 import MuscleHeatmap from "./MuscleHeatmap";
 import { useStore } from "../../lib/store";
@@ -33,7 +33,7 @@ const BADGE_META: Record<string, { icon: string; label: string; color: string }>
 };
 
 export default function OverviewContent() {
-  const { workout, tasks, logReadiness, exportWorkoutCSV, startSession, getExerciseForBlock } = useStore();
+  const { workout, tasks, logReadiness, exportWorkoutCSV, startSession, getExerciseForBlock, seedDemoData } = useStore();
   const router = useRouter();
 
   const stats = useMemo(() => {
@@ -166,6 +166,9 @@ export default function OverviewContent() {
         nextWorkout={nextWorkout}
         onGoToSchedule={() => router.push("/workout/schedule")}
         onGoToLibrary={() => router.push("/workout/library")}
+        onStartRoutine={todaysRoutine ? () => { startSession(todaysRoutine.name, todaysRoutine.id, todayReadiness?.score); } : null}
+        onSeedDemo={() => seedDemoData()}
+        todaysRoutineName={todaysRoutine?.name ?? null}
       />
     </div>
   );
@@ -180,7 +183,7 @@ function Stat({ label, value, color }: { label: string; value: string | number; 
   );
 }
 
-function OverviewBody({ volume, readiness, onLogReadiness, badges, streak, longestStreak, freezes, nextWorkout, onGoToSchedule, onGoToLibrary }: any) {
+function OverviewBody({ volume, readiness, onLogReadiness, badges, streak, longestStreak, freezes, nextWorkout, onGoToSchedule, onGoToLibrary, onStartRoutine, onSeedDemo, todaysRoutineName }: any) {
   const [selectedMuscle, setSelectedMuscle] = useState<MuscleGroup | null>(null);
   const [soreness, setSoreness] = useState(5);
   const [sleep, setSleep] = useState(7);
@@ -226,7 +229,14 @@ function OverviewBody({ volume, readiness, onLogReadiness, badges, streak, longe
                 </button>
               ))}
               {Object.keys(volume).length === 0 && (
-                <p className="text-sm text-gray-500 italic">No volume this week yet.</p>
+                <div className="rounded-xl border border-dashed border-white/10 p-4 text-center">
+                  <p className="text-sm text-gray-300">No volume this week yet.</p>
+                  <p className="text-xs text-gray-500 mt-1">Start a workout or load demo data to populate the heatmap.</p>
+                  <button onClick={onSeedDemo}
+                    className="mt-3 btn-primary text-xs inline-flex items-center gap-1 !bg-gradient-to-r !from-pink-500 !to-violet-500">
+                    <Database size={12} /> Load demo data
+                  </button>
+                </div>
               )}
             </div>
           </div>
@@ -243,7 +253,19 @@ function OverviewBody({ volume, readiness, onLogReadiness, badges, streak, longe
             <Award className="text-amber-400" size={18} /> Achievements <span className="text-xs text-gray-500 font-normal ml-1">{badges.length} earned</span>
           </h3>
           {badges.length === 0 ? (
-            <p className="text-sm text-gray-500 italic">No badges yet — finish your first workout to unlock First Workout.</p>
+            <div className="rounded-xl border border-dashed border-white/10 p-5 text-center">
+              <p className="text-sm text-gray-300">No badges yet.</p>
+              <p className="text-xs text-gray-500 mt-1">Finish your first workout to unlock the First Workout badge.</p>
+              {onStartRoutine && todaysRoutineName ? (
+                <button onClick={onStartRoutine}
+                  className="mt-3 btn-primary text-xs inline-flex items-center gap-1">
+                  <Play size={12} fill="white" /> Start {todaysRoutineName}
+                </button>
+              ) : (
+                <button onClick={onGoToSchedule}
+                  className="mt-3 btn-ghost text-xs">Build a routine first →</button>
+              )}
+            </div>
           ) : (
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
               {badges.map((b: any) => {
@@ -340,7 +362,8 @@ function OverviewBody({ volume, readiness, onLogReadiness, badges, streak, longe
  *  reverse-chronological order with volume/duration so there's an at-a-glance
  *  completion history on the overview. */
 function RecentTimeline() {
-  const { workout } = useStore();
+  const { workout, seedDemoData } = useStore();
+  const router = useRouter();
   const recent = useMemo(
     () => [...workout.sessions].filter((s) => s.endedAt).slice(0, 10),
     [workout.sessions],
@@ -358,7 +381,20 @@ function RecentTimeline() {
         <History className="text-violet-400" size={18} /> Recent sessions
       </h3>
       {recent.length === 0 ? (
-        <p className="text-sm text-gray-500 italic">No sessions yet — start a workout or load demo data.</p>
+        <div className="rounded-xl border border-dashed border-white/10 p-5 text-center">
+          <p className="text-sm text-gray-300">No sessions logged yet.</p>
+          <p className="text-xs text-gray-500 mt-1">Kick things off with today's routine or preview with demo data.</p>
+          <div className="flex gap-2 justify-center mt-3 flex-wrap">
+            <button onClick={() => router.push("/workout/gym")}
+              className="btn-primary text-xs inline-flex items-center gap-1">
+              <Play size={12} fill="white" /> Start a workout
+            </button>
+            <button onClick={() => seedDemoData()}
+              className="btn-ghost text-xs inline-flex items-center gap-1">
+              <Database size={12} /> Load demo data
+            </button>
+          </div>
+        </div>
       ) : (
         <div className="space-y-2">
           {recent.map((s, i) => (

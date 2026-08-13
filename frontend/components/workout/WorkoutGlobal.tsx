@@ -510,7 +510,9 @@ export default function WorkoutGlobal() {
           <h4 className="font-semibold text-white mb-3 flex items-center gap-2"><Shuffle size={16} className="text-pink-400" /> Frankenstein Workout</h4>
           <p className="text-xs text-gray-400 mb-3">3 random exercises from your library.</p>
           <div className="space-y-1.5 mb-3">
-            {franken.length === 0 && <p className="text-sm text-gray-500 italic">Roll the dice…</p>}
+            {franken.length === 0 && (
+              <p className="text-xs text-gray-500 text-center py-4">Hit Roll to spin up a random 3-move session.</p>
+            )}
             {franken.map((n,i) => (
               <div key={i} className="flex items-center gap-2 p-2 rounded-lg bg-white/5 text-sm">
                 <Dumbbell size={14} className="text-pink-400" /> {n}
@@ -636,7 +638,13 @@ export default function WorkoutGlobal() {
           )}
         </AnimatePresence>
         <div className="space-y-2">
-          {workout.goals.length === 0 && <p className="text-sm text-gray-500 italic">No goals yet.</p>}
+          {workout.goals.length === 0 && (
+            <div className="rounded-xl border border-dashed border-white/10 p-4 text-center">
+              <Target className="mx-auto text-lime-400/60 mb-2" size={20} />
+              <p className="text-sm text-gray-300">No goals yet.</p>
+              <p className="text-xs text-gray-500 mt-1">Tap <b className="text-lime-400">+ New goal</b> above to set a target (e.g. 20 workouts this quarter).</p>
+            </div>
+          )}
           {workout.goals.map(g => {
             const prog = goalProgress(g, workout.sessions, workout.bodyweight, workout.exercises, workout.prs, workout.currentStreak ?? 0);
             return (
@@ -670,7 +678,13 @@ export default function WorkoutGlobal() {
           <button className="btn-primary text-sm">Add</button>
         </form>
         <div className="space-y-3">
-          {workout.challenges.length === 0 && <p className="text-sm text-gray-500 italic">No challenges yet.</p>}
+          {workout.challenges.length === 0 && (
+            <div className="rounded-xl border border-dashed border-white/10 p-4 text-center">
+              <Award className="mx-auto text-amber-400/60 mb-2" size={20} />
+              <p className="text-sm text-gray-300">No challenges yet.</p>
+              <p className="text-xs text-gray-500 mt-1">Name a 30-day challenge above (e.g. daily push-ups) to start a streak grid.</p>
+            </div>
+          )}
           {workout.challenges.map(ch => {
             const daysSince = Math.min(ch.lengthDays, Math.floor((Date.now() - new Date(ch.startDate).getTime()) / 86400000) + 1);
             return (
@@ -701,8 +715,13 @@ export default function WorkoutGlobal() {
           <button onClick={() => { if (!jText.trim()) return; addJournalEntry(jText.trim()); setJText(""); }}
             className="btn-primary text-sm flex items-center gap-1"><Star size={13} /> Save</button>
         </div>
-        {workout.journal.filter(j => j.content.toLowerCase().includes(jSearch.toLowerCase())).length === 0 &&
-          <p className="text-sm text-gray-500 italic">No entries yet.</p>}
+        {workout.journal.filter(j => j.content.toLowerCase().includes(jSearch.toLowerCase())).length === 0 && (
+          <div className="rounded-xl border border-dashed border-white/10 p-4 text-center mb-2">
+            <BookOpen className="mx-auto text-cyan-400/60 mb-2" size={20} />
+            <p className="text-sm text-gray-300">{jSearch ? "No entries match that search." : "No journal entries yet."}</p>
+            <p className="text-xs text-gray-500 mt-1">Jot a quick note above — how the session felt, what clicked, what to fix.</p>
+          </div>
+        )}
         <div className="space-y-2 max-h-60 overflow-y-auto">
           {workout.journal
             .filter(j => j.content.toLowerCase().includes(jSearch.toLowerCase()))

@@ -222,8 +222,12 @@ export default function WorkoutSkills() {
         </AnimatePresence>
 
         {workout.skills.length === 0 && (
-          <div className="rounded-2xl p-8 text-center border border-dashed border-gray-300 dark:border-white/10 text-gray-500 text-sm">
-            No skills yet. Add your first target move above (e.g. "Pull-up").
+          <div className="rounded-2xl p-8 text-center border border-dashed border-white/10">
+            <Target className="mx-auto text-violet-400/60 mb-2" size={22} />
+            <p className="text-sm text-gray-300">No skills yet.</p>
+            <p className="text-xs text-gray-500 mt-1 max-w-xs mx-auto">
+              Type a target move in the box above (e.g. <b className="text-violet-300">Pull-up</b>, <b className="text-violet-300">Pistol squat</b>) to start your progression tree.
+            </p>
           </div>
         )}
       </div>

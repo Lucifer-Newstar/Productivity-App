@@ -171,8 +171,12 @@ export default function WorkoutSchedule() {
           />
         ))}
         {routines.length === 0 && (
-          <div className="rounded-2xl p-10 text-center border border-dashed border-white/10 text-gray-500 text-sm">
-            No routines yet. Add your first one above (e.g. &quot;Push Day&quot; on Monday).
+          <div className="rounded-2xl p-8 text-center border border-dashed border-white/10">
+            <Calendar className="mx-auto text-cyan-400/60 mb-2" size={22} />
+            <p className="text-sm text-gray-300">No routines yet.</p>
+            <p className="text-xs text-gray-500 mt-1 max-w-xs mx-auto">
+              Type a routine name in the box above (e.g. <b className="text-cyan-300">Push Day</b>), pick a day, and hit Add. You can always add exercises to it later.
+            </p>
           </div>
         )}
       </div>

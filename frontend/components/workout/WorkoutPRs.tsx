@@ -11,14 +11,14 @@
 
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Trophy, Plus, Trash2, Flame, History } from "lucide-react";
+import { Trophy, Plus, Trash2, Flame, History, Database } from "lucide-react";
 import { useStore } from "../../lib/store";
 import { MUSCLE_GROUPS, formatWorkoutValue } from "../../lib/types";
 import type { WorkoutExercise } from "../../lib/types";
 import ExerciseHistoryDrawer from "./ExerciseHistoryDrawer";
 
 export default function WorkoutPRs() {
-  const { workout, logPR, deletePR } = useStore();
+  const { workout, logPR, deletePR, seedDemoData } = useStore();
   const { prs, exercises } = workout;
   const [logging, setLogging] = useState<string | null>(null); // exerciseId being logged
   const [value, setValue] = useState("");
@@ -165,7 +165,21 @@ export default function WorkoutPRs() {
       )}
 
       {prs.length === 0 && noPRexercises.length === 0 && (
-        <EmptyHint text="Add exercises in the Library to start logging PRs." />
+        <div className="rounded-2xl border border-dashed border-white/10 p-8 text-center">
+          <Trophy className="mx-auto text-amber-400/60 mb-2" size={22} />
+          <p className="text-sm text-gray-300">No PRs yet.</p>
+          <p className="text-xs text-gray-500 mt-1">Finish a workout or load demo data to see PRs populate.</p>
+          <button onClick={() => seedDemoData()}
+            className="mt-3 btn-primary text-xs inline-flex items-center gap-1 !bg-gradient-to-r !from-amber-500 !to-pink-500">
+            <Database size={12} /> Load demo data
+          </button>
+        </div>
+      )}
+      {prs.length === 0 && noPRexercises.length > 0 && (
+        <div className="rounded-2xl border border-dashed border-white/10 p-6 text-center">
+          <p className="text-sm text-gray-300">No PRs logged yet.</p>
+          <p className="text-xs text-gray-500 mt-1">Tap <b className="text-amber-300">+ exercise</b> above to log your first record.</p>
+        </div>
       )}
 
       {/* Exercise history drawer */}
