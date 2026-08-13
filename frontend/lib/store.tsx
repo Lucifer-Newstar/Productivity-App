@@ -424,6 +424,11 @@ interface StoreState {
   addRoadmapFromTemplate: (templateId: "devops"|"networking"|"linux"|"mlops"|"cloud"|"custom", name?: string) => void;
   toggleMilestoneDone: (roadmapId: string, phaseId: string, milestoneId: string) => void;
   updateMilestone: (roadmapId: string, phaseId: string, milestoneId: string, patch: Record<string, any>) => void;
+  toggleLabItem: (roadmapId: string, phaseId: string, milestoneId: string, labId: string) => void;
+  toggleResourceComplete: (roadmapId: string, phaseId: string, milestoneId: string, resId: string) => void;
+  toggleProjectComplete: (roadmapId: string, phaseId: string, milestoneId: string, prjId: string) => void;
+  setQuizAnswer: (roadmapId: string, phaseId: string, milestoneId: string, quizId: string, answer: "yes"|"partial"|"no") => void;
+  logMilestoneHours: (roadmapId: string, phaseId: string, milestoneId: string, hours: number) => void;
   archiveRoadmap: (roadmapId: string) => void;
   deleteRoadmap: (roadmapId: string) => void;
   // workout library
@@ -767,6 +772,50 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
 
   const deleteRoadmap = useCallback<StoreState["deleteRoadmap"]>((rmId) => {
     setCareer((c) => ({ ...c, roadmaps: c.roadmaps.filter((r) => r.id !== rmId) }));
+  }, [setCareer]);
+
+  // Helpers for drilling into milestones
+  const _mapMilestone = (
+    rmId: string, phId: string, msId: string,
+    fn: (m: any) => any,
+  ) => (c: CareerState) => _mapRoadmap(c, rmId, (r) => ({
+    ...r,
+    phases: r.phases.map((ph) => ph.id !== phId ? ph : {
+      ...ph,
+      milestones: ph.milestones.map((ms) => ms.id !== msId ? ms : fn(ms)),
+    }),
+  }));
+
+  const toggleLabItem = useCallback<StoreState["toggleLabItem"]>((rmId, phId, msId, labId) => {
+    setCareer((c) => _mapMilestone(rmId, phId, msId, (ms) => ({
+      ...ms, labChecklist: ms.labChecklist.map((l: any) => l.id === labId ? { ...l, done: !l.done } : l),
+    }))(c));
+  }, [setCareer]);
+
+  const toggleResourceComplete = useCallback<StoreState["toggleResourceComplete"]>((rmId, phId, msId, resId) => {
+    setCareer((c) => _mapMilestone(rmId, phId, msId, (ms) => ({
+      ...ms, resources: ms.resources.map((r: any) => r.id === resId ? { ...r, completed: !r.completed } : r),
+    }))(c));
+  }, [setCareer]);
+
+  const toggleProjectComplete = useCallback<StoreState["toggleProjectComplete"]>((rmId, phId, msId, prjId) => {
+    setCareer((c) => _mapMilestone(rmId, phId, msId, (ms) => ({
+      ...ms, projects: ms.projects.map((p: any) => p.id === prjId ? { ...p, completed: !p.completed } : p),
+    }))(c));
+  }, [setCareer]);
+
+  const setQuizAnswer = useCallback<StoreState["setQuizAnswer"]>((rmId, phId, msId, qzId, answer) => {
+    setCareer((c) => _mapMilestone(rmId, phId, msId, (ms) => ({
+      ...ms,
+      quiz: ms.quiz.length ? ms.quiz.map((q: any) => q.id === qzId ? { ...q, selfRating: answer } : q)
+        : [{ id: qzId, question: "Do you understand this milestone?", selfRating: answer }],
+    }))(c));
+  }, [setCareer]);
+
+  const logMilestoneHours = useCallback<StoreState["logMilestoneHours"]>((rmId, phId, msId, hours) => {
+    setCareer((c) => _mapMilestone(rmId, phId, msId, (ms) => ({
+      ...ms, hoursActual: Math.max(0, (ms.hoursActual || 0) + hours),
+    }))(c));
   }, [setCareer]);
 
   // ---- Workout: exercises ----
@@ -1242,7 +1291,9 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     addCareerNote, updateCareerNote, deleteCareerNote, addResumeBullet, updateResumeBullet, deleteResumeBullet,
     addGoal, toggleGoal, updateGoal, deleteGoal,
     addAchievement, deleteAchievement, setLinkedin,
-    updateCareer, addRoadmapFromTemplate, toggleMilestoneDone, updateMilestone, archiveRoadmap, deleteRoadmap,
+    updateCareer, addRoadmapFromTemplate, toggleMilestoneDone, updateMilestone,
+    toggleLabItem, toggleResourceComplete, toggleProjectComplete, setQuizAnswer, logMilestoneHours,
+    archiveRoadmap, deleteRoadmap,
     workout, addExercise, updateExercise, deleteExercise,
     logPR, deletePR, addSkill, deleteSkill, addProgression, toggleProgressionDone, updateProgression, deleteProgression,
     addRoutine, updateRoutine, deleteRoutine, addBlock, updateBlock, deleteBlock, reorderBlocks,

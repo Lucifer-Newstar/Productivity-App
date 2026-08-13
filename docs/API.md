@@ -110,9 +110,44 @@ These endpoints run the same algorithms as the frontend but return JSON:
 |--------|------------------|---------------------------------------|
 | GET    | `/export/csv`    | Download all completed sessions as CSV (same schema the frontend imports) |
 
+## Career routes
+
+Generic CRUD (`GET / POST / GET:id / PATCH:id / DELETE:id`) is exposed for each
+career table under `/api/career/*`:
+
+| Table              | Path                          |
+|--------------------|-------------------------------|
+| roadmaps           | `/api/career/roadmaps`        |
+| skills             | `/api/career/skills`          |
+| courses            | `/api/career/courses`         |
+| contacts           | `/api/career/contacts`        |
+| applications       | `/api/career/applications`    |
+| companies          | `/api/career/companies`       |
+| questions          | `/api/career/questions`       |
+| achievements       | `/api/career/achievements`    |
+| projects           | `/api/career/projects`        |
+| resumes            | `/api/career/resumes`         |
+| bullets            | `/api/career/bullets`         |
+| testimonials       | `/api/career/testimonials`    |
+| days               | `/api/career/days`            |
+| meetings           | `/api/career/meetings`        |
+| timeline           | `/api/career/timeline`        |
+| satisfaction       | `/api/career/satisfaction`    |
+| burnoutChecks      | `/api/career/burnout`         |
+| sabbaticals        | `/api/career/sabbaticals`     |
+| sideHustles        | `/api/career/side-hustles`    |
+| ip                 | `/api/career/ip`              |
+| speaking           | `/api/career/speaking`        |
+| visionBoard        | `/api/career/vision-board`    |
+| tracks (legacy)    | `/api/career/tracks`          |
+| goals (legacy)     | `/api/career/goals`           |
+| notes (legacy)     | `/api/career/notes`           |
+
+`/api/sync` accepts both workout and career tables in one push.
+
 ## Sync
 
-`POST /sync` accepts a full `WorkoutState` JSON blob and replaces the server
+`POST /sync` accepts a full state JSON blob and replaces the server
 state. Used for "push all local data up" backup.
 `GET  /sync` returns the current server state for "pull" restore.
 
