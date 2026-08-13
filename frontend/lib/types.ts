@@ -59,26 +59,41 @@ export const SPACES: Space[] = [
 ];
 
 // ---------------- Career ----------------
+// The new comprehensive Career data model lives in ./careerTypes.ts and is
+// re-exported here. The legacy shapes (CareerTrack/CareerConcept/etc.) that the
+// old components (Roadmap/Notes/Posts/Goals/AchievementVault/TrackTabs) consume
+// are preserved as Legacy* types in careerTypes.ts and aliased here for back-compat.
 
-export type CareerTrackId = string;
+export type {
+  CareerSectionId,
+  CareerState,
+  CareerRoadmap, CareerPhase, CareerMilestone, CareerResource, CareerProject,
+  CareerLabItem, CareerQuizItem, ResourceType, RoadmapStatus,
+  CareerSkill, SkillUsageFreq, SkillGrowthPoint, SkillPortfolioLink,
+  CareerCourse,
+  NetworkContact, NetworkInteraction, RelationshipType,
+  JobApplication, AppStage, AppQuestion, CompanyDossier,
+  Achievement, AchievementCategory, PortfolioProject,
+  ResumeVersion, ResumeBullet, Testimonial,
+  WorkDayEntry, MeetingEntry,
+  TimelineEvent, TimelineEventType, WeekSatisfaction, BurnoutCheck,
+  SabbaticalPlan, RetirementPlan, SideHustle, IPItem,
+  SpeakingEngagement, VisionBoardItem,
+  LegacyTrack as CareerTrack,
+  LegacyConcept as CareerConcept,
+  LegacySubConcept as CareerSubConcept,
+  LegacyNote as CareerNote,
+  LegacyBullet as CareerBullet,
+  CareerTrackId,
+} from "./careerTypes";
 
-export interface CareerSubConcept { id: string; title: string; done: boolean; }
-export interface CareerConcept    { id: string; title: string; subConcepts: CareerSubConcept[]; }
-export interface CareerNote       { id: string; title: string; content: string; updatedAt: number; }
-export interface CareerBullet     { id: string; text: string; }
-export interface CareerTrack {
-  id: CareerTrackId;
-  name: string;
-  color: string;
-  concepts: CareerConcept[];
-  notes: CareerNote[];
-  resumeBullets: CareerBullet[];
-}
+// Legacy Goal/Achievement shapes used by old Goals.tsx & AchievementVault.tsx.
+// These live on the legacy tracks but we keep them compatible with the old UI.
 export interface CareerGoal {
   id: string;
   title: string;
   description?: string;
-  trackId?: CareerTrackId;
+  trackId?: string;
   done: boolean;
   deadline?: string;
 }
@@ -88,13 +103,7 @@ export interface CareerAchievement {
   description?: string;
   date: string;
   icon: string;
-  trackId?: CareerTrackId;
-}
-export interface CareerState {
-  tracks: CareerTrack[];
-  goals: CareerGoal[];
-  achievements: CareerAchievement[];
-  linkedin: string;
+  trackId?: string;
 }
 
 // ---------------- Workout ----------------
