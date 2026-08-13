@@ -3,22 +3,22 @@
 /**
  * WorkoutPage — shared wrapper for all /workout/* sub-routes.
  *
- * - Mounts WorkoutShell (top strip + content only — no left rail / bottom tabs).
- * - BattleNav (the floating ⚔ BATTLE ⚔ button and its summoned card with every
- *   sub-page link + sword-slash/dragon-fire reveal) is injected into the top
- *   strip via shell's battleButton prop. Picking a section navigates with
- *   router.push.
- * - SectionSlash overlay plays between sub-page navigations.
- * - Active-session takeover (ActiveWorkout / FreestyleWorkout) renders full-screen
- *   without the shell.
+ * - WorkoutShell: top strip + content area (no left rail / bottom tabs).
+ * - BattleNav: the ⚔ BATTLE ⚔ button in the top strip.
+ * - BattleCard: the ornate Hall of Blades card rendered INLINE in the page
+ *   content (not a modal / fixed overlay) when BATTLE is toggled open.
+ *   Picking a section closes the card and routes.
+ * - SectionSlash plays a quick katana flash between section navigations.
+ * - Active-session takeover renders full-screen without chrome.
  */
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/router";
-import WorkoutShell, { WORKOUT_NAV, type WorkoutSectionId } from "./WorkoutShell";
+import WorkoutShell, { type WorkoutSectionId } from "./WorkoutShell";
 import ActiveWorkout from "./ActiveWorkout";
 import FreestyleWorkout from "./FreestyleWorkout";
 import BattleNav from "./BattleNav";
+import BattleCard from "./BattleCard";
 import SectionSlash from "./SectionSlash";
 import { AnimatePresence } from "framer-motion";
 import { useStore } from "../../lib/store";
@@ -32,10 +32,18 @@ export default function WorkoutPage({ section, children }: Props) {
   const router = useRouter();
   const { workout, startSession } = useStore();
 
+  const [cardOpen, setCardOpen] = useState(false);
   const [slashing, setSlashing] = useState(false);
   const prevSection = useRef<WorkoutSectionId | null>(null);
 
-  // Section-slash on section change
+  // Close card when a route change completes (belt-and-suspenders)
+  useEffect(() => {
+    const onRoute = () => setCardOpen(false);
+    router.events.on("routeChangeComplete", onRoute);
+    return () => router.events.off("routeChangeComplete", onRoute);
+  }, [router]);
+
+  // Section-slash when user navigates (from the card or otherwise)
   useEffect(() => {
     if (prevSection.current && prevSection.current !== section) {
       setSlashing(true);
@@ -45,7 +53,7 @@ export default function WorkoutPage({ section, children }: Props) {
     prevSection.current = section;
   }, [section]);
 
-  const onSectionChange = useCallback((s: WorkoutSectionId) => {
+  const navTo = useCallback((s: WorkoutSectionId) => {
     const route =
       s === "overview"     ? "/workout/overview" :
       s === "library"      ? "/workout/library" :
@@ -59,20 +67,19 @@ export default function WorkoutPage({ section, children }: Props) {
       s === "kanban"       ? "/workout/kanban" :
       s === "global"       ? "/workout/tools" :
       "/workout/overview";
+    // Close card first, then route (slash animation plays on section change)
+    setCardOpen(false);
     router.push(route, undefined, { scroll: false });
   }, [router]);
 
   const todaysRoutine = workout.routines.find((r) => r.dayOfWeek === new Date().getDay());
   const todayIso = new Date().toISOString().slice(0,10);
   const todayReadiness = workout.readiness.find((r) => r.date === todayIso);
-
   const handleStartTodays = useCallback(() => {
     if (!todaysRoutine) { router.push("/workout/schedule"); return; }
     startSession(todaysRoutine.name, todaysRoutine.id, todayReadiness?.score);
   }, [todaysRoutine, todayReadiness, startSession, router]);
-  const handleQuickStart = useCallback(() => {
-    startSession("Quick Session", undefined, todayReadiness?.score);
-  }, [todayReadiness, startSession]);
+  void handleStartTodays;
 
   // Active-session takeover
   if (workout.activeSessionId) {
@@ -105,19 +112,22 @@ export default function WorkoutPage({ section, children }: Props) {
     );
   }
 
-  const battleButton = <BattleNav current={section} onPick={onSectionChange} />;
-
   return (
     <>
       <WorkoutShell
         section={section}
-        battleButton={battleButton}
+        battleButton={
+          <BattleNav open={cardOpen} onToggle={() => setCardOpen(v => !v)} />
+        }
+        battleCard={cardOpen ? (
+          <BattleCard current={section} onPick={navTo} />
+        ) : undefined}
       >
         {children}
       </WorkoutShell>
 
       <AnimatePresence>
-        {slashing && <SectionSlash />}
+        {slashing && !cardOpen && <SectionSlash />}
       </AnimatePresence>
     </>
   );

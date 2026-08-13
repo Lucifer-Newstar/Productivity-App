@@ -58,13 +58,17 @@ export const WORKOUT_NAV: WorkoutNavItem[] = [
 
 interface ShellProps {
   section: WorkoutSectionId;
-  /** Rendered inside the top strip, to the right of the title and left of toggles
-   *  — used by WorkoutPage to mount the BATTLE button (BattleNav). */
+  /** Rendered inside the top strip — the BATTLE trigger button. */
   battleButton?: React.ReactNode;
+  /**
+   * If provided, replaces children in the content area (the inline Hall of
+   * Blades card). Otherwise the normal page children render.
+   */
+  battleCard?: React.ReactNode;
   children: React.ReactNode;
 }
 
-export default function WorkoutShell({ section, battleButton, children }: ShellProps) {
+export default function WorkoutShell({ section, battleButton, battleCard, children }: ShellProps) {
   const { theme, toggle } = useTheme();
   const { workout, updateWorkoutSettings } = useStore();
   const isDark = theme === "dark";
@@ -261,17 +265,31 @@ export default function WorkoutShell({ section, battleButton, children }: ShellP
       {/* ───── Content area ───── */}
       <main className="flex-1 overflow-y-auto relative z-10">
         <AnimatePresence mode="wait">
-          <motion.div
-            key={section}
-            initial={{ opacity: 0, y: 24, scale: 0.98, rotateX: -6, filter: "blur(8px)" }}
-            animate={{ opacity: 1, y: 0,  scale: 1,    rotateX: 0,  filter: "blur(0px)" }}
-            exit={{    opacity: 0, y: -10, scale: 0.99, rotateX: 4,  filter: "blur(4px)" }}
-            transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
-            className="px-4 md:px-8 py-6 md:py-8 relative"
-            style={{ perspective: 1200 }}
-          >
-            <div className="max-w-6xl mx-auto w-full">{children}</div>
-          </motion.div>
+          {battleCard ? (
+            <motion.div
+              key="battle-card"
+              initial={{ opacity: 0, y: 24, scale: 0.98, rotateX: -6, filter: "blur(8px)" }}
+              animate={{ opacity: 1, y: 0,  scale: 1,    rotateX: 0,  filter: "blur(0px)" }}
+              exit={{    opacity: 0, y: -10, scale: 0.99, rotateX: 4,  filter: "blur(4px)" }}
+              transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
+              className="px-4 md:px-8 py-6 md:py-10 relative"
+              style={{ perspective: 1200 }}
+            >
+              {battleCard}
+            </motion.div>
+          ) : (
+            <motion.div
+              key={section}
+              initial={{ opacity: 0, y: 24, scale: 0.98, rotateX: -6, filter: "blur(8px)" }}
+              animate={{ opacity: 1, y: 0,  scale: 1,    rotateX: 0,  filter: "blur(0px)" }}
+              exit={{    opacity: 0, y: -10, scale: 0.99, rotateX: 4,  filter: "blur(4px)" }}
+              transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
+              className="px-4 md:px-8 py-6 md:py-8 relative"
+              style={{ perspective: 1200 }}
+            >
+              <div className="max-w-6xl mx-auto w-full">{children}</div>
+            </motion.div>
+          )}
         </AnimatePresence>
       </main>
     </div>
