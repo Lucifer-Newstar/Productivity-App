@@ -2,8 +2,9 @@
 
 /**
  * SkillRadar — SVG radar/spider chart rendering up to 8 skills at a glance.
- * Skills are sorted by proficiency, top 8 selected, axes drawn from center,
- * area filled with a gradient. Hovering an axis highlights it.
+ * Cyan = proficiency (solid fill), violet = confidence (dashed overlay),
+ * pink dots per axis. Colors fall back via CSS variables so blueprint light
+ * mode works automatically.
  */
 
 import { useState } from "react";
@@ -15,17 +16,21 @@ const R = 110;
 const CX = SIZE / 2;
 const CY = SIZE / 2;
 
+const PROF = "#22d3ee";
+const CONF = "#a78bfa";
+const DOT  = "#f472b6";
+
 export default function SkillRadar({ skills }: { skills: CareerSkill[] }) {
   const [hover, setHover] = useState<number | null>(null);
 
-  // Sort by proficiency desc, cap at 8 axes.
   const axes = [...skills].sort((a, b) => b.proficiency - a.proficiency).slice(0, 8);
   const N = axes.length;
 
   if (N < 3) {
     return (
-      <div className="flex items-center justify-center text-center serif-body italic text-sm p-6 rounded-xl"
-        style={{ color: "#8b9eb0", background: "rgba(12,26,34,0.6)", border: "1px dashed rgba(185,28,28,0.3)" }}>
+      <div className="flex items-center justify-center text-center text-sm p-6 rounded-sm hud-corner"
+        style={{ color: "var(--cr-fgMuted)", background: "var(--cr-card2)", border: "1px dashed var(--cr-border)" }}>
+        <span className="c-tr"/><span className="c-bl"/>
         Add at least 3 skills to<br/>draw the radar.
       </div>
     );
@@ -38,8 +43,6 @@ export default function SkillRadar({ skills }: { skills: CareerSkill[] }) {
   };
   const axisPoint = (i: number) => pointFor(i, 10);
   const polyPoints = axes.map((s, i) => pointFor(i, s.proficiency).join(",")).join(" ");
-
-  // Confidence overlay (dashed)
   const confPoints = axes.map((s, i) => pointFor(i, s.confidence).join(",")).join(" ");
 
   return (
@@ -47,8 +50,8 @@ export default function SkillRadar({ skills }: { skills: CareerSkill[] }) {
       <svg width={SIZE} height={SIZE} viewBox={`0 0 ${SIZE} ${SIZE}`} className="mx-auto">
         <defs>
           <radialGradient id="radarFill" cx="50%" cy="50%" r="50%">
-            <stop offset="0%" stopColor="#b91c1c" stopOpacity="0.5" />
-            <stop offset="100%" stopColor="#ec4899" stopOpacity="0.15" />
+            <stop offset="0%" stopColor={PROF} stopOpacity="0.55" />
+            <stop offset="100%" stopColor={CONF} stopOpacity="0.1" />
           </radialGradient>
         </defs>
 
@@ -57,33 +60,33 @@ export default function SkillRadar({ skills }: { skills: CareerSkill[] }) {
           const pts = axes.map((_, i) => pointFor(i, v).join(",")).join(" ");
           return (
             <polygon key={v} points={pts} fill="none"
-              stroke="rgba(255,255,255,0.08)" strokeWidth={1} />
+              stroke="var(--cr-borderSoft)" strokeWidth={1} />
           );
         })}
 
         {/* axis lines */}
         {axes.map((_, i) => {
           const [x, y] = axisPoint(i);
-          return <line key={i} x1={CX} y1={CY} x2={x} y2={y} stroke="rgba(255,255,255,0.1)" />;
+          return <line key={i} x1={CX} y1={CY} x2={x} y2={y} stroke="var(--cr-border)" strokeWidth={1} />;
         })}
 
-        {/* confidence overlay */}
-        <motion.polygon initial={{ opacity: 0 }} animate={{ opacity: 0.35 }}
-          points={confPoints} fill="none" stroke="#d4af37" strokeWidth={1.2} strokeDasharray="3 3" />
+        {/* confidence overlay (dashed violet) */}
+        <motion.polygon initial={{ opacity: 0 }} animate={{ opacity: 0.5 }}
+          points={confPoints} fill="none" stroke={CONF} strokeWidth={1.2} strokeDasharray="3 3" />
 
-        {/* proficiency fill */}
+        {/* proficiency fill (cyan) */}
         <motion.polygon
           initial={{ scale: 0, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
           transition={{ duration: 0.6, ease: [0.22,1,0.36,1] }}
           style={{ transformOrigin: `${CX}px ${CY}px` }}
           points={polyPoints}
-          fill="url(#radarFill)" stroke="#b91c1c" strokeWidth={2}
+          fill="url(#radarFill)" stroke={PROF} strokeWidth={2}
           strokeLinejoin="round"
-          filter="drop-shadow(0 0 10px rgba(185,28,28,0.6))"
+          filter={`drop-shadow(0 0 10px ${PROF}99)`}
         />
 
-        {/* dots */}
+        {/* dots + labels */}
         {axes.map((s, i) => {
           const [x, y] = pointFor(i, s.proficiency);
           const [ax, ay] = axisPoint(i);
@@ -91,44 +94,44 @@ export default function SkillRadar({ skills }: { skills: CareerSkill[] }) {
           return (
             <g key={s.id} onMouseEnter={() => setHover(i)} onMouseLeave={() => setHover(null)}
                style={{ cursor: "pointer" }}>
-              <circle cx={x} cy={y} r={isHover ? 6 : 4} fill="#ec4899"
-                style={{ filter: "drop-shadow(0 0 6px #ec4899)" }} />
+              <circle cx={x} cy={y} r={isHover ? 6 : 4} fill={DOT}
+                style={{ filter: `drop-shadow(0 0 6px ${DOT})` }} />
               <text x={ax + (ax < CX ? -8 : 8)} y={ay}
                 textAnchor={ax < CX ? "end" : "start"}
                 dominantBaseline="middle"
                 fontSize={isHover ? 12 : 10}
-                fontWeight={isHover ? 800 : 400}
-                fill={isHover ? "#fde68a" : "#c4cfd9"}
-                fontFamily="Cinzel,serif">
+                fontWeight={isHover ? 800 : 500}
+                fill={isHover ? "var(--cr-fg)" : "var(--cr-fgMuted)"}
+                fontFamily="ui-monospace, JetBrains Mono, Menlo, monospace">
                 {s.name.length > 12 ? s.name.slice(0,11)+"…" : s.name}
               </text>
             </g>
           );
         })}
 
-        {/* center */}
-        <circle cx={CX} cy={CY} r={3} fill="#d4af37" />
+        <circle cx={CX} cy={CY} r={3} fill={CONF} />
       </svg>
 
       {hover !== null && axes[hover] && (
         <motion.div initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }}
-          className="absolute left-1/2 -translate-x-1/2 -bottom-2 rounded-lg px-3 py-1.5 text-center"
-          style={{ background: "rgba(12,26,34,0.95)", border: "1px solid #ec489966", minWidth: 140 }}>
-          <div className="text-[11px] emperor-title tracking-widest" style={{ color: "#ec4899" }}>
+          className="absolute left-1/2 -translate-x-1/2 -bottom-2 rounded-sm px-3 py-1.5 text-center hud-corner"
+          style={{ background: "var(--cr-card)", border: `1px solid ${DOT}88`, minWidth: 140 }}>
+          <span className="c-tr"/><span className="c-bl"/>
+          <div className="text-[11px] tracking-widest font-bold" style={{color:DOT}}>
             {axes[hover].name}
           </div>
-          <div className="text-[10px] mt-0.5" style={{ color: "#8b9eb0" }}>
-            LVL {axes[hover].proficiency} · conf {axes[hover].confidence} · int {axes[hover].interest}
+          <div className="text-[10px] mt-0.5 tracking-wide" style={{color:"var(--cr-fgMuted)"}}>
+            lvl {axes[hover].proficiency} · conf {axes[hover].confidence} · int {axes[hover].interest}
           </div>
         </motion.div>
       )}
 
-      <div className="flex justify-center gap-3 mt-1 text-[9px] emperor-title tracking-widest">
-        <span className="flex items-center gap-1" style={{color:"#b91c1c"}}>
-          <span className="w-3 h-0.5" style={{background:"#b91c1c"}}/> PROFICIENCY
+      <div className="flex justify-center gap-3 mt-1 text-[9px] tracking-widest font-bold">
+        <span className="flex items-center gap-1" style={{color:PROF}}>
+          <span className="w-3 h-0.5" style={{background:PROF}}/> PROFICIENCY
         </span>
-        <span className="flex items-center gap-1" style={{color:"#d4af37"}}>
-          <span className="w-3 h-0.5" style={{background:"#d4af37",borderTop:"1px dashed #d4af37"}}/> CONFIDENCE
+        <span className="flex items-center gap-1" style={{color:CONF}}>
+          <span className="w-3" style={{borderTop:`1px dashed ${CONF}`}}/> CONFIDENCE
         </span>
       </div>
     </div>
