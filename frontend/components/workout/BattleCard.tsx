@@ -13,9 +13,10 @@
  *   3. Each section button staggers in with a rise
  */
 
-import { motion } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import { Swords, Flame as FlameIcon } from "lucide-react";
 import { WORKOUT_NAV, type WorkoutSectionId } from "./WorkoutShell";
+import GoldenDragon from "./GoldenDragon";
 
 interface Props {
   current: WorkoutSectionId;
@@ -53,6 +54,11 @@ export default function BattleCard({ current, onPick }: Props) {
       {/* Damascus scale + grille background */}
       <div aria-hidden className="absolute inset-0 scale-pattern opacity-30 pointer-events-none" />
       <div aria-hidden className="absolute inset-0 grille-pattern opacity-20 pointer-events-none" />
+
+      {/* Golden dragon (only when card is open — mounted here) */}
+      <AnimatePresence>
+        <GoldenDragon />
+      </AnimatePresence>
 
       {/* ── Slashes (mount-only flash) ── */}
       <motion.div aria-hidden
@@ -96,20 +102,24 @@ export default function BattleCard({ current, onPick }: Props) {
       {/* ── Header ── */}
       <div className="relative z-10 flex flex-col md:flex-row md:items-end justify-between gap-4 mb-6">
         <div>
-          <div className="emperor-title text-[10px] md:text-xs tracking-[0.5em] flex items-center gap-2"
-            style={{ color: "#d4af37" }}>
-            <Swords size={14} /> CHOOSE YOUR BATTLEFIELD <Swords size={14} style={{ transform: "scaleX(-1)" }} />
+          <div className="flex items-center gap-2" style={{ color: "#d4af37" }}>
+            <span className="h-[1px] w-8 md:w-14" style={{ background: "linear-gradient(90deg, transparent, #d4af37)" }} />
+            <span className="text-[10px] md:text-xs tracking-[0.5em] font-imperial">鍛 · 選 · 道</span>
+            <span className="h-[1px] w-8 md:w-14" style={{ background: "linear-gradient(90deg, #d4af37, transparent)" }} />
           </div>
-          <h2 className="imperial-name text-4xl md:text-6xl mt-3 animate-crown-glow leading-none"
+          <h2 className="font-jp font-black text-5xl md:text-7xl mt-3 leading-none"
             style={{
               background: "linear-gradient(135deg, #fde68a 0%, #d4af37 40%, #b91c1c 80%)",
               WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text",
-              filter: "drop-shadow(0 0 25px rgba(212,175,55,0.35))",
+              filter: "drop-shadow(0 0 30px rgba(212,175,55,0.4))",
             }}>
-            HALL OF BLADES
+            改善
           </h2>
-          <p className="serif-body italic mt-2 text-sm md:text-base" style={{ color: "#d4af37" }}>
-            Pick your arena, Emperor. Every battle is a chance to conquer yourself.
+          <p className="emperor-title text-xs md:text-sm mt-2 tracking-[0.4em]" style={{ color: "#d4af37" }}>
+            K A I Z E N
+          </p>
+          <p className="serif-body italic mt-3 text-sm md:text-base max-w-xl" style={{ color: "#fde68a" }}>
+            Choose your path. Each step forges the self — continuous improvement, one rep at a time.
           </p>
         </div>
 
@@ -150,7 +160,7 @@ export default function BattleCard({ current, onPick }: Props) {
       <div aria-hidden className="k-blade mt-8" style={{ opacity: 0.7 }} />
       <p className="relative z-10 text-center text-[10px] md:text-xs emperor-title tracking-[0.4em] mt-4"
         style={{ color: "rgba(212,175,55,0.7)" }}>
-        VINCIT · QUI · SE · VINCIT
+        一 · 歩 · 一 · 歩
       </p>
     </motion.div>
   );

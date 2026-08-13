@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * Dashboard — Kaizer throne-room landing view.
+ * Dashboard — Kaizen throne-room landing view.
  * Greets the emperor, shows animated completion bar, four imperial stat cards,
  * a per-realm overview grid linking to /<space> routes, recent campaigns, and
  * a focus tip. Uses the obsidian-lacquer + parchment card system from globals.css.
@@ -72,7 +72,7 @@ export default function Dashboard({ onNavigateView }: { onNavigateView?: (v: "ta
                 background: "linear-gradient(135deg, #fde68a 0%, #d4af37 40%, #b91c1c 80%)",
                 WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text",
               }}>
-              {greet()}, Emperor.
+              {greet()} — welcome back.
             </h2>
             <p className="serif-body italic mt-4 max-w-xl" style={{ color: "var(--k-gold-deep, #9c7a1a)" }}>
               Your realm awaits. You hold <b>{pending}</b> pending campaigns across{" "}
@@ -85,7 +85,7 @@ export default function Dashboard({ onNavigateView }: { onNavigateView?: (v: "ta
                 onClick={() => onNavigateView?.("tasks")}
                 className="btn-primary flex items-center gap-2"
               >
-                Command the realm <ArrowRight size={16} />
+                Enter Kaizen <ArrowRight size={16} />
               </button>
               <button
                 onClick={() => onNavigateView?.("pomodoro")}

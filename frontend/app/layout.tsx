@@ -4,8 +4,8 @@ import { StoreProvider } from "../lib/store";
 import { ThemeProvider } from "../lib/theme";
 
 export const metadata: Metadata = {
-  title: "Kaizer — Rule Your Realm",
-  description: "Kaizer: your all-in-one life OS. Conquer tasks, training, notes, and focus like an emperor.",
+  title: "Kaizen — Rule Your Realm",
+  description: "Kaizen: your all-in-one life OS. Conquer tasks, training, notes, and focus like an emperor.",
 };
 
 /**

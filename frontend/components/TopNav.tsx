@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * TopNav — horizontal top navigation for all Kaizer pages (non-workout).
+ * TopNav — horizontal top navigation for all Kaizen pages (non-workout).
  * Imperial / obsidian-throne styling: crimson seal logo, gold accents, Cinzel
  * display type, crown sigil. Dark mode: black lacquer + gold + red mesh.
  * Light mode: parchment + burgundy + bronze.
@@ -62,11 +62,11 @@ export default function TopNav() {
                 background: "linear-gradient(135deg, #fde68a 0%, #d4af37 40%, #b91c1c 80%)",
                 WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text",
               }}>
-              Kaizer
+              Kaizen
             </h1>
             <p className="text-[9px] uppercase tracking-[0.3em] mt-0.5 flex items-center gap-1 font-imperial"
               style={{ color: isDark ? "#d4af37" : "#9c7a1a" }}>
-              <Swords size={9} /> Rule your realm
+              <Swords size={9} /> Continuous improvement
             </p>
           </div>
         </Link>

@@ -3,10 +3,10 @@
 /**
  * WorkoutShell — immersive full-screen chrome for all /workout/* sub-routes.
  *
- * Kaizer throne-room layout:
+ * Kaizen throne-room layout:
  *  - NO left rail and NO bottom tabs — those are replaced by the BATTLE
  *    button in the top strip which summons the BattleNav overlay.
- *  - Slim top strip: Kaizer crown, current section title + sigil, quick
+ *  - Slim top strip: Kaizen crown, current section title + sigil, quick
  *    toggles (sound/glove/minimal), theme toggle, K seal, and the
  *    floating BATTLE button (gateway to section nav).
  *  - Ambient dragon / scale / grille patterns + glitter particles +
@@ -157,7 +157,7 @@ export default function WorkoutShell({ section, battleButton, battleCard, childr
                 background: "linear-gradient(135deg, #fde68a 0%, #d4af37 50%, #b91c1c 100%)",
                 WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text",
               }}>
-              Kaizer
+              Kaizen
             </h1>
             <p className="text-[9px] emperor-title uppercase tracking-[0.3em] mt-0.5 flex items-center gap-1"
               style={{ color: isDark ? "#d4af37" : "#9c7a1a" }}>Training</p>
