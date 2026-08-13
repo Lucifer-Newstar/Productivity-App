@@ -1,20 +1,21 @@
 "use client";
 
 /**
- * Career page — immersive command-center for the Kaizen career space.
+ * Career page — techy cyberpunk command-center for the Kaizen career space.
+ * Distinct from the imperial Japanese aesthetic used by /workout.
+ * Grid/hud/terminal vibe — dark with cyan/violet/green accents, scanlines,
+ * mono font, corner-bracket panels.
  *
- * Uses CareerShell chrome with the cyan/gold palette, a floating COMMAND
+ * Uses CareerShell chrome with a cyan/indigo palette, a floating COMMAND
  * button (CommandNav) in the top strip that summons the CommandCard inline,
- * and routes between the 8 sections locally (state-based, no router) to keep
- * page transitions instant. A SectionSlash katana-flash plays between sections.
+ * and routes between the 8 sections locally (state-based, no router).
  */
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import CareerShell, { CAREER_NAV, type CareerSectionId } from "../../components/career/CareerShell";
+import CareerShell, { type CareerSectionId } from "../../components/career/CareerShell";
 import CommandNav from "../../components/career/CommandNav";
 import CommandCard from "../../components/career/CommandCard";
-import SectionSlash from "../../components/workout/SectionSlash";
-import { AnimatePresence } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 
 import RoadmapsSection from "../../components/career/sections/RoadmapsSection";
 import SkillsSection from "../../components/career/sections/SkillsSection";
@@ -27,11 +28,31 @@ import GlobalSection from "../../components/career/sections/GlobalSection";
 
 const DEFAULT_SECTION: CareerSectionId = "roadmaps";
 
+// Terminal-style horizontal scan-flash (replaces the katana SectionSlash for career).
+function HudFlash() {
+  return (
+    <motion.div aria-hidden
+      initial={{ opacity: 0 }}
+      animate={{ opacity: [0, 1, 1, 0] }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.45, times: [0, 0.15, 0.55, 1] }}
+      className="fixed inset-0 pointer-events-none z-50"
+      style={{
+        background:
+          "linear-gradient(180deg, transparent 48%, rgba(34,211,238,0.6) 49.5%, #fff 50%, rgba(34,211,238,0.6) 50.5%, transparent 52%)",
+        mixBlendMode: "screen",
+      }}/>
+  );
+}
+
 export default function CareerPage() {
   const [section, setSection] = useState<CareerSectionId>(DEFAULT_SECTION);
   const [cardOpen, setCardOpen] = useState(false);
   const [slashing, setSlashing] = useState(false);
   const prevSection = useRef<CareerSectionId | null>(null);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => { setMounted(true); }, []);
 
   // Section-slash when user navigates
   useEffect(() => {
@@ -55,6 +76,16 @@ export default function CareerPage() {
     setSection(s);
     window.scrollTo({ top: 0, behavior: "smooth" });
   }, []);
+
+  if (!mounted) {
+    // Avoid hydration mismatches from Date.now()-derived UI (days-since, streaks, timers).
+    return (
+      <div className="min-h-screen w-full flex items-center justify-center font-mono text-xs tracking-widest"
+        style={{ background: "#05080d", color: "#22d3ee" }}>
+        <pre style={{opacity: 0.5}}>{"// booting career.command()\n// > initializing matrix..."}</pre>
+      </div>
+    );
+  }
 
   const content = (() => {
     switch (section) {
@@ -85,7 +116,7 @@ export default function CareerPage() {
       </CareerShell>
 
       <AnimatePresence>
-        {slashing && !cardOpen && <SectionSlash />}
+        {slashing && !cardOpen && <HudFlash />}
       </AnimatePresence>
     </>
   );
