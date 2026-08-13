@@ -612,6 +612,26 @@ export interface RestDayEntry {
   reason: string;
 }
 
+// Kanban planning board (workout-only, persisted to localStorage)
+export type KanbanCardType = "strength" | "cardio" | "cali" | "mobility" | "rest" | "other";
+export interface KanbanCard {
+  id: string;
+  title: string;
+  notes?: string;
+  type: KanbanCardType;
+  sets?: number;
+  reps?: number;
+  weightKg?: number;
+  plannedDay?: string;        // ISO date (YYYY-MM-DD)
+  tagColor?: string;          // hex accent
+  createdAt: number;
+}
+export interface KanbanColumn {
+  id: "backlog" | "this-week" | "today" | "in-progress" | "done";
+  title: string;
+  cards: KanbanCard[];
+}
+
 // Root workout state.
 export interface WorkoutState {
   exercises: WorkoutExercise[];
@@ -648,4 +668,6 @@ export interface WorkoutState {
   journal: WorkoutNote[];
   board: MotivationBoardItem[];
   restDays: RestDayEntry[];
+  // Kanban board for workout planning
+  kanban: KanbanColumn[];
 }

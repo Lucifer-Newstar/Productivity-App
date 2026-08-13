@@ -33,15 +33,17 @@ export default function WorkoutPage({ section, children }: Props) {
   // When user clicks a nav item, client-side transition to that route.
   const onSectionChange = useCallback((s: WorkoutSectionId) => {
     const route =
-      s === "overview" ? "/workout/overview" :
-      s === "library"  ? "/workout/library" :
-      s === "pr"       ? "/workout/prs" :
-      s === "skills"   ? "/workout/skills" :
-      s === "schedule" ? "/workout/schedule" :
+      s === "overview"     ? "/workout/overview" :
+      s === "library"      ? "/workout/library" :
+      s === "pr"           ? "/workout/prs" :
+      s === "skills"       ? "/workout/skills" :
+      s === "schedule"     ? "/workout/schedule" :
       s === "calisthenics" ? "/workout/calisthenics" :
-      s === "gym"      ? "/workout/gym" :
-      s === "cardio"   ? "/workout/cardio" :
-      s === "global"   ? "/workout/tools" :
+      s === "gym"          ? "/workout/gym" :
+      s === "cardio"       ? "/workout/cardio" :
+      s === "charts"       ? "/workout/charts" :
+      s === "kanban"       ? "/workout/kanban" :
+      s === "global"       ? "/workout/tools" :
       "/workout/overview";
     router.push(route, undefined, { scroll: false });
   }, [router]);

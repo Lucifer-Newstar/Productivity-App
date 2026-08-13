@@ -17,7 +17,7 @@
  */
 
 import React, { createContext, useContext, useEffect, useRef, useState, useCallback } from "react";
-import type {
+  import type {
   Task, Note, SpaceId,
   CareerState, CareerTrack, CareerConcept, CareerSubConcept,
   CareerNote, CareerBullet, CareerGoal, CareerAchievement,
@@ -29,6 +29,7 @@ import type {
   IntervalLog, MobilityDrill, MobilitySession, PseudoPlancheEntry,
   CardioLog, Program, WorkoutGoal, CustomMetric, CustomMetricEntry,
   ChallengeEntry, MotivationBoardItem, RestDayEntry, CrowdLevel,
+  KanbanCard, KanbanColumn, KanbanCardType,
 } from "./types";
 import { SPACES } from "./types";
 import { evaluateBadges, epley1RM, readinessScore as computeReadiness } from "./workoutAnalytics";
@@ -182,11 +183,37 @@ const SEED_WORKOUT: WorkoutState = (() => {
     ]},
   ];
 
+  // Cali skills: researched baseline of the canonical bodyweight moves.
+  // Ring heights are in cm measured from ground to ring bottom (for ring moves,
+  // baseline ~180cm is rings-at-hips for most adults; false-grip muscle-up ~190;
+  // ring dips ~150cm).
   const caliSkills: CalisthenicsSkill[] = [
-    { id: "cs-planche", name: "Planche", pattern: "Isometric", difficulty: 9, unlocked: false,
+    { id: "cs-lsit",       name: "L-sit",             pattern: "Isometric", difficulty: 5, unlocked: false,
       equipmentNeeded: ["parallettes"], accessoryIds: [], archived: false, attempts: [], failLog: [] },
-    { id: "cs-frontlever", name: "Front Lever", pattern: "Pull", difficulty: 8, unlocked: false,
+    { id: "cs-pistol",     name: "Pistol Squat",      pattern: "Squat",     difficulty: 7, unlocked: false,
+      equipmentNeeded: ["none"], accessoryIds: [], archived: false, attempts: [], failLog: [] },
+    { id: "cs-muscleup",   name: "Muscle-up",         pattern: "Pull",      difficulty: 9, unlocked: false,
+      equipmentNeeded: ["pull-up-bar"], ringHeightCm: undefined, accessoryIds: [], archived: false, attempts: [], failLog: [] },
+    { id: "cs-ringmuscleup", name: "Ring Muscle-up",  pattern: "Pull",      difficulty: 10, unlocked: false,
+      equipmentNeeded: ["rings"], ringHeightCm: 190, accessoryIds: [], archived: false, attempts: [], failLog: [] },
+    { id: "cs-planche",    name: "Planche",           pattern: "Isometric", difficulty: 9, unlocked: false,
+      equipmentNeeded: ["parallettes"], accessoryIds: [], archived: false, attempts: [], failLog: [] },
+    { id: "cs-frontlever", name: "Front Lever",       pattern: "Pull",      difficulty: 8, unlocked: false,
       equipmentNeeded: ["pull-up-bar"], accessoryIds: [], archived: false, attempts: [], failLog: [] },
+    { id: "cs-backlever",  name: "Back Lever",        pattern: "Pull",      difficulty: 7, unlocked: false,
+      equipmentNeeded: ["pull-up-bar"], accessoryIds: [], archived: false, attempts: [], failLog: [] },
+    { id: "cs-hspu",       name: "Handstand Push-up", pattern: "Push",      difficulty: 8, unlocked: false,
+      equipmentNeeded: ["none"], accessoryIds: [], archived: false, attempts: [], failLog: [] },
+    { id: "cs-hflag",      name: "Human Flag",        pattern: "Other",     difficulty: 10, unlocked: false,
+      equipmentNeeded: ["pull-up-bar"], accessoryIds: [], archived: false, attempts: [], failLog: [] },
+    { id: "cs-oap",        name: "One-Arm Pull-up",   pattern: "Pull",      difficulty: 10, unlocked: false,
+      equipmentNeeded: ["pull-up-bar"], accessoryIds: [], archived: false, attempts: [], failLog: [] },
+    { id: "cs-vsit",       name: "V-sit",             pattern: "Isometric", difficulty: 9, unlocked: false,
+      equipmentNeeded: ["parallettes"], accessoryIds: [], archived: false, attempts: [], failLog: [] },
+    { id: "cs-ringdip",    name: "Ring Dip",          pattern: "Push",      difficulty: 6, unlocked: false,
+      equipmentNeeded: ["rings"], ringHeightCm: 150, accessoryIds: [], archived: false, attempts: [], failLog: [] },
+    { id: "cs-nordic",     name: "Nordic Curl",       pattern: "Hinge",     difficulty: 8, unlocked: false,
+      equipmentNeeded: ["none"], accessoryIds: [], archived: false, attempts: [], failLog: [] },
   ];
 
   const mobilityDrills: MobilityDrill[] = [
@@ -202,6 +229,22 @@ const SEED_WORKOUT: WorkoutState = (() => {
     { id: uid(), type: "quote", content: "\"The only bad workout is the one that didn't happen.\"", createdAt: A - DAY },
     { id: uid(), type: "pr",    content: "Bench 80 kg × 5 — new PR", createdAt: A - 5 * DAY },
     { id: uid(), type: "goal",  content: "First muscle-up this year", createdAt: A - 10 * DAY },
+  ];
+
+  // Kanban board (5 fixed columns; cards live inside their column's cards[]).
+  const seedKanban: KanbanColumn[] = [
+    { id: "backlog",     title: "Backlog",     cards: [
+      { id: uid(), title: "Add handstand push-up negatives", type: "cali",      sets: 4, reps: 5,   tagColor: "#a3e635", createdAt: A - 2 * DAY },
+      { id: uid(), title: "Long easy run (60 min Z2)",        type: "cardio",                       tagColor: "#06b6d4", createdAt: A - DAY },
+    ]},
+    { id: "this-week", title: "This Week", cards: [
+      { id: uid(), title: "Push Day — hit 90 kg bench triple", type: "strength", sets: 5, reps: 3, weightKg: 90, tagColor: "#ec4899", createdAt: A - 3600_000 },
+    ]},
+    { id: "today",     title: "Today",     cards: [
+      { id: uid(), title: "Warm-up band dislocates + cat-cow", type: "mobility",                    tagColor: "#8b5cf6", createdAt: A - 1800_000 },
+    ]},
+    { id: "in-progress", title: "In Progress", cards: [] },
+    { id: "done",      title: "Done",      cards: [] },
   ];
 
   return {
@@ -221,12 +264,49 @@ const SEED_WORKOUT: WorkoutState = (() => {
           { id: uid(), title: "Negative pull-ups",      target: 5,  done: true,  currentBest: 6 },
           { id: uid(), title: "Band-assisted pull-ups", target: 10, done: false, currentBest: 7 },
           { id: uid(), title: "Strict pull-ups",        target: 1,  done: false },
+          { id: uid(), title: "10 strict pull-ups",     target: 10, done: false },
+          { id: uid(), title: "L-sit pull-up",          target: 3,  done: false },
+          { id: uid(), title: "Muscle-up",              target: 1,  done: false },
         ]},
       { id: "sk-handstand", name: "Handstand", createdAt: A,
         progressions: [
-          { id: uid(), title: "Wall handstand (30s)", target: 30, done: true,  currentBest: 45 },
-          { id: uid(), title: "Chest-to-wall (20s)",  target: 20, done: false, currentBest: 12 },
-          { id: uid(), title: "Free-standing hold",   target: 10, done: false },
+          { id: uid(), title: "Wall handstand (30s)",     target: 30, done: true,  currentBest: 45 },
+          { id: uid(), title: "Chest-to-wall (20s)",      target: 20, done: false, currentBest: 12 },
+          { id: uid(), title: "Free-standing hold",       target: 10, done: false },
+          { id: uid(), title: "Handstand push-up (wall)", target: 5,  done: false },
+          { id: uid(), title: "Free-standing HSPU",       target: 1,  done: false },
+        ]},
+      { id: "sk-squat", name: "Pistol Squat", createdAt: A,
+        progressions: [
+          { id: uid(), title: "Assisted box pistol",     target: 5, done: true,  currentBest: 8 },
+          { id: uid(), title: "Negative pistol (3s)",    target: 5, done: false, currentBest: 4 },
+          { id: uid(), title: "Pistol (assisted)",       target: 3, done: false },
+          { id: uid(), title: "Full pistol each leg",    target: 5, done: false },
+          { id: uid(), title: "Weighted pistol +16kg",   target: 3, done: false },
+        ]},
+      { id: "sk-planche", name: "Planche", createdAt: A,
+        progressions: [
+          { id: uid(), title: "Tuck planche (10s)",       target: 10, done: true,  currentBest: 12 },
+          { id: uid(), title: "Advanced tuck (8s)",       target: 8,  done: false, currentBest: 5 },
+          { id: uid(), title: "Straddle planche (5s)",    target: 5,  done: false },
+          { id: uid(), title: "Full planche (3s)",        target: 3,  done: false },
+          { id: uid(), title: "Planche push-ups",         target: 5,  done: false },
+        ]},
+      { id: "sk-frontlever", name: "Front Lever", createdAt: A,
+        progressions: [
+          { id: uid(), title: "Tuck front lever (10s)",   target: 10, done: false, currentBest: 6 },
+          { id: uid(), title: "Advanced tuck (8s)",       target: 8,  done: false },
+          { id: uid(), title: "Straddle FL (5s)",         target: 5,  done: false },
+          { id: uid(), title: "Full front lever (3s)",    target: 3,  done: false },
+          { id: uid(), title: "Front lever pull-ups",     target: 3,  done: false },
+        ]},
+      { id: "sk-dip", name: "Ring Dip", createdAt: A,
+        progressions: [
+          { id: uid(), title: "Box dips (15)",            target: 15, done: true },
+          { id: uid(), title: "Assisted ring dips (8)",   target: 8,  done: false, currentBest: 5 },
+          { id: uid(), title: "Strict ring dips (5)",     target: 5,  done: false },
+          { id: uid(), title: "Ring dip support 30s",     target: 30, done: false },
+          { id: uid(), title: "Weighted ring dips +16kg", target: 5,  done: false },
         ]},
     ],
     routines: [
@@ -265,6 +345,7 @@ const SEED_WORKOUT: WorkoutState = (() => {
     // global
     programs: [], customMetrics: [], customMetricEntries: [],
     goals: [], challenges: [], journal: [], board: motivation, restDays: [],
+    kanban: seedKanban,
   };
 })();
 
@@ -365,6 +446,12 @@ interface StoreState {
   addJournalEntry: (content: string, tags?: string[]) => void; deleteJournalEntry: (id: string) => void;
   addBoardItem: (b: Omit<MotivationBoardItem, "id" | "createdAt">) => void; deleteBoardItem: (id: string) => void;
   logRestDay: (reason: string) => void;
+  // kanban
+  addKanbanCard: (colId: KanbanColumn["id"], card: Omit<KanbanCard, "id" | "createdAt">) => void;
+  updateKanbanCard: (id: string, patch: Partial<KanbanCard>) => void;
+  deleteKanbanCard: (id: string) => void;
+  moveKanbanCard: (id: string, toCol: KanbanColumn["id"], toIndex?: number) => void;
+  clearKanbanDone: () => void;
 }
 
 const StoreContext = createContext<StoreState | null>(null);
@@ -422,6 +509,7 @@ const migrateWorkout = (raw: any): WorkoutState => ({
   journal:      raw.journal      ?? [],
   board:        raw.board        ?? SEED_WORKOUT.board,
   restDays:     raw.restDays     ?? [],
+  kanban:       raw.kanban       ?? SEED_WORKOUT.kanban,
   lastWorkoutDate: raw.lastWorkoutDate,
   currentStreak: raw.currentStreak ?? 0,
   longestStreak: raw.longestStreak ?? 0,
@@ -866,6 +954,57 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
   const logRestDay = useCallback<StoreState["logRestDay"]>((reason) =>
     setWorkout((w) => ({ ...w, restDays: [{ date: todayIso(), reason }, ...w.restDays.filter(r=>r.date!==todayIso())] })), [setWorkout]);
 
+  // ----- Kanban actions -----
+  // Find which column a card currently lives in, by id.
+  function findKanban(w: any, id: string): { colIdx: number; cardIdx: number } | null {
+    for (let ci = 0; ci < w.kanban.length; ci++) {
+      const ci2 = w.kanban[ci].cards.findIndex((c: KanbanCard) => c.id === id);
+      if (ci2 >= 0) return { colIdx: ci, cardIdx: ci2 };
+    }
+    return null;
+  }
+  const addKanbanCard = useCallback<StoreState["addKanbanCard"]>((colId, card) => {
+    setWorkout((w) => {
+      const cols = w.kanban.map((c) => c.id === colId
+        ? { ...c, cards: [...c.cards, { ...card, id: uid(), createdAt: Date.now() }] }
+        : c);
+      return { ...w, kanban: cols };
+    });
+  }, [setWorkout]);
+  const updateKanbanCard = useCallback<StoreState["updateKanbanCard"]>((id, patch) => {
+    setWorkout((w) => {
+      const loc = findKanban(w, id);
+      if (!loc) return w;
+      const cols = w.kanban.slice();
+      const col = { ...cols[loc.colIdx], cards: cols[loc.colIdx].cards.slice() };
+      col.cards[loc.cardIdx] = { ...col.cards[loc.cardIdx], ...patch };
+      cols[loc.colIdx] = col;
+      return { ...w, kanban: cols };
+    });
+  }, [setWorkout]);
+  const deleteKanbanCard = useCallback<StoreState["deleteKanbanCard"]>((id) => {
+    setWorkout((w) => ({ ...w, kanban: w.kanban.map((c) =>
+      ({ ...c, cards: c.cards.filter((x) => x.id !== id) })) }));
+  }, [setWorkout]);
+  const moveKanbanCard = useCallback<StoreState["moveKanbanCard"]>((id, toColId, toIndex) => {
+    setWorkout((w) => {
+      const loc = findKanban(w, id);
+      if (!loc) return w;
+      const cols = w.kanban.map((c) => ({ ...c, cards: c.cards.slice() }));
+      const card = cols[loc.colIdx].cards[loc.cardIdx];
+      cols[loc.colIdx].cards.splice(loc.cardIdx, 1);
+      const target = cols.find((c) => c.id === toColId);
+      if (!target) return w;
+      const insertAt = toIndex == null || toIndex < 0 || toIndex > target.cards.length ? target.cards.length : toIndex;
+      target.cards.splice(insertAt, 0, card);
+      return { ...w, kanban: cols };
+    });
+  }, [setWorkout]);
+  const clearKanbanDone = useCallback<StoreState["clearKanbanDone"]>(() => {
+    setWorkout((w) => ({ ...w, kanban: w.kanban.map((c) =>
+      c.id === "done" ? { ...c, cards: [] } : c) }));
+  }, [setWorkout]);
+
   // seedDemoData: lazy-imports the mock generator and overwrites logs (keeps
   // library / routines / settings) with ~12 weeks of realistic history for QA.
   const seedDemoData = useCallback<StoreState["seedDemoData"]>(() => {
@@ -918,6 +1057,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
       journal: SEED_WORKOUT.journal,
       cardioLogs: SEED_WORKOUT.cardioLogs,
       restDays: SEED_WORKOUT.restDays,
+      kanban: SEED_WORKOUT.kanban,
       gtg: SEED_WORKOUT.gtg,
       isometricLogs: SEED_WORKOUT.isometricLogs,
       intervalLogs: SEED_WORKOUT.intervalLogs,
@@ -954,6 +1094,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     addCustomMetric, logCustomMetric,
     addChallenge, toggleChallengeDay, deleteChallenge,
     addJournalEntry, deleteJournalEntry, addBoardItem, deleteBoardItem, logRestDay,
+    addKanbanCard, updateKanbanCard, deleteKanbanCard, moveKanbanCard, clearKanbanDone,
   };
 
   return <StoreContext.Provider value={value}>{children}</StoreContext.Provider>;

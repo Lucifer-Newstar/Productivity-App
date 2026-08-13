@@ -18,7 +18,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   ArrowLeft, Dumbbell, Flame, Trophy, Target, Calendar, Zap, Award,
   Sparkles, Play, Hand, Minimize2, Volume2, VolumeX, Sun, Moon, Bell,
-  BookOpen,
+  BookOpen, BarChart3, Kanban as KanbanIcon,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { useTheme } from "../../lib/theme";
@@ -26,7 +26,7 @@ import { useStore } from "../../lib/store";
 
 export type WorkoutSectionId =
   | "overview" | "library" | "calisthenics" | "gym" | "cardio"
-  | "pr" | "skills" | "exercises" | "schedule" | "global";
+  | "pr" | "skills" | "exercises" | "schedule" | "charts" | "kanban" | "global";
 
 export interface WorkoutNavItem {
   id: WorkoutSectionId;
@@ -43,6 +43,8 @@ export const WORKOUT_NAV: WorkoutNavItem[] = [
   { id: "calisthenics", label: "Calisthenics", icon: Target,      color: "#a3e635", description: "Bodyweight skills",   primary: true },
   { id: "gym",          label: "Gym",          icon: Dumbbell,    color: "#f59e0b", description: "Weights & plates",   primary: true },
   { id: "cardio",       label: "Cardio",       icon: Zap,         color: "#06b6d4", description: "Run, bike, row",     primary: true },
+  { id: "charts",       label: "Charts",       icon: BarChart3,   color: "#22d3ee", description: "Progress analytics" },
+  { id: "kanban",       label: "Board",        icon: KanbanIcon,  color: "#f472b6", description: "Weekly kanban",       primary: true },
   { id: "pr",           label: "PRs",          icon: Trophy,      color: "#f59e0b", description: "Personal records" },
   { id: "skills",       label: "Skills",       icon: Award,       color: "#8b5cf6", description: "Progressions" },
   { id: "schedule",     label: "Schedule",     icon: Calendar,    color: "#06b6d4", description: "Routines & splits" },
