@@ -3,12 +3,14 @@
 /**
  * CommandCard — the module picker summoned by cmd button.
  * Terminal/HUD style. Uses CSS variables so night/blueprint themes both work.
+ * Keyboard: ↑↓/jk to move, 1-8 to jump, Enter to select, Esc handled by parent.
  */
 
 import { AnimatePresence, motion } from "framer-motion";
 import { useTheme } from "../../lib/theme";
 import { CAREER_NAV, type CareerSectionId } from "./CareerShell";
 import { Terminal, Cpu } from "lucide-react";
+import { useEffect, useState, useCallback } from "react";
 
 interface Props {
   current: CareerSectionId;
@@ -18,6 +20,34 @@ interface Props {
 export default function CommandCard({ current, onPick }: Props) {
   const { theme } = useTheme();
   const light = theme === "light";
+  const [hoverIdx, setHoverIdx] = useState<number>(() =>
+    Math.max(0, CAREER_NAV.findIndex(n => n.id === current)),
+  );
+
+  const move = useCallback((delta: number) => {
+    setHoverIdx(i => (i + delta + CAREER_NAV.length) % CAREER_NAV.length);
+  }, []);
+
+  const pick = useCallback((idx: number) => {
+    onPick(CAREER_NAV[idx].id);
+  }, [onPick]);
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "ArrowDown" || e.key === "j") { e.preventDefault(); move(1); }
+      else if (e.key === "ArrowUp" || e.key === "k") { e.preventDefault(); move(-1); }
+      else if (e.key === "ArrowRight" || e.key === "l") { e.preventDefault(); move(1); }
+      else if (e.key === "ArrowLeft" || e.key === "h") { e.preventDefault(); move(-1); }
+      else if (e.key === "Enter") { e.preventDefault(); pick(hoverIdx); }
+      else if (/^[1-8]$/.test(e.key)) {
+        const n = Number(e.key) - 1;
+        if (n < CAREER_NAV.length) pick(n);
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [move, pick, hoverIdx]);
+
   return (
     <motion.div
       key="career-command-card"
@@ -53,7 +83,13 @@ export default function CommandCard({ current, onPick }: Props) {
         <span>sector: <span style={{color:"var(--cr-accent4)"}}>career</span></span>
         <span>|</span>
         <span>modules: <span style={{color:"var(--cr-accent2)"}}>{CAREER_NAV.length}</span></span>
-        <span className="ml-auto hidden md:inline">press <kbd className="px-1 rounded-sm" style={{border:"1px solid var(--cr-border)",color:"var(--cr-accent)"}}>esc</kbd> to dismiss</span>
+        <span className="ml-auto hidden md:inline">
+          press <kbd className="px-1 rounded-sm" style={{border:"1px solid var(--cr-border)",color:"var(--cr-accent)"}}>↑↓</kbd>
+          <kbd className="px-1 rounded-sm mx-1" style={{border:"1px solid var(--cr-border)",color:"var(--cr-accent)"}}>1-8</kbd>
+          <kbd className="px-1 rounded-sm" style={{border:"1px solid var(--cr-border)",color:"var(--cr-accent)"}}>enter</kbd>
+          <span className="mx-2">·</span>
+          <kbd className="px-1 rounded-sm" style={{border:"1px solid var(--cr-border)",color:"var(--cr-accent2)"}}>esc</kbd>
+        </span>
       </div>
 
       {/* Header */}
@@ -97,7 +133,9 @@ export default function CommandCard({ current, onPick }: Props) {
       <div className="relative z-10 grid grid-cols-2 md:grid-cols-4 gap-2.5 md:gap-3">
         {CAREER_NAV.map((item, i) => (
           <NavTile key={item.id} item={item} active={item.id === current}
-            delay={0.12 + i*0.05} onPick={onPick} index={i} light={light}/>
+            hovered={i === hoverIdx}
+            onHover={() => setHoverIdx(i)}
+            delay={0.12 + i*0.05} onPick={() => pick(i)} index={i} light={light}/>
         ))}
       </div>
 
@@ -112,14 +150,16 @@ export default function CommandCard({ current, onPick }: Props) {
   );
 }
 
-function NavTile({ item, active, delay, onPick, index, light }:
-  { item: typeof CAREER_NAV[number]; active: boolean; delay: number; onPick: (s: CareerSectionId)=>void; index: number; light: boolean }) {
+function NavTile({ item, active, hovered, onHover, delay, onPick, index, light }:
+  { item: typeof CAREER_NAV[number]; active: boolean; hovered: boolean; onHover: ()=>void; delay: number; onPick: ()=>void; index: number; light: boolean }) {
   const Icon = item.icon;
   const color = light ? item.colorLight : item.color;
+  const isOn = active || hovered;
   return (
-    <motion.button onClick={() => onPick(item.id)}
+    <motion.button onClick={onPick} onMouseEnter={onHover} onFocus={onHover}
       initial={{ opacity: 0, y: 18 }}
-      animate={{ opacity: 1, y: 0 }}
+      animate={{ opacity: 1, y: 0,
+        boxShadow: hovered && !active ? `0 0 0 1px ${color}88, 0 6px 20px -10px ${color}88` : "none" }}
       transition={{ duration: 0.3, delay, ease: [0.22,1,0.36,1] }}
       whileHover={{ y: -3 }}
       whileTap={{ scale: 0.98 }}
@@ -129,7 +169,7 @@ function NavTile({ item, active, delay, onPick, index, light }:
         background: active
           ? `linear-gradient(135deg, ${color}, ${color}cc)`
           : (light ? "rgba(255,252,244,0.5)" : "rgba(8,18,30,0.6)"),
-        border: `1px solid ${active ? color : `${color}55`}`,
+        border: `1px solid ${isOn ? color : `${color}55`}`,
         boxShadow: active
           ? `0 10px 30px -10px ${color}cc, 0 0 20px -5px ${color}55`
           : "none",
