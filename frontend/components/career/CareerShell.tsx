@@ -202,38 +202,117 @@ export default function CareerShell({ section, commandButton, commandCard, child
           --cr-card2: ${T.cardBg2};
           --cr-grid: ${T.grid};
         }
-        /* Auto-flip common hardcoded dark tokens inside career to light tokens when in blueprint mode. */
-        .career-root[data-lt="1"] .hud-corner,
-        .career-root[data-lt="1"] [style*="rgba(12,26,34"],
-        .career-root[data-lt="1"] [style*="rgba(10,20,24"],
-        .career-root[data-lt="1"] [style*="rgba(0,0,0,0.25)"],
-        .career-root[data-lt="1"] [style*="rgba(0,0,0,0.3)"],
-        .career-root[data-lt="1"] [style*="rgba(0,0,0,0.35)"],
-        .career-root[data-lt="1"] [style*="rgba(0,0,0,0.4)"] {
+        /* Auto-flip common hardcoded dark tokens inside career to light tokens when in blueprint mode.
+           These substring selectors match ANY inline style containing the token (background, border, color, etc.),
+           so we scope the fix carefully per property using more explicit matches below. */
+        /* -- Dark card / panel backgrounds -> cream paper -- */
+        .career-root[data-lt="1"] .hud-corner {
           background: ${T.cardBg} !important;
         }
+        .career-root[data-lt="1"] [style*="background:"][style*="rgba(12,26,34"],
+        .career-root[data-lt="1"] [style*="background:"][style*="rgba(10,20,24"],
+        .career-root[data-lt="1"] [style*="background:"][style*="rgba(8,18,30"],
+        .career-root[data-lt="1"] [style*="background:"][style*="rgba(0,0,0,0.25)"],
+        .career-root[data-lt="1"] [style*="background:"][style*="rgba(0,0,0,0.3)"],
+        .career-root[data-lt="1"] [style*="background:"][style*="rgba(0,0,0,0.35)"],
+        .career-root[data-lt="1"] [style*="background:"][style*="rgba(0,0,0,0.4)"],
+        .career-root[data-lt="1"] [style*="background:"][style*="rgba(0,0,0,0.45)"],
+        .career-root[data-lt="1"] [style*="background:"][style*="rgba(0,0,0,0.5)"],
+        .career-root[data-lt="1"] [style*="background:"][style*="rgba(0,0,0,0.6)"],
+        .career-root[data-lt="1"] [style*="background:"][style*="rgba(255,255,255,0.04)"],
+        .career-root[data-lt="1"] [style*="background:"][style*="rgba(255,255,255,0.05)"],
+        .career-root[data-lt="1"] [style*="background:"][style*="rgba(255,255,255,0.06)"],
+        .career-root[data-lt="1"] [style*="background:"][style*="rgba(255,255,255,0.08)"],
+        .career-root[data-lt="1"] [style*="background:"][style*="rgba(255,255,255,0.1)"],
+        .career-root[data-lt="1"] [style*="background:"][style*="rgba(255,255,255,0.15)"],
+        .career-root[data-lt="1"] [style*="background:"][style*="rgba(255,255,255,0.18)"],
+        .career-root[data-lt="1"] [style*="background:"][style*="rgba(255,248,228,0.9)"] {
+          background: ${T.cardBg} !important;
+        }
+        /* Gradient header banners (cyan/pink/orange/red cards) -> solid ink with white text kept */
+        .career-root[data-lt="1"] [style*="linear-gradient(135deg,#0e7490"],
+        .career-root[data-lt="1"] [style*="linear-gradient(135deg,#b45309"],
+        .career-root[data-lt="1"] [style*="linear-gradient(135deg,#be185d"],
+        .career-root[data-lt="1"] [style*="linear-gradient(135deg,#7f1d1d"] {
+          background: ${T.accent1} !important;
+          color: #fff8e4 !important;
+          border-color: ${T.accent1} !important;
+          box-shadow: 0 6px 16px -8px ${T.accent1} !important;
+        }
+        /* Solid dark action buttons that used to be cyan/orange/pink/red -> blueprint ink */
+        .career-root[data-lt="1"] button[style*="background:"][style*="#0e7490"],
+        .career-root[data-lt="1"] button[style*="background:"][style*="#be185d"] {
+          background: ${T.accent1} !important;
+          color: #fff8e4 !important;
+          border-color: ${T.accent1} !important;
+        }
+        /* -- Foreground text fixes (light text on dark bg -> dark ink on paper) -- */
         .career-root[data-lt="1"] [style*="color:"][style*="#f3e9d2"],
+        .career-root[data-lt="1"] [style*="color:"][style*="#e2e8f0"],
+        .career-root[data-lt="1"] [style*="color:"][style*="#cbd5e1"],
+        .career-root[data-lt="1"] [style*="color:"][style*="#f1f5f9"],
+        .career-root[data-lt="1"] [style*="color:"][style*="#f8fafc"],
         .career-root[data-lt="1"] [style*="color:"][style*="#e0f2fe"],
         .career-root[data-lt="1"] [style*="color:"][style*="#cffafe"],
+        .career-root[data-lt="1"] [style*="color:"][style*="#bae6fd"],
         .career-root[data-lt="1"] [style*="color:"][style*="#fecaca"],
+        .career-root[data-lt="1"] [style*="color:"][style*="#fee2e2"],
         .career-root[data-lt="1"] [style*="color:"][style*="#c4cfd9"],
         .career-root[data-lt="1"] [style*="color:"][style*="#c4b5fd"],
-        .career-root[data-lt="1"] [style*="color:"][style*="#fbcfe8"] {
+        .career-root[data-lt="1"] [style*="color:"][style*="#ddd6fe"],
+        .career-root[data-lt="1"] [style*="color:"][style*="#e9d5ff"],
+        .career-root[data-lt="1"] [style*="color:"][style*="#fbcfe8"],
+        .career-root[data-lt="1"] [style*="color:"][style*="#fce7f3"],
+        .career-root[data-lt="1"] [style*="color:"][style*="#fed7aa"],
+        .career-root[data-lt="1"] [style*="color:"][style*="#fdba74"],
+        .career-root[data-lt="1"] [style*="color:"][style*="#fef3c7"],
+        .career-root[data-lt="1"] [style*="color:"][style*="#fde68a"],
+        .career-root[data-lt="1"] [style*="color:"][style*="#d1fae5"],
+        .career-root[data-lt="1"] [style*="color:"][style*="rgba(255,255,255,0.85)"] {
           color: ${T.fg} !important;
         }
+        /* Muted secondary text */
+        .career-root[data-lt="1"] [style*="color:"][style*="#94a3b8"],
         .career-root[data-lt="1"] [style*="color:"][style*="#8b9eb0"],
         .career-root[data-lt="1"] [style*="color:"][style*="#a8b8c8"],
+        .career-root[data-lt="1"] [style*="color:"][style*="#9ca3af"],
         .career-root[data-lt="1"] [style*="color:"][style*="#6b7280"],
-        .career-root[data-lt="1"] [style*="color:"][style*="#475569"] {
+        .career-root[data-lt="1"] [style*="color:"][style*="#64748b"] {
           color: ${T.fgMuted} !important;
         }
+        /* Border colors */
+        .career-root[data-lt="1"] [style*="border:"][style*="rgba(255,255,255,0.04)"],
         .career-root[data-lt="1"] [style*="border:"][style*="rgba(255,255,255,0.05)"],
         .career-root[data-lt="1"] [style*="border:"][style*="rgba(255,255,255,0.06)"],
         .career-root[data-lt="1"] [style*="border:"][style*="rgba(255,255,255,0.08)"],
         .career-root[data-lt="1"] [style*="border:"][style*="rgba(255,255,255,0.1)"],
-        .career-root[data-lt="1"] [style*="border:"][style*="rgba(255,255,255,0.15)"] {
+        .career-root[data-lt="1"] [style*="border:"][style*="rgba(255,255,255,0.15)"],
+        .career-root[data-lt="1"] [style*="border:"][style*="rgba(255,255,255,0.18)"],
+        .career-root[data-lt="1"] [style*="border:"][style*="rgba(255,255,255,0.2)"],
+        .career-root[data-lt="1"] [style*="border:"][style*="rgba(255,255,255,0.25)"],
+        .career-root[data-lt="1"] [style*="border:"][style*="rgba(255,255,255,0.3)"],
+        .career-root[data-lt="1"] [style*="border:"][style*="rgba(255,255,255,0.35)"],
+        .career-root[data-lt="1"] [style*="border:"][style*="rgba(255,255,255,0.4)"],
+        .career-root[data-lt="1"] [style*="border:"][style*="rgba(255,255,255,0.5)"],
+        .career-root[data-lt="1"] [style*="border:"][style*="rgba(255,255,255,0.6)"],
+        .career-root[data-lt="1"] [style*="border:"][style*="rgba(103,232,249"],
+        .career-root[data-lt="1"] [style*="border:"][style*="rgba(248,113,113"],
+        .career-root[data-lt="1"] [style*="border:"][style*="rgba(236,72,153"],
+        .career-root[data-lt="1"] [style*="border:"][style*="rgba(245,158,11"],
+        .career-root[data-lt="1"] [style*="border:"][style*="rgba(163,230,53"],
+        .career-root[data-lt="1"] [style*="border-color:"][style*="rgba(255,255,255"] {
           border-color: ${T.borderSoft} !important;
         }
+        /* Cyan / pink / accent halos/glows -> blueprint ink with low alpha */
+        .career-root[data-lt="1"] [style*="box-shadow:"][style*="rgba(6,182,212"],
+        .career-root[data-lt="1"] [style*="box-shadow:"][style*="rgba(236,72,153"],
+        .career-root[data-lt="1"] [style*="box-shadow:"][style*="rgba(245,158,11"],
+        .career-root[data-lt="1"] [style*="box-shadow:"][style*="rgba(34,211,238"],
+        .career-root[data-lt="1"] [style*="box-shadow:"][style*="rgba(185,28,28"] {
+          box-shadow: 0 6px 16px -10px ${T.accent1} !important;
+        }
+        /* HR / divider lines that used white */
+        .career-root[data-lt="1"] hr[style*="rgba(255,255,255"] { border-color: ${T.borderSoft} !important; }
         .career-root[data-lt="1"] textarea,
         .career-root[data-lt="1"] input,
         .career-root[data-lt="1"] select {
