@@ -240,14 +240,26 @@ All routes use the shared `components/career/CareerPage.tsx` HOC, which mounts
 
 # Career Feature Status
 
-The `/career` space ships 8 module subpages under a cyber/HUD COMMAND shell. The
-floating `> cmd_` trigger opens an inline terminal-styled CommandCard which
-presents the 8 modules as numbered 01–08 tiles. A horizontal cyan scan-flash
-transitions between routes; Escape closes the card; the ACTIVE dot uses Framer
-Motion `layoutId`. Auto-seeded on first visit: 5 pre-built roadmap templates
-(DevOps, Networking, Linux, MLOps, Cloud) cloned with full phases, milestones,
-resources, projects, labs, and hours. Career uses its own HUD theme (navy/cyan/
-indigo/green mono) distinct from workout's imperial Japanese aesthetic.
+The `/career` space ships 8 module subpages under a cyber/HUD COMMAND shell with
+**two fully distinct themes**:
+
+- **Night HUD (dark, default)** — deep navy→black radial, animated cyan grid,
+  scanlines, sweep beam, vignette, neon cyan/indigo/acid-green/pink/orange/yellow
+  accents, `> cmd_` terminal prompt with blinking caret, rotating dashed CPU
+  icon, corner registration brackets, mono (JetBrains Mono) everywhere.
+- **Blueprint schematic (light)** — cream engineering-paper (`#f5f1e6`), static
+  two-layer blue grid (fine 20 px + major 100 px), paper-grain noise, deep
+  cyan-blue (`#0c4a6e`) structural ink with burnt-orange (`#c2410c`) pencil-markup
+  accents, registration-corner marks, Terminal icon in the brand tile, footer
+  labels `kaizen.career // v2.0 — blueprint`. No scanlines/beam in light.
+  Entirely distinct from workout's parchment/gold/vermilion/serif light mode.
+
+The floating `> cmd_` trigger opens an inline terminal-styled CommandCard which
+presents the 8 modules as numbered 01–08 tiles. A horizontal scan-flash (accent-
+colored per theme) transitions between routes; Escape closes the card. Auto-
+seeded on first visit: 5 pre-built roadmap templates (DevOps, Networking,
+Linux, MLOps, Cloud) cloned with full phases, milestones, resources, projects,
+labs, and hours.
 
 Routes: `/career` → redirect to `/career/roadmaps`; `/career/roadmaps`,
 `/career/skills`, `/career/certs`, `/career/network`, `/career/jobs`,
