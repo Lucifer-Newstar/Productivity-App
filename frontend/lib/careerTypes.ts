@@ -156,7 +156,8 @@ export interface NetworkContact {
   favorsGiven: number;
   favorsReceived: number;
   interactions: NetworkInteraction[];
-  jobHistory?: { company: string; role: string; startedAt?: string }[];
+  jobHistory?: { company: string; role: string; startedAt?: string; leftAt?: string }[];
+  referralLog?: { date: string; direction: "sent"|"received"; company?: string; role?: string; outcome?: string; notes?: string }[];
 }
 export interface NetworkInteraction {
   id: string;
@@ -298,6 +299,7 @@ export interface MeetingEntry {
   roiScore?: number;          // 1-5
   decisions?: string;
   actionItems?: string;
+  followUps?: { id: string; text: string; owner?: string; due?: string; done: boolean }[];
 }
 
 // ---------------- Global career ----------------
