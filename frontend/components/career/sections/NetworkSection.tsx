@@ -69,6 +69,16 @@ export default function NetworkSection() {
   const visible = useMemo(() => career.contacts.filter(c => filter === "all" || c.relationship === filter), [career.contacts, filter]);
   const staleCount = career.contacts.filter(c => !c.lastContactAt || Date.now() - c.lastContactAt > 90*86400000).length;
   const imbalance = career.contacts.filter(c => Math.abs(c.favorsGiven - c.favorsReceived) >= 3).length;
+  const reachQueue = useMemo(() => {
+    return [...career.contacts]
+      .map(c => {
+        const days = c.lastContactAt ? Math.floor((Date.now()-c.lastContactAt)/86400000) : 365;
+        const priority = days*2 - c.healthScore*3;
+        return { c, days, priority };
+      })
+      .sort((a,b) => b.priority - a.priority)
+      .slice(0, 5);
+  }, [career.contacts]);
 
   const active = career.contacts.find(c => c.id === activeId) ?? null;
 
@@ -92,6 +102,28 @@ export default function NetworkSection() {
         <Stat label="Favor imbalances" value={imbalance} color="#b91c1c"/>
         <Stat label="Mentors" value={career.contacts.filter(c=>c.relationship==="mentor").length} color="#d4af37"/>
       </div>
+
+      {/* Reach-out queue */}
+      {career.contacts.length > 0 && (
+        <div className="rounded-xl p-3" style={{background:"linear-gradient(135deg,rgba(245,158,11,0.12),rgba(185,28,28,0.08))",border:"1px solid rgba(245,158,11,0.35)"}}>
+          <div className="flex items-center gap-2 text-[10px] emperor-title tracking-[0.3em] mb-2" style={{color:"#fbbf24"}}>
+            <AlertTriangle size={11}/> REACH · QUEUE
+          </div>
+          <div className="flex gap-2 flex-wrap">
+            {reachQueue.map(({c, days}) => {
+              const cold = days > 180;
+              return (
+                <button key={c.id} onClick={()=>{ setActiveId(c.id); setFilter("all"); }}
+                  className="flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-[11px] transition hover:scale-105"
+                  style={{background:cold?"rgba(239,68,68,0.15)":"rgba(245,158,11,0.15)",border:`1px solid ${cold?"rgba(239,68,68,0.4)":"rgba(245,158,11,0.4)"}`,color:cold?"#fca5a5":"#fde68a"}}>
+                  <span className="font-bold">{c.name}</span>
+                  <span className="text-[9px]">{days}d</span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
 
       {/* Filter chips */}
       <div className="flex flex-wrap gap-2">
