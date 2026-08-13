@@ -59,12 +59,13 @@ interface ShellProps {
   onSectionChange: (s: WorkoutSectionId) => void;
   onStartTodaysRoutine?: () => void;
   onQuickStart?: () => void;
+  onRetreat?: () => void;   // re-closes the BattleGate
   todaysRoutineName?: string;
   children: React.ReactNode;
 }
 
 export default function WorkoutShell({
-  section, onSectionChange, onStartTodaysRoutine, onQuickStart, todaysRoutineName, children,
+  section, onSectionChange, onStartTodaysRoutine, onQuickStart, onRetreat, todaysRoutineName, children,
 }: ShellProps) {
   const { theme, toggle } = useTheme();
   const { workout, updateWorkoutSettings } = useStore();
@@ -349,6 +350,19 @@ export default function WorkoutShell({
 
           <div className="flex-1" />
 
+          {onRetreat && (
+            <button onClick={onRetreat}
+              title="Retreat to throne room"
+              className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition font-imperial uppercase tracking-widest text-[10px]"
+              style={{
+                background: "linear-gradient(135deg, rgba(185,28,28,0.2), rgba(111,15,15,0.3))",
+                color: "#fde68a",
+                border: "1px solid rgba(212,175,55,0.3)",
+              }}>
+              <Swords size={12} /> Retreat
+            </button>
+          )}
+
           <IconToggle active={workout.settings.soundEnabled}
             onClick={() => updateWorkoutSettings({ soundEnabled: !workout.settings.soundEnabled })}
             label="sound" isDark={isDark}>
@@ -397,13 +411,14 @@ export default function WorkoutShell({
           <AnimatePresence mode="wait">
             <motion.div
               key={section}
-              initial={{ opacity: 0, y: 18, scale: 0.992, filter: "blur(4px)" }}
-              animate={{ opacity: 1, y: 0,  scale: 1,     filter: "blur(0px)" }}
-              exit={{    opacity: 0, y: -12, scale: 0.995, filter: "blur(3px)" }}
-              transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+              initial={{ opacity: 0, y: 24, scale: 0.98, rotateX: -6, filter: "blur(8px)" }}
+              animate={{ opacity: 1, y: 0,  scale: 1,    rotateX: 0,  filter: "blur(0px)" }}
+              exit={{    opacity: 0, y: -10, scale: 0.99, rotateX: 4,  filter: "blur(4px)" }}
+              transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
               className="px-4 md:px-8 py-6 md:py-8 relative"
+              style={{ transformPerspective: 1200 }}
             >
-              {/* Vertical Latin motto on right edge (desktop only) — reads top→bottom rotated */}
+              {/* Decorative vertical motto */}
               <div aria-hidden className="hidden lg:block absolute top-4 right-4 pointer-events-none">
                 <div
                   className={`emperor-title text-[10px] tracking-[0.5em] opacity-25 ${isDark ? "text-amber-300" : "text-red-900"}`}
