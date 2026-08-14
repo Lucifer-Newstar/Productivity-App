@@ -410,7 +410,8 @@ drilldown). Cross-links back to `/career` via a bridge callout on Foundry.
 | Particles / celebration | ✅ Shared career:burst event used for amber sparks on forge, green confetti on task/project ship, pink for seed |
 | Rubber-stamp animations | ✅ `.forge-stamp` keyframe: scale 1.8→1 rotate -12°→-8° for APPROVED/DEAD/SHIPPED tags |
 | Rivet corner markers (four-dot) on every steel-plate | ✅ Reusable class `.riv-tl/tr/bl/br` positioned absolute negative-offset |
-| Keyboard shortcuts | ❌ v1.x relies on button clicks; G?/hotkeys to come |
+| Keyboard shortcuts | ✅ `?` help overlay, `g`-chord nav (`g f/q/s/v/h` or `g 1-4`), `n`/`/` open STRIKE panel, `t` toggle theme, `Esc` closes. Armed-chord indicator in corner, `?` hotkey chip in footer. Ignored while typing/with meta held. |
+| STRIKE button sparks | ✅ 14-particle amber spray on click, hammer-rotate animation, global burst fired, `N` hint chip |
 | Career-skill alignment check | 🟡 Callout links to /career; auto-skill-bump on project SHIP deferred |
 | Portfolio builder bridge on SHIP | ✅ Confirm-push on SHIP creates PortfolioProject in career state with case-study stub |
 | Gantt / timeline viz | ✅ Mini-Gantt SVG renders when ≥2 dated milestones |

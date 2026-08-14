@@ -12,6 +12,7 @@ import { useRouter } from "next/router";
 import ForgeShell, { type ForgeSectionId } from "./ForgeShell";
 import ActionNav from "./ActionNav";
 import ActionPanel from "./ActionPanel";
+import ForgeHotkeys from "./ForgeHotkeys";
 import { AnimatePresence, motion } from "framer-motion";
 
 interface Props {
@@ -65,15 +66,6 @@ export default function ForgePage({ section, children }: Props) {
   useEffect(() => { setMounted(true); }, []);
 
   useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") setPanelOpen(false);
-      // hotkey: press G then 1-4 for quick nav
-    };
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, []);
-
-  useEffect(() => {
     const onRoute = () => setPanelOpen(false);
     router.events.on("routeChangeComplete", onRoute);
     return () => router.events.off("routeChangeComplete", onRoute);
@@ -111,6 +103,11 @@ export default function ForgePage({ section, children }: Props) {
       >
         {children}
       </ForgeShell>
+
+      <ForgeHotkeys
+        currentSection={section}
+        panelOpen={panelOpen}
+        setPanelOpen={setPanelOpen}/>
 
       <AnimatePresence>
         {striking && !panelOpen && <HammerStrike/>}

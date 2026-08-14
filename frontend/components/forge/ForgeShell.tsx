@@ -479,6 +479,12 @@ export default function ForgeShell({ section, actionButton, actionPanel, childre
         <span style={{color:T.dotOnline}}>●</span> <span>FORGE::LIVE</span>
         <span className="hidden sm:inline">|</span>
         <span className="hidden sm:inline">ANVIL::{active.code}</span>
+        <span className="hidden md:inline">|</span>
+        <span className="hidden md:inline-flex items-center gap-1">
+          <kbd className="mono text-[9px] font-black px-1 rounded-sm"
+            style={{border:`1px solid ${T.border}`,color:T.accent1}}>?</kbd>
+          <span>hotkeys</span>
+        </span>
         <span className="flex-1"/>
         <span className={light ? "pencil" : ""}>kaizen.forge // v1.0 — {light ? "vellum" : "foundry"}</span>
       </footer>
