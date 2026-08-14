@@ -160,18 +160,71 @@ const SEED_CAREER: CareerState = (() => {
 })();
 
 // ---------------- Forge / Projects OS seed ----------------
+const EMPTY_PROJECT_DEFAULTS = {
+  budgetBenefit: {},
+  stakeholders: [],
+  milestones: [],
+  premortem: [],
+  risks: [],
+  issues: [],
+  qualityChecks: [],
+  qualityMetrics: [],
+  comms: [],
+  changeRequests: [],
+  resources: [],
+  weeklyReports: [],
+  fileLinks: [],
+  links: [],
+  tags: [],
+  velocityPoints: [],
+  timeline: [],
+  regulatoryChecks: [],
+  scopeHistory: [],
+};
+const EMPTY_TASK_DEFAULTS = {
+  comments: [],
+  checkpoints: [],
+  tags: [],
+  subtaskIds: [],
+  pomodoros: 0,
+  energy: 3 as const,
+  focus: 3 as const,
+  effort: 3 as 1|2|3|4|5,
+  impact: 3 as 1|2|3|4|5,
+  importance: 5,
+  urgency: 5,
+};
+function upgradeProject(p: any): any {
+  return { ...EMPTY_PROJECT_DEFAULTS, ...p,
+    stakeholders: p.stakeholders ?? [],
+    milestones: p.milestones ?? [],
+    premortem: p.premortem ?? [],
+    risks: p.risks ?? [],
+    issues: p.issues ?? [],
+    qualityChecks: (p.qualityChecks ?? []).map((q:any)=>({category:"standards",...q})),
+    comms: (p.comms ?? []).map((c:any)=>({type:"update",...c})),
+    links: p.links ?? [],
+    tags: p.tags ?? [],
+    velocityPoints: p.velocityPoints ?? [],
+    budget: { currency: "$", actual: 0, ...(p.budget ?? {}) },
+  };
+}
+function upgradeTask(t: any): any {
+  return { ...EMPTY_TASK_DEFAULTS, ...t };
+}
+
 const SEED_FORGE: ForgeState = (() => {
   const today = new Date().toISOString().slice(0,10);
   const pid = "p-forge-01";
   return {
     projects: [
-      {
+      upgradeProject({
         id: pid,
         codename: "IRON-01",
         title: "Forge OS",
         brief: "Ship the Forge projects workspace — a heavy-industrial OS for all in-flight builds, with cross-links back to Career skills and Portfolio.",
         why: "Because every builder needs an anvil. A place to plan, strike metal, and ship — not just dream.",
-        successMetrics: "All 4 core sections live (Foundry, Quarry, Smelter, Archive). v1 demo seeds with 3 active projects.",
+        successMetrics: "All 4 core sections live (Foundry, Quarry, Smelter, Archive). Rich demo seeds 7 projects.",
         rejectionCriteria: "No commits for 14 days and no active tasks → melt it down in the Archive.",
         status: "on-track",
         priority: 9,
@@ -187,28 +240,29 @@ const SEED_FORGE: ForgeState = (() => {
         stakeholders: [],
         milestones: [
           { id: uid(), title: "Foundry shell & theme", date: today, done: true, doneAt: today, notes: "Dual theme locked." },
-          { id: uid(), title: "Project cards + drilldown", date: today, done: false },
-          { id: uid(), title: "Task Kanban", date: today, done: false },
-          { id: uid(), title: "Smelter / Retrospective", date: today, done: false },
+          { id: uid(), title: "Project cards + drilldown", date: today, done: true },
+          { id: uid(), title: "Task Kanban + quarry", date: today, done: true },
+          { id: uid(), title: "Smelter brainstorms & retro", date: today, done: true },
+          { id: uid(), title: "Analytics (velocity/burndown)", date: today, done: false },
         ],
         premortem: [
-          { id: uid(), failure: "Scope creeps into 189 features, never ships", mitigation: "Lock v1 to core cards/tasks/scratchpad/retrospective only", likelihood: "med" },
+          { id: uid(), failure: "Scope creeps into 189 features, never ships", mitigation: "Iterate; ship in waves", likelihood: "med" },
         ],
         risks: [
-          { id: uid(), description: "Career/Forge cross-links feel bolted on", probability: "med", impact: "med", mitigation: "Surface skill-bump bridges natively in project drilldown", contingency: "Ship without cross-links, add in v1.1", status: "open" },
+          { id: uid(), description: "Career/Forge cross-links feel bolted on", probability: "med", impact: "med", mitigation: "Surface skill-bump bridges natively", contingency: "Ship without cross-links, add in v1.1", status: "open" },
         ],
         issues: [],
         qualityChecks: [
-          { id: uid(), label: "tsc --noEmit clean", done: true },
-          { id: uid(), label: "Blueprint + Foundry themes both work", done: false },
-          { id: uid(), label: "No imperial/katana/cyan bleed", done: false },
+          { id: uid(), label: "tsc --noEmit clean", category:"standards", done: true },
+          { id: uid(), label: "Dual themes verified", category:"review", done: true },
+          { id: uid(), label: "No imperial/katana/cyan bleed", category:"standards", done: true },
         ],
         comms: [],
-        scope: "v1 of the Forge OS.",
+        scope: "Full Forge OS.",
         tags: ["kaizen", "productivity"],
         links: [],
-        velocityPoints: [],
-      },
+        velocityPoints: [8, 12, 15],
+      }),
     ],
     tasks: [],
     scratch: [],
@@ -233,8 +287,8 @@ const SEED_FORGE: ForgeState = (() => {
 function migrateForge(raw: any): ForgeState {
   if (!raw || typeof raw !== "object") return SEED_FORGE;
   return { ...SEED_FORGE, ...raw,
-    projects: raw.projects ?? SEED_FORGE.projects,
-    tasks: raw.tasks ?? [],
+    projects: (raw.projects ?? SEED_FORGE.projects).map(upgradeProject),
+    tasks: (raw.tasks ?? []).map(upgradeTask),
     scratch: raw.scratch ?? [],
     decisions: raw.decisions ?? [],
     swot: raw.swot ?? [],

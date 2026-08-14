@@ -12,7 +12,7 @@ import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Flame, Hammer, Plus, AlertTriangle, CheckCircle2, XCircle, CircleDot,
-  Clock, Zap, Skull, Archive, TrendingUp, Target,
+  Clock, Zap, Skull, Archive, TrendingUp, Target, Activity, BarChart3,
 } from "lucide-react";
 import { useStore } from "../../../lib/store";
 import { useTheme } from "../../../lib/theme";
@@ -100,6 +100,9 @@ export default function FoundrySection() {
           <Plus size={14}/> LIGHT FORGE
         </button>
       </div>
+
+      {/* Velocity + burndown plate */}
+      <VelocityPlate projects={forge.projects} tasks={forge.tasks}/>
 
       {/* Quick-forge inline */}
       <AnimatePresence>
@@ -367,4 +370,111 @@ function StatPlate2({label,value,icon,color,light}:{label:string;value:number|st
       </div>
     </div>
   );
+}
+
+/* Velocity + burndown mini-dashboard: last 8 weeks of tasks shipped, plus an estimate of total work remaining */
+function VelocityPlate({projects,tasks}:{projects:any[];tasks:any[]}) {
+  // Compute velocity over last 8 weeks (buckets by completedAt YYYY-Www)
+  const weeks:{label:string;shipped:number;created:number}[] = [];
+  for (let i=7;i>=0;i--) {
+    const d = new Date(); d.setDate(d.getDate()-i*7);
+    const yw = d.getFullYear()+"-W"+String(getWeek(d)).padStart(2,"0");
+    weeks.push({label: yw.slice(-2), shipped:0, created:0});
+  }
+  tasks.forEach(t=>{
+    if(t.completedAt){
+      const d = new Date(t.completedAt);
+      const yw = d.getFullYear()+"-W"+String(getWeek(d)).padStart(2,"0");
+      const w = weeks.find(x=>x.label===yw.slice(-2));
+      if(w) w.shipped++;
+    }
+    if(t.createdAt){
+      const d = new Date(t.createdAt);
+      const yw = d.getFullYear()+"-W"+String(getWeek(d)).padStart(2,"0");
+      const w = weeks.find(x=>x.label===yw.slice(-2));
+      if(w) w.created++;
+    }
+  });
+  const maxShip = Math.max(4,...weeks.map(w=>w.shipped));
+  const active = tasks.filter(t=>t.status!=="done").length;
+  const shipped = tasks.filter(t=>t.status==="done").length;
+  const burnt = shipped;
+  const total = active + shipped;
+  const burnPct = total ? Math.round(burnt/total*100) : 0;
+  const avgVel = Math.round(weeks.reduce((n,w)=>n+w.shipped,0)/weeks.length*10)/10;
+
+  return (
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+      <div className="rounded-sm steel-plate p-4 relative md:col-span-2" style={{borderColor:"var(--fr-cyan)"}}>
+        <span className="riv-tl"/><span className="riv-tr"/><span className="riv-bl"/><span className="riv-br"/>
+        <div className="flex items-center gap-2 mb-3">
+          <BarChart3 size={14} style={{color:"var(--fr-cyan)"}}/>
+          <h3 className="mono text-[11px] font-black tracking-[0.25em]" style={{color:"var(--fr-cyan)"}}>VELOCITY · 8W</h3>
+          <span className="mono text-[10px] ml-auto" style={{color:"var(--fr-fgMuted)"}}>avg {avgVel} blocks/wk</span>
+        </div>
+        <div className="flex items-end gap-2 h-32">
+          {weeks.map((w,i)=>(
+            <div key={i} className="flex-1 flex flex-col items-center gap-1 h-full justify-end">
+              <div className="flex items-end gap-0.5 w-full justify-center" style={{height:"100%"}}>
+                <motion.div initial={{height:0}} animate={{height:`${(w.created/maxShip)*100}%`}}
+                  transition={{duration:0.6,delay:i*0.05}}
+                  className="w-2.5 rounded-t" style={{background:"rgba(148,163,184,0.4)"}} title={`created: ${w.created}`}/>
+                <motion.div initial={{height:0}} animate={{height:`${(w.shipped/maxShip)*100}%`}}
+                  transition={{duration:0.6,delay:i*0.05+0.1}}
+                  className="w-2.5 rounded-t" style={{background:"var(--fr-amber)",boxShadow:"0 0 8px var(--fr-amber)"}} title={`shipped: ${w.shipped}`}/>
+              </div>
+              <div className="mono text-[8px] tracking-widest" style={{color:"var(--fr-fgMuted)"}}>{w.label}</div>
+            </div>
+          ))}
+        </div>
+        <div className="flex items-center gap-3 mt-2 mono text-[9px] tracking-widest" style={{color:"var(--fr-fgMuted)"}}>
+          <span className="flex items-center gap-1"><span className="w-2 h-2" style={{background:"var(--fr-amber)"}}/>SHIPPED</span>
+          <span className="flex items-center gap-1"><span className="w-2 h-2" style={{background:"rgba(148,163,184,0.4)"}}/>CREATED</span>
+        </div>
+      </div>
+
+      <div className="rounded-sm steel-plate p-4 relative" style={{borderColor:"var(--fr-green)"}}>
+        <span className="riv-tl"/><span className="riv-tr"/><span className="riv-bl"/><span className="riv-br"/>
+        <div className="flex items-center gap-2 mb-2">
+          <Activity size={14} style={{color:"var(--fr-green)"}}/>
+          <h3 className="mono text-[11px] font-black tracking-[0.25em]" style={{color:"var(--fr-green)"}}>PULSE</h3>
+        </div>
+        <div className="space-y-2">
+          <div>
+            <div className="flex justify-between mono text-[9px] tracking-widest mb-1">
+              <span style={{color:"var(--fr-fgMuted)"}}>BURNDOWN</span>
+              <span style={{color:"var(--fr-green)"}}>{burnPct}%</span>
+            </div>
+            <div className="h-2 rounded-full overflow-hidden" style={{background:"var(--fr-borderSoft)"}}>
+              <motion.div initial={{width:0}} animate={{width:`${burnPct}%`}} transition={{duration:1}}
+                className="h-full rounded-full" style={{background:"linear-gradient(90deg,var(--fr-amber),var(--fr-green))",boxShadow:"0 0 6px var(--fr-green)"}}/>
+            </div>
+          </div>
+          <div className="grid grid-cols-2 gap-2 mt-2">
+            <PulseStat label="BACKLOG" value={active} color="#ef4444"/>
+            <PulseStat label="SHIPPED" value={shipped} color="#22c55e"/>
+            <PulseStat label="PROJECTS" value={projects.filter(p=>!p.archived).length} color="#f59e0b"/>
+            <PulseStat label="AT RISK" value={projects.filter(p=>p.status==="blocked"||p.status==="off-track").length} color="#ea580c"/>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function PulseStat({label,value,color}:{label:string;value:number;color:string}) {
+  return (
+    <div className="p-2 rounded-sm" style={{background:"var(--fr-card2)",border:`1px solid ${color}55`}}>
+      <div className="mono text-[8px] tracking-widest" style={{color:"var(--fr-fgMuted)"}}>{label}</div>
+      <div className="text-xl font-black leading-none" style={{color}}>{value}</div>
+    </div>
+  );
+}
+
+function getWeek(d:Date) {
+  const t = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+  const dayNum = t.getUTCDay() || 7;
+  t.setUTCDate(t.getUTCDate() + 4 - dayNum);
+  const yearStart = new Date(Date.UTC(t.getUTCFullYear(),0,1));
+  return Math.ceil((((+t - +yearStart)/86400000)+1)/7);
 }

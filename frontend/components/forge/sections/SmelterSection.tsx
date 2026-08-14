@@ -7,7 +7,7 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Flame, Plus, Trash2, ScrollText, Lightbulb, Search,
-  Target, HelpCircle, History,
+  Target, HelpCircle, History, Scale, Zap,
 } from "lucide-react";
 import { useStore } from "../../../lib/store";
 
@@ -18,6 +18,8 @@ const TABS = [
   { id: "scratch", label: "SCRATCH", icon: ScrollText, color: "#f59e0b" },
   { id: "decisions", label: "DECISIONS", icon: Target, color: "#06b6d4" },
   { id: "swot", label: "SWOT", icon: Search, color: "#a78bfa" },
+  { id: "proscons", label: "PRO/CON", icon: Scale, color: "#06b6d4" },
+  { id: "scenarios", label: "SCENARIOS", icon: Zap, color: "#f59e0b" },
   { id: "whys", label: "5 WHYS", icon: HelpCircle, color: "#ec4899" },
   { id: "lessons", label: "LESSONS", icon: Lightbulb, color: "#22c55e" },
   { id: "retro", label: "RETRO", icon: History, color: "#ef4444" },
@@ -230,6 +232,81 @@ export default function SmelterSection() {
           </motion.div>
         )}
 
+        {tab==="proscons" && (
+          <motion.div key="pc" initial={{opacity:0,y:8}} animate={{opacity:1,y:0}} exit={{opacity:0}}>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              <ProsCons side="pro" color="#22c55e" items={forge.proscons.filter(x=>x.side==="pro"&&(projFilter==="all"||x.projectId===projFilter))}
+                onAdd={(text,weight)=>updateForge(f=>({proscons:[{id:uid(),side:"pro",text,weight,projectId:projFilter!=="all"?projFilter:undefined},...f.proscons]}))}
+                onDel={(id)=>updateForge(f=>({proscons:f.proscons.filter(x=>x.id!==id)}))}
+                onWeight={(id,w)=>updateForge(f=>({proscons:f.proscons.map(x=>x.id===id?{...x,weight:w}:x)}))}
+                projFilter={projFilter}/>
+              <ProsCons side="con" color="#ef4444" items={forge.proscons.filter(x=>x.side==="con"&&(projFilter==="all"||x.projectId===projFilter))}
+                onAdd={(text,weight)=>updateForge(f=>({proscons:[{id:uid(),side:"con",text,weight,projectId:projFilter!=="all"?projFilter:undefined},...f.proscons]}))}
+                onDel={(id)=>updateForge(f=>({proscons:f.proscons.filter(x=>x.id!==id)}))}
+                onWeight={(id,w)=>updateForge(f=>({proscons:f.proscons.map(x=>x.id===id?{...x,weight:w}:x)}))}
+                projFilter={projFilter}/>
+            </div>
+            <div className="mt-3 rounded-sm steel-plate p-3 relative" style={{borderColor:"var(--fr-amber)"}}>
+              <span className="riv-tl"/><span className="riv-tr"/><span className="riv-bl"/><span className="riv-br"/>
+              <div className="mono text-[10px] tracking-widest mb-1" style={{color:"var(--fr-amber)"}}>WEIGHTED VERDICT</div>
+              {(() => {
+                const list = forge.proscons.filter(x=>projFilter==="all"||x.projectId===projFilter);
+                const proScore = list.filter(x=>x.side==="pro").reduce((n,x)=>n+x.weight,0);
+                const conScore = list.filter(x=>x.side==="con").reduce((n,x)=>n+x.weight,0);
+                const total = proScore+conScore || 1;
+                const verdict = proScore>conScore ? "GO" : proScore===conScore ? "TOSS-UP" : "NO-GO";
+                const vColor = proScore>conScore ? "#22c55e" : proScore===conScore ? "#f59e0b" : "#ef4444";
+                return (
+                  <div>
+                    <div className="flex items-center justify-between text-sm">
+                      <span style={{color:"#22c55e"}}>PRO {proScore}</span>
+                      <span className="forge-stamp text-xs" style={{color:vColor}}>{verdict}</span>
+                      <span style={{color:"#ef4444"}}>CON {conScore}</span>
+                    </div>
+                    <div className="mt-2 h-2 rounded-sm flex overflow-hidden" style={{background:"var(--fr-borderSoft)"}}>
+                      <div style={{width:`${proScore/total*100}%`,background:"#22c55e"}}/>
+                      <div style={{width:`${conScore/total*100}%`,background:"#ef4444"}}/>
+                    </div>
+                  </div>
+                );
+              })()}
+            </div>
+          </motion.div>
+        )}
+
+        {tab==="scenarios" && (
+          <motion.div key="sc" initial={{opacity:0,y:8}} animate={{opacity:1,y:0}} exit={{opacity:0}} className="space-y-3">
+            <div className="rounded-sm steel-plate p-3 relative" style={{borderColor:"#f59e0b55"}}>
+              <span className="riv-tl"/><span className="riv-tr"/><span className="riv-bl"/><span className="riv-br"/>
+              <ScenarioAdd projects={activeProjects} defaultProj={projFilter!=="all"?projFilter:undefined}
+                onAdd={(s)=>updateForge(f=>({scenarios:[{id:uid(),...s},...f.scenarios]}))}/>
+            </div>
+            <div className="space-y-2">
+              {forge.scenarios.filter(s=>projFilter==="all"||s.projectId===projFilter).map(s=>{
+                const p = forge.projects.find(x=>x.id===s.projectId);
+                return (
+                  <div key={s.id} className="rounded-sm steel-plate p-4 relative" style={{borderColor:"#f59e0b44"}}>
+                    <span className="riv-tl"/><span className="riv-tr"/><span className="riv-bl"/><span className="riv-br"/>
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2 mono text-[10px] tracking-widest" style={{color:p?.color||"#f59e0b"}}>
+                          <Zap size={10}/>{p?.icon} {p?.codename||"GLOBAL"}
+                        </div>
+                        <div className="font-black text-base mt-1" style={{color:"var(--fr-fg)"}}>{s.title}</div>
+                        <div className="pencil text-xs mt-1 italic" style={{color:"var(--fr-orange)"}}>IF: {s.trigger}</div>
+                        <div className="pencil text-xs mt-1" style={{color:"var(--fr-fgMuted)"}}>THEN: {s.response}</div>
+                      </div>
+                      <button onClick={()=>updateForge(f=>({scenarios:f.scenarios.filter(x=>x.id!==s.id)}))}
+                        style={{color:"var(--fr-red)"}}><Trash2 size={11}/></button>
+                    </div>
+                  </div>
+                );
+              })}
+              {forge.scenarios.filter(s=>projFilter==="all"||s.projectId===projFilter).length===0 && <EmptyState icon={Zap} label="No scenarios yet." sub="Plan for failure and success before they happen."/>}
+            </div>
+          </motion.div>
+        )}
+
         {tab==="retro" && (
           <motion.div key="r" initial={{opacity:0,y:8}} animate={{opacity:1,y:0}} exit={{opacity:0}} className="space-y-3">
             <RetroAdd onAdd={(r)=>updateForge(f=>({retors:[{id:uid(),...r},...f.retors]}))}/>
@@ -418,6 +495,70 @@ function RetroAdd({onAdd}:{onAdd:(r:any)=>void}) {
         }} className="mono text-[10px] font-black tracking-widest px-3 py-1.5 rounded-sm"
           style={{background:"#ef4444",color:"#000"}}>STAMP RETRO</button>
       </div>
+    </div>
+  );
+}
+
+function ProsCons({side,color,items,onAdd,onDel,onWeight,projFilter}:{side:"pro"|"con";color:string;items:{id:string;text:string;weight:number}[];onAdd:(text:string,weight:number)=>void;onDel:(id:string)=>void;onWeight:(id:string,w:number)=>void;projFilter:string}) {
+  const [text,setText] = useState(""); const [w,setW] = useState(3);
+  return (
+    <div className="rounded-sm steel-plate p-4 relative" style={{borderColor:`${color}55`}}>
+      <span className="riv-tl"/><span className="riv-tr"/><span className="riv-bl"/><span className="riv-br"/>
+      <div className="mono text-[11px] font-black tracking-widest mb-3" style={{color}}>{side.toUpperCase()}S</div>
+      <div className="flex gap-1 mb-2">
+        <input value={text} onChange={e=>setText(e.target.value)}
+          onKeyDown={e=>{if(e.key==="Enter"&&text.trim()){onAdd(text.trim(),w);setText("");}}}
+          placeholder={`+ ${side}`}
+          className="flex-1 bg-transparent outline-none pencil text-xs p-1.5 rounded-sm"
+          style={{border:`1px dashed ${color}55`,color:"var(--fr-fg)"}}/>
+        <select value={w} onChange={e=>setW(Number(e.target.value))}
+          className="bg-transparent outline-none mono text-[10px] p-1 rounded-sm"
+          style={{border:"1px solid var(--fr-borderSoft)",color:"var(--fr-fg)"}}>
+          {[1,2,3,4,5].map(n=><option key={n} value={n}>×{n}</option>)}
+        </select>
+      </div>
+      <div className="space-y-1">
+        {items.map(it=>(
+          <div key={it.id} className="flex items-center gap-2 p-1.5 rounded-sm text-xs"
+            style={{background:"var(--fr-card2)",borderLeft:`3px solid ${color}`}}>
+            <span className="mono text-[9px] font-black w-4" style={{color}}>×{it.weight}</span>
+            <button onClick={()=>onWeight(it.id,Math.max(1,it.weight-1))} className="mono text-[9px] opacity-60 hover:opacity-100" style={{color:"var(--fr-fgMuted)"}}>−</button>
+            <button onClick={()=>onWeight(it.id,Math.min(5,it.weight+1))} className="mono text-[9px] opacity-60 hover:opacity-100" style={{color:"var(--fr-fgMuted)"}}>+</button>
+            <span className="pencil flex-1">{it.text}</span>
+            <button onClick={()=>onDel(it.id)} style={{color:"var(--fr-red)"}}><Trash2 size={10}/></button>
+          </div>
+        ))}
+        {items.length===0 && <div className="mono text-[10px] italic text-center py-4" style={{color:"var(--fr-fgDim)"}}>— list empty —</div>}
+      </div>
+    </div>
+  );
+}
+
+function ScenarioAdd({projects,defaultProj,onAdd}:{projects:any[];defaultProj?:string;onAdd:(s:any)=>void}) {
+  const [title,setTitle] = useState(""); const [trigger,setTrigger] = useState(""); const [response,setResponse] = useState(""); const [pid,setPid] = useState(defaultProj||"");
+  return (
+    <div className="space-y-2">
+      <div className="mono text-[10px] tracking-widest font-black" style={{color:"#f59e0b"}}>+ FUTURE SCENARIO</div>
+      <div className="grid md:grid-cols-2 gap-2">
+        <input value={title} onChange={e=>setTitle(e.target.value)} placeholder="Title (e.g. Zero traction)"
+          className="bg-transparent outline-none mono text-xs p-2 rounded-sm"
+          style={{border:"1px solid var(--fr-borderSoft)",color:"var(--fr-fg)"}}/>
+        <select value={pid} onChange={e=>setPid(e.target.value)}
+          className="bg-transparent outline-none mono text-[10px] p-2 rounded-sm"
+          style={{border:"1px solid var(--fr-borderSoft)",color:"var(--fr-fg)"}}>
+          <option value="">global</option>
+          {projects.map(p=><option key={p.id} value={p.id}>{p.icon} {p.codename}</option>)}
+        </select>
+      </div>
+      <input value={trigger} onChange={e=>setTrigger(e.target.value)} placeholder="IF: trigger condition..."
+        className="w-full bg-transparent outline-none pencil text-xs italic p-2 rounded-sm"
+        style={{border:"1px solid var(--fr-borderSoft)",color:"var(--fr-fg)"}}/>
+      <textarea value={response} onChange={e=>setResponse(e.target.value)} rows={2} placeholder="THEN: response plan..."
+        className="w-full bg-transparent outline-none pencil text-xs p-2 rounded-sm resize-none"
+        style={{border:"1px solid var(--fr-borderSoft)",color:"var(--fr-fg)"}}/>
+      <button onClick={()=>{if(!title.trim()||!trigger.trim()||!response.trim())return;onAdd({title,trigger,response,projectId:pid||undefined});setTitle("");setTrigger("");setResponse("");}}
+        className="mono text-[10px] font-black tracking-widest px-3 py-1.5 rounded-sm"
+        style={{background:"#f59e0b",color:"#000"}}>STAMP SCENARIO</button>
     </div>
   );
 }

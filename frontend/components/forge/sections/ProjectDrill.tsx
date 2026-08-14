@@ -12,7 +12,7 @@ import {
   ArrowLeft, Hammer, AlertTriangle, CheckCircle2, XCircle, CircleDot,
   Plus, Trash2, Target, Flame, DollarSign, Users, Calendar, Skull,
   ShieldAlert, Bug, ClipboardCheck, MessageSquare, Scale, X, Save,
-  Archive, RotateCcw, Send, BookOpen,
+  Archive, RotateCcw, Send, BookOpen, Briefcase,
 } from "lucide-react";
 import { useStore } from "../../../lib/store";
 import type {

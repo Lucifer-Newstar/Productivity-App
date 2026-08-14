@@ -69,7 +69,9 @@ export interface IssueItem {
 export interface QualityCheck {
   id: string;
   label: string;
+  category?: "testing" | "review" | "feedback" | "standards" | "compliance";
   done: boolean;
+  note?: string;
 }
 
 export interface CommsLogEntry {
@@ -81,6 +83,43 @@ export interface CommsLogEntry {
   summary: string;
   actionItems: string;
   satisfaction?: number;
+  type?: "update" | "sponsor" | "decision" | "champion" | "opponent";
+}
+
+export interface ChangeRequest {
+  id: string;
+  date: string;
+  description: string;
+  reason: string;
+  impact: string;
+  approved: "pending" | "approved" | "rejected";
+}
+
+export interface Resource {
+  id: string;
+  name: string;
+  kind: "people" | "budget" | "equipment" | "software";
+  allocated: number;
+  used: number;
+  unit: string;
+}
+
+export interface QualityMetric {
+  id: string;
+  label: string;
+  target: number;
+  actual?: number;
+  unit: string;
+}
+
+export interface WeeklyReport {
+  id: string;
+  weekOf: string;
+  accomplishments: string;
+  nextWeek: string;
+  blockers: string;
+  risks: string;
+  decisionsNeeded: string;
 }
 
 export interface ProjectTask {
@@ -91,6 +130,7 @@ export interface ProjectTask {
   status: TaskStatus;
   priority: TaskPriority;
   dueDate?: string;
+  startDate?: string;
   doneAt?: string;
   estimateMins?: number;
   actualMins?: number;
@@ -111,11 +151,21 @@ export interface ProjectTask {
   stuck?: boolean;
   stuckNote?: string;
   comments: { id: string; date: string; text: string }[];
+  checkpoints?: { id: string; date: string; note: string }[];
   createdAt: string;
   completedAt?: string;
   satisfaction?: number;
   linkedNoteIds?: string[];
   recurringDays?: number; // repeat every N days
+  assignee?: string;
+  recurrence?: { freq: "daily"|"weekly"|"biweekly"|"monthly"; interval: number };
+}
+
+export interface TimelineEvent {
+  id: string;
+  date: string;
+  type: "created" | "status" | "milestone" | "risk" | "issue" | "ship" | "kill" | "edit";
+  message: string;
 }
 
 export interface ScratchNote {
@@ -218,21 +268,34 @@ export interface ForgeProject {
   archived: boolean;
   checkinFreq: CheckinFreq;
   budget: ProjectBudget;
+  budgetBenefit?: { projectedROI?: number; actualROI?: number; socialImpact?: string; notes?: string };
   stakeholders: ProjectStakeholder[];
   milestones: ProjectMilestone[];
   premortem: PremortemItem[];
   risks: RiskItem[];
   issues: IssueItem[];
   qualityChecks: QualityCheck[];
+  qualityMetrics?: QualityMetric[];
   comms: CommsLogEntry[];
+  changeRequests?: ChangeRequest[];
+  resources?: Resource[];
+  weeklyReports?: WeeklyReport[];
   skillTagIds?: string[];    // link to career skills
   portfolioLinkId?: string;  // link to portfolio project on completion
+  networkContactIds?: string[]; // link to career network
   obituary?: Obituary;
   links: { label: string; url: string }[];
+  fileLinks?: { label: string; path: string }[];
   scope: string;
+  scopeHistory?: { date: string; text: string }[];
   tags: string[];
   template?: string;
-  velocityPoints: number[];  // weekly velocity
+  velocityPoints: number[];  // weekly velocity (tasks done per week)
+  timeline?: TimelineEvent[];
+  handoverDoc?: string;
+  continuityPlan?: string;
+  regulatoryChecks?: { label: string; checked: boolean }[];
+  goalAlignment?: string;
 }
 
 export interface ParkingLotItem {
