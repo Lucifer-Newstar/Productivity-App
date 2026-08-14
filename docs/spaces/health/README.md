@@ -11,7 +11,7 @@ being built as a full-bleed "vitals-signs OS" (working theme name:
 - **Light theme (CLINIC):** sterile white/off-white (`#fafafa → #f1f5f9`), slate ink, lime accents, faint chart-grid paper background, soft shadows.
 - **Routes (all FULLSCREEN):**
   - `/health` → TRIAGE (daily dashboard + health score)
-  - `/health/nutrition` → MESS HALL
+  - `/health/nutrition` → FUEL
   - `/health/hydration` → HYDRATION
   - `/health/sleep` → SOMNIUM
   - `/health/physique` → SOMA (measurements, body fat, photos)

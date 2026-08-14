@@ -20,7 +20,7 @@ but governed: Health owns `nutrition/sleep/body/vitals/mind/biometrics`; Workout
 | § | Codename     | Route                       | Status | Domain covered                                              |
 |---|--------------|-----------------------------|--------|-------------------------------------------------------------|
 | 0 | TRIAGE       | `/health`                   | ❌     | Daily triage dashboard — composite score, tiles, alerts     |
-| 1 | MESS HALL    | `/health/nutrition`         | ❌     | Meals, macros, fasting, micronutrients, recipes, food lib   |
+| 1 | FUEL    | `/health/nutrition`         | ❌     | Meals, macros, fasting, micronutrients, recipes, food lib   |
 | 2 | HYDRATION    | `/health/hydration`         | ❌     | Water, caffeine, electrolytes, urine color, climate adj     |
 | 3 | SOMNIUM      | `/health/sleep`             | ❌     | Sleep journal, debt bank, circadian rhythm, routines        |
 | 4 | SOMA         | `/health/physique`          | ❌     | Measurements, body fat, photos, strength-to-weight, trends  |
@@ -57,7 +57,7 @@ across the top. Think ICU monitor meets cyberpunk.
 
 ---
 
-# §1 — MESS HALL (Nutrition &amp; Meals) `/health/nutrition`
+# §1 — FUEL (Nutrition &amp; Meals) `/health/nutrition`
 
 Everything about food. Built with a lazy-20yo-lifter UX: don't require food-scale
 precision. "Rough sliders" for macros, repeat-from-yesterday one-click, 20-item food
@@ -445,7 +445,7 @@ This is where Health and Workout connect. User explicitly configures what syncs.
 Phased implementation waves (planned):
 
 - **Wave 1 (shell, TRIAGE, SYNC LAB, types, store)** — routes, nav, theme boilerplate, profile, localStorage, migrations, health score gauge.
-- **Wave 2 (MESS HALL core + HYDRATION core)** — meals timeline, food library (Indian seeded), macros sliders, kcal/deficit, repeat-yesterday, 8-glass grid, dynamic water goal.
+- **Wave 2 (FUEL core + HYDRATION core)** — meals timeline, food library (Indian seeded), macros sliders, kcal/deficit, repeat-yesterday, 8-glass grid, dynamic water goal.
 - **Wave 3 (SOMNIUM + APOTHECARY)** — sleep log, sleep bank, routines, supplement log, deficiency badges 🌏.
 - **Wave 4 (SOMA core measurements + photos)** — weight sync, Navy BF%, LBM, tape measurements, photo capture.
 - **Wave 5 (VITALS + MIND)** — HR/BP, symptom log, mood/stress, burnout flag.

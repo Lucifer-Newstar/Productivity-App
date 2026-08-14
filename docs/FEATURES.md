@@ -544,7 +544,7 @@ columns, HTML5-dnd polish on Kanban cards.
 
 The `/health` space is being built on branch `health` as a full-bleed medical/vitals OS
 codename **VITAL-SIGN** with a CLINIC light variant. It covers non-exercise wellness
-data across 10 sections (TRIAGE, MESS HALL, HYDRATION, SOMNIUM, SOMA, APOTHECARY,
+data across 10 sections (TRIAGE, FUEL, HYDRATION, SOMNIUM, SOMA, APOTHECARY,
 VITALS, MIND, SYNC LAB, REPORTS) — 257 features total — and connects bidirectionally
 to Workout through a governed bridge contract.
 
