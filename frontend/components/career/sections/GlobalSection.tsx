@@ -13,7 +13,7 @@ import { useMemo, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Globe, Plus, Sparkles, Trash2, Calendar, Target, Flame, TrendingUp,
-  TreePine, Landmark, Zap, DollarSign, Clock,
+  TreePine, Landmark, Zap, DollarSign, Clock, Mic, FileKey,
 } from "lucide-react";
 import { useStore } from "../../../lib/store";
 import type {
@@ -48,6 +48,8 @@ const TABS = [
   { id: "wellbeing", label: "Wellbeing", icon: <Flame size={12}/>,    color: "var(--cr-accent3)" },
   { id: "vision",    label: "Vision",    icon: <Sparkles size={12}/>, color: "#f472b6" },
   { id: "hustle",    label: "Hustle",    icon: <Zap size={12}/>,      color: "#fb923c" },
+  { id: "ip",        label: "IP",        icon: <FileKey size={12}/>,  color: "#22d3ee" },
+  { id: "speaking",  label: "Speaking",  icon: <Mic size={12}/>,      color: "#a78bfa" },
   { id: "freedom",   label: "Freedom",   icon: <Landmark size={12}/>, color: "#facc15" },
 ] as const;
 
@@ -57,8 +59,10 @@ export default function GlobalSection() {
   const [eventDraft, setEventDraft] = useState<Partial<TimelineEvent>>({ title:"", type:"milestone", date: today() });
   const [sat, setSat] = useState(7);
   const [burnout, setBurnout] = useState({ workload:5, control:5, rewards:5, community:5, fairness:5, values:5 });
-  const [tab, setTab] = useState<"timeline"|"wellbeing"|"vision"|"hustle"|"freedom">("timeline");
+  const [tab, setTab] = useState<"timeline"|"wellbeing"|"vision"|"hustle"|"ip"|"speaking"|"freedom">("timeline");
   const [hustleDraft, setHustleDraft] = useState({ name:"", revenue:0, hoursPerWeek:0, goal:"", stage:"idea" as "idea"|"building"|"launched"|"scaling" });
+  const [ipDraft, setIpDraft] = useState({ type:"patent" as "patent"|"copyright"|"trademark"|"idea", title:"", notes:"" });
+  const [speakDraft, setSpeakDraft] = useState({ title:"", event:"", date:"", notes:"" });
 
   const timeline: TimelineEvent[] = useMemo(() => {
     const fromAch: TimelineEvent[] = career.achievements.map(a => ({
@@ -421,6 +425,94 @@ export default function GlobalSection() {
                     <Trash2 size={11}/>
                   </button>
                 </motion.div>
+              ))}
+            </div>
+          </motion.div>
+        )}
+
+        {tab === "ip" && (
+          <motion.div key="ip" initial={{opacity:0,y:8}} animate={{opacity:1,y:0}} exit={{opacity:0}} className="space-y-3">
+            <div className="rounded-sm p-3 hud-corner relative space-y-2" style={{...card,borderColor:"#22d3ee66"}}>
+              <span className="c-tr"/><span className="c-bl"/>
+              <h3 className="text-sm tracking-widest font-bold flex items-center gap-2" style={{color:"var(--cr-accent)"}}>
+                <FileKey size={14}/> IP_REGISTRY
+              </h3>
+              <div className="grid md:grid-cols-3 gap-2">
+                <select value={ipDraft.type} onChange={e=>setIpDraft(d=>({...d,type:e.target.value as any}))}
+                  className="bg-transparent px-2 py-1.5 rounded text-xs outline-none" style={inputStyle}>
+                  <option value="patent" className="bg-gray-900">Patent</option>
+                  <option value="copyright" className="bg-gray-900">Copyright</option>
+                  <option value="trademark" className="bg-gray-900">Trademark</option>
+                  <option value="idea" className="bg-gray-900">Idea (seed)</option>
+                </select>
+                <input value={ipDraft.title} onChange={e=>setIpDraft(d=>({...d,title:e.target.value}))} placeholder="Title / ID" className="md:col-span-2 bg-transparent px-2 py-1.5 rounded text-xs outline-none" style={inputStyle}/>
+              </div>
+              <textarea value={ipDraft.notes} onChange={e=>setIpDraft(d=>({...d,notes:e.target.value}))} rows={2} placeholder="Notes, filing #, dates…"
+                className="w-full bg-transparent px-2 py-1.5 rounded text-xs outline-none resize-none" style={inputStyle}/>
+              <button onClick={()=>{
+                if(!ipDraft.title.trim()) return;
+                updateCareer(c=>({ip:[{id:uid(),type:ipDraft.type,title:ipDraft.title.trim(),notes:ipDraft.notes||undefined,date:today()},...c.ip]}));
+                setIpDraft({type:"patent",title:"",notes:""});
+              }} className="text-[10px] tracking-widest font-bold px-3 py-1.5 rounded-sm" style={{background:"var(--cr-accent)",color:"var(--cr-bg)"}}>[ + LOG_IP ]</button>
+            </div>
+            {career.ip.length === 0 && <p className="text-xs italic" style={{color:"var(--cr-fgMuted)"}}>No IP logged. Patents, TM, ©, raw ideas.</p>}
+            <div className="grid md:grid-cols-2 gap-2">
+              {career.ip.map(ip => {
+                const color = ip.type==="patent"?"var(--cr-accent)":ip.type==="trademark"?"#a78bfa":ip.type==="copyright"?"#34d399":"#facc15";
+                return (
+                  <div key={ip.id} className="rounded-sm p-3 hud-corner relative group" style={{...card,borderColor:`${color}44`}}>
+                    <span className="c-tr"/><span className="c-bl"/>
+                    <div className="flex items-start gap-2">
+                      <FileKey size={13} className="mt-0.5 shrink-0" style={{color}}/>
+                      <div className="flex-1 min-w-0">
+                        <div className="text-[9px] tracking-widest font-bold" style={{color}}>{ip.type.toUpperCase()}{ip.date?` · ${ip.date}`:""}</div>
+                        <div className="font-bold text-sm" style={{color:"var(--cr-fg)"}}>{ip.title}</div>
+                        {ip.notes && <div className="text-[11px] mt-0.5" style={{color:"var(--cr-fgMuted)"}}>{ip.notes}</div>}
+                      </div>
+                      <button onClick={()=>updateCareer(c=>({ip:c.ip.filter(x=>x.id!==ip.id)}))} className="p-1 rounded opacity-0 group-hover:opacity-100 hover:bg-red-500/20 transition" style={{color:"var(--cr-red,#f87171)"}}><Trash2 size={11}/></button>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </motion.div>
+        )}
+
+        {tab === "speaking" && (
+          <motion.div key="sp" initial={{opacity:0,y:8}} animate={{opacity:1,y:0}} exit={{opacity:0}} className="space-y-3">
+            <div className="rounded-sm p-3 hud-corner relative space-y-2" style={{...card,borderColor:"#a78bfa66"}}>
+              <span className="c-tr"/><span className="c-bl"/>
+              <h3 className="text-sm tracking-widest font-bold flex items-center gap-2" style={{color:"#a78bfa"}}>
+                <Mic size={14}/> SPEAKING_EVENTS
+              </h3>
+              <div className="grid md:grid-cols-2 gap-2">
+                <input value={speakDraft.title} onChange={e=>setSpeakDraft(d=>({...d,title:e.target.value}))} placeholder="Talk title" className="bg-transparent px-2 py-1.5 rounded text-xs outline-none" style={inputStyle}/>
+                <input value={speakDraft.event} onChange={e=>setSpeakDraft(d=>({...d,event:e.target.value}))} placeholder="Event / venue" className="bg-transparent px-2 py-1.5 rounded text-xs outline-none" style={inputStyle}/>
+                <input type="date" value={speakDraft.date} onChange={e=>setSpeakDraft(d=>({...d,date:e.target.value}))} className="bg-transparent px-2 py-1.5 rounded text-xs outline-none" style={inputStyle}/>
+              </div>
+              <textarea value={speakDraft.notes} onChange={e=>setSpeakDraft(d=>({...d,notes:e.target.value}))} rows={2} placeholder="Notes / key takeaways"
+                className="w-full bg-transparent px-2 py-1.5 rounded text-xs outline-none resize-none" style={inputStyle}/>
+              <button onClick={()=>{
+                if(!speakDraft.title.trim()) return;
+                updateCareer(c=>({speaking:[{id:uid(),title:speakDraft.title.trim(),event:speakDraft.event,date:speakDraft.date||today(),notes:speakDraft.notes||undefined},...c.speaking]}));
+                setSpeakDraft({title:"",event:"",date:"",notes:""});
+              }} className="text-[10px] tracking-widest font-bold px-3 py-1.5 rounded-sm" style={{background:"#a78bfa",color:"#000"}}>[ + ADD_EVENT ]</button>
+            </div>
+            {career.speaking.length === 0 && <p className="text-xs italic" style={{color:"var(--cr-fgMuted)"}}>No talks logged. Track conferences, meetups, podcasts.</p>}
+            <div className="space-y-2">
+              {[...career.speaking].sort((a,b)=>b.date.localeCompare(a.date)).map(sp => (
+                <div key={sp.id} className="rounded-sm p-3 hud-corner relative group flex items-start gap-2" style={{...card,borderColor:"#a78bfa44"}}>
+                  <span className="c-tr"/><span className="c-bl"/>
+                  <Mic size={13} className="mt-0.5 shrink-0" style={{color:"#a78bfa"}}/>
+                  <div className="flex-1 min-w-0">
+                    <div className="font-bold text-sm" style={{color:"var(--cr-fg)"}}>{sp.title}</div>
+                    <div className="text-[10px] font-mono mt-0.5" style={{color:"#a78bfa"}}>
+                      {sp.event}{sp.event && sp.date ? " · ":""}{sp.date}
+                    </div>
+                    {sp.notes && <div className="text-[11px] mt-0.5" style={{color:"var(--cr-fgMuted)"}}>{sp.notes}</div>}
+                  </div>
+                  <button onClick={()=>updateCareer(c=>({speaking:c.speaking.filter(x=>x.id!==sp.id)}))} className="p-1 rounded opacity-0 group-hover:opacity-100 hover:bg-red-500/20 transition" style={{color:"var(--cr-red,#f87171)"}}><Trash2 size={11}/></button>
+                </div>
               ))}
             </div>
           </motion.div>

@@ -17,7 +17,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   Plus, Briefcase, Trash2, Ghost, Clock, Building2, HelpCircle,
   Search, Star, CheckCircle2, Circle, X,
-  AlertTriangle, HandCoins, Scale,
+  AlertTriangle, HandCoins, Scale, Timer, Heart,
 } from "lucide-react";
 import { useStore } from "../../../lib/store";
 import type { JobApplication, AppStage, AppQuestion, CompanyDossier } from "../../../lib/careerTypes";
@@ -325,6 +325,65 @@ export default function JobsSection() {
                                     </div>
                                   </div>
                                 )}
+
+                                {/* Time spent tracker */}
+                                <div className="mt-2 p-2 rounded-sm flex items-center gap-2 flex-wrap"
+                                  style={{background:"var(--cr-card2)",border:`1px solid ${COLORS.cyan}44`}}>
+                                  <Timer size={10} style={{color:COLORS.cyan}}/>
+                                  <span className="text-[9px] tracking-widest font-bold" style={{color:COLORS.cyan}}>TIME_SPENT</span>
+                                  <span className="text-[10px] font-mono font-black" style={{color:COLORS.cyan}}>{(a.timeSpentMin||0)}min</span>
+                                  <div className="ml-auto flex gap-1">
+                                    {[15,30,60].map(m => (
+                                      <button key={m} onClick={()=>upd(a.id,{timeSpentMin:(a.timeSpentMin||0)+m})}
+                                        className="text-[9px] tracking-widest font-bold px-1.5 py-0.5 rounded-sm"
+                                        style={{background:`${COLORS.cyan}15`,color:COLORS.cyan,border:`1px solid ${COLORS.cyan}33`}}>+{m}m</button>
+                                    ))}
+                                    <button onClick={()=>upd(a.id,{timeSpentMin:0})}
+                                      className="text-[9px] tracking-widest font-bold px-1.5 py-0.5 rounded-sm"
+                                      style={{color:COLORS.red}}>reset</button>
+                                  </div>
+                                </div>
+
+                                {/* Culture checklist */}
+                                <div className="mt-2 p-2 rounded-sm" style={{background:"var(--cr-card2)",border:`1px solid ${COLORS.pink}44`}}>
+                                  <div className="text-[9px] tracking-widest font-bold mb-1 flex items-center gap-1" style={{color:COLORS.pink}}>
+                                    <Heart size={10}/> CULTURE_CHECK
+                                  </div>
+                                  {(() => {
+                                    const cc = co?.cultureChecks || [];
+                                    const score = cc.filter(c => c.value === "✓").length;
+                                    return (
+                                      <>
+                                        <div className="grid grid-cols-2 gap-x-2 gap-y-0.5">
+                                          {["Remote-friendly","Fast pace","Mentorship","Strong eng bar","Good WLB","Mission fit","Comp fair","Diverse team"].map(lbl => {
+                                            const existing = cc.find(c => c.label === lbl);
+                                            const val = existing?.value || "?";
+                                            const cycle = () => {
+                                              const next = val === "?" ? "✓" : val === "✓" ? "✗" : "?";
+                                              const newArr = existing
+                                                ? cc.map(c => c.label===lbl ? {...c,value:next} : c)
+                                                : [...cc, {label:lbl,value:next}];
+                                              updateCareer(s => ({ companies: s.companies.map(x => x.id===(co?.id||"") ? {...x, cultureChecks:newArr} : x) }));
+                                            };
+                                            const col = val === "✓" ? COLORS.green : val === "✗" ? COLORS.red : "var(--cr-fgMuted)";
+                                            return (
+                                              <button key={lbl} onClick={cycle}
+                                                className="text-[10px] font-mono text-left px-1 py-0.5 rounded flex items-center gap-1 hover:bg-white/5">
+                                                <span style={{color:col,fontWeight:700,width:10}}>{val}</span>
+                                                <span className="truncate" style={{color:"var(--cr-fg)"}}>{lbl}</span>
+                                              </button>
+                                            );
+                                          })}
+                                        </div>
+                                        {co && (
+                                          <div className="mt-1 text-[9px] tracking-widest font-mono" style={{color: score>=6?COLORS.green:score>=4?COLORS.yellow:COLORS.orange}}>
+                                            match: {score}/8
+                                          </div>
+                                        )}
+                                      </>
+                                    );
+                                  })()}
+                                </div>
 
                                 <div className="flex gap-1 mt-2 flex-wrap">
                                   {co && (

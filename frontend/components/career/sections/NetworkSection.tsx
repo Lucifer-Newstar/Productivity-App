@@ -166,6 +166,75 @@ export default function NetworkSection() {
       </div>
 
       {/* Reach-out queue */}
+      {career.contacts.length > 0 && (() => {
+        // Radial graph: contacts placed by relationship-type angle + health-score radius.
+        const CX = 200, CY = 200, MAXR = 170;
+        const groups: Record<string, typeof career.contacts> = {};
+        career.contacts.forEach(c => {
+          const k = c.relationship || "peer";
+          (groups[k] = groups[k] || []).push(c);
+        });
+        const groupKeys = Object.keys(groups);
+        const ANGLE_SPAN = Math.PI * 1.8; // leave a gap
+        const nodes = career.contacts.map((c, i) => {
+          const gi = groupKeys.indexOf(c.relationship || "peer");
+          const group = groups[c.relationship || "peer"];
+          const idxInGroup = group.indexOf(c);
+          const ga = -Math.PI/2 + gi * (ANGLE_SPAN/Math.max(1,groupKeys.length));
+          const spread = (ANGLE_SPAN/Math.max(1,groupKeys.length)) * 0.85;
+          const a = ga + (group.length>1 ? (idxInGroup/(group.length-1) - 0.5) * spread : 0);
+          const health = (c.healthScore ?? 5) / 10;
+          const r = MAXR * (1 - health * 0.65) + Math.sin(i*1.3)*8;
+          return { c, x: CX + Math.cos(a)*r, y: CY + Math.sin(a)*r, a, color: COLORS.pink, active: activeId===c.id, stale: !c.lastContactAt || Date.now()-c.lastContactAt>90*86400000 };
+        });
+        return (
+          <div className="rounded-sm p-3 hud-corner relative" style={{background:"var(--cr-card)",border:`1px solid ${COLORS.pink}44`}}>
+            <span className="c-tr"/><span className="c-bl"/>
+            <div className="flex items-center justify-between mb-2">
+              <div className="text-[10px] tracking-widest font-bold flex items-center gap-1" style={{color:COLORS.pink}}>
+                <Users size={11}/> CONTACT · GRAPH
+              </div>
+              <div className="text-[9px] font-mono flex items-center gap-3" style={{color:"var(--cr-fgMuted)"}}>
+                <span><span className="inline-block w-2 h-2 rounded-full mr-1" style={{background:COLORS.green}}/>hot</span>
+                <span><span className="inline-block w-2 h-2 rounded-full mr-1" style={{background:COLORS.orange}}/>stale</span>
+                <span><span className="inline-block w-2 h-2 rounded-full mr-1" style={{background:COLORS.pink}}/>selected</span>
+              </div>
+            </div>
+            <div className="flex justify-center">
+              <svg viewBox="0 0 400 400" style={{width:"100%",maxWidth:420}}>
+                {/* Concentric rings */}
+                {[0.33,0.66,1].map(f => (
+                  <circle key={f} cx={CX} cy={CY} r={MAXR*f} fill="none" stroke="rgba(255,255,255,0.05)" strokeDasharray="2 4"/>
+                ))}
+                <circle cx={CX} cy={CY} r={30} fill={`${COLORS.pink}22`} stroke={COLORS.pink} strokeWidth="1.5" style={{filter:`drop-shadow(0 0 8px ${COLORS.pink}88)`}}/>
+                <text x={CX} y={CY+4} textAnchor="middle" fontSize="10" fontFamily="monospace" fontWeight="700" fill={COLORS.pink}>YOU</text>
+                {/* Edges from center */}
+                {nodes.map(n => (
+                  <line key={"e-"+n.c.id} x1={CX} y1={CY} x2={n.x} y2={n.y}
+                    stroke={n.active?COLORS.pink:n.stale?COLORS.orange:"rgba(244,114,182,0.2)"}
+                    strokeWidth={n.active?1.5:0.7} strokeDasharray={n.stale?"3 3":""}/>
+                ))}
+                {/* Nodes */}
+                {nodes.map(n => {
+                  const col = n.active?COLORS.pink:n.stale?COLORS.orange:COLORS.green;
+                  const r = Math.max(3, Math.min(9, 3 + (n.c.healthScore||5)/3));
+                  return (
+                    <g key={n.c.id} className="cursor-pointer" onClick={()=>setActiveId(n.active?null:n.c.id)}>
+                      <circle cx={n.x} cy={n.y} r={r+2} fill="transparent"/>
+                      <circle cx={n.x} cy={n.y} r={r} fill={col} stroke={n.active?"#fff":"transparent"} strokeWidth={n.active?1.5:0}
+                        style={{filter:`drop-shadow(0 0 4px ${col}aa)`}}/>
+                      {(n.active || r>=6) && (
+                        <text x={n.x+6+r} y={n.y+3} fontSize="9" fontFamily="monospace" fill="var(--cr-fg)">{n.c.name.split(" ")[0]}</text>
+                      )}
+                    </g>
+                  );
+                })}
+              </svg>
+            </div>
+          </div>
+        );
+      })()}
+
       {career.contacts.length > 0 && (
         <div className="rounded-sm p-3 hud-corner relative"
           style={{background:"var(--cr-card)",border:`1px solid ${COLORS.orange}66`}}>

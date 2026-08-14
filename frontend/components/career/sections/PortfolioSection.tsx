@@ -27,6 +27,16 @@ const BORDER = "var(--cr-border)";
 const BORDER_SOFT = "var(--cr-borderSoft)";
 const FG = "var(--cr-fg)";
 
+const PROJ_CATS = [
+  { id: "web",       label: "WEB",        color: "var(--cr-accent)" },
+  { id: "mobile",    label: "MOBILE",     color: "var(--cr-violet,#a78bfa)" },
+  { id: "infra",     label: "INFRA",      color: "var(--cr-accent3)" },
+  { id: "ml",        label: "ML/AI",      color: "var(--cr-pink,#f472b6)" },
+  { id: "tool",      label: "TOOL",       color: "var(--cr-accent2)" },
+  { id: "opensource",label: "OSS",        color: "var(--cr-yellow,#facc15)" },
+  { id: "other",     label: "OTHER",      color: "var(--cr-fgMuted)" },
+] as const;
+
 const CATS: { id: AchievementCategory; label: string; color: string; hex: string }[] = [
   { id: "technical",  label: "TECHNICAL",  color: "var(--cr-accent)",   hex: "#22d3ee" },
   { id: "leadership", label: "LEADERSHIP", color: YELLOW,               hex: "#facc15" },
@@ -57,6 +67,7 @@ export default function PortfolioSection() {
   const { career, updateCareer } = useStore();
   const [tab, setTab] = useState<"achievements"|"projects"|"bullets"|"testimonials">("achievements");
   const [cat, setCat] = useState<AchievementCategory|"all">("all");
+  const [pCat, setPCat] = useState<string>("all");
   const [addingA, setAddingA] = useState(false);
   const [addingP, setAddingP] = useState(false);
   const [bulletDraft, setBulletDraft] = useState("");
@@ -314,6 +325,13 @@ export default function PortfolioSection() {
       {/* ============ PROJECTS ============ */}
       {tab === "projects" && (
         <>
+          <div className="flex flex-wrap gap-1.5">
+            <HudChip active={pCat==="all"} color={MUTED} onClick={()=>setPCat("all")} label="ALL" count={career.projects.length}/>
+            {PROJ_CATS.map(c => {
+              const n = career.projects.filter(p => (p as any).category === c.id).length;
+              return <HudChip key={c.id} active={pCat===c.id} color={c.color} onClick={()=>setPCat(c.id)} label={c.label} count={n}/>;
+            })}
+          </div>
           <HudAddBtn open={addingP} onClick={()=>setAddingP(v=>!v)} color={CYAN} label="NEW PROJECT" icon={<Plus size={13}/>}/>
 
           <AnimatePresence>
@@ -356,11 +374,26 @@ export default function PortfolioSection() {
                     </span>
                   ))}
                 </div>
-                <label className="flex items-center gap-2 text-[11px] font-mono cursor-pointer" style={{ color: MUTED }}>
-                  <input type="checkbox" checked={!!pDraft.private} onChange={e=>setPDraft(d=>({...d,private:e.target.checked}))}
-                    className="accent-yellow-400"/>
-                  <span>PRIVATE :: exclude from public portfolio</span>
-                </label>
+                <div className="grid md:grid-cols-2 gap-2">
+                  <select value={((pDraft as any).category)||"other"} onChange={e=>setPDraft(d=>({...d,category:e.target.value as any}))}
+                    className="px-2 py-2 rounded text-xs font-mono outline-none cursor-pointer" style={inputStyle}>
+                    {PROJ_CATS.map(c => <option key={c.id} value={c.id} className="bg-gray-900">{c.label}</option>)}
+                  </select>
+                  <label className="flex items-center gap-2 text-[11px] font-mono cursor-pointer px-2" style={{ color: MUTED }}>
+                    <input type="checkbox" checked={!!pDraft.private} onChange={e=>setPDraft(d=>({...d,private:e.target.checked}))}
+                      className="accent-yellow-400"/>
+                    <span>PRIVATE</span>
+                  </label>
+                </div>
+                <div className="pt-2" style={{borderTop:`1px dashed ${BORDER_SOFT}`}}>
+                  <div className="text-[9px] font-mono tracking-[0.25em] mb-1" style={{color:YELLOW}}>// case_study</div>
+                  <input value={(pDraft.caseStudy as any)?.problem||""} onChange={e=>setPDraft(d=>({...d,caseStudy:{...(d.caseStudy as any||{}),problem:e.target.value}}))}
+                    placeholder="Problem (context)" className="w-full px-2 py-1.5 rounded text-xs font-mono outline-none mb-1" style={inputStyle}/>
+                  <input value={(pDraft.caseStudy as any)?.solution||""} onChange={e=>setPDraft(d=>({...d,caseStudy:{...(d.caseStudy as any||{}),solution:e.target.value}}))}
+                    placeholder="Solution (your approach)" className="w-full px-2 py-1.5 rounded text-xs font-mono outline-none mb-1" style={inputStyle}/>
+                  <input value={(pDraft.caseStudy as any)?.results||""} onChange={e=>setPDraft(d=>({...d,caseStudy:{...(d.caseStudy as any||{}),results:e.target.value}}))}
+                    placeholder="Case-study results (metrics)" className="w-full px-2 py-1.5 rounded text-xs font-mono outline-none" style={inputStyle}/>
+                </div>
                 <button onClick={addProj} className="font-mono text-[10px] tracking-[0.25em] px-4 py-2 rounded transition hover:brightness-110"
                   style={{ background: CYAN, color:"#000", fontWeight:700 }}>[ SAVE_PROJECT ]</button>
               </motion.div>
@@ -373,8 +406,9 @@ export default function PortfolioSection() {
           )}
 
           <div className="grid md:grid-cols-2 gap-3">
-            {career.projects.map(p => (
-              <motion.div key={p.id} layout
+            {career.projects.filter(p => pCat==="all" || (p as any).category===pCat).map(p => {
+              const pc = PROJ_CATS.find(c => c.id === (p as any).category) || PROJ_CATS[PROJ_CATS.length-1];
+              return (<motion.div key={p.id} layout
                 className="relative rounded-lg p-4 group transition hover:translate-y-[-1px]"
                 style={{
                   background: CARD,
@@ -385,6 +419,8 @@ export default function PortfolioSection() {
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">
                       <h4 className="font-mono text-sm font-bold" style={{ color: FG }}>{p.title}</h4>
+                      <span className="text-[9px] font-mono tracking-widest px-1.5 py-0.5 rounded"
+                        style={{ color: pc.color, background: `${pc.color}18`, border: `1px solid ${pc.color}44` }}>{pc.label}</span>
                       {p.private && (
                         <span className="text-[9px] font-mono tracking-widest flex items-center gap-1 px-1.5 py-0.5 rounded"
                           style={{ color: MUTED, background: "rgba(100,116,139,0.15)", border:`1px solid ${BORDER_SOFT}` }}>
@@ -421,6 +457,14 @@ export default function PortfolioSection() {
                     <p className="text-[11px] font-mono" style={{ color: FG }}>{p.learnings}</p>
                   </div>
                 )}
+                {p.caseStudy && (p.caseStudy.problem || p.caseStudy.solution || p.caseStudy.results) && (
+                  <div className="mt-2 rounded p-2 font-mono text-[10px] space-y-0.5" style={{background: CARD2, border:`1px solid ${YELLOW}33`}}>
+                    <div className="text-[9px] tracking-widest font-bold" style={{color:YELLOW}}>CASE_STUDY</div>
+                    {p.caseStudy.problem && <div><span style={{color:RED}}>P:</span> {p.caseStudy.problem}</div>}
+                    {p.caseStudy.solution && <div><span style={{color:CYAN}}>S:</span> {p.caseStudy.solution}</div>}
+                    {p.caseStudy.results && <div><span style={{color:GREEN}}>R:</span> {p.caseStudy.results}</div>}
+                  </div>
+                )}
                 {p.technologies && p.technologies.length>0 && (
                   <div className="flex flex-wrap gap-1 mt-2.5">
                     {p.technologies.map((t,i) => (
@@ -430,7 +474,13 @@ export default function PortfolioSection() {
                   </div>
                 )}
               </motion.div>
-            ))}
+              );
+            })}
+            {career.projects.filter(p => pCat==="all" || (p as any).category===pCat).length === 0 && !addingP && (
+              <div className="md:col-span-2 text-center text-[11px] font-mono py-6" style={{color:MUTED}}>
+                {">"} no projects in this category
+              </div>
+            )}
           </div>
         </>
       )}

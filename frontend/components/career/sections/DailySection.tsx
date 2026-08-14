@@ -104,8 +104,17 @@ export default function DailySection() {
   };
 
   // Meeting CRUD
-  const addMeeting = () => {
-    const m: MeetingEntry = { id: uid(), title: "New meeting", date: day, durationMin: 30, roiScore: 3, followUps: [] };
+  const MEETING_TEMPLATES = [
+    { label: "1:1",     title: "1:1 with ",     durationMin: 30, plannedAgenda: "• Updates\n• Blockers\n• Feedback\n• Growth" },
+    { label: "Standup", title: "Daily Standup", durationMin: 15, plannedAgenda: "• Yesterday\n• Today\n• Blockers" },
+    { label: "Review",  title: "PR Review",     durationMin: 30, plannedAgenda: "• Walkthrough\n• Concerns\n• Decisions" },
+    { label: "Retro",   title: "Sprint Retro",  durationMin: 60, plannedAgenda: "• What went well\n• What didn't\n• Actions" },
+    { label: "Plan",    title: "Sprint Plan",   durationMin: 60, plannedAgenda: "• Goals\n• Capacity\n• Assignments" },
+    { label: "Blank",   title: "New meeting",   durationMin: 30, plannedAgenda: "" },
+  ];
+  const addMeeting = (tmpl?: typeof MEETING_TEMPLATES[number]) => {
+    const t = tmpl || MEETING_TEMPLATES[MEETING_TEMPLATES.length-1];
+    const m: MeetingEntry = { id: uid(), title: t.title, date: day, durationMin: t.durationMin, roiScore: 3, plannedAgenda: t.plannedAgenda, followUps: [] };
     upd({ meetings: [...(entry.meetings||[]), m] });
   };
   const updMeeting = (id: string, patch: Partial<MeetingEntry>) => {
@@ -307,11 +316,15 @@ export default function DailySection() {
             <h3 className="text-xs tracking-[0.3em] font-bold flex items-center gap-2" style={{color:COLORS.orange}}>
               <Users size={14}/> MEETINGS · {totalMeetingMin}min {openFollowUps>0 && <span className="text-[10px] px-1.5 py-0.5 rounded-sm font-bold" style={{background:`${COLORS.pink}22`,color:COLORS.pink,border:`1px solid ${COLORS.pink}44`}}>{openFollowUps} OPEN FU</span>}
             </h3>
-            <button onClick={addMeeting} disabled={!isToday}
-              className="text-[10px] tracking-widest font-bold px-3 py-1.5 rounded-sm flex items-center gap-1 disabled:opacity-40"
-              style={{background:`${COLORS.orange}22`,color:COLORS.orange,border:`1px solid ${COLORS.orange}66`}}>
-              <Plus size={12}/> ADD
-            </button>
+            <div className="flex gap-1 flex-wrap">
+              {MEETING_TEMPLATES.map(t => (
+                <button key={t.label} onClick={()=>addMeeting(t)} disabled={!isToday}
+                  className="text-[9px] tracking-widest font-bold px-2 py-1 rounded-sm flex items-center gap-1 disabled:opacity-40 transition hover:brightness-125"
+                  style={{background:`${COLORS.orange}22`,color:COLORS.orange,border:`1px solid ${COLORS.orange}44`}}>
+                  <Plus size={9}/>{t.label}
+                </button>
+              ))}
+            </div>
           </div>
           <div className="space-y-2">
             <AnimatePresence>
