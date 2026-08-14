@@ -203,6 +203,10 @@ export default function CareerShell({ section, commandButton, commandCard, child
           --cr-card: ${T.cardBg};
           --cr-card2: ${T.cardBg2};
           --cr-grid: ${T.grid};
+          --cr-violet: ${light ? "#6d28d9" : "#a78bfa"};
+          --cr-pink:   ${light ? "#be185d" : "#f472b6"};
+          --cr-yellow: ${light ? "#a16207" : "#facc15"};
+          --cr-red:    ${light ? "#b91c1c" : "#f87171"};
         }
         /* Auto-flip common hardcoded dark tokens inside career to light tokens when in blueprint mode.
            These substring selectors match ANY inline style containing the token (background, border, color, etc.),
