@@ -280,6 +280,26 @@ export interface Idea {
   createdAt: number;
 }
 
+export interface Fishbone {
+  id: string;
+  projectId?: string;
+  problem: string;
+  categories: { name: string; causes: string[] }[];
+}
+
+export interface SixHats {
+  id: string;
+  projectId?: string;
+  topic: string;
+  date: string;
+  white: string; // facts
+  red: string;   // feelings
+  black: string; // risks
+  yellow: string; // benefits
+  green: string; // creativity
+  blue: string;  // process/conclusion
+}
+
 export interface ProjectBudget {
   estimated?: number;
   actual: number;
@@ -380,6 +400,8 @@ export interface ForgeState {
   personas: Persona[];
   decisionMatrix: DecisionMatrixRow[];
   ideas: Idea[];
+  fishbones: Fishbone[];
+  sixHats: SixHats[];
   settings: {
     workStartHour: number;
     workEndHour: number;

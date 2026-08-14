@@ -338,6 +338,26 @@ export function buildForgeDemo(): ForgeState {
       { id: uid(), projectId: p3.id, text: "One-click deploy to Vercel (delight)", kind:"kano", kanoCat:"delight", votes:4, createdAt: Date.now()-86400000 },
       { id: uid(), projectId: p3.id, text: "Make the page load SLOWER and require login to see pricing", kind:"worst", votes:0, createdAt: Date.now()-86400000 },
     ],
+    fishbones: [
+      { id: uid(), projectId: p3.id, problem: "Landing page conversion < 1%",
+        categories:[
+          {name:"People",causes:["No sales experience","Writing in a vacuum"]},
+          {name:"Process",causes:["Skipped customer interviews","Launched hero before validation"]},
+          {name:"Tools",causes:["No analytics"]},
+          {name:"Materials",causes:["Headline is generic","Weak CTA"]},
+          {name:"Environment",causes:["Two competitors just launched"]},
+          {name:"Measurement",causes:["No funnel tracking"]},
+        ]},
+    ],
+    sixHats: [
+      { id: uid(), projectId: p1.id, topic:"Ship Forge v1 before polishing every corner", date: today(),
+        white:"8 weeks of part-time work done, 5 routes live, tsc clean.",
+        red:"Tired but proud. Scared of shipping half-baked.",
+        black:"Feature gaps vs PM fantasy list will bite me later.",
+        yellow:"Shipping momentum compounds; having it in daily use reveals real bugs.",
+        green:"Dogfood for a week, then ship wave 2 as patches.",
+        blue:"Set ship date Friday EOD; no new sectors after Wednesday." },
+    ],
     settings: {
       workStartHour: 9,
       workEndHour: 18,

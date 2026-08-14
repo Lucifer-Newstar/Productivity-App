@@ -12,7 +12,7 @@ import {
   Sparkles, Shuffle, Palette,
 } from "lucide-react";
 import { useStore } from "../../../lib/store";
-import type { DecisionMatrixRow } from "../../../lib/forgeTypes";
+import type { DecisionMatrixRow, Fishbone, SixHats, Persona } from "../../../lib/forgeTypes";
 
 const uid = () => Math.random().toString(36).slice(2,10);
 const today = () => new Date().toISOString().slice(0,10);
@@ -23,6 +23,8 @@ const TABS = [
   { id: "personas", label: "PERSONAS", icon: Users, color: "#ec4899" },
   { id: "decisions", label: "DECISIONS", icon: Target, color: "#06b6d4" },
   { id: "matrix", label: "DEC-MATRIX", icon: Grid3x3, color: "#a78bfa" },
+  { id: "fishbone", label: "FISHBONE", icon: Brain, color: "#fb923c" },
+  { id: "sixhats", label: "6 HATS", icon: Palette, color: "#22d3ee" },
   { id: "swot", label: "SWOT", icon: Search, color: "#a78bfa" },
   { id: "proscons", label: "PRO/CON", icon: Scale, color: "#06b6d4" },
   { id: "scenarios", label: "SCENARIOS", icon: Zap, color: "#f59e0b" },
@@ -162,6 +164,18 @@ export default function SmelterSection() {
         {tab==="matrix" && (
           <motion.div key="mx" initial={{opacity:0,y:8}} animate={{opacity:1,y:0}} exit={{opacity:0}} className="space-y-3">
             <DecisionMatrixPanel projects={activeProjects} defaultProj={projFilter!=="all"?projFilter:undefined}/>
+          </motion.div>
+        )}
+
+        {tab==="fishbone" && (
+          <motion.div key="fb" initial={{opacity:0,y:8}} animate={{opacity:1,y:0}} exit={{opacity:0}} className="space-y-3">
+            <FishbonePanel projects={activeProjects} defaultProj={projFilter!=="all"?projFilter:undefined}/>
+          </motion.div>
+        )}
+
+        {tab==="sixhats" && (
+          <motion.div key="sh" initial={{opacity:0,y:8}} animate={{opacity:1,y:0}} exit={{opacity:0}} className="space-y-3">
+            <SixHatsPanel projects={activeProjects} defaultProj={projFilter!=="all"?projFilter:undefined}/>
           </motion.div>
         )}
 
@@ -856,3 +870,156 @@ function SmelterTimer(){
     </div>
   );
 }
+
+function FishbonePanel({projects,defaultProj}:{projects:any[];defaultProj?:string}){
+  const {forge,updateForge} = useStore();
+  const list = forge.fishbones.filter(f=>defaultProj?f.projectId===defaultProj:true);
+  const [problem,setProblem] = useState(""); const [pid,setPid] = useState(defaultProj||"");
+  const BONES = ["People","Process","Tools","Materials","Environment","Measurement"];
+  const add = () => {
+    if(!problem.trim()) return;
+    const fb: Fishbone = {id:uid(),problem,projectId:pid||undefined,categories:BONES.map(n=>({name:n,causes:[]}))};
+    updateForge(f=>({fishbones:[fb,...f.fishbones]}));
+    setProblem("");
+  };
+  return (
+    <>
+      <div className="rounded-sm steel-plate p-4 relative" style={{borderColor:"#fb923c55"}}>
+        <span className="riv-tl"/><span className="riv-tr"/><span className="riv-bl"/><span className="riv-br"/>
+        <div className="mono text-[10px] tracking-widest mb-2" style={{color:"#fb923c"}}>+ FISHBONE / ISHIKAWA</div>
+        <div className="flex gap-2 flex-wrap">
+          <input value={problem} onChange={e=>setProblem(e.target.value)} placeholder="Problem/effect to diagnose"
+            className="flex-1 bg-transparent outline-none mono text-sm px-2 py-1.5 rounded-sm"
+            style={{border:"1px solid var(--fr-borderSoft)",color:"var(--fr-fg)"}}/>
+          <select value={pid} onChange={e=>setPid(e.target.value)}
+            className="mono text-[10px] px-2 py-1 rounded-sm outline-none"
+            style={{background:"var(--fr-card2)",border:"1px solid var(--fr-borderSoft)",color:"var(--fr-fg)"}}>
+            <option value="">global</option>
+            {projects.map(p=><option key={p.id} value={p.id}>{p.icon} {p.codename}</option>)}
+          </select>
+          <button onClick={add} className="mono text-[10px] font-black tracking-widest px-3 py-1.5 rounded-sm"
+            style={{background:"#fb923c",color:"#000"}}>FORGE BONES</button>
+        </div>
+      </div>
+      <div className="space-y-3">
+        {list.map(f=>{
+          const proj = projects.find(x=>x.id===f.projectId);
+          return (
+            <div key={f.id} className="rounded-sm steel-plate p-4 relative" style={{borderColor:"#fb923c44"}}>
+              <span className="riv-tl"/><span className="riv-tr"/><span className="riv-bl"/><span className="riv-br"/>
+              <div className="flex items-center gap-2 mb-2">
+                <Brain size={13} style={{color:"#fb923c"}}/>
+                <h4 className="font-black text-base flex-1">{f.problem}</h4>
+                {proj && <span className="mono text-[9px] tracking-widest" style={{color:proj.color}}>{proj.icon} {proj.codename}</span>}
+                <button onClick={()=>updateForge(ff=>({fishbones:ff.fishbones.filter(x=>x.id!==f.id)}))} style={{color:"var(--fr-red)"}}><Trash2 size={11}/></button>
+              </div>
+              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-2">
+                {f.categories.map((cat,ci)=>{
+                  const COLORS = ["#ef4444","#f59e0b","#22c55e","#06b6d4","#a78bfa","#ec4899"];
+                  const c = COLORS[ci%COLORS.length];
+                  return (
+                    <div key={ci} className="p-2 rounded-sm" style={{background:"var(--fr-card2)",borderLeft:`3px solid ${c}`}}>
+                      <div className="mono text-[10px] tracking-widest font-black" style={{color:c}}>{cat.name.toUpperCase()} ({cat.causes.length})</div>
+                      <ul className="mt-1 space-y-0.5">
+                        {cat.causes.map((cc,i)=>(
+                          <li key={i} className="pencil text-xs flex gap-2 group">
+                            <span>▸</span><span className="flex-1">{cc}</span>
+                            <button onClick={()=>updateForge(ff=>({fishbones:ff.fishbones.map(x=>x.id===f.id?{...x,categories:x.categories.map((y,j)=>j===ci?{...y,causes:y.causes.filter((_,k)=>k!==i)}:y)}:x)}))}
+                              className="opacity-0 group-hover:opacity-100 text-[9px]" style={{color:"var(--fr-red)"}}>✕</button>
+                          </li>
+                        ))}
+                      </ul>
+                      <input placeholder="+ cause" className="w-full bg-transparent outline-none mono text-[10px] mt-1 px-1 py-0.5 rounded-sm"
+                        style={{border:`1px dashed ${c}55`,color:"var(--fr-fg)"}}
+                        onKeyDown={e=>{
+                          if(e.key==="Enter"&&(e.target as HTMLInputElement).value.trim()){
+                            const v = (e.target as HTMLInputElement).value.trim();
+                            updateForge(ff=>({fishbones:ff.fishbones.map(x=>x.id===f.id?{...x,categories:x.categories.map((y,j)=>j===ci?{...y,causes:[...y.causes,v]}:y)}:x)}));
+                            (e.target as HTMLInputElement).value="";
+                          }
+                        }}/>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          );
+        })}
+        {list.length===0 && <div className="mono text-[11px] italic text-center py-8" style={{color:"var(--fr-fgDim)"}}>No fishbones. When something breaks, draw the skeleton.</div>}
+      </div>
+    </>
+  );
+}
+
+function SixHatsPanel({projects,defaultProj}:{projects:any[];defaultProj?:string}){
+  const {forge,updateForge} = useStore();
+  const list = forge.sixHats.filter(s=>defaultProj?s.projectId===defaultProj:true);
+  const [topic,setTopic] = useState(""); const [pid,setPid] = useState(defaultProj||"");
+  const HATS:{k:keyof Omit<SixHats,"id"|"projectId"|"topic"|"date">;label:string;color:string;icon:string}[] = [
+    {k:"white",label:"FACTS",color:"#f1f5f9",icon:"◻"},
+    {k:"red",label:"FEELINGS",color:"#ef4444",icon:"♥"},
+    {k:"black",label:"RISKS",color:"#1f2937",icon:"■"},
+    {k:"yellow",label:"BENEFITS",color:"#facc15",icon:"★"},
+    {k:"green",label:"CREATIVITY",color:"#22c55e",icon:"✦"},
+    {k:"blue",label:"PROCESS",color:"#3b82f6",icon:"◎"},
+  ];
+  const add = () => {
+    if(!topic.trim()) return;
+    const s:SixHats = {id:uid(),topic,projectId:pid||undefined,date:today(),white:"",red:"",black:"",yellow:"",green:"",blue:""};
+    updateForge(f=>({sixHats:[s,...f.sixHats]}));
+    setTopic("");
+  };
+  return (
+    <>
+      <div className="rounded-sm steel-plate p-4 relative" style={{borderColor:"#22d3ee55"}}>
+        <span className="riv-tl"/><span className="riv-tr"/><span className="riv-bl"/><span className="riv-br"/>
+        <div className="mono text-[10px] tracking-widest mb-2" style={{color:"#22d3ee"}}>+ SIX THINKING HATS (de Bono)</div>
+        <div className="flex gap-2 flex-wrap">
+          <input value={topic} onChange={e=>setTopic(e.target.value)} placeholder="Topic/decision to think through"
+            className="flex-1 bg-transparent outline-none mono text-sm px-2 py-1.5 rounded-sm"
+            style={{border:"1px solid var(--fr-borderSoft)",color:"var(--fr-fg)"}}/>
+          <select value={pid} onChange={e=>setPid(e.target.value)}
+            className="mono text-[10px] px-2 py-1 rounded-sm outline-none"
+            style={{background:"var(--fr-card2)",border:"1px solid var(--fr-borderSoft)",color:"var(--fr-fg)"}}>
+            <option value="">global</option>
+            {projects.map(p=><option key={p.id} value={p.id}>{p.icon} {p.codename}</option>)}
+          </select>
+          <button onClick={add} className="mono text-[10px] font-black tracking-widest px-3 py-1.5 rounded-sm"
+            style={{background:"#22d3ee",color:"#000"}}>DON HATS</button>
+        </div>
+      </div>
+      <div className="space-y-3">
+        {list.map(s=>{
+          const proj = projects.find(x=>x.id===s.projectId);
+          return (
+            <div key={s.id} className="rounded-sm steel-plate p-4 relative" style={{borderColor:"#22d3ee44"}}>
+              <span className="riv-tl"/><span className="riv-tr"/><span className="riv-bl"/><span className="riv-br"/>
+              <div className="flex items-center gap-2 mb-3 flex-wrap">
+                <Palette size={13} style={{color:"#22d3ee"}}/>
+                <h4 className="font-black text-base flex-1">{s.topic}</h4>
+                <span className="mono text-[9px]" style={{color:"var(--fr-fgMuted)"}}>{s.date}</span>
+                {proj && <span className="mono text-[9px] tracking-widest" style={{color:proj.color}}>{proj.icon} {proj.codename}</span>}
+                <button onClick={()=>updateForge(ff=>({sixHats:ff.sixHats.filter(x=>x.id!==s.id)}))} style={{color:"var(--fr-red)"}}><Trash2 size={11}/></button>
+              </div>
+              <div className="grid md:grid-cols-2 gap-2">
+                {HATS.map(h=>(
+                  <div key={h.k} className="p-2 rounded-sm" style={{background:"var(--fr-card2)",borderTop:`3px solid ${h.color}`}}>
+                    <div className="mono text-[10px] tracking-widest font-black flex items-center gap-1" style={{color:(h.color==="#f1f5f9"||h.color==="#1f2937")?"var(--fr-fg)":h.color}}>
+                      <span>{h.icon}</span>{h.label}
+                    </div>
+                    <textarea value={(s as any)[h.k]} onChange={e=>updateForge(ff=>({sixHats:ff.sixHats.map(x=>x.id===s.id?{...x,[h.k]:e.target.value}:x)}))}
+                      rows={2} placeholder={`${h.label.toLowerCase()}...`}
+                      className="w-full bg-transparent outline-none pencil text-xs mt-1 resize-none"
+                      style={{color:"var(--fr-fg)"}}/>
+                  </div>
+                ))}
+              </div>
+            </div>
+          );
+        })}
+        {list.length===0 && <div className="mono text-[11px] italic text-center py-8" style={{color:"var(--fr-fgDim)"}}>No hats yet. Think deeply, one color at a time.</div>}
+      </div>
+    </>
+  );
+}
+
