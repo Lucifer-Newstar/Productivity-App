@@ -289,6 +289,11 @@ const SEED_FORGE: ForgeState = (() => {
     sprints: [],
     reviews: [],
     streak: { lastActive: "", current: 0, longest: 0, history: [] },
+    mindmaps: [], canvases: [], voiceNotes: [],
+    bmc: [], vpc: [], lean: [], porter: [], pestel: [],
+    userStories: [], eventStorms: [], journeyMaps: [], blueprints: [], wireframes: [],
+    buyAFeature: [], paired: [], affinity: [],
+    customStatuses: [], auditLog: [],
     settings: {
       workStartHour: 9,
       workEndHour: 18,
@@ -323,6 +328,15 @@ function migrateForge(raw: any): ForgeState {
     sprints: raw.sprints ?? [],
     reviews: raw.reviews ?? [],
     streak: raw.streak ?? SEED_FORGE.streak,
+    mindmaps: raw.mindmaps ?? [],
+    canvases: raw.canvases ?? [],
+    voiceNotes: raw.voiceNotes ?? [],
+    bmc: raw.bmc ?? [], vpc: raw.vpc ?? [], lean: raw.lean ?? [],
+    porter: raw.porter ?? [], pestel: raw.pestel ?? [],
+    userStories: raw.userStories ?? [], eventStorms: raw.eventStorms ?? [],
+    journeyMaps: raw.journeyMaps ?? [], blueprints: raw.blueprints ?? [], wireframes: raw.wireframes ?? [],
+    buyAFeature: raw.buyAFeature ?? [], paired: raw.paired ?? [], affinity: raw.affinity ?? [],
+    customStatuses: raw.customStatuses ?? [], auditLog: raw.auditLog ?? [],
     settings: { ...SEED_FORGE.settings, ...(raw.settings ?? {}) },
   };
 }
@@ -575,6 +589,7 @@ interface StoreState {
   forge: ForgeState;
   updateForge: (updater: (f: ForgeState) => Partial<ForgeState> | ForgeState) => void;
   seedForgeDemo: () => void;
+  logForgeAction: (action: string, target?: string, detail?: string) => void;
   addTrack: (name: string, color: string) => void;
   updateTrack: (id: string, patch: Partial<CareerTrack>) => void; deleteTrack: (id: string) => void;
   addConcept: (trackId: string, title: string) => void;
@@ -921,6 +936,16 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
 
   const seedForgeDemo = useCallback<StoreState["seedForgeDemo"]>(() => {
     import("./forgeDemo").then(({ buildForgeDemo }) => setForge(buildForgeDemo()));
+  }, [setForge]);
+
+  const logForgeAction = useCallback<StoreState["logForgeAction"]>((action, target, detail) => {
+    setForge(f => ({
+      ...f,
+      auditLog: [
+        { id: uid(), ts: Date.now(), action, target, detail },
+        ...f.auditLog,
+      ].slice(0, 500),
+    }));
   }, [setForge]);
 
   const addRoadmapFromTemplate = useCallback<StoreState["addRoadmapFromTemplate"]>((templateId, name) => {
@@ -1511,7 +1536,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     updateCareer, addRoadmapFromTemplate, toggleMilestoneDone, updateMilestone,
     toggleLabItem, toggleResourceComplete, toggleProjectComplete, setQuizAnswer, logMilestoneHours,
     archiveRoadmap, deleteRoadmap, seedCareerDemo,
-    forge, updateForge, seedForgeDemo,
+    forge, updateForge, seedForgeDemo, logForgeAction,
     workout, addExercise, updateExercise, deleteExercise,
     logPR, deletePR, addSkill, deleteSkill, addProgression, toggleProgressionDone, updateProgression, deleteProgression,
     addRoutine, updateRoutine, deleteRoutine, addBlock, updateBlock, deleteBlock, reorderBlocks,

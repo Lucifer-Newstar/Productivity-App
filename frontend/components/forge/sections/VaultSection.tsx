@@ -12,7 +12,7 @@ import {
   BookOpen, Trash2, FileText,
 } from "lucide-react";
 import { useStore } from "../../../lib/store";
-import type { ProjectTask } from "../../../lib/forgeTypes";
+import type { ProjectTask, ForgeProject } from "../../../lib/forgeTypes";
 
 const uid = () => Math.random().toString(36).slice(2,10)+Date.now().toString(36);
 const today = () => new Date().toISOString().slice(0,10);
@@ -107,10 +107,11 @@ function csvToTasks(text:string, existingTasks:ProjectTask[], projects:any[]): P
 }
 
 export default function VaultSection() {
-  const { forge, updateForge } = useStore();
+  const { forge, updateForge, logForgeAction } = useStore();
   const [tab, setTab] = useState<"shipped"|"dead"|"archive">("shipped");
   const fileRef = useRef<HTMLInputElement>(null);
   const csvRef = useRef<HTMLInputElement>(null);
+  const projCsvRef = useRef<HTMLInputElement>(null);
   const projectById: Record<string,any> = Object.fromEntries(forge.projects.map(p=>[p.id,p]));
 
   const shipped = forge.projects.filter(p => p.status === "done");
@@ -175,6 +176,70 @@ export default function VaultSection() {
     reader.readAsText(file);
   };
 
+  const exportProjectCSV = () => {
+    const rows = [["id","codename","title","brief","why","status","priority","color","icon","createdAt","deadline","completedAt","tags","budget_est","budget_actual"]];
+    for (const p of forge.projects) {
+      rows.push([p.id,p.codename,p.title.replace(/"/g,'""'),p.brief.replace(/"/g,'""'),p.why.replace(/"/g,'""'),p.status,String(p.priority),p.color,p.icon,p.createdAt,p.deadline||"",p.completedAt||"",(p.tags||[]).join("|"),String(p.budget?.estimated||""),String(p.budget?.actual||0)]);
+    }
+    const csv = rows.map(r=>r.map(c=>`"${String(c).replace(/"/g,'""')}"`).join(",")).join("\n");
+    const blob = new Blob([csv],{type:"text/csv"});
+    const url = URL.createObjectURL(blob);
+    const a=document.createElement("a"); a.href=url; a.download=`kaizen-projects-${today()}.csv`; a.click();
+    URL.revokeObjectURL(url);
+  };
+  const importProjectCSV = (file:File) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      try {
+        const rows = parseCSV(reader.result as string);
+        if (rows.length<2) return;
+        const header = rows[0].map(h=>h.trim().toLowerCase());
+        const idx = (n:string) => header.indexOf(n);
+        const num = (v:string)=>{const n=parseFloat(v); return isNaN(n)?0:n;};
+        const existingIds = new Set(forge.projects.map(p=>p.id));
+        const incoming: ForgeProject[] = [];
+        for (let r=1;r<rows.length;r++){
+          const row = rows[r];
+          const get = (n:string) => { const i=idx(n); return i>=0?(row[i]??""):""; };
+          const title = get("title").trim(); if(!title) continue;
+          const rawId = get("id").trim();
+          const id = rawId && !existingIds.has(rawId) ? rawId : "p-imp-"+uid();
+          if (rawId) existingIds.add(rawId);
+          const codename = get("codename").trim().toUpperCase() || title.slice(0,6).toUpperCase();
+          const color = get("color").trim() || "#f59e0b";
+          const icon = get("icon").trim() || "🔥";
+          const status = (get("status").trim() || "on-track") as any;
+          incoming.push({
+            id,codename,title,brief:get("brief"),why:get("why"),
+            successMetrics:"",rejectionCriteria:"",
+            status: ["on-track","blocked","off-track","paused","done","dead"].includes(status)?status:"on-track",
+            priority: Math.max(1,Math.min(10,num(get("priority"))||5)),
+            energyDemand:5,complexity:5,color,icon,
+            createdAt: get("createdat")||today(),
+            deadline: get("deadline")||undefined,
+            startedAt: get("createdat")||today(),
+            completedAt: get("completedat")||undefined,
+            archived: status==="dead",
+            checkinFreq:"weekly",
+            budget:{ estimated:num(get("budget_est"))||0, actual:num(get("budget_actual"))||0, currency:"$" },
+            stakeholders:[],milestones:[],premortem:[],risks:[],issues:[],qualityChecks:[],comms:[],
+            scope:"",tags:(get("tags")||"").split("|").map(s=>s.trim()).filter(Boolean),links:[],velocityPoints:[],
+          });
+        }
+        if(!incoming.length){ alert("No projects parsed."); return; }
+        if(!confirm(`Import ${incoming.length} project(s)? Existing IDs preserved if unique.`)) return;
+        updateForge(f => {
+          const seen = new Set(f.projects.map(p=>p.id));
+          const fresh = incoming.filter(p=>!seen.has(p.id));
+          return { projects: [...fresh,...f.projects] };
+        });
+        incoming.forEach(p=>logForgeAction("project.import",p.id,p.codename));
+        window.dispatchEvent(new CustomEvent("career:toast",{detail:{title:"PROJECTS IMPORTED",sub:`${incoming.length} heats loaded`,color:"#f59e0b",icon:"zap"}}));
+      } catch(e){ console.error(e); alert("Failed to parse projects CSV"); }
+    };
+    reader.readAsText(file);
+  };
+
   const list = tab==="shipped" ? shipped : tab==="dead" ? dead : archived;
 
   return (
@@ -199,9 +264,22 @@ export default function VaultSection() {
             className="relative px-3 py-2 rounded-sm steel-plate mono text-[10px] font-black tracking-widest flex items-center gap-1"
             style={{background:"var(--fr-card2)",borderColor:"var(--fr-cyan)",color:"var(--fr-cyan)"}}>
             <span className="riv-tl"/><span className="riv-tr"/><span className="riv-bl"/><span className="riv-br"/>
-            <Upload size={12}/> CSV↑
+            <Upload size={12}/> TASK↑
           </button>
           <input ref={csvRef} type="file" accept=".csv,text/csv" className="hidden" onChange={e=>{const f=e.target.files?.[0];if(f)importCSV(f);e.target.value="";}}/>
+          <button onClick={exportProjectCSV}
+            className="relative px-3 py-2 rounded-sm steel-plate mono text-[10px] font-black tracking-widest flex items-center gap-1"
+            style={{background:"var(--fr-card2)",borderColor:"var(--fr-borderSoft)",color:"var(--fr-fg)"}}>
+            <span className="riv-tl"/><span className="riv-tr"/><span className="riv-bl"/><span className="riv-br"/>
+            <FileText size={12}/> PROJ↓
+          </button>
+          <button onClick={()=>projCsvRef.current?.click()}
+            className="relative px-3 py-2 rounded-sm steel-plate mono text-[10px] font-black tracking-widest flex items-center gap-1"
+            style={{background:"var(--fr-card2)",borderColor:"var(--fr-amber)",color:"var(--fr-amber)"}}>
+            <span className="riv-tl"/><span className="riv-tr"/><span className="riv-bl"/><span className="riv-br"/>
+            <Upload size={12}/> PROJ↑
+          </button>
+          <input ref={projCsvRef} type="file" accept=".csv,text/csv" className="hidden" onChange={e=>{const f=e.target.files?.[0];if(f)importProjectCSV(f);e.target.value="";}}/>
           <button onClick={exportJSON}
             className="relative px-3 py-2 rounded-sm steel-plate mono text-[10px] font-black tracking-widest flex items-center gap-1"
             style={{background:"var(--fr-card2)",borderColor:"var(--fr-borderSoft)",color:"var(--fr-fg)"}}>

@@ -17,10 +17,10 @@ import {
   Pickaxe, Plus, CheckCircle2, AlertTriangle, X, Timer,
   Zap, Target, Flame, Calendar, TrendingUp, Coffee,
   ChevronDown, ChevronRight, MessageSquare, AlertOctagon, ListChecks,
-  Clock, Pencil, Copy,
+  Clock, Pencil, Copy, Columns,
 } from "lucide-react";
 import { useStore } from "../../../lib/store";
-import type { ProjectTask, TaskStatus } from "../../../lib/forgeTypes";
+import type { ProjectTask, TaskStatus, StatusColumn } from "../../../lib/forgeTypes";
 
 const uid = () => Math.random().toString(36).slice(2,10);
 const today = () => new Date().toISOString().slice(0,10);
@@ -32,7 +32,7 @@ const ageColor = (createdAt:string) => {
   return "var(--fr-fgMuted)";
 };
 
-const COLS: { id: TaskStatus; label: string; color: string; icon: any }[] = [
+const DEFAULT_COLS: { id: TaskStatus; label: string; color: string; icon: any }[] = [
   { id: "todo",    label: "TO DO",    color: "#94a3b8", icon: Target },
   { id: "doing",   label: "FORGING",  color: "#f59e0b", icon: Flame },
   { id: "review",  label: "QUENCH",  color: "#06b6d4", icon: Coffee },
@@ -40,24 +40,69 @@ const COLS: { id: TaskStatus; label: string; color: string; icon: any }[] = [
   { id: "done",    label: "SHIPPED", color: "#22c55e", icon: CheckCircle2 },
 ];
 
+const COLUMN_COLORS = ["#94a3b8","#f59e0b","#06b6d4","#ef4444","#22c55e","#a78bfa","#ec4899","#facc15","#fb923c","#818cf8"];
+
 export default function QuarrySection() {
-  const { forge, updateForge } = useStore();
+  const { forge, updateForge, logForgeAction } = useStore();
   const [filter, setFilter] = useState<string>("all");
   const [todayOnly, setTodayOnly] = useState(false);
   const [nextOnly, setNextOnly] = useState(false);
   const [matrixMode, setMatrixMode] = useState<"kanban"|"swimlanes"|"eisenhower"|"effort">("kanban");
-  const [adding, setAdding] = useState<{col:TaskStatus, open:boolean}>({col:"todo",open:false});
+  const [adding, setAdding] = useState<{col:string, open:boolean}>({col:"todo",open:false});
   const [batchText, setBatchText] = useState("");
   const [projId, setProjId] = useState<string>("");
   const [openTask, setOpenTask] = useState<string|null>(null);
   const [dragId, setDragId] = useState<string|null>(null);
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [batchMode, setBatchMode] = useState(false);
+  const [colManagerOpen, setColManagerOpen] = useState(false);
+  const [newColLabel, setNewColLabel] = useState("");
   const toggleSel = (id:string) => setSelected(s=>{const n=new Set(s); n.has(id)?n.delete(id):n.add(id); return n;});
   const clearSel = () => setSelected(new Set());
-  const batchOp = (patch: Partial<ProjectTask>) => {
+
+  // Columns: user-defined customStatuses map to status via column id; we use `id` as the TaskStatus string
+  // Custom columns use a synthetic status id like "col-xxxx"; however Quarry logic keys off TaskStatus.
+  // For simplicity, custom columns just extend the 5 defaults — tasks moved there get "custom status" stored as status.
+  // Since ProjectTask.status is typed as TaskStatus (todo|doing|review|blocked|done), we keep custom columns cosmetic for wave-10 polish
+  // and just surface them as extra labeled buckets whose ids still map to one of 5 underlying statuses.
+  // v2: store custom status separately — but we'll honor custom columns as visual add-ons only in this wave; the COLS array is the ground truth.
+  const COLS = useMemo(() => {
+    const custom = (forge.customStatuses||[]).map((c:StatusColumn,i)=>({ id: c.id as any, label: c.label.toUpperCase(), color: c.color, icon: Columns }));
+    // If user has defined custom columns, those replace defaults
+    if (custom.length >= 2) return custom;
+    return DEFAULT_COLS;
+  }, [forge.customStatuses]);
+
+  // Helper: for custom cols, task moves to "todo"/"doing"/etc based on position heuristic? Simplest: middle cols = doing, last = done.
+  const statusForColumn = (colId:string): TaskStatus => {
+    if ((["todo","doing","review","blocked","done"] as TaskStatus[]).includes(colId as TaskStatus)) return colId as TaskStatus;
+    const idx = COLS.findIndex(c=>c.id===colId);
+    if (idx === COLS.length-1) return "done";
+    if (idx === 0) return "todo";
+    return "doing";
+  };
+
+  const addColumn = () => {
+    if (!newColLabel.trim()) return;
+    const col: StatusColumn = { id: "col-"+uid(), label: newColLabel.trim(), color: COLUMN_COLORS[(forge.customStatuses||[]).length % COLUMN_COLORS.length] };
+    updateForge(f => ({ customStatuses: [...(f.customStatuses||[]), col] }));
+    setNewColLabel("");
+  };
+  const removeColumn = (id:string) => {
+    // Move all tasks with that column's status to "todo"
+    const replacement = statusForColumn(id) === "done" ? "done" : "todo";
+    updateForge(f => ({
+      customStatuses: (f.customStatuses||[]).filter(c=>c.id!==id),
+      tasks: f.tasks.map(t => (t.status as any)===id ? { ...t, status: replacement } : t),
+    }));
+  };
+  const renameColumn = (id:string,label:string) => {
+    updateForge(f => ({ customStatuses: (f.customStatuses||[]).map(c=>c.id===id?{...c,label}:c) }));
+  };
+  const batchOp = (patch: Partial<ProjectTask> & { status?: string }) => {
     if (selected.size===0) return;
-    updateForge(f => ({ tasks: f.tasks.map(t => selected.has(t.id) ? { ...t, ...patch, completedAt: patch.status==="done"?today():t.completedAt } : t) }));
+    const movingToDone = patch.status === "done" || (COLS.length && COLS[COLS.length-1].id === patch.status);
+    updateForge(f => ({ tasks: f.tasks.map(t => selected.has(t.id) ? { ...t, ...patch, completedAt: movingToDone?today():t.completedAt } as ProjectTask : t) }));
     window.dispatchEvent(new CustomEvent("career:toast",{detail:{title:"BATCH APPLIED",sub:`${selected.size} blocks updated`,color:"#f59e0b",icon:"zap"}}));
     clearSel();
   };
@@ -83,12 +128,12 @@ export default function QuarrySection() {
 
   const patchTask = (id: string, patch: Partial<ProjectTask>) =>
     updateForge(f => ({ tasks: f.tasks.map(t => t.id===id ? { ...t, ...patch } : t) }));
-  const addTasksFromBatch = (status: TaskStatus) => {
+  const addTasksFromBatch = (status: string) => {
     const usePid = filter!=="all" ? filter : (projId || activeProjects[0]?.id);
     if (!usePid || !batchText.trim()) return;
     const lines = batchText.split("\n").map(l=>l.trim()).filter(Boolean);
     const newTasks: ProjectTask[] = lines.map(title => ({
-      id: uid(), projectId: usePid, title, status,
+      id: uid(), projectId: usePid, title, status: status as TaskStatus,
       priority:"P2" as const, pomodoros:0, energy:3, focus:3, tags:[],
       subtaskIds:[], comments:[], createdAt:today(), effort:3, impact:3, importance:5, urgency:5,
     }));
@@ -121,26 +166,33 @@ export default function QuarrySection() {
     };
     updateForge(f => ({ tasks: [...f.tasks, copy] }));
   };
+  const isDoneStatus = (s:string) => s === "done" || (COLS.length>0 && COLS[COLS.length-1].id === s);
   const toggleTask = (id: string) => {
     const t = forge.tasks.find(x=>x.id===id); if(!t) return;
-    const movingToDone = t.status!=="done";
+    const movingToDone = !isDoneStatus(t.status);
+    const target = movingToDone ? (COLS[COLS.length-1]?.id as string || "done") : "todo";
     patchTask(id, {
-      status: movingToDone ? "done" : "todo",
+      status: target as TaskStatus,
       completedAt: movingToDone ? today() : undefined,
     });
     if (movingToDone) {
       if (t.recurrence) spawnRecurrence(t);
+      logForgeAction("task.ship", id, t.title.slice(0,60));
       window.dispatchEvent(new CustomEvent("career:burst",{detail:{color:"#22c55e",count:22}}));
       window.dispatchEvent(new CustomEvent("career:toast",{detail:{title:"SHIPPED",sub:t.title.slice(0,50),color:"#22c55e",icon:"check"}}));
     }
   };
-  const moveTask = (id: string, status: TaskStatus) => {
+  const moveTask = (id: string, status: string) => {
     const t = forge.tasks.find(x=>x.id===id); if(!t) return;
-    patchTask(id, { status, completedAt: status==="done"?today():undefined });
-    if (status==="done") {
+    const movingToDone = isDoneStatus(status);
+    patchTask(id, { status: status as TaskStatus, completedAt: movingToDone?today():undefined });
+    if (movingToDone) {
       if (t.recurrence) spawnRecurrence(t);
+      logForgeAction("task.ship", id, t.title.slice(0,60));
       window.dispatchEvent(new CustomEvent("career:burst",{detail:{color:"#22c55e",count:22}}));
       window.dispatchEvent(new CustomEvent("career:toast",{detail:{title:"SHIPPED",sub:t.title.slice(0,50),color:"#22c55e",icon:"check"}}));
+    } else {
+      logForgeAction("task.move", id, `→${status}`);
     }
   };
   const delTask = (id: string) => updateForge(f=>({tasks:f.tasks.filter(t=>t.id!==id)}));
@@ -216,14 +268,53 @@ export default function QuarrySection() {
         </button>
         <div className="flex-1"/>
         <div className="mono text-[10px] tracking-widest" style={{color:"var(--fr-fgMuted)"}}>
-          {visibleTasks.length} BLOCKS · {visibleTasks.filter(t=>t.status==="done").length} SHIPPED
+          {visibleTasks.length} BLOCKS · {visibleTasks.filter(t=>isDoneStatus(t.status)).length} SHIPPED
         </div>
         <button onClick={()=>{setBatchMode(v=>!v);clearSel();}}
           className="mono text-[10px] tracking-widest font-bold px-3 py-1.5 rounded-sm"
           style={{background:batchMode?"var(--fr-orange)":"transparent",color:batchMode?"#000":"var(--fr-fgMuted)",border:`1px solid ${batchMode?"var(--fr-orange)":"var(--fr-borderSoft)"}`}}>
           {batchMode?"EXIT BATCH":"BATCH"}
         </button>
+        <button onClick={()=>setColManagerOpen(v=>!v)}
+          className="mono text-[10px] tracking-widest font-bold px-3 py-1.5 rounded-sm flex items-center gap-1"
+          style={{background:colManagerOpen?"var(--fr-violet)":"transparent",color:colManagerOpen?"#000":"var(--fr-fgMuted)",border:`1px solid ${colManagerOpen?"var(--fr-violet)":"var(--fr-borderSoft)"}`}}>
+          <Columns size={10}/> COLS
+        </button>
       </div>
+
+      {/* Column manager */}
+      {colManagerOpen && (
+        <div className="rounded-sm steel-plate p-3 relative space-y-2" style={{borderColor:"var(--fr-violet)"}}>
+          <span className="riv-tl"/><span className="riv-tr"/><span className="riv-bl"/><span className="riv-br"/>
+          <div className="mono text-[10px] tracking-widest font-black flex items-center gap-2" style={{color:"var(--fr-violet)"}}>
+            <Columns size={11}/> CUSTOM COLUMNS ({(forge.customStatuses||[]).length})
+            <span className="mono text-[9px] font-normal" style={{color:"var(--fr-fgMuted)"}}>replace defaults; last col = SHIPPED</span>
+          </div>
+          <div className="space-y-1">
+            {(forge.customStatuses||[]).map(c=>(
+              <div key={c.id} className="flex items-center gap-2">
+                <span className="w-4 h-4 rounded-sm" style={{background:c.color,border:`1px solid ${c.color}`}}/>
+                <input value={c.label} onChange={e=>renameColumn(c.id,e.target.value)}
+                  className="flex-1 bg-transparent outline-none mono text-xs px-2 py-1 rounded-sm"
+                  style={{border:"1px solid var(--fr-borderSoft)",color:"var(--fr-fg)"}}/>
+                <button onClick={()=>removeColumn(c.id)} className="mono text-[10px] px-2 py-1 rounded-sm" style={{color:"var(--fr-red)"}}>✕</button>
+              </div>
+            ))}
+          </div>
+          <div className="flex gap-2">
+            <input value={newColLabel} onChange={e=>setNewColLabel(e.target.value)}
+              onKeyDown={e=>{if(e.key==="Enter")addColumn();}}
+              placeholder="+ new column label..."
+              className="flex-1 bg-transparent outline-none mono text-xs px-2 py-1 rounded-sm"
+              style={{border:"1px solid var(--fr-borderSoft)",color:"var(--fr-fg)"}}/>
+            <button onClick={addColumn} className="mono text-[10px] font-black px-3 py-1 rounded-sm" style={{background:"var(--fr-violet)",color:"#000"}}>+ ADD</button>
+            {(forge.customStatuses||[]).length>0 && (
+              <button onClick={()=>updateForge(f=>({customStatuses:[], tasks:f.tasks.map(t=>({...t, status: (["todo","doing","review","blocked","done"] as TaskStatus[]).includes(t.status)?t.status:"todo" as TaskStatus}))}))}
+                className="mono text-[10px] px-2 py-1 rounded-sm" style={{color:"var(--fr-red)",border:"1px solid var(--fr-red)"}}>RESET</button>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* Batch ops bar */}
       {batchMode && (

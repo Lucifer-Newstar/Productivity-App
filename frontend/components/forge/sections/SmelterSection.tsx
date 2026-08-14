@@ -10,10 +10,14 @@ import {
   Target, HelpCircle, History, Scale, Zap, Users,
   Grid3x3, Brain, ThumbsUp, ThumbsDown, Timer as TimerIcon,
   Sparkles, Shuffle, Palette, Shapes, Flag, CheckCircle2, Play,
+  Building2, Landmark, Network, MessageSquare, Mic, Workflow,
+  Layers, PenTool, DollarSign, BarChart2, Compass, Route, Map,
+  BrainCircuit, Palette as PaletteIcon, AudioLines, Layout,
 } from "lucide-react";
 import { useStore } from "../../../lib/store";
 import type { DecisionMatrixRow, Fishbone, SixHats, Persona, Scamper, Sprint, ProjectTask } from "../../../lib/forgeTypes";
 import { addDays, todayISO } from "../forgeUtils";
+import { BMCTab, VPCTab, LeanTab, PorterTab, PestelTab, StoriesTab, AffinityTab, BuyAFeatureTab, PairedTab, JourneyTab, BlueprintTab, EventStormTab, MindmapTab, CanvasTab, WireframeTab, VoiceTab } from "./Canvases";
 
 const uid = () => Math.random().toString(36).slice(2,10);
 const today = () => new Date().toISOString().slice(0,10);
@@ -34,6 +38,23 @@ const TABS = [
   { id: "lessons", label: "LESSONS", icon: Lightbulb, color: "#22c55e" },
   { id: "retro", label: "RETRO", icon: History, color: "#ef4444" },
   { id: "sprints", label: "SPRINTS", icon: Flag, color: "#f59e0b" },
+  // Wave-10: strategy / UX / research canvases
+  { id: "bmc", label: "BMC", icon: Building2, color: "#f59e0b" },
+  { id: "vpc", label: "VPC", icon: Landmark, color: "#22c55e" },
+  { id: "lean", label: "LEAN", icon: BarChart2, color: "#a78bfa" },
+  { id: "porter", label: "PORTER", icon: Network, color: "#ef4444" },
+  { id: "pestel", label: "PESTEL", icon: Compass, color: "#06b6d4" },
+  { id: "stories", label: "STORIES", icon: MessageSquare, color: "#ec4899" },
+  { id: "affinity", label: "AFFINITY", icon: Layers, color: "#06b6d4" },
+  { id: "buyafeature", label: "BUY·FEAT", icon: DollarSign, color: "#22c55e" },
+  { id: "paired", label: "PAIRED", icon: Scale, color: "#a78bfa" },
+  { id: "journey", label: "JOURNEY", icon: Map, color: "#fb923c" },
+  { id: "blueprint", label: "BLUEPRINT", icon: Route, color: "#facc15" },
+  { id: "eventstorm", label: "EVENT·STORM", icon: Workflow, color: "#f472b6" },
+  { id: "mindmap", label: "MINDMAP", icon: BrainCircuit, color: "#818cf8" },
+  { id: "canvas", label: "CANVAS", icon: PaletteIcon, color: "#f59e0b" },
+  { id: "wireframe", label: "WIREFRAME", icon: Layout, color: "#94a3b8" },
+  { id: "voice", label: "VOICE", icon: AudioLines, color: "#f472b6" },
 ] as const;
 
 const SWOT_Q: { k:"S"|"W"|"O"|"T"; label:string; color:string }[] = [
@@ -396,6 +417,103 @@ export default function SmelterSection() {
             <SprintsPanel/>
           </motion.div>
         )}
+
+        {tab==="bmc" && (
+          <motion.div key="bmc" initial={{opacity:0,y:8}} animate={{opacity:1,y:0}} exit={{opacity:0}} className="space-y-3">
+            <SectionHeading icon={Building2} color="#f59e0b" kicker="STRATEGY" title="Business Model Canvas" sub="9-block map of how you create, deliver & capture value."/>
+            <BMCTab/>
+          </motion.div>
+        )}
+        {tab==="vpc" && (
+          <motion.div key="vpc" initial={{opacity:0,y:8}} animate={{opacity:1,y:0}} exit={{opacity:0}} className="space-y-3">
+            <SectionHeading icon={Landmark} color="#22c55e" kicker="STRATEGY" title="Value Proposition Canvas" sub="Map customer jobs/pains/gains against your product."/>
+            <VPCTab/>
+          </motion.div>
+        )}
+        {tab==="lean" && (
+          <motion.div key="ln" initial={{opacity:0,y:8}} animate={{opacity:1,y:0}} exit={{opacity:0}} className="space-y-3">
+            <SectionHeading icon={BarChart2} color="#a78bfa" kicker="STRATEGY" title="Lean Canvas" sub="Ash Maurya — startup-in-1-page, problems → unfair advantage."/>
+            <LeanTab/>
+          </motion.div>
+        )}
+        {tab==="porter" && (
+          <motion.div key="pt" initial={{opacity:0,y:8}} animate={{opacity:1,y:0}} exit={{opacity:0}} className="space-y-3">
+            <SectionHeading icon={Network} color="#ef4444" kicker="STRATEGY" title="Porter's Five Forces" sub="Industry rivalry map — don't compete blind."/>
+            <PorterTab/>
+          </motion.div>
+        )}
+        {tab==="pestel" && (
+          <motion.div key="pe" initial={{opacity:0,y:8}} animate={{opacity:1,y:0}} exit={{opacity:0}} className="space-y-3">
+            <SectionHeading icon={Compass} color="#06b6d4" kicker="STRATEGY" title="PESTEL Analysis" sub="Macro-environmental forces shaping your heat."/>
+            <PestelTab/>
+          </motion.div>
+        )}
+        {tab==="stories" && (
+          <motion.div key="st" initial={{opacity:0,y:8}} animate={{opacity:1,y:0}} exit={{opacity:0}} className="space-y-3">
+            <SectionHeading icon={MessageSquare} color="#ec4899" kicker="UX / DEV" title="User Stories" sub="As a [role], I want [feature], so that [outcome]. Kanban flow inside."/>
+            <StoriesTab/>
+          </motion.div>
+        )}
+        {tab==="affinity" && (
+          <motion.div key="af" initial={{opacity:0,y:8}} animate={{opacity:1,y:0}} exit={{opacity:0}} className="space-y-3">
+            <SectionHeading icon={Layers} color="#06b6d4" kicker="RESEARCH" title="Affinity Grouping" sub="Cluster sticky notes into themes from interviews/notes."/>
+            <AffinityTab/>
+          </motion.div>
+        )}
+        {tab==="buyafeature" && (
+          <motion.div key="bf" initial={{opacity:0,y:8}} animate={{opacity:1,y:0}} exit={{opacity:0}} className="space-y-3">
+            <SectionHeading icon={DollarSign} color="#22c55e" kicker="PRIORITIZATION" title="Buy-a-Feature" sub="Give stakeholders a budget; what they buy is what ships."/>
+            <BuyAFeatureTab/>
+          </motion.div>
+        )}
+        {tab==="paired" && (
+          <motion.div key="pr" initial={{opacity:0,y:8}} animate={{opacity:1,y:0}} exit={{opacity:0}} className="space-y-3">
+            <SectionHeading icon={Scale} color="#a78bfa" kicker="PRIORITIZATION" title="Paired Comparison" sub="Head-to-head votes rank options cleanly."/>
+            <PairedTab/>
+          </motion.div>
+        )}
+        {tab==="journey" && (
+          <motion.div key="jm" initial={{opacity:0,y:8}} animate={{opacity:1,y:0}} exit={{opacity:0}} className="space-y-3">
+            <SectionHeading icon={Map} color="#fb923c" kicker="UX" title="Customer Journey Map" sub="Stages / thoughts / pains / opportunities end-to-end."/>
+            <JourneyTab/>
+          </motion.div>
+        )}
+        {tab==="blueprint" && (
+          <motion.div key="bp" initial={{opacity:0,y:8}} animate={{opacity:1,y:0}} exit={{opacity:0}} className="space-y-3">
+            <SectionHeading icon={Route} color="#facc15" kicker="UX" title="Service Blueprint" sub="Customer actions, onstage/backstage, support, evidence."/>
+            <BlueprintTab/>
+          </motion.div>
+        )}
+        {tab==="eventstorm" && (
+          <motion.div key="es" initial={{opacity:0,y:8}} animate={{opacity:1,y:0}} exit={{opacity:0}} className="space-y-3">
+            <SectionHeading icon={Workflow} color="#f472b6" kicker="DDD" title="Event Storming" sub="Domain events, commands, aggregates, policies."/>
+            <EventStormTab/>
+          </motion.div>
+        )}
+        {tab==="mindmap" && (
+          <motion.div key="mm" initial={{opacity:0,y:8}} animate={{opacity:1,y:0}} exit={{opacity:0}} className="space-y-3">
+            <SectionHeading icon={BrainCircuit} color="#818cf8" kicker="THINKING" title="Mindmap" sub="Freeform radial thinking (use Scratch + STRIKE for now)."/>
+            <MindmapTab/>
+          </motion.div>
+        )}
+        {tab==="canvas" && (
+          <motion.div key="cv" initial={{opacity:0,y:8}} animate={{opacity:1,y:0}} exit={{opacity:0}} className="space-y-3">
+            <SectionHeading icon={PaletteIcon} color="#f59e0b" kicker="FREEFORM" title="Drawing Canvas" sub="Stickies, boxes, arrows — infinite desk."/>
+            <CanvasTab/>
+          </motion.div>
+        )}
+        {tab==="wireframe" && (
+          <motion.div key="wf" initial={{opacity:0,y:8}} animate={{opacity:1,y:0}} exit={{opacity:0}} className="space-y-3">
+            <SectionHeading icon={Layout} color="#94a3b8" kicker="UX" title="Wireframes" sub="Link Figma/Sketch files, sketch screen flows."/>
+            <WireframeTab/>
+          </motion.div>
+        )}
+        {tab==="voice" && (
+          <motion.div key="vo" initial={{opacity:0,y:8}} animate={{opacity:1,y:0}} exit={{opacity:0}} className="space-y-3">
+            <SectionHeading icon={AudioLines} color="#f472b6" kicker="CAPTURE" title="Voice Notes" sub="Raw thoughts captured fast — transcribe, tag, triage."/>
+            <VoiceTab/>
+          </motion.div>
+        )}
       </AnimatePresence>
     </div>
   );
@@ -551,6 +669,22 @@ function SprintsPanel() {
         {sorted.length===0 && <EmptyState icon={Flag} label="No sprints yet." sub="Plan your first sprint — 1-2 weeks, one sharp goal."/>}
       </div>
     </>
+  );
+}
+
+function SectionHeading({icon:Icon,color,kicker,title,sub}:{icon:any;color:string;kicker:string;title:string;sub:string}) {
+  return (
+    <div className="steel-plate rounded-sm p-4 flex items-start gap-3 relative" style={{borderColor:`${color}55`}}>
+      <span className="riv-tl"/><span className="riv-tr"/><span className="riv-bl"/><span className="riv-br"/>
+      <div className="w-10 h-10 rounded-sm flex items-center justify-center shrink-0" style={{background:`${color}22`,border:`1.5px solid ${color}88`,color}}>
+        <Icon size={18}/>
+      </div>
+      <div className="flex-1 min-w-0">
+        <div className="mono text-[9px] tracking-widest" style={{color}}>{kicker}</div>
+        <h3 className="text-xl font-black tracking-wide leading-tight" style={{color:"var(--fr-fg)"}}>{title}</h3>
+        <p className="pencil text-xs italic mt-0.5" style={{color:"var(--fr-fgMuted)"}}>{sub}</p>
+      </div>
+    </div>
   );
 }
 

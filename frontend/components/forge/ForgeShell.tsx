@@ -27,10 +27,10 @@ import Link from "next/link";
 import { useRouter } from "next/router";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  Hammer, Flame, Pickaxe, Archive, LayoutDashboard, Sun, Moon, Bell, Anvil, Gauge, Settings,
+  Hammer, Flame, Pickaxe, Archive, LayoutDashboard, Sun, Moon, Bell, Anvil, Gauge, Settings, Volume2, VolumeX,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useTheme } from "../../lib/theme";
 import { useStore } from "../../lib/store";
 
@@ -162,6 +162,71 @@ export default function ForgeShell({ section, actionButton, actionPanel, childre
   const [sLen, setSLen] = useState(forge.settings.sprintLengthDays);
   const [sStart, setSStart] = useState(forge.settings.workStartHour);
   const [sEnd, setSEnd] = useState(forge.settings.workEndHour);
+  // Ember soundscape (WebAudio brown-noise + crackle) — generated offline, no assets.
+  const [embers, setEmbers] = useState(false);
+  const audioCtxRef = useRef<AudioContext | null>(null);
+  const audioNodesRef = useRef<{stop:() => void} | null>(null);
+  useEffect(() => {
+    if (!embers) {
+      audioNodesRef.current?.stop();
+      audioNodesRef.current = null;
+      if (audioCtxRef.current) { audioCtxRef.current.close(); audioCtxRef.current = null; }
+      return;
+    }
+    const AC = (window as any).AudioContext || (window as any).webkitAudioContext;
+    if (!AC) return;
+    const ctx: AudioContext = new AC();
+    audioCtxRef.current = ctx;
+    // Brown noise (low rumble)
+    const bufferSize = 2 * ctx.sampleRate;
+    const noiseBuffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+    const output = noiseBuffer.getChannelData(0);
+    let lastOut = 0;
+    for (let i=0;i<bufferSize;i++){
+      const white = Math.random()*2-1;
+      output[i] = (lastOut + 0.02*white)/1.02;
+      lastOut = output[i]; output[i] *= 3.5;
+    }
+    const noise = ctx.createBufferSource();
+    noise.buffer = noiseBuffer; noise.loop = true;
+    const rumbleFilter = ctx.createBiquadFilter();
+    rumbleFilter.type = "lowpass"; rumbleFilter.frequency.value = 420;
+    const rumbleGain = ctx.createGain(); rumbleGain.gain.value = 0.08;
+    noise.connect(rumbleFilter); rumbleFilter.connect(rumbleGain); rumbleGain.connect(ctx.destination);
+    noise.start();
+    // Crackle: random high-frequency pops
+    let crackleTimer: number | null = null;
+    const scheduleCrackle = () => {
+      const pop = () => {
+        if (!audioCtxRef.current) return;
+        const dur = 0.03 + Math.random()*0.08;
+        const osc = ctx.createOscillator();
+        const g = ctx.createGain();
+        const bp = ctx.createBiquadFilter();
+        bp.type = "bandpass"; bp.frequency.value = 1800 + Math.random()*3500; bp.Q.value = 0.9;
+        osc.type = "square"; osc.frequency.value = 80 + Math.random()*60;
+        g.gain.setValueAtTime(0.0001, ctx.currentTime);
+        g.gain.exponentialRampToValueAtTime(0.05 + Math.random()*0.08, ctx.currentTime+0.005);
+        g.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime+dur);
+        osc.connect(bp); bp.connect(g); g.connect(ctx.destination);
+        osc.start(); osc.stop(ctx.currentTime+dur+0.02);
+      };
+      pop();
+      if (Math.random()<0.25) setTimeout(pop, 80 + Math.random()*220);
+      crackleTimer = window.setTimeout(scheduleCrackle, 180 + Math.random()*900);
+    };
+    scheduleCrackle();
+    audioNodesRef.current = {
+      stop: () => {
+        if (crackleTimer) { clearTimeout(crackleTimer); crackleTimer=null; }
+        try{noise.stop();}catch{}
+        rumbleGain.gain.cancelScheduledValues(ctx.currentTime);
+        rumbleGain.gain.setValueAtTime(rumbleGain.gain.value, ctx.currentTime);
+        rumbleGain.gain.linearRampToValueAtTime(0, ctx.currentTime+0.2);
+      }
+    };
+    return () => { audioNodesRef.current?.stop(); audioNodesRef.current=null; if(audioCtxRef.current){audioCtxRef.current.close();audioCtxRef.current=null;} };
+  }, [embers]);
   const saveSettings = () => {
     updateForge(f => ({ settings: { ...f.settings, forgeName:sName, sprintLengthDays:Number(sLen)||14, workStartHour:Number(sStart)||9, workEndHour:Number(sEnd)||18 } }));
     setSettingsOpen(false);
@@ -257,6 +322,8 @@ export default function ForgeShell({ section, actionButton, actionPanel, childre
           --fr-green: ${T.accent3};
           --fr-red: ${T.accent4};
           --fr-cyan: ${T.accentCyan};
+          --fr-violet: #818cf8;
+          --fr-pink: #f472b6;
           --fr-card: ${T.cardBg};
           --fr-card2: ${T.cardBg2};
           --fr-grid: ${T.grid};
@@ -545,6 +612,12 @@ export default function ForgeShell({ section, actionButton, actionPanel, childre
               className="p-2 rounded-sm transition hover:bg-black/5 hidden sm:inline-flex"
               style={{color:settingsOpen?T.accent1:T.fgMuted}}>
               <Settings size={14}/>
+            </button>
+            <button aria-label="Ember soundscape" onClick={()=>setEmbers(v=>!v)}
+              title={embers?"Mute embers":"Ember soundscape"}
+              className="p-2 rounded-sm transition hover:bg-black/5 hidden sm:inline-flex"
+              style={{color:embers?T.accent2:T.fgMuted}}>
+              {embers ? <Volume2 size={14}/> : <VolumeX size={14}/>}
             </button>
             {rightExtras}
 

@@ -471,6 +471,24 @@ export interface ForgeState {
   scamper: Scamper[];
   sprints: Sprint[];
   reviews: WeeklyReview[];
+  mindmaps: Mindmap[];
+  canvases: IdeaCanvas[];
+  voiceNotes: VoiceNote[];
+  bmc: BusinessModelCanvas[];
+  vpc: ValuePropCanvas[];
+  lean: LeanCanvas[];
+  porter: PorterFive[];
+  pestel: Pestel[];
+  userStories: UserStory[];
+  eventStorms: EventStorm[];
+  journeyMaps: JourneyMap[];
+  blueprints: ServiceBlueprint[];
+  wireframes: Wireframe[];
+  buyAFeature: BuyAFeature[];
+  paired: PairedComparison[];
+  affinity: AffinityGroup[];
+  customStatuses: StatusColumn[]; // user-defined kanban columns; if empty, default 5 cols
+  auditLog: { id: string; ts: number; action: string; target?: string; detail?: string }[];
   streak: {
     lastActive: string;   // yyyy-mm-dd
     current: number;      // days
@@ -484,4 +502,115 @@ export interface ForgeState {
     forgeName: string;
     sprintLengthDays: number;
   };
+}
+
+// ========== Wave 10: missing PM canvases & utilities ==========
+
+export interface MindmapNode {
+  id: string;
+  text: string;
+  x: number;
+  y: number;
+  parentId?: string;
+  color?: string;
+  children: string[];
+}
+export interface Mindmap {
+  id: string;
+  projectId?: string;
+  title: string;
+  rootId: string;
+  nodes: Record<string, MindmapNode>;
+  createdAt: number;
+}
+
+export interface CanvasItem {
+  id: string;
+  x: number; y: number; w: number; h: number;
+  text: string;
+  color?: string;
+  kind: "sticky" | "box" | "arrow" | "note" | "dot";
+}
+export interface IdeaCanvas {
+  id: string;
+  projectId?: string;
+  title: string;
+  items: CanvasItem[];
+  createdAt: number;
+}
+
+export interface VoiceNote {
+  id: string; projectId?: string;
+  createdAt: number; durationSec: number;
+  transcript?: string;
+}
+
+export interface BusinessModelCanvas {
+  id: string; projectId?: string; date: string;
+  keyPartners: string[]; keyActivities: string[]; keyResources: string[];
+  valuePropositions: string[]; customerRelationships: string[]; channels: string[];
+  customerSegments: string[]; costStructure: string[]; revenueStreams: string[];
+}
+export interface ValuePropCanvas {
+  id: string; projectId?: string; date: string;
+  products: string[]; painRelievers: string[]; gainCreators: string[];
+  customerJobs: string[]; pains: string[]; gains: string[];
+}
+export interface LeanCanvas {
+  id: string; projectId?: string; date: string;
+  problem: string[]; solution: string[]; keyMetrics: string[];
+  uniqueValue: string; unfairAdvantage: string; channels: string[];
+  customerSegments: string[]; costStructure: string[]; revenueStreams: string[];
+}
+export interface PorterFive {
+  id: string; projectId?: string; date: string;
+  rivals: string[]; suppliers: string[]; buyers: string[]; entrants: string[]; substitutes: string[];
+}
+export interface Pestel {
+  id: string; projectId?: string; date: string;
+  political: string; economic: string; social: string;
+  technological: string; environmental: string; legal: string;
+}
+export interface UserStory {
+  id: string; projectId?: string;
+  asA: string; iWant: string; soThat: string;
+  acceptance: string[];
+  priority: "P0"|"P1"|"P2"|"P3";
+  estimate?: number;
+  status: "backlog"|"ready"|"doing"|"done";
+}
+export interface EventStorm {
+  id: string; projectId?: string; date: string;
+  domain: string; events: {id:string;text:string;kind:"event"|"command"|"aggregate"|"policy";x:number}[];
+}
+export interface JourneyMap {
+  id: string; projectId?: string; persona: string;
+  stages: { name: string; actions: string; thoughts: string; painPoints: string; opportunities: string; satisfaction: number }[];
+}
+export interface ServiceBlueprint {
+  id: string; projectId?: string; date: string;
+  customerActions: string[]; onstage: string[]; backstage: string[]; support: string[]; evidence: string[];
+}
+export interface Wireframe {
+  id: string; projectId?: string; title: string;
+  screens: { id: string; name: string; notes: string; elements: CanvasItem[] }[];
+  createdAt: number;
+}
+export interface BuyAFeature {
+  id: string; projectId?: string; date: string;
+  budget: number;
+  features: { id: string; text: string; cost: number; bought: boolean; buyer?: string }[];
+}
+export interface PairedComparison {
+  id: string; projectId?: string; date: string;
+  options: string[];
+  // winner[a][b] = a if a beats b, b if b beats a, undefined if not voted
+  votes: Record<string, Record<string, string|undefined>>;
+}
+export interface AffinityGroup {
+  id: string; projectId?: string; title: string;
+  items: { id: string; text: string; color?: string }[];
+}
+export interface StatusColumn {
+  id: string; label: string; color: string;
 }

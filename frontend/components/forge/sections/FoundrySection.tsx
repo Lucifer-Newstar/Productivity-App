@@ -35,7 +35,7 @@ const HEALTH: Record<ForgeProject["status"], { label: string; color: string; Ico
 const uid = () => Math.random().toString(36).slice(2,10);
 
 export default function FoundrySection() {
-  const { forge, updateForge, seedForgeDemo } = useStore();
+  const { forge, updateForge, seedForgeDemo, logForgeAction } = useStore();
   const { theme } = useTheme();
   const light = theme === "light";
   const [showForge, setShowForge] = useState(false);
@@ -89,6 +89,7 @@ export default function FoundrySection() {
         comms:[],scope:"",tags:[],links:[],velocityPoints:[],
       },...f.projects],
     }));
+    logForgeAction("project.lit", id, draft.title.trim());
     window.dispatchEvent(new CustomEvent("career:burst",{detail:{color:draft.color,count:40}}));
     window.dispatchEvent(new CustomEvent("career:toast",{detail:{title:"NEW HEAT",sub:draft.title,color:draft.color,icon:"zap"}}));
     setShowForge(false);
@@ -431,6 +432,12 @@ export default function FoundrySection() {
           </div>
         </div>
       )}
+
+      {/* Resource utilization heatmap (projects × resources) */}
+      <ResourceHeatmap projects={forge.projects}/>
+
+      {/* Skill gap alerts */}
+      <SkillGapAlerts projects={forge.projects}/>
 
       {/* Workload heatmap: active projects × last 12 weeks */}
       <WorkloadHeatmap projects={forge.projects} tasks={forge.tasks}/>
@@ -966,6 +973,129 @@ function StreakStrip({streak}:{streak:{current:number;longest:number;history:str
           const bg = d.has ? (streak.current>=7?"var(--fr-red)":"var(--fr-green)") : (isWeekend?"var(--fr-borderSoft)":"var(--fr-card2)");
           return <div key={i} title={d.iso} className="w-2.5 h-4 rounded-sm" style={{background:bg,opacity:d.has?1:0.5}}/>;
         })}
+      </div>
+    </div>
+  );
+}
+
+/* Cross-project resource utilization heatmap */
+function ResourceHeatmap({projects}:{projects:ForgeProject[]}) {
+  const active = projects.filter(p=>!p.archived && p.status!=="dead" && p.resources && p.resources.length>0);
+  // Collect resource kinds across active projects
+  const kinds = ["people","budget","equipment","software"] as const;
+  const kindLabel: Record<string,string> = {people:"CREW",budget:"BUDGET",equipment:"GEAR",software:"TOOLS"};
+  if (active.length === 0) return null;
+  const utilFor = (p: ForgeProject, kind: string) => {
+    const rs = (p.resources||[]).filter(r=>r.kind===kind);
+    if (!rs.length) return null;
+    const all = rs.reduce((a,r)=>{a.allocated+=r.allocated; a.used+=r.used; return a;},{allocated:0,used:0});
+    return all.allocated>0 ? Math.round(all.used/all.allocated*100) : 0;
+  };
+  return (
+    <div className="rounded-sm steel-plate p-4 relative" style={{borderColor:"var(--fr-orange)"}}>
+      <span className="riv-tl"/><span className="riv-tr"/><span className="riv-bl"/><span className="riv-br"/>
+      <div className="flex items-center gap-2 mb-3 flex-wrap">
+        <BarChart3 size={14} style={{color:"var(--fr-orange)"}}/>
+        <h3 className="mono text-[11px] font-black tracking-[0.25em]" style={{color:"var(--fr-orange)"}}>RESOURCE HEAT · CREW × GEAR × BUDGET</h3>
+        <span className="mono text-[10px]" style={{color:"var(--fr-fgMuted)"}}>// % util per project per kind</span>
+      </div>
+      <div className="overflow-x-auto">
+        <table className="w-full text-[10px] mono">
+          <thead>
+            <tr>
+              <th className="text-left font-normal pr-2 py-1" style={{color:"var(--fr-fgMuted)"}}>heat</th>
+              {kinds.map(k=>(
+                <th key={k} className="font-normal text-center px-2 py-1" style={{color:"var(--fr-fgMuted)"}}>{kindLabel[k]}</th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {active.map(p=>(
+              <tr key={p.id}>
+                <td className="pr-2 py-0.5 whitespace-nowrap" style={{color:p.color}}>{p.icon} {p.codename}</td>
+                {kinds.map(k=>{
+                  const u = utilFor(p,k);
+                  if (u===null) return <td key={k} className="p-0.5 text-center"><div className="w-20 h-6 rounded-sm flex items-center justify-center" style={{background:"var(--fr-card2)",color:"var(--fr-fgDim)"}}>—</div></td>;
+                  const over = u>100;
+                  const color = over?"#ef4444":u>=85?"#f59e0b":u>=60?"#22c55e":u>=30?"#06b6d4":"#94a3b8";
+                  return <td key={k} className="p-0.5 text-center">
+                    <div className="w-20 h-6 rounded-sm flex items-center justify-center font-black"
+                      style={{background:`${color}33`,color,border:`1px solid ${color}88`}}>
+                      {u}%{over?" !":""}
+                    </div>
+                  </td>;
+                })}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
+
+/* Skill gap alerts: when an active project's tags don't match strong career skills (<4 proficiency) nudge user */
+function SkillGapAlerts({projects}:{projects:ForgeProject[]}) {
+  const { career } = useStore();
+  if (!career?.skills?.length) return null;
+  const active = projects.filter(p=>!p.archived && p.status!=="dead" && p.status!=="done");
+  if (active.length === 0) return null;
+  // Normalize tag/skill name for fuzzy match
+  const norm = (s:string) => s.toLowerCase().replace(/[^a-z0-9]/g,"");
+  const weakSkills = career.skills.filter((s:any)=>(s.proficiency||0)<4);
+  const alerts: {project:ForgeProject; skill:any}[] = [];
+  active.forEach(p=>{
+    (p.tags||[]).forEach(tag=>{
+      const t = norm(tag);
+      weakSkills.forEach((s:any)=>{
+        const n = norm(s.name||"");
+        if (n && (t.includes(n)||n.includes(t)) && !alerts.some(a=>a.project.id===p.id&&a.skill.id===s.id)) {
+          alerts.push({project:p,skill:s});
+        }
+      });
+    });
+  });
+  // Also catch generic "skills needed but not tracked"
+  const trackedNames = new Set(career.skills.map((s:any)=>norm(s.name)));
+  const untracked: {project:ForgeProject; tag:string}[] = [];
+  active.forEach(p=>{
+    (p.tags||[]).forEach(tag=>{
+      const t = norm(tag);
+      if (t.length<3) return;
+      if (!trackedNames.has(t) && !Array.from(trackedNames).some(n=>n.includes(t)||t.includes(n))) {
+        if (!untracked.some(u=>u.project.id===p.id&&u.tag===tag)) untracked.push({project:p,tag});
+      }
+    });
+  });
+  if (alerts.length===0 && untracked.length===0) return null;
+  return (
+    <div className="rounded-sm steel-plate p-4 relative" style={{borderColor:"var(--fr-red)"}}>
+      <span className="riv-tl"/><span className="riv-tr"/><span className="riv-bl"/><span className="riv-br"/>
+      <div className="flex items-center gap-2 mb-2">
+        <AlertTriangle size={14} style={{color:"var(--fr-red)"}}/>
+        <h3 className="mono text-[11px] font-black tracking-[0.25em]" style={{color:"var(--fr-red)"}}>SKILL GAP ALERTS</h3>
+      </div>
+      <div className="grid md:grid-cols-2 gap-2">
+        {alerts.slice(0,6).map(({project:p,skill:s})=>(
+          <div key={p.id+s.id} className="p-2 rounded-sm flex items-center gap-2 text-xs"
+            style={{background:"rgba(239,68,68,0.08)",border:"1px dashed rgba(239,68,68,0.4)"}}>
+            <span style={{color:p.color}}>{p.icon}</span>
+            <span className="mono" style={{color:p.color}}>{p.codename}</span>
+            <span style={{color:"var(--fr-fgMuted)"}}>needs</span>
+            <span className="font-black" style={{color:"var(--fr-red)"}}>{s.name}</span>
+            <span className="mono ml-auto" style={{color:"var(--fr-fgMuted)"}}>lvl {s.proficiency||0}/10</span>
+          </div>
+        ))}
+        {untracked.slice(0,4).map(({project:p,tag})=>(
+          <div key={p.id+tag} className="p-2 rounded-sm flex items-center gap-2 text-xs"
+            style={{background:"rgba(245,158,11,0.08)",border:"1px dashed rgba(245,158,11,0.4)"}}>
+            <span style={{color:p.color}}>{p.icon}</span>
+            <span className="mono" style={{color:p.color}}>{p.codename}</span>
+            <span style={{color:"var(--fr-fgMuted)"}}>tag</span>
+            <span className="font-black" style={{color:"var(--fr-amber)"}}>#{tag}</span>
+            <span className="mono ml-auto" style={{color:"var(--fr-fgMuted)"}}>not in Career</span>
+          </div>
+        ))}
       </div>
     </div>
   );

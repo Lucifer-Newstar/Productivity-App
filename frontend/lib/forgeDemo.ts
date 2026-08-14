@@ -379,6 +379,16 @@ export function buildForgeDemo(): ForgeState {
       { id: uid(), weekOf: daysAgo(7), mood: 4, shipped: [], carry: [], wins: "Shipped Foundry + Quarry + hotkeys.",
         learnings: "Streaks > motivation. Ship in waves.", nextWeekFocus: "Sprints, review mode, calendar.", distractions: "Twitter doomscroll", hoursWorked: 24, rating: 4, createdAt: today() },
     ],
+    mindmaps: [], canvases: [], voiceNotes: [],
+    bmc: [], vpc: [], lean: [], porter: [], pestel: [],
+    userStories: [], eventStorms: [], journeyMaps: [], blueprints: [], wireframes: [],
+    buyAFeature: [], paired: [], affinity: [],
+    customStatuses: [],
+    auditLog: [
+      { id: uid(), ts: Date.now()-86400000*3, action: "forge.boot", detail: "Foundry ignited" },
+      { id: uid(), ts: Date.now()-86400000*2, action: "task.ship", target: tasks[0].id, detail: "Shell rivets wired" },
+      { id: uid(), ts: Date.now()-86400000, action: "sprint.start", detail: "S2 · ANVIL" },
+    ],
     streak: { lastActive: today(), current: 5, longest: 12, history: [daysAgo(4),daysAgo(3),daysAgo(2),daysAgo(1),today()] },
     settings: {
       workStartHour: 9,
