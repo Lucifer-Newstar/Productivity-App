@@ -549,16 +549,41 @@ export default function RoadmapsSection() {
     })));
     if (newlyDone.length > 0) {
       const byName = new globalThis.Map<string, CareerSkill>();
-      career.skills.forEach(s => byName.set(s.name.toLowerCase(), s));
+      const byWord = new globalThis.Map<string, CareerSkill>();
+      career.skills.forEach(s => {
+        const nm = s.name.toLowerCase().trim();
+        byName.set(nm, s);
+        nm.split(/[\s/\-&+]+/).filter(w => w.length >= 3).forEach(w => byWord.set(w, s));
+      });
+      const matchSkill = (tag: string): CareerSkill | undefined => {
+        const k = tag.toLowerCase().trim();
+        if (byName.has(k)) return byName.get(k);
+        // substring match against any skill name containing or contained-in the tag
+        for (const [nm, sk] of Array.from(byName.entries())) {
+          if (nm.includes(k) && k.length >= 3) return sk;
+          if (k.includes(nm) && nm.length >= 4) return sk;
+        }
+        // word token match
+        for (const w of k.split(/[\s/\-&+]+/).filter(x => x.length >= 4)) {
+          if (byWord.has(w)) return byWord.get(w);
+        }
+        return undefined;
+      };
+      const seen = new Set<string>(); // avoid duplicate bumps per milestone × skill
       const prompts: BumpPrompt[] = [];
       newlyDone.forEach(ms => {
-        (ms.skillTags || []).forEach(tag => {
-          const key = tag.toLowerCase().trim();
-          const skill = byName.get(key);
-          if (skill) {
-            const delta = Math.max(1, Math.round((ms.targetProficiency || 5) / 3));
+        const tagSet = new Set<string>(ms.skillTags || []);
+        // Also harvest keywords from title to catch untagged milestones
+        (ms.title + " " + (ms.description || "")).split(/[\s,/\\()[\]:]+/)
+          .filter(w => w.length >= 4 && !/^(with|using|build|learn|intro|advanced|master|deep|basic|the|and|for)$/i.test(w))
+          .forEach(w => tagSet.add(w));
+        tagSet.forEach(tag => {
+          const sk = matchSkill(tag);
+          if (sk && !seen.has(ms.id + "::" + sk.id)) {
+            seen.add(ms.id + "::" + sk.id);
+            const delta = Math.max(1, Math.min(2, Math.round((ms.targetProficiency || 5) / 4)));
             prompts.push({
-              id: uid(), skillId: skill.id, skillName: skill.name, delta,
+              id: uid(), skillId: sk.id, skillName: sk.name, delta,
               msTitle: ms.title, ts: Date.now(),
             });
           }

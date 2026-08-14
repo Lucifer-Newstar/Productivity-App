@@ -24,7 +24,7 @@ import { useRouter } from "next/router";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   ArrowLeft, Terminal, Sun, Moon, Bell, Map, Brain, Award, Users, Briefcase,
-  Trophy, ClipboardList, Globe, Cpu,
+  Trophy, ClipboardList, Globe, Cpu, FolderKanban,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -33,7 +33,7 @@ import { useStore } from "../../lib/store";
 
 export type CareerSectionId =
   | "roadmaps" | "skills" | "certs" | "network" | "jobs"
-  | "portfolio" | "daily" | "global";
+  | "portfolio" | "daily" | "projects" | "global";
 
 const SECTION_ROUTE: Record<CareerSectionId, string> = {
   roadmaps:  "/career/roadmaps",
@@ -43,6 +43,7 @@ const SECTION_ROUTE: Record<CareerSectionId, string> = {
   jobs:      "/career/jobs",
   portfolio: "/career/portfolio",
   daily:     "/career/daily",
+  projects:  "/career/projects",
   global:    "/career/command",
 };
 
@@ -64,6 +65,7 @@ export const CAREER_NAV: CareerNavItem[] = [
   { id: "jobs",      label: "Jobs",        code: "05", icon: Briefcase,    color: "#fb923c", colorLight: "#c2410c", description: "pipeline.offers" },
   { id: "portfolio", label: "Portfolio",   code: "06", icon: Trophy,       color: "#facc15", colorLight: "#a16207", description: "wins.projects" },
   { id: "daily",     label: "Daily",       code: "07", icon: ClipboardList,color: "#818cf8", colorLight: "#1d4ed8", description: "standup.logs" },
+  { id: "projects",  label: "Projects",    code: "09", icon: FolderKanban, color: "#34d399", colorLight: "#065f46", description: "unified.hub" },
   { id: "global",    label: "Command",     code: "08", icon: Globe,        color: "#e2e8f0", colorLight: "#334155", description: "timeline.vision" },
 ];
 

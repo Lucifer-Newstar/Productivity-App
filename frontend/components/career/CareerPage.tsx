@@ -30,6 +30,7 @@ const ROUTE_MAP: Record<CareerSectionId, string> = {
   jobs:      "/career/jobs",
   portfolio: "/career/portfolio",
   daily:     "/career/daily",
+  projects:  "/career/projects",
   global:    "/career/command",
 };
 
