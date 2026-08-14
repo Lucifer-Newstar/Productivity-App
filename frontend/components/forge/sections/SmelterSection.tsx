@@ -9,10 +9,10 @@ import {
   Flame, Plus, Trash2, ScrollText, Lightbulb, Search,
   Target, HelpCircle, History, Scale, Zap, Users,
   Grid3x3, Brain, ThumbsUp, ThumbsDown, Timer as TimerIcon,
-  Sparkles, Shuffle, Palette,
+  Sparkles, Shuffle, Palette, Shapes,
 } from "lucide-react";
 import { useStore } from "../../../lib/store";
-import type { DecisionMatrixRow, Fishbone, SixHats, Persona } from "../../../lib/forgeTypes";
+import type { DecisionMatrixRow, Fishbone, SixHats, Persona, Scamper } from "../../../lib/forgeTypes";
 
 const uid = () => Math.random().toString(36).slice(2,10);
 const today = () => new Date().toISOString().slice(0,10);
@@ -25,6 +25,7 @@ const TABS = [
   { id: "matrix", label: "DEC-MATRIX", icon: Grid3x3, color: "#a78bfa" },
   { id: "fishbone", label: "FISHBONE", icon: Brain, color: "#fb923c" },
   { id: "sixhats", label: "6 HATS", icon: Palette, color: "#22d3ee" },
+  { id: "scamper", label: "SCAMPER", icon: Shapes, color: "#f472b6" },
   { id: "swot", label: "SWOT", icon: Search, color: "#a78bfa" },
   { id: "proscons", label: "PRO/CON", icon: Scale, color: "#06b6d4" },
   { id: "scenarios", label: "SCENARIOS", icon: Zap, color: "#f59e0b" },
@@ -176,6 +177,12 @@ export default function SmelterSection() {
         {tab==="sixhats" && (
           <motion.div key="sh" initial={{opacity:0,y:8}} animate={{opacity:1,y:0}} exit={{opacity:0}} className="space-y-3">
             <SixHatsPanel projects={activeProjects} defaultProj={projFilter!=="all"?projFilter:undefined}/>
+          </motion.div>
+        )}
+
+        {tab==="scamper" && (
+          <motion.div key="sc" initial={{opacity:0,y:8}} animate={{opacity:1,y:0}} exit={{opacity:0}} className="space-y-3">
+            <ScamperPanel projects={activeProjects} defaultProj={projFilter!=="all"?projFilter:undefined}/>
           </motion.div>
         )}
 
@@ -1023,3 +1030,75 @@ function SixHatsPanel({projects,defaultProj}:{projects:any[];defaultProj?:string
   );
 }
 
+
+function ScamperPanel({projects,defaultProj}:{projects:any[];defaultProj?:string}){
+  const {forge,updateForge} = useStore();
+  const list = forge.scamper.filter(s=>defaultProj?s.projectId===defaultProj:true);
+  const [topic,setTopic] = useState(""); const [pid,setPid] = useState(defaultProj||"");
+  const PROMPTS:{k:keyof Omit<Scamper,"id"|"projectId"|"topic"|"date">;label:string;color:string;prompt:string}[] = [
+    {k:"substitute",label:"SUBSTITUTE",color:"#ef4444",prompt:"What can be swapped? Materials? People? Process?"},
+    {k:"combine",label:"COMBINE",color:"#f59e0b",prompt:"Merge with another idea, product, or process?"},
+    {k:"adapt",label:"ADAPT",color:"#22c55e",prompt:"What else is like this? What can we copy or adjust?"},
+    {k:"modify",label:"MODIFY",color:"#06b6d4",prompt:"Magnify? Minify? Change shape, color, sound, meaning?"},
+    {k:"put",label:"PUT TO OTHER USE",color:"#a78bfa",prompt:"New contexts? New users? Waste used for something?"},
+    {k:"eliminate",label:"ELIMINATE",color:"#ec4899",prompt:"What to remove? Simplify? Understate?"},
+    {k:"reverse",label:"REARRANGE/REVERSE",color:"#facc15",prompt:"Reverse order? Flip roles? Turn upside-down?"},
+  ];
+  const add = () => {
+    if(!topic.trim()) return;
+    const s: Scamper = {id:uid(),topic,projectId:pid||undefined,date:today(),substitute:"",combine:"",adapt:"",modify:"",put:"",eliminate:"",reverse:""};
+    updateForge(f=>({scamper:[s,...f.scamper]}));
+    setTopic("");
+  };
+  return (
+    <>
+      <div className="rounded-sm steel-plate p-4 relative" style={{borderColor:"#f472b655"}}>
+        <span className="riv-tl"/><span className="riv-tr"/><span className="riv-bl"/><span className="riv-br"/>
+        <div className="mono text-[10px] tracking-widest mb-2" style={{color:"#f472b6"}}>+ SCAMPER · SUBSTITUTE · COMBINE · ADAPT · MODIFY · PUT · ELIMINATE · REARRANGE</div>
+        <div className="flex gap-2 flex-wrap">
+          <input value={topic} onChange={e=>setTopic(e.target.value)} placeholder="Product/idea to SCAMPER"
+            className="flex-1 bg-transparent outline-none mono text-sm px-2 py-1.5 rounded-sm min-w-[200px]"
+            style={{border:"1px solid var(--fr-borderSoft)",color:"var(--fr-fg)"}}/>
+          <select value={pid} onChange={e=>setPid(e.target.value)}
+            className="mono text-[10px] px-2 py-1 rounded-sm outline-none"
+            style={{background:"var(--fr-card2)",border:"1px solid var(--fr-borderSoft)",color:"var(--fr-fg)"}}>
+            <option value="">global</option>
+            {projects.map(p=><option key={p.id} value={p.id}>{p.icon} {p.codename}</option>)}
+          </select>
+          <button onClick={add} className="mono text-[10px] font-black tracking-widest px-3 py-1.5 rounded-sm"
+            style={{background:"#f472b6",color:"#000"}}>SCAMPER</button>
+        </div>
+      </div>
+      <div className="space-y-3">
+        {list.map(s=>{
+          const proj = projects.find(x=>x.id===s.projectId);
+          return (
+            <div key={s.id} className="rounded-sm steel-plate p-4 relative" style={{borderColor:"#f472b644"}}>
+              <span className="riv-tl"/><span className="riv-tr"/><span className="riv-bl"/><span className="riv-br"/>
+              <div className="flex items-center gap-2 mb-3 flex-wrap">
+                <Shapes size={13} style={{color:"#f472b6"}}/>
+                <h4 className="font-black text-base flex-1">{s.topic}</h4>
+                <span className="mono text-[9px]" style={{color:"var(--fr-fgMuted)"}}>{s.date}</span>
+                {proj && <span className="mono text-[9px] tracking-widest" style={{color:proj.color}}>{proj.icon} {proj.codename}</span>}
+                <button onClick={()=>updateForge(ff=>({scamper:ff.scamper.filter(x=>x.id!==s.id)}))} style={{color:"var(--fr-red)"}}><Trash2 size={11}/></button>
+              </div>
+              <div className="grid md:grid-cols-2 gap-2">
+                {PROMPTS.map(p=>(
+                  <div key={p.k} className="p-2 rounded-sm" style={{background:"var(--fr-card2)",borderLeft:`3px solid ${p.color}`}}>
+                    <div className="mono text-[10px] tracking-widest font-black flex items-center gap-1" style={{color:p.color}}>{p.label}</div>
+                    <div className="pencil text-[10px] italic" style={{color:"var(--fr-fgMuted)"}}>{p.prompt}</div>
+                    <textarea value={(s as any)[p.k]} onChange={e=>updateForge(ff=>({scamper:ff.scamper.map(x=>x.id===s.id?{...x,[p.k]:e.target.value}:x)}))}
+                      rows={2} placeholder="..."
+                      className="w-full bg-transparent outline-none pencil text-xs mt-1 resize-none"
+                      style={{color:"var(--fr-fg)"}}/>
+                  </div>
+                ))}
+              </div>
+            </div>
+          );
+        })}
+        {list.length===0 && <div className="mono text-[11px] italic text-center py-8" style={{color:"var(--fr-fgDim)"}}>No SCAMPERs yet. The 7 prompts turn one idea into seven.</div>}
+      </div>
+    </>
+  );
+}

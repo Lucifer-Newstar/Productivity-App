@@ -358,6 +358,12 @@ export function buildForgeDemo(): ForgeState {
         green:"Dogfood for a week, then ship wave 2 as patches.",
         blue:"Set ship date Friday EOD; no new sectors after Wednesday." },
     ],
+    scamper: [
+      { id: uid(), projectId: p3.id, topic:"Landing page CTA", date: today(),
+        substitute:"Swap 'Sign up' for 'Get early access'", combine:"Combine pricing + testimonials in hero",
+        adapt:"Copy Harry's Dry launch page", modify:"Make CTA 2x bigger, amber instead of cyan",
+        put:"Use hero as LinkedIn post too", eliminate:"Remove nav links (distraction)", reverse:"Try exit-intent CTA first" },
+    ],
     settings: {
       workStartHour: 9,
       workEndHour: 18,

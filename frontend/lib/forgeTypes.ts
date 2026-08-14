@@ -300,6 +300,20 @@ export interface SixHats {
   blue: string;  // process/conclusion
 }
 
+export interface Scamper {
+  id: string;
+  projectId?: string;
+  topic: string;
+  date: string;
+  substitute: string;
+  combine: string;
+  adapt: string;
+  modify: string;
+  put: string; // put to other use
+  eliminate: string;
+  reverse: string;
+}
+
 export interface ProjectBudget {
   estimated?: number;
   actual: number;
@@ -402,6 +416,7 @@ export interface ForgeState {
   ideas: Idea[];
   fishbones: Fishbone[];
   sixHats: SixHats[];
+  scamper: Scamper[];
   settings: {
     workStartHour: number;
     workEndHour: number;

@@ -41,7 +41,7 @@ import type {
   ForgeState, ForgeProject, ProjectTask, ScratchNote, DecisionEntry,
   SwotRow, ProConItem, ScenarioEntry, FiveWhy, LessonEntry, Retrospective,
   ParkingLotItem, PomodoroSession, Persona, DecisionMatrixRow, Idea,
-  Fishbone, SixHats,
+  Fishbone, SixHats, Scamper,
 } from "./forgeTypes";
 
 // Generate ids for runtime-created entities.
@@ -285,6 +285,7 @@ const SEED_FORGE: ForgeState = (() => {
     ideas: [],
     fishbones: [],
     sixHats: [],
+    scamper: [],
     settings: {
       workStartHour: 9,
       workEndHour: 18,
@@ -314,6 +315,7 @@ function migrateForge(raw: any): ForgeState {
     ideas: raw.ideas ?? [],
     fishbones: raw.fishbones ?? [],
     sixHats: raw.sixHats ?? [],
+    scamper: raw.scamper ?? [],
     settings: { ...SEED_FORGE.settings, ...(raw.settings ?? {}) },
   };
 }
