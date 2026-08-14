@@ -1,6 +1,7 @@
 "use client";
-import ForgePage from "../../components/forge/ForgePage";
-import VaultSection from "../../components/forge/sections/VaultSection";
+import ForgePage, { FULLSCREEN } from "../../components/forge/ForgePage";
+import COMP from "../../components/forge/sections/VaultSection";
 export default function Page() {
-  return <ForgePage section="vault"><VaultSection/></ForgePage>;
+  return <ForgePage section="vault"><COMP/></ForgePage>;
 }
+Page.fullScreen = FULLSCREEN;

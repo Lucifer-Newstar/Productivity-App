@@ -1,6 +1,7 @@
 "use client";
-import ForgePage from "../../components/forge/ForgePage";
-import SmelterSection from "../../components/forge/sections/SmelterSection";
+import ForgePage, { FULLSCREEN } from "../../components/forge/ForgePage";
+import COMP from "../../components/forge/sections/SmelterSection";
 export default function Page() {
-  return <ForgePage section="smelter"><SmelterSection/></ForgePage>;
+  return <ForgePage section="smelter"><COMP/></ForgePage>;
 }
+Page.fullScreen = FULLSCREEN;
