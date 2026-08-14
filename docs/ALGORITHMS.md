@@ -295,7 +295,10 @@ rest-timer expiry and PR celebration (880 Hz × 220 ms and a follow-up 1600 Hz
 
 # Health OS algorithms
 
-All Health math lives in `frontend/lib/healthAnalytics.ts` (to be created).
+All Health math lives in `frontend/lib/healthAnalytics.ts` (pure functions,
+unit-tested by `frontend/scripts/qa-health.js`). The backend mirrors the key
+formulas as query endpoints under `/api/health/analytics/*` — see
+[`API.md`](API.md).
 
 ## H1. Daily Health Score (0–100)
 
@@ -724,3 +727,76 @@ for each paired site (Arms, Forearms, Thighs, Calves):
 
 Displayed as a red warning in the live BF panel and surfaced as a KPI on Triage.
 Intended to prompt unilateral accessory work, not diagnose pathology.
+
+## H24. Blood-pressure classification (implemented Wave 5)
+
+AHA-style bands from systolic/diastolic (mmHg):
+
+| Category | Trigger |
+|----------|---------|
+| Hypertensive crisis | sys ≥ 180 OR dia ≥ 120 → "seek care" warning |
+| Stage 2 | sys ≥ 140 OR dia ≥ 90 |
+| Stage 1 | sys ≥ 130 OR dia ≥ 80 |
+| Elevated | sys ≥ 120 |
+| Normal | below all thresholds |
+
+Companion classifiers (same file): `classifyTemp` (fever > 37.5 °C),
+`classifySpo2` (warn < 94 %), `classifyRhr` (bradycardia/tachycardia bands).
+
+## H25. Orthostatic HR test (implemented Wave 5)
+
+```
+delta = HR_standing_1min − HR_supine
+ok < 13 ≤ mild < 20 ≤ elevated < 30 ≤ high
+```
+
+Elevated/high on consecutive mornings suggests accumulated fatigue → feeds the
+burnout heuristic.
+
+## H26. Burnout / overtraining heuristic (implemented Wave 5)
+
+`burnoutHeuristic()` scores 0–10 from cross-space signals:
+
+- Sleep bank debt (≥5h amber, ≥10h strong)
+- Resting-HR deviation vs 7-day average (>7 bpm)
+- 7-day mood / stress / motivation / libido averages (MIND sliders)
+- Active injury count
+
+Levels: `ok / watch / warn / overtraining`. Overtraining always escalates the
+pre-workout advisory to ABORT regardless of other inputs.
+
+## H27. Pre-workout advisory (implemented Wave 7)
+
+`preWorkoutAdvisory()` combines sleep bank, last-night hours, recovery score,
+hydration %, active injuries, BP crisis flag, fever, RHR delta and burnout
+level into a single `GO / CAUTION / WARN / ABORT` verdict with reasons[].
+Rendered as the HEALTH advisory card on `/workout/overview`.
+
+## H28. Post-workout recovery needs (implemented Wave 7)
+
+`postWorkoutRecoveryNeeds()` → protein (g), water (ml) and carb targets for the
+post-session window, scaled by session volume and bodyweight; plus
+`projectedSleepRecovery()`:
+
+```
+creditPerNight = min(ideal × 0.125, 1.0) × 0.5
+nightsAtIdeal  = ceil(debt / creditPerNight)
+```
+
+## H29. Cardio calorie estimate (implemented Wave 7)
+
+```
+kcal = MET × weight_kg × duration_h      (default MET 7)
+```
+
+Used by the Caloric Adjustment Engine to add workout burn onto the daily TDEE
+allowance.
+
+## H30. Habit streaks & daily summaries (implemented Wave 6)
+
+`buildDailySummaries()` folds meals/water/sleep/supps/mind rows into one
+summary per date (kcal, protein, water ml, sleep h, supps taken, score 0–100).
+`habitStreak(summaries, predicate)` returns `{ current, longest }` counting
+consecutive days from today backwards; `weeklyReport()` aggregates 7-day
+averages; `exportHealthCSV()` emits one row per day (same columns as
+`GET /api/health/export/csv` on the backend).
