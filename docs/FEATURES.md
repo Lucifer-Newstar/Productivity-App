@@ -1,6 +1,6 @@
 # Kaizen Feature Status
 
-Last audited against code on `projects` branch (session: 2026-08-14, wave 2 forge pass). Three independent spaces ship today:
+Last audited against code on `projects` branch (session: 2026-08-14, forge wave-5 pass). Three independent spaces ship today:
 **Workout** (battle-tested on `main`, imperial Japanese/obsidian theme), **Career**
 (Night HUD / Blueprint dual themes), and **Forge** (Foundry / Drafting-Room dual themes —
 industrial project/task OS).
@@ -289,16 +289,19 @@ drilldown). Cross-links back to `/career` via a bridge callout on Foundry.
 |---|---|---|
 | 1 | Furnace header with title + "LIGHT FORGE" button | ✅ |
 | 2 | Quick-forge inline form (title/codename/color-swatch/icon) | ✅ 6 colors, 8 icons, strike button, on-success confetti burst + toast |
-| 3 | 3 quick-stat plates (ACTIVE / COLD / SHIPPED) + HOURS + ON TRACK | ✅ 5-stat row w/ rivets |
-| 4 | Anvil.today panel (today-due tasks per project with quick-toggle) | ✅ |
-| 5 | Active heats grid with color heat-stripe + health status chip | ✅ 6 health states (ON TRACK/BLOCKED/OFF TRACK/PAUSED/SHIPPED/DEAD) w/ icons |
-| 6 | Progress bars (milestones %) per project | ✅ Animated on mount |
-| 7 | Next-task preview per project card | ✅ |
-| 8 | Metadata row (priority, energy/complexity, deadline) | ✅ |
-| 9 | Cold Metal section (blocked/off-track/paused) with issue preview | ✅ |
-| 10 | Career bridge callout → /career | ✅ |
-| 11 | STOKE FURNACE demo-seed button (empty-state only) | ✅ Seeds 7 projects + tasks + SWOT via seedForgeDemo() |
-| 12 | Direct drilldown → /projects/p/[id] | ✅ Cards clickable |
+| 3 | **Daily forge pulse** — 1–10 satisfaction score per active heat, tracked daily | ✅ Quick-log bar under header, toasts on log |
+| 4 | 5 stat plates (ACTIVE / ON TRACK / COLD / SHIPPED / HOURS) | ✅ Riveted steel plates |
+| 5 | Anvil.today panel (today-due tasks per project with quick-toggle) | ✅ |
+| 6 | Active heats grid with color heat-stripe + health status chip | ✅ 6 health states (ON TRACK/BLOCKED/OFF TRACK/PAUSED/SHIPPED/DEAD) w/ icons |
+| 7 | Progress bars (milestones %) per project | ✅ Animated on mount |
+| 8 | Next-task preview per project card | ✅ |
+| 9 | Metadata row (priority, energy/complexity, deadline) | ✅ |
+| 10 | Cold Metal section (blocked/off-track/paused) with issue preview | ✅ |
+| 11 | Career bridge callout → /career | ✅ |
+| 12 | STOKE FURNACE demo-seed button (empty-state only) | ✅ Seeds 7 projects + tasks + SWOT + 5 frameworks via seedForgeDemo() |
+| 13 | Direct drilldown → /projects/p/[id] | ✅ Cards clickable |
+| 14 | Parking Lot panel — top ideas, one-click ▲TASK promote to Quarry | ✅ Top 8 parked ideas visible, X delete |
+| 15 | Velocity plate (8-wk bars + pulse/burndown) | ✅ |
 
 ## 2. Project drilldown — `/projects/p/[id]`
 
@@ -316,7 +319,7 @@ drilldown). Cross-links back to `/career` via a bridge callout on Foundry.
 | 10 | Risk register (description/probability/impact/mitigation/contingency/status) | ✅ |
 | 11 | Issue log (description/impact/priority/status) | ✅ |
 | 12 | Quality checklist (toggle/rename/delete) | ✅ |
-| 13 | Stakeholder crew (name/role/power/interest/stance/notes) | ✅ Crew plate (MVP add/delete) |
+| 13 | Stakeholder crew (name/role/power/interest/stance/notes) | ✅ Inline-editable (name/role/power/interest/stance dropdowns) |
 | 14 | Stakeholder comms log (date/person/channel/topic/summary/action-items) | ✅ |
 | 15 | Post-mortem / obituary editor (why-stopped/learned/start-again yes/maybe/no) | ✅ Auto-created when KILL is pressed |
 | 16 | Project archive toggle (archive unarchives via REHEAT) | ✅ Shipped/dead auto-archived |
@@ -350,17 +353,18 @@ drilldown). Cross-links back to `/career` via a bridge callout on Foundry.
 | 11 | Matrix mode switcher (KANBAN / EISENHOWER / EFFORT) | ✅ |
 | 12 | Subtasks (expandable) | ✅ Expandable TaskEditor per card: add/delete/toggle subtasks, title edit, notes, due date, est/actual mins, priority, EFFORT/IMPACT/ENERGY/FOCUS/IMPORTANCE/URGENCY sliders, tags, stuck notes |
 | 13 | Drag-and-drop between columns | ✅ HTML5 draggable on cards, onDragOver/onDrop on columns, live ghosting while dragging |
-| 14 | Task energy/focus ratings + pomodoro quick-log + stuck toggle | ✅ Per-card +🍅 button, JAM toggle, TODAY toggle, aging color (10d amber / 21d red) |
-| 15 | Dependency blocker chips (shows if dependsOn[] are open/done, red/green) | ✅ Per-card; UI for setting dependsOn not yet shipped (type supports it) |
+| 14 | Task energy/focus ratings + pomodoro quick-log + stuck toggle | ✅ Per-card +🍅 button, JAM toggle, TODAY/NEXT toggles, aging color (10d amber / 21d red), Clone button |
+| 15 | Dependency blocker chips + dependency editor | ✅ Chips show ⛔BLOCKED/✓UNBLOCKED with colored blocker pills; expand TaskEditor → DependsOn checklist editor wires dependsOn[] |
 | 16 | Batch-add (one task per line, Ctrl/Cmd+Enter to strike, project picker) | ✅ |
-| 17 | Recurring task templates | ❌ Type supports recurrence field; UI deferred |
-| 18 | Archive search | ❌ |
+| 17 | Clone task + Next-action flag + NEXT filter | ✅ Copy-icon clone; ▶ NEXT per-task; NEXT filter alongside TODAY |
+| 18 | Recurring task templates | ❌ Type supports recurrence field; UI deferred |
+| 19 | Archive search | ❌ |
 
 ## 4. Smelter (brainstorms & retros) — §03
 
 | # | Feature | Status |
 |---|---|---|
-| 1 | 8-tab system: SCRATCH / DECISIONS / SWOT / **PROS-CONS** / **SCENARIOS** / 5 WHYS / LESSONS / RETRO | ✅ |
+| 1 | **13-tab system**: SCRATCH / IDEAS / PERSONAS / DECISIONS / DEC-MATRIX / FISHBONE / 6 HATS / SCAMPER / SWOT / PRO/CON / SCENARIOS / 5 WHYS / LESSONS / RETRO | ✅ |
 | 2 | Project-scoping dropdown (all heats or single project) | ✅ |
 | 3 | Scratchpad — free-text notes pinned to a project (or global), pencil-font rendering, sorted newest-first | ✅ Inline add + delete |
 | 4 | Decision log — date/decision/alternatives/why/approvals stamp | ✅ APPROVED rubber-stamp when checkboxed |
@@ -370,7 +374,14 @@ drilldown). Cross-links back to `/career` via a bridge callout on Foundry.
 | 8 | Start/Stop/Continue retro template (one per date, 3 columns, append) | ✅ |
 | 9 | Pros/Cons with ×1–×5 weighting sliders, weighted verdict bar (GO/NO-GO/TOSS-UP stamp) | ✅ |
 | 10 | Future scenario planner (if/then trigger → response playbook) | ✅ |
-| 11 | Reverse-brainstorm / worst-idea / SCAMPER / Porter / PEST / BMC | ❌ |
+| 11 | **Ideas board** — normal/worst/reverse/mood/kano modes, ▲/▼ votes, random word-seed button | ✅ |
+| 12 | **Persona forge** — name/role/goal/pain with avatar tile, per-project | ✅ |
+| 13 | **Weighted decision matrix** — addable criteria w/ weight (1–5) + score (0–10) sliders, total score + progress bar | ✅ |
+| 14 | **Fishbone (Ishikawa)** — 6M categories (People/Process/Tools/Materials/Environment/Measurement) with quick-add causes per bone | ✅ |
+| 15 | **Six Thinking Hats (de Bono)** — white/red/black/yellow/green/blue textareas, color-coded borders | ✅ |
+| 16 | **SCAMPER** — Substitute/Combine/Adapt/Modify/Put-to-use/Eliminate/Rearrange prompts with inline textareas | ✅ |
+| 17 | Live smelter timer (GO/STOP/RESET MM:SS) in header | ✅ |
+| 18 | Porter / PEST / BMC / VPC / Lean / User story / Event storming / Journey map / Service blueprint / Prototype / Wireframe / Storyboard | ❌ |
 
 ## 5. Vault (archive/graveyard) — §04
 
@@ -381,8 +392,9 @@ drilldown). Cross-links back to `/career` via a bridge callout on Foundry.
 | 3 | Dead project cards w/ full obituary (why/learned/start-again) displayed inline | ✅ Blood red + SKULL stamp |
 | 4 | Cold-storage archived projects | ✅ Steel |
 | 5 | REHEAT button to restore to Foundry (clears archived, sets status back to paused) | ✅ |
-| 6 | One-click JSON export of entire Forge state | ✅ EXPORT button, downloads `kaizen-forge-YYYY-MM-DD.json` |
-| 7 | File reference links editor | ✅ In project BRIEF tab |
+| 6 | JSON backup export + RESTORE (file picker, confirm replace) | ✅ BACKUP + RESTORE buttons, success/error toasts |
+| 7 | **CSV export** of tasks (id/title/project/status/priority/dates/est/actual/poms/E/I/e/f/tags) | ✅ CSV button |
+| 8 | File reference links editor | ✅ In project BRIEF tab |
 
 ## Cross-cutting (Forge)
 
@@ -420,6 +432,6 @@ drilldown). Cross-links back to `/career` via a bridge callout on Foundry.
 
 Project mgmt: HTML5 drag-drop across columns ✅ done this wave · Gantt ✅ · remaining: calendar view, swimlanes, custom statuses, critical path, float/slack, resource workload heatmap, CSV import/export, print view, weekly review mode, audit trail.
 Tasks: subtask indentation in kanban, recurring templates UI, batch edit, cloning, task-dependency editor UI, completion streak.
-Smelter: scratch dividers, personas, screenshot timeline, mind-map, reverse brainstorm, SCAMPER, Porter/PEST/BMC/VPC/Lean/user-story/event-storming/journey-map/service-blueprint/prototype/wireframe/storyboard, Buy-a-Feature, Kano, product backlog, sprint planning, fishbone, decision matrix, paired comparison, six hats, design thinking, canvas, mood boards, audio/voice, timer, voting/affinity grouping, scorecards, mind-map animation.
+Smelter: scratch dividers, screenshot timeline, mind-map, Kano categories surfaced on idea board (must/performance/delight/indifferent/reverse), Porter/PEST/BMC/VPC/Lean/user-story/event-storming/journey-map/service-blueprint/prototype/wireframe/storyboard, Buy-a-Feature, product backlog, sprint planning, paired comparison, design thinking, drawing canvas, mood boards, audio/voice notes, affinity grouping, scorecards, mind-map animation/export, voting (thumbs up/down exist), reverse/worst-idea brainstorm (modes exist on IDEAS tab).
 Review: velocity projection lines, effort/impact variance report, skills-gained sync → career, network-from-project sync.
-Global: daily pulse to dashboard, project comparison, backlog/idea bin, template library, energy/time balance dial.
+Global: project comparison, template library, energy/time balance dial, CSV import for tasks.
