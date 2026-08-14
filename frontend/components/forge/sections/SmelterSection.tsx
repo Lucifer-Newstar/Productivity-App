@@ -12,7 +12,7 @@ import {
   Sparkles, Shuffle, Palette, Shapes, Flag, CheckCircle2, Play,
 } from "lucide-react";
 import { useStore } from "../../../lib/store";
-import type { DecisionMatrixRow, Fishbone, SixHats, Persona, Scamper, Sprint } from "../../../lib/forgeTypes";
+import type { DecisionMatrixRow, Fishbone, SixHats, Persona, Scamper, Sprint, ProjectTask } from "../../../lib/forgeTypes";
 import { addDays, todayISO } from "../forgeUtils";
 
 const uid = () => Math.random().toString(36).slice(2,10);
@@ -526,6 +526,9 @@ function SprintsPanel() {
                 <span>{pct}% shipped</span>
                 <span style={{color:"var(--fr-amber)"}}>ideal {idealPct}%</span>
               </div>
+
+              {/* Burndown mini-chart */}
+              <SprintBurndown sprint={s} tasks={sprintTasks}/>
 
               <div className="mt-3 space-y-1 max-h-48 overflow-y-auto">
                 {tasksToShow.slice(0,12).map(t => {
@@ -1258,5 +1261,70 @@ function ScamperPanel({projects,defaultProj}:{projects:any[];defaultProj?:string
         {list.length===0 && <div className="mono text-[11px] italic text-center py-8" style={{color:"var(--fr-fgDim)"}}>No SCAMPERs yet. The 7 prompts turn one idea into seven.</div>}
       </div>
     </>
+  );
+}
+
+function SprintBurndown({sprint,tasks}:{sprint:Sprint;tasks:ProjectTask[]}){
+  // Compute per-day cumulative completions from startDate through today (or endDate if closed)
+  const start = new Date(sprint.startDate+"T00:00:00").getTime();
+  const end = new Date(sprint.endDate+"T00:00:00").getTime();
+  const total = Math.max(1, tasks.length);
+  const days = Math.max(1, Math.round((end-start)/86400000)+1);
+  const today = new Date(new Date().toISOString().slice(0,10)+"T00:00:00").getTime();
+  const lastDay = sprint.status==="closed" ? end : Math.min(end, today);
+  const visibleDays = Math.max(1, Math.round((lastDay-start)/86400000)+1);
+
+  // Cumulative done per day
+  const completionsByDay: Record<string,number> = {};
+  tasks.forEach(t=>{
+    if(t.status==="done" && t.completedAt){
+      const d = t.completedAt;
+      if(new Date(d+"T00:00:00").getTime()>=start && new Date(d+"T00:00:00").getTime()<=end){
+        completionsByDay[d] = (completionsByDay[d]||0)+1;
+      }
+    }
+  });
+  let cum = 0;
+  const points: {x:number;y:number;done:number}[] = [];
+  for (let i=0;i<visibleDays;i++){
+    const iso = new Date(start+i*86400000).toISOString().slice(0,10);
+    cum += completionsByDay[iso]||0;
+    points.push({x:i, y: cum/total, done: cum});
+  }
+  const W=260, H=62, pad=6;
+  const xScale = (i:number) => pad + (i/(days-1))*(W-2*pad);
+  const yScale = (v:number) => H-pad - v*(H-2*pad);
+  const actual = points.map((p,i)=>`${i===0?"M":"L"}${xScale(p.x)},${yScale(p.y)}`).join(" ");
+  const ideal = `M${xScale(0)},${yScale(0)} L${xScale(days-1)},${yScale(1)}`;
+  return (
+    <div className="mt-3 relative">
+      <svg width="100%" viewBox={`0 0 ${W} ${H+10}`} className="overflow-visible">
+        {/* grid */}
+        {[0,0.25,0.5,0.75,1].map(v=>(
+          <line key={v} x1={pad} x2={W-pad} y1={yScale(v)} y2={yScale(v)} stroke="var(--fr-borderSoft)" strokeDasharray="2 3" strokeWidth={0.8}/>
+        ))}
+        {/* ideal */}
+        <path d={ideal} stroke="var(--fr-red)" strokeWidth={1.2} fill="none" opacity={0.6} strokeDasharray="3 3"/>
+        {/* actual */}
+        <path d={actual} stroke="var(--fr-green)" strokeWidth={2} fill="none"
+          style={{filter:"drop-shadow(0 0 3px rgba(34,197,94,0.7))"}}/>
+        {points.map((p,i)=>(
+          <circle key={i} cx={xScale(p.x)} cy={yScale(p.y)} r={2} fill="var(--fr-green)"/>
+        ))}
+        {/* today marker */}
+        {sprint.status==="active" && visibleDays>1 && visibleDays<days && (
+          <line x1={xScale(visibleDays-1)} x2={xScale(visibleDays-1)} y1={pad} y2={H-pad}
+            stroke="var(--fr-amber)" strokeWidth={1} strokeDasharray="2 2"/>
+        )}
+        {/* labels */}
+        <text x={pad} y={H+8} fontSize={8} fill="var(--fr-fgMuted)" fontFamily="monospace">{sprint.startDate.slice(5)}</text>
+        <text x={W-pad} y={H+8} fontSize={8} fill="var(--fr-fgMuted)" textAnchor="end" fontFamily="monospace">{sprint.endDate.slice(5)}</text>
+      </svg>
+      <div className="flex items-center gap-3 mono text-[9px] tracking-widest" style={{color:"var(--fr-fgMuted)"}}>
+        <span className="flex items-center gap-1"><span style={{width:12,height:2,background:"var(--fr-green)"}}/>actual</span>
+        <span className="flex items-center gap-1"><span style={{width:12,height:0,borderTop:"1.5px dashed var(--fr-red)"}}/>ideal</span>
+        <span className="flex items-center gap-1"><span style={{width:2,height:10,background:"var(--fr-amber)"}}/>today</span>
+      </div>
+    </div>
   );
 }

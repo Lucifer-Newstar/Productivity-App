@@ -95,6 +95,25 @@ export default function ProjectDrill() {
       portfolioId = pid;
       window.dispatchEvent(new CustomEvent("career:toast",{detail:{title:"PUSHED→PORTFOLIO",sub:project.title,color:"#06b6d4",icon:"briefcase",timeout:3600}}));
     }
+    // Auto skill-bump: fuzzy-match project tags to career skills, bump proficiency +0.5 (cap at 10),
+    // add growth point, link project id.
+    const now = new Date().toISOString().slice(0,10);
+    if ((project.tags||[]).length>0){
+      updateCareer(c => ({
+        skills: c.skills.map(sk => {
+          const match = (project.tags||[]).some(t => sk.name.toLowerCase().includes(t.toLowerCase()) || t.toLowerCase().includes(sk.name.toLowerCase()));
+          if(!match) return sk;
+          const newProf = Math.min(10, +(sk.proficiency+0.5).toFixed(1));
+          return {
+            ...sk,
+            proficiency: newProf,
+            lastUsedAt: Date.now(),
+            projectIds: Array.from(new Set([...(sk.projectIds||[]), project.id])),
+            growth: [...(sk.growth||[]), { date: now, level: newProf }],
+          };
+        }),
+      }));
+    }
     patch({ status:"done", completedAt: today(), archived:true, portfolioLinkId: portfolioId });
     window.dispatchEvent(new CustomEvent("career:burst",{detail:{color:"#22c55e",count:60}}));
     window.dispatchEvent(new CustomEvent("career:toast",{detail:{title:"SHIPPED",sub:project.title,color:"#22c55e",icon:"check",timeout:3200}}));

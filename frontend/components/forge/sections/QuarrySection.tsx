@@ -11,7 +11,7 @@
  *  - Aging color (older tasks get warmer)
  *  - Today toggle, delete, move-buttons
  */
-import { useMemo, useState } from "react";
+import React, { useMemo, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Pickaxe, Plus, CheckCircle2, AlertTriangle, X, Timer,
@@ -45,7 +45,7 @@ export default function QuarrySection() {
   const [filter, setFilter] = useState<string>("all");
   const [todayOnly, setTodayOnly] = useState(false);
   const [nextOnly, setNextOnly] = useState(false);
-  const [matrixMode, setMatrixMode] = useState<"kanban"|"eisenhower"|"effort">("kanban");
+  const [matrixMode, setMatrixMode] = useState<"kanban"|"swimlanes"|"eisenhower"|"effort">("kanban");
   const [adding, setAdding] = useState<{col:TaskStatus, open:boolean}>({col:"todo",open:false});
   const [batchText, setBatchText] = useState("");
   const [projId, setProjId] = useState<string>("");
@@ -167,7 +167,7 @@ export default function QuarrySection() {
       <div className="rounded-sm steel-plate p-3 relative flex flex-wrap items-center gap-2" style={{borderColor:"var(--fr-borderSoft)"}}>
         <span className="riv-tl"/><span className="riv-tr"/><span className="riv-bl"/><span className="riv-br"/>
         <div className="flex gap-1">
-          {(["kanban","eisenhower","effort"] as const).map(m => (
+          {(["kanban","swimlanes","eisenhower","effort"] as const).map(m => (
             <button key={m} onClick={()=>setMatrixMode(m)}
               className="mono text-[10px] tracking-widest font-bold px-3 py-1.5 rounded-sm"
               style={{background:matrixMode===m?"var(--fr-amber)":"transparent",color:matrixMode===m?"#000":"var(--fr-fgMuted)",border:`1px solid ${matrixMode===m?"var(--fr-amber)":"var(--fr-borderSoft)"}`}}>
@@ -236,6 +236,43 @@ export default function QuarrySection() {
         </div>
       )}
 
+      {matrixMode === "swimlanes" && (
+        <div className="space-y-4">
+          {(filter==="all" ? activeProjects : activeProjects.filter(p=>p.id===filter)).map(p => {
+            const pTasks = visibleTasks.filter(t=>t.projectId===p.id && !t.parentId);
+            return (
+              <div key={p.id} className="rounded-sm steel-plate p-3" style={{borderColor:`${p.color}66`}}>
+                <span className="riv-tl"/><span className="riv-tr"/><span className="riv-bl"/><span className="riv-br"/>
+                <div className="flex items-center gap-2 mb-3">
+                  <span className="text-xl">{p.icon}</span>
+                  <h4 className="text-lg font-black tracking-wide" style={{color:p.color}}>{p.codename} · {p.title}</h4>
+                  <span className="ml-auto mono text-[10px] tracking-widest" style={{color:"var(--fr-fgMuted)"}}>{pTasks.length} blocks</span>
+                </div>
+                <div className="grid grid-cols-5 gap-2">
+                  {COLS.map(col => {
+                    const colTasks = pTasks.filter(t=>t.status===col.id);
+                    return (
+                      <div key={col.id} className="rounded-sm p-2 min-h-[80px]" style={{background:"var(--fr-card2)",border:`1px solid ${col.color}33`}}>
+                        <div className="mono text-[9px] tracking-widest mb-1" style={{color:col.color}}>{col.label} ({colTasks.length})</div>
+                        <div className="space-y-1">
+                          {colTasks.slice(0,5).map(t=>(
+                            <div key={t.id} className="p-1 text-[10px] rounded-sm"
+                              style={{background:"var(--fr-card)",borderLeft:`2px solid ${t.stuck?"var(--fr-red)":col.color}66`}}>
+                              <span className={t.status==="done"?"line-through opacity-60":""}>{t.title}</span>
+                            </div>
+                          ))}
+                          {colTasks.length>5 && <div className="mono text-[9px] text-center" style={{color:"var(--fr-fgMuted)"}}>+{colTasks.length-5}</div>}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+
       {matrixMode === "kanban" && (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-3">
           {COLS.map(col => {
@@ -261,7 +298,8 @@ export default function QuarrySection() {
                     const dueCol = t.dueDate ? (t.dueDate < today() && col.id!=="done" ? "#ef4444" : t.dueDate === today() ? "#f59e0b" : "var(--fr-fgMuted)") : null;
                     const aged = ageColor(t.createdAt);
                     return (
-                      <div key={t.id}
+                      <React.Fragment key={t.id}>
+                      <div
                         draggable
                         onDragStart={e=>{setDragId(t.id);e.dataTransfer.effectAllowed="move";e.dataTransfer.setData("text/plain",t.id);}}
                         onDragEnd={()=>setDragId(null)}
@@ -379,6 +417,34 @@ export default function QuarrySection() {
                           )}
                         </AnimatePresence>
                       </div>
+                      {/* Inline indented subtasks under parent */}
+                      {subs.length>0 && (
+                        <div className="pl-5 mt-1 space-y-1 relative">
+                          <span aria-hidden className="absolute left-2 top-0 bottom-2 w-px" style={{background:`${proj?.color||"#f59e0b"}55`}}/>
+                          {subs.map(s => (
+                            <div key={s.id}
+                              className="flex items-center gap-1.5 p-1.5 rounded-sm text-[11px]"
+                              style={{background:"var(--fr-card2)",borderLeft:`2px solid ${proj?.color||"#f59e0b"}66`}}>
+                              <button onClick={()=>{patchTask(s.id,{status:s.status==="done"?"todo":"done",completedAt:s.status==="done"?undefined:today()});}}
+                                className="w-3.5 h-3.5 rounded-sm shrink-0 flex items-center justify-center"
+                                style={{background:s.status==="done"?col.color:"transparent",border:`1.5px solid ${s.status==="done"?col.color:"var(--fr-fgMuted)"}`}}>
+                                {s.status==="done" && <CheckCircle2 size={8} color="#000"/>}
+                              </button>
+                              <span className={`flex-1 ${s.status==="done"?"line-through opacity-60":""}`}>{s.title}</span>
+                              <button onClick={()=>{
+                                // delete subtask + remove from parent subtaskIds
+                                updateForge(f=>({
+                                  tasks: f.tasks
+                                    .filter(x=>x.id!==s.id)
+                                    .map(x=>x.id===t.id?{...x,subtaskIds:(x.subtaskIds||[]).filter(sid=>sid!==s.id)}:x)
+                                }));
+                              }}
+                                className="opacity-40 hover:opacity-100" style={{color:"var(--fr-red)"}}><X size={9}/></button>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                      </React.Fragment>
                     );
                   })}
                   <AnimatePresence>
