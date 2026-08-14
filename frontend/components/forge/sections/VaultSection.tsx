@@ -25,10 +25,92 @@ function tasksToCSV(tasks:ProjectTask[], projects:Record<string,any>){
   return rows.map(r=>r.map(c=>`"${String(c).replace(/"/g,'""')}"`).join(",")).join("\n");
 }
 
+function parseCSV(text:string): string[][] {
+  // minimal RFC-4180-ish parser (handles quoted fields + "" escapes)
+  const rows: string[][] = [];
+  let row: string[] = [], field = "", inQ = false;
+  for (let i=0;i<text.length;i++){
+    const c = text[i];
+    if (inQ){
+      if (c==='"' && text[i+1]==='"'){ field+='"'; i++; }
+      else if (c==='"'){ inQ=false; }
+      else field+=c;
+    } else {
+      if (c==='"') inQ=true;
+      else if (c===','){ row.push(field); field=""; }
+      else if (c==='\n'){ row.push(field); rows.push(row); row=[]; field=""; }
+      else if (c==='\r'){ /* skip */ }
+      else field+=c;
+    }
+  }
+  if (field.length || row.length){ row.push(field); rows.push(row); }
+  return rows.filter(r=>r.some(c=>c!==""));
+}
+
+function csvToTasks(text:string, existingTasks:ProjectTask[], projects:any[]): ProjectTask[] {
+  const rows = parseCSV(text);
+  if (rows.length < 2) return [];
+  const header = rows[0].map(h=>h.trim().toLowerCase());
+  const idx = (name:string) => header.indexOf(name);
+  const codenameToId: Record<string,string> = {};
+  for (const p of projects) codenameToId[(p.codename||"").toLowerCase()] = p.id;
+
+  const existingIds = new Set(existingTasks.map(t=>t.id));
+  const imported: ProjectTask[] = [];
+  for (let r=1;r<rows.length;r++){
+    const row = rows[r];
+    const get = (n:string) => { const i=idx(n); return i>=0 ? (row[i]??"") : ""; };
+    const title = get("title").trim();
+    if (!title) continue;
+    let projectId = get("projectid").trim() || codenameToId[(get("project")||"").toLowerCase()] || projects[0]?.id || "";
+    if (!projectId) continue;
+    const rawId = get("id").trim();
+    const id = rawId && !existingIds.has(rawId) ? rawId : "t-imp-"+uid();
+    if (rawId) existingIds.add(rawId);
+    const num = (v:string)=>{ const n=parseFloat(v); return isNaN(n)?0:n; };
+    const clamp = (v:number, lo:number, hi:number, d:number) => {
+      if (!v) return d;
+      return Math.max(lo, Math.min(hi, Math.round(v))) as any;
+    };
+    const bool = (v:string) => /^(true|1|yes|y)$/i.test(v.trim());
+    imported.push({
+      id,
+      title,
+      projectId,
+      notes: get("notes") || "",
+      status: (get("status") as any) || "todo",
+      priority: (get("priority") as any) || "P3",
+      dueDate: get("duedate") || "",
+      estimateMins: num(get("estimatemins")) || 0,
+      actualMins: num(get("actualmins")) || 0,
+      pomodoros: num(get("pomodoros")) || 0,
+      effort: clamp(num(get("effort"))||3,1,5,3),
+      impact: clamp(num(get("impact"))||3,1,5,3),
+      energy: clamp(num(get("energy"))||3,1,5,3),
+      focus: clamp(num(get("focus"))||3,1,5,3),
+      importance: clamp(num(get("importance"))||5,1,10,5),
+      urgency: clamp(num(get("urgency"))||5,1,10,5),
+      tags: (get("tags")||"").split("|").map(s=>s.trim()).filter(Boolean),
+      subtaskIds: [],
+      comments: [],
+      dependsOn: [],
+      createdAt: get("createdat") || today(),
+      completedAt: get("completedat") || "",
+      doneAt: get("completedat") || get("doneat") || "",
+      today: bool(get("today")),
+      stuck: bool(get("stuck")),
+      stuckNote: get("stucknote") || get("stuck") || "",
+      nextAction: bool(get("nextaction")),
+    });
+  }
+  return imported;
+}
+
 export default function VaultSection() {
   const { forge, updateForge } = useStore();
   const [tab, setTab] = useState<"shipped"|"dead"|"archive">("shipped");
   const fileRef = useRef<HTMLInputElement>(null);
+  const csvRef = useRef<HTMLInputElement>(null);
   const projectById: Record<string,any> = Object.fromEntries(forge.projects.map(p=>[p.id,p]));
 
   const shipped = forge.projects.filter(p => p.status === "done");
@@ -73,6 +155,25 @@ export default function VaultSection() {
     };
     reader.readAsText(file);
   };
+  const importCSV = (file:File) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      try {
+        const imported = csvToTasks(reader.result as string, forge.tasks, forge.projects);
+        if (imported.length === 0){ alert("No rows imported (check headers)."); return; }
+        const msg = `Import ${imported.length} task${imported.length>1?"s":""} into the quarry? (Existing IDs are preserved when unique.)`;
+        if (!confirm(msg)) return;
+        updateForge(f => {
+          const seen = new Set(f.tasks.map(t=>t.id));
+          const fresh = imported.filter(t => !seen.has(t.id));
+          return { tasks: [...fresh, ...f.tasks] };
+        });
+        window.dispatchEvent(new CustomEvent("career:burst",{detail:{color:"#06b6d4",count:28}}));
+        window.dispatchEvent(new CustomEvent("career:toast",{detail:{title:"CSV IMPORTED",sub:`${imported.length} blocks added`,color:"#06b6d4",icon:"check"}}));
+      } catch(e){ console.error(e); alert("Failed to parse CSV"); }
+    };
+    reader.readAsText(file);
+  };
 
   const list = tab==="shipped" ? shipped : tab==="dead" ? dead : archived;
 
@@ -92,8 +193,15 @@ export default function VaultSection() {
             className="relative px-3 py-2 rounded-sm steel-plate mono text-[10px] font-black tracking-widest flex items-center gap-1"
             style={{background:"var(--fr-card2)",borderColor:"var(--fr-borderSoft)",color:"var(--fr-fg)"}}>
             <span className="riv-tl"/><span className="riv-tr"/><span className="riv-bl"/><span className="riv-br"/>
-            <FileText size={12}/> CSV
+            <FileText size={12}/> CSV↓
           </button>
+          <button onClick={()=>csvRef.current?.click()}
+            className="relative px-3 py-2 rounded-sm steel-plate mono text-[10px] font-black tracking-widest flex items-center gap-1"
+            style={{background:"var(--fr-card2)",borderColor:"var(--fr-cyan)",color:"var(--fr-cyan)"}}>
+            <span className="riv-tl"/><span className="riv-tr"/><span className="riv-bl"/><span className="riv-br"/>
+            <Upload size={12}/> CSV↑
+          </button>
+          <input ref={csvRef} type="file" accept=".csv,text/csv" className="hidden" onChange={e=>{const f=e.target.files?.[0];if(f)importCSV(f);e.target.value="";}}/>
           <button onClick={exportJSON}
             className="relative px-3 py-2 rounded-sm steel-plate mono text-[10px] font-black tracking-widest flex items-center gap-1"
             style={{background:"var(--fr-card2)",borderColor:"var(--fr-borderSoft)",color:"var(--fr-fg)"}}>

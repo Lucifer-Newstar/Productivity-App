@@ -393,7 +393,8 @@ drilldown). Cross-links back to `/career` via a bridge callout on Foundry.
 | 4 | Cold-storage archived projects | ✅ Steel |
 | 5 | REHEAT button to restore to Foundry (clears archived, sets status back to paused) | ✅ |
 | 6 | JSON backup export + RESTORE (file picker, confirm replace) | ✅ BACKUP + RESTORE buttons, success/error toasts |
-| 7 | **CSV export** of tasks (id/title/project/status/priority/dates/est/actual/poms/E/I/e/f/tags) | ✅ CSV button |
+| 7 | **CSV export** of tasks (id/title/project/status/priority/dates/est/actual/poms/E/I/e/f/tags) | ✅ CSV↓ button |
+| 7b | **CSV import** of tasks (RFC-4180 parser, codename→projectId resolution, ID de-dupe, bool/number coercion, clamped 1–5/1–10 ranges, confirm prompt, cyan burst on success) | ✅ CSV↑ button, pairs with export |
 | 8 | File reference links editor | ✅ In project BRIEF tab |
 
 ## Cross-cutting (Forge)
