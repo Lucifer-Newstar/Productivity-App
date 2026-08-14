@@ -104,3 +104,42 @@ After fixing BUG-001..005 the following were audited and passed:
 - Drag-to-reposition in Mindmap/Free Canvas; drag-reorder of custom columns; true dnd on Kanban (native HTML5 today).
 - Storyboard canvas.
 - Health + Entertainment full-bleed theme builds (currently SpaceTasks placeholders).
+
+---
+
+## BUG-H01 — Hydration quick-add buttons didn't select active beverage
+- **Found:** 2026-08-14 (Wave 1+2 QA on `health` branch)
+- **Severity:** Low-Med — cosmetic + UX (quick-add tile didn't highlight, custom LOG button always logged water).
+- **Affected:** `components/health/HydrationSection.tsx`
+- **Root cause:** The quick-add beverage grid rendered with `background: bev===b.id` but `bev` state was initialised to `"water"` and never updated when a tile was clicked; only `addQuickDrink(b.id)` fired. Visual highlight always stayed on Water, and the "LOG X ml" button always logged water regardless of which tile you'd last pressed.
+- **Fix:** Quick-add `onClick` now calls `setBev(b.id)` before `addQuickDrink(b.id)`, so the clicked beverage becomes the active selection for custom-ml logging and the highlight follows.
+
+## BUG-H02 — Hydration totalMl used non-null assertion on beverage lookup (potential crash)
+- **Found:** 2026-08-14 (Wave 2 QA)
+- **Severity:** Medium — could crash hydration page if legacy/malformed localStorage contained an unknown beverage id.
+- **Affected:** `components/health/HydrationSection.tsx`
+- **Root cause:** `totalMl` reduce did `BEVERAGES.find(b=>b.id===e.beverage)!.net` — the `!` non-null assertion would throw if a beverage was missing from the lookup table (e.g. old data, imported data, alcohol opt-out edge case).
+- **Fix:** Built a `bevById` lookup map memoized once, replaced `!.net` with `netFor()` helper that falls back to `0.85` for unknown beverages. Removed the other `!` assertions in favor of safe lookups.
+
+## BUG-H03 — Repeat-Yesterday copied meals with spread bug (array overwritten into object)
+- **Found:** 2026-08-14 (Wave 2 QA)
+- **Severity:** High — repeat-yesterday would corrupt meals state and drop entries.
+- **Affected:** `components/health/FuelSection.tsx`
+- **Root cause:** `return { meals: [...otherDays.filter(...), ...copied] }` — `copied` is an array, so spreading it into an object literal turned the array into an indexed object (`{0: ..., 1: ...}`) that would break downstream filters expecting `MealEntry[]`.
+- **Fix:** Rewrote to filter out today's existing meals first (`keep = h.meals.filter(m => m.date !== today)`), then simply `{ meals: [...keep, ...copied] }` where `copied` is an array — correctly spread into the new array. Also removed a redundant double-filter and replaced bare `alert()` with `window.alert()` to be explicit.
+
+## BUG-H04 — Fuel TDEE target was a wrong inline formula
+- **Found:** 2026-08-14 (Wave 2 QA)
+- **Severity:** Low — displayed target kcal on the Fuel summary was a nonsense inline expression.
+- **Affected:** `components/health/FuelSection.tsx`
+- **Root cause:** Placeholder code `Math.round(bw * (10 + 6.25*1.75/70*100 - 5*20 + 5) * 1.55)` was a TODO stub that didn't use profile values.
+- **Fix:** Imported `tdee()` from `healthAnalytics.ts` and compute with `tdee(latestBw, health.profile)` which honours the user's age/height/gender/activity level. Summary line now reads "X kcal / Y kcal target".
+
+### Wave 2 QA verification
+- **TypeScript** clean (`tsc --noEmit`).
+- **43/43 routes ○ static** in `next build`.
+- **38/38 HTTP 200, 0 error-boundary markers** via `/tmp/smoke.sh`.
+- **98 unit assertions** in `scripts/qa-health.js` (BMR/Katch/TDEE/water/BMI/Navy BF/formulas, food DB invariants [90 dishes, no dupes, all macros present, 48 essential dishes present], type/store wiring, page presence, hotkey guards, theme tokens, disclaimer, IST timestamps, bridge toggles, FULLSCREEN flag) — ALL GREEN.
+- **No console.log/debug** in `components/health/`.
+- Beverage alcohol gate respects `settings.alcoholOptIn`.
+- Food DB macro-kcal drift only on beer/whiskey (alcohol kcal don't map to C/P/F — expected, within tolerance).

@@ -97,7 +97,13 @@ export default function HydrationSection() {
   }, [workout.bodyweight]);
 
   const goal = waterGoalMl(latestBw, health.profile.climateMult);
-  const totalMl = todayEntries.reduce((s,e)=>s+e.ml*BEVERAGES.find(b=>b.id===e.beverage)!.net, 0);
+  const bevById = useMemo(() => {
+    const m = {} as Record<Bev, typeof BEVERAGES[number]>;
+    for (const b of BEVERAGES) m[b.id] = b;
+    return m;
+  }, []);
+  const netFor = (bid: Bev) => bevById[bid]?.net ?? 0.85;
+  const totalMl = todayEntries.reduce((s,e)=>s+e.ml*netFor(e.beverage), 0);
   const caffeineMg = todayEntries.reduce((s,e)=>s+(e.caffeineMg ?? 0), 0);
   const electrolytesHit = todayEntries.some(e => e.electrolytes);
 
@@ -210,7 +216,7 @@ export default function HydrationSection() {
         <div className="hlth-card-h">// quick-add beverage</div>
         <div style={{display:"grid", gridTemplateColumns:"repeat(auto-fill, minmax(140px, 1fr))", gap:8, marginTop:10}}>
           {BEVERAGES.filter(b => b.id !== "alcohol" || health.settings.alcoholOptIn).map(b => (
-            <button key={b.id} onClick={()=>addQuickDrink(b.id)}
+            <button key={b.id} onClick={()=>{ setBev(b.id); addQuickDrink(b.id); }}
               style={{
                 background: bev===b.id ? `${b.color}22` : "var(--hlth-card2)",
                 border:`1px solid ${bev===b.id ? b.color : "var(--hlth-border-soft)"}`,

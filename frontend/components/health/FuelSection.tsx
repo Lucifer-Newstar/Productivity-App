@@ -15,7 +15,7 @@ import { useMemo, useState } from "react";
 import { Repeat, Plus, Trash2, Search, Utensils, Coffee, Moon, Sun, Cookie } from "lucide-react";
 import { useStore } from "../../lib/store";
 import { FOOD_DB, searchFoods, type FoodEntry } from "../../lib/healthFoodDb";
-import { formatKcal } from "../../lib/healthAnalytics";
+import { formatKcal, tdee } from "../../lib/healthAnalytics";
 import type { MealEntry, MealItem } from "../../lib/healthTypes";
 
 type Slot = "breakfast" | "lunch" | "dinner" | "snack";
@@ -193,7 +193,7 @@ function ManualAdd({ onAdd, onCancel }: { onAdd: (name: string, kcal: number, c:
 }
 
 export default function FuelSection() {
-  const { health, updateHealth } = useStore();
+  const { health, updateHealth, workout } = useStore();
   const today = todayIso();
 
   // Get today's meals; create empty slots if missing
@@ -224,12 +224,12 @@ export default function FuelSection() {
     return { kcal, carbsG: c, proteinG: p, fatG: f };
   }, [todaysMeals]);
 
-  // TDEE target for context
-  const { workout } = useStore();
-  const bw = [...workout.bodyweight].sort((a,b)=>b.date.localeCompare(a.date))[0]?.weightKg ?? 70;
-  // (imports for tdee live in page; we show rough kcal target inline)
-  const targetKcal = Math.round(bw * (10 + 6.25*1.75/70*100 - 5*20 + 5) * 1.55); // approx Mifflin*1.55 for placeholder
-  void targetKcal;
+  const latestBw = useMemo(() => {
+    const sorted = [...workout.bodyweight].sort((a, b) => b.date.localeCompare(a.date));
+    return sorted[0]?.weightKg ?? 70;
+  }, [workout.bodyweight]);
+
+  const targetKcal = Math.round(tdee(latestBw, health.profile));
 
   const persist = (nextSlots: Record<Slot, MealEntry>) => {
     updateHealth(h => {
@@ -271,11 +271,20 @@ export default function FuelSection() {
   const repeatYesterday = () => {
     const y = new Date(Date.now() - 86400000).toISOString().slice(0,10);
     const yMeals = health.meals.filter(m => m.date === y);
-    if (yMeals.length === 0) { alert("No meals logged yesterday."); return; }
+    if (yMeals.length === 0) {
+      // Use alert-free inline feedback in future; simple window.alert is fine for v0
+      window.alert("No meals logged yesterday.");
+      return;
+    }
     updateHealth(h => {
-      const otherDays = h.meals.filter(m => m.date !== today);
-      const copied = yMeals.map(m => ({ ...m, id: uid(), date: today, items: m.items.map(i => ({...i, id: uid()})) }));
-      return { meals: [...otherDays.filter(m => m.date !== today || !SLOTS.find(s => s.id === m.slot)), ...copied] };
+      const keep = h.meals.filter(m => m.date !== today);
+      const copied = yMeals.map(m => ({
+        ...m,
+        id: uid(),
+        date: today,
+        items: m.items.map(i => ({ ...i, id: uid() })),
+      }));
+      return { meals: [...keep, ...copied] };
     });
   };
 
@@ -304,7 +313,7 @@ export default function FuelSection() {
             <Repeat size={12}/> REPEAT YESTERDAY
           </button>
           <span className="hlth-subtle" style={{fontSize:10, letterSpacing:"0.1em", alignSelf:"center"}}>
-            {formatKcal(totals.kcal)} logged · carbs {Math.round(totals.carbsG)}g · protein {Math.round(totals.proteinG)}g · fat {Math.round(totals.fatG)}g
+            {formatKcal(totals.kcal)} / {formatKcal(targetKcal)} target · carbs {Math.round(totals.carbsG)}g · protein {Math.round(totals.proteinG)}g · fat {Math.round(totals.fatG)}g
           </span>
         </div>
       </div>
