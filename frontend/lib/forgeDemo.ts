@@ -262,7 +262,8 @@ export function buildForgeDemo(): ForgeState {
     makeTask({ projectId: p3.id, title: "Write landing hero copy", status:"done", doneAt:daysAgo(9), completedAt:daysAgo(9), priority:"P1", tags:["copy"] }),
     makeTask({ projectId: p3.id, title: "Draft cold outreach list (25 names)", status:"doing", priority:"P0", dueDate:today(), today:true, effort:3, impact:5, tags:["sales"] }),
     makeTask({ projectId: p3.id, title: "Run 5 customer interviews", status:"todo", priority:"P0", dueDate:daysFrom(7), effort:4, impact:5, tags:["research"] }),
-    makeTask({ projectId: p3.id, title: "Hook up Stripe pre-order", status:"todo", priority:"P2", dueDate:daysFrom(21), effort:3, impact:3, tags:["biz"] }),
+    makeTask({ projectId: p3.id, title: "Hook up Stripe pre-order", status:"todo", priority:"P2", dueDate:daysFrom(21), effort:3, impact:3, tags:["biz"],
+      dependsOn:[], nextAction:true }),
     // p4 — running
     makeTask({ projectId: p4.id, title: "Run 3k this Saturday", status:"todo", priority:"P2", dueDate:daysFrom(2), context:["outdoor"], effort:2, impact:3, tags:["cardio"] }),
     makeTask({ projectId: p4.id, title: "Buy new running socks", status:"todo", priority:"P3", effort:1, impact:1, tags:["errand"], context:["errand"] }),
@@ -318,6 +319,24 @@ export function buildForgeDemo(): ForgeState {
       { id: uid(), taskId: tasks[0].id, projectId: p1.id, startedAt: Date.now()-86400000*2, durationMin:25, completed:true },
       { id: uid(), taskId: tasks[0].id, projectId: p1.id, startedAt: Date.now()-86400000*2+1000*60*30, durationMin:25, completed:true },
       { id: uid(), taskId: tasks[0].id, projectId: p1.id, startedAt: Date.now()-86400000*2+1000*60*60, durationMin:25, completed:true },
+    ],
+    personas: [
+      { id: uid(), projectId: p3.id, name: "Overworked Owen", role: "Senior dev, 30-45, tired of yak-shaving", goal: "Ship side project in 30 days", pain: "Can't focus after 6pm, lands in tutorial hell" },
+    ],
+    decisionMatrix: [
+      { id: uid(), projectId: p1.id, title: "Pick Forge light-mode palette",
+        criteria: [
+          { label: "Differentiation from Career/Workout", weight:5, score:9 },
+          { label: "Readability after 2h", weight:4, score:8 },
+          { label: "Pencil/industrial vibe", weight:5, score:9 },
+        ]},
+    ],
+    ideas: [
+      { id: uid(), projectId: p1.id, text: "Heat-crackle sound on hammer strike", kind:"idea", votes:3, createdAt: Date.now()-86400000 },
+      { id: uid(), projectId: p3.id, text: "Hide pricing behind email capture", kind:"reverse", votes:1, createdAt: Date.now()-86400000*2 },
+      { id: uid(), text: "Kaizen OS boot chime — anvil clang + katana unsheathe + HUD whine", kind:"mood", votes:5, createdAt: Date.now()-86400000*3 },
+      { id: uid(), projectId: p3.id, text: "One-click deploy to Vercel (delight)", kind:"kano", kanoCat:"delight", votes:4, createdAt: Date.now()-86400000 },
+      { id: uid(), projectId: p3.id, text: "Make the page load SLOWER and require login to see pricing", kind:"worst", votes:0, createdAt: Date.now()-86400000 },
     ],
     settings: {
       workStartHour: 9,

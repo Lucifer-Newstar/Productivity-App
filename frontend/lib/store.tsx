@@ -40,7 +40,7 @@ import { TEMPLATE_LIST, cloneTemplate } from "./careerRoadmaps";
 import type {
   ForgeState, ForgeProject, ProjectTask, ScratchNote, DecisionEntry,
   SwotRow, ProConItem, ScenarioEntry, FiveWhy, LessonEntry, Retrospective,
-  ParkingLotItem, PomodoroSession,
+  ParkingLotItem, PomodoroSession, Persona, DecisionMatrixRow, Idea,
 } from "./forgeTypes";
 
 // Generate ids for runtime-created entities.
@@ -279,6 +279,9 @@ const SEED_FORGE: ForgeState = (() => {
     retors: [],
     parking: [],
     pomodoros: [],
+    personas: [],
+    decisionMatrix: [],
+    ideas: [],
     settings: {
       workStartHour: 9,
       workEndHour: 18,
@@ -303,6 +306,9 @@ function migrateForge(raw: any): ForgeState {
     retors: raw.retors ?? [],
     parking: raw.parking ?? [],
     pomodoros: raw.pomodoros ?? [],
+    personas: raw.personas ?? [],
+    decisionMatrix: raw.decisionMatrix ?? [],
+    ideas: raw.ideas ?? [],
     settings: { ...SEED_FORGE.settings, ...(raw.settings ?? {}) },
   };
 }

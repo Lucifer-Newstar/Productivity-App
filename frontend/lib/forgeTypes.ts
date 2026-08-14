@@ -253,6 +253,33 @@ export interface Retrospective {
   continue: string[];
 }
 
+export interface Persona {
+  id: string;
+  projectId?: string;
+  name: string;
+  role: string;
+  goal: string;
+  pain: string;
+}
+
+export interface DecisionMatrixRow {
+  id: string;
+  projectId?: string;
+  title: string;
+  criteria: { label: string; weight: number; score: number }[];
+}
+
+export interface Idea {
+  id: string;
+  projectId?: string;
+  text: string;
+  kind: "idea" | "worst" | "reverse" | "mood" | "kano";
+  kanoCat?: "must" | "perf" | "delight" | "indiff" | "reverse";
+  votes?: number;
+  bucket?: string;
+  createdAt: number;
+}
+
 export interface ProjectBudget {
   estimated?: number;
   actual: number;
@@ -350,6 +377,9 @@ export interface ForgeState {
   retors: Retrospective[];
   parking: ParkingLotItem[];
   pomodoros: PomodoroSession[];
+  personas: Persona[];
+  decisionMatrix: DecisionMatrixRow[];
+  ideas: Idea[];
   settings: {
     workStartHour: number;
     workEndHour: number;

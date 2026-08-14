@@ -3,20 +3,26 @@
  * SmelterSection — /projects/smelter — brainstorming & retrospectives.
  * Tabs: SCRATCHPAD · DECISIONS · SWOT · 5 WHYS · LESSONS · RETRO
  */
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Flame, Plus, Trash2, ScrollText, Lightbulb, Search,
-  Target, HelpCircle, History, Scale, Zap,
+  Target, HelpCircle, History, Scale, Zap, Users,
+  Grid3x3, Brain, ThumbsUp, ThumbsDown, Timer as TimerIcon,
+  Sparkles, Shuffle, Palette,
 } from "lucide-react";
 import { useStore } from "../../../lib/store";
+import type { DecisionMatrixRow } from "../../../lib/forgeTypes";
 
 const uid = () => Math.random().toString(36).slice(2,10);
 const today = () => new Date().toISOString().slice(0,10);
 
 const TABS = [
   { id: "scratch", label: "SCRATCH", icon: ScrollText, color: "#f59e0b" },
+  { id: "ideas", label: "IDEAS", icon: Sparkles, color: "#facc15" },
+  { id: "personas", label: "PERSONAS", icon: Users, color: "#ec4899" },
   { id: "decisions", label: "DECISIONS", icon: Target, color: "#06b6d4" },
+  { id: "matrix", label: "DEC-MATRIX", icon: Grid3x3, color: "#a78bfa" },
   { id: "swot", label: "SWOT", icon: Search, color: "#a78bfa" },
   { id: "proscons", label: "PRO/CON", icon: Scale, color: "#06b6d4" },
   { id: "scenarios", label: "SCENARIOS", icon: Zap, color: "#f59e0b" },
@@ -43,13 +49,16 @@ export default function SmelterSection() {
 
   return (
     <div className="space-y-5">
-      <div>
-        <h2 className="text-3xl md:text-4xl font-black tracking-wider flex items-center gap-2">
-          <Flame size={26} style={{color:"var(--fr-red)"}}/> the.smelter
-        </h2>
-        <p className="mono text-[11px] tracking-widest mt-1 italic" style={{color:"var(--fr-fgMuted)"}}>
-          // melt the ore. sift decisions, lessons, future scenarios — everything that doesn't fit in a card
-        </p>
+      <div className="flex items-end justify-between flex-wrap gap-3">
+        <div>
+          <h2 className="text-3xl md:text-4xl font-black tracking-wider flex items-center gap-2">
+            <Flame size={26} style={{color:"var(--fr-red)"}}/> the.smelter
+          </h2>
+          <p className="mono text-[11px] tracking-widest mt-1 italic" style={{color:"var(--fr-fgMuted)"}}>
+            // melt the ore. sift decisions, lessons, future scenarios — everything that doesn't fit in a card
+          </p>
+        </div>
+        <SmelterTimer/>
       </div>
 
       {/* Tabs */}
@@ -135,6 +144,24 @@ export default function SmelterSection() {
               })}
               {forge.decisions.length===0 && <EmptyState icon={Target} label="No decisions logged yet." sub="Log the forks in the road. Future-you will thank present-you."/>}
             </div>
+          </motion.div>
+        )}
+
+        {tab==="ideas" && (
+          <motion.div key="id" initial={{opacity:0,y:8}} animate={{opacity:1,y:0}} exit={{opacity:0}} className="space-y-3">
+            <IdeasPanel projects={activeProjects} defaultProj={projFilter!=="all"?projFilter:undefined}/>
+          </motion.div>
+        )}
+
+        {tab==="personas" && (
+          <motion.div key="pn" initial={{opacity:0,y:8}} animate={{opacity:1,y:0}} exit={{opacity:0}} className="space-y-3">
+            <PersonasPanel projects={activeProjects} defaultProj={projFilter!=="all"?projFilter:undefined}/>
+          </motion.div>
+        )}
+
+        {tab==="matrix" && (
+          <motion.div key="mx" initial={{opacity:0,y:8}} animate={{opacity:1,y:0}} exit={{opacity:0}} className="space-y-3">
+            <DecisionMatrixPanel projects={activeProjects} defaultProj={projFilter!=="all"?projFilter:undefined}/>
           </motion.div>
         )}
 
@@ -559,6 +586,273 @@ function ScenarioAdd({projects,defaultProj,onAdd}:{projects:any[];defaultProj?:s
       <button onClick={()=>{if(!title.trim()||!trigger.trim()||!response.trim())return;onAdd({title,trigger,response,projectId:pid||undefined});setTitle("");setTrigger("");setResponse("");}}
         className="mono text-[10px] font-black tracking-widest px-3 py-1.5 rounded-sm"
         style={{background:"#f59e0b",color:"#000"}}>STAMP SCENARIO</button>
+    </div>
+  );
+}
+
+function IdeasPanel({projects,defaultProj}:{projects:any[];defaultProj?:string}){
+  const {forge,updateForge} = useStore();
+  const [text,setText] = useState(""); const [pid,setPid] = useState(defaultProj||"");
+  const [bucket,setBucket] = useState<"idea"|"worst"|"reverse"|"mood"|"kano">("idea");
+  const [kanoCat,setKanoCat] = useState<"must"|"perf"|"delight"|"indiff"|"reverse">("perf");
+  const ideas = forge.ideas.filter(i=>defaultProj?i.projectId===defaultProj:true).sort((a,b)=>b.createdAt-a.createdAt);
+  const add = () => {
+    if(!text.trim()) return;
+    updateForge(f=>({ideas:[{id:uid(),text:text.trim(),projectId:pid||undefined,kind:bucket,kanoCat:bucket==="kano"?kanoCat:undefined,votes:0,bucket,createdAt:Date.now()},...f.ideas]}));
+    setText("");
+    window.dispatchEvent(new CustomEvent("career:burst",{detail:{color:"#facc15",count:12}}));
+  };
+  const vote = (id:string,dir:1|-1)=>updateForge(f=>({ideas:f.ideas.map(x=>x.id===id?{...x,votes:(x.votes||0)+dir}:x)}));
+  const colorFor = (k:string,c?:string) => k==="worst"?"#ef4444":k==="reverse"?"#a78bfa":k==="mood"?"#ec4899":k==="kano"?"#22c55e":"#facc15";
+  const labelFor = (k:string,c?:string) => k==="worst"?"WORST":k==="reverse"?"REVERSE":k==="mood"?"MOOD":k==="kano"?`KANO·${(c||"perf").toUpperCase()}`:"IDEA";
+  return (
+    <>
+      <div className="rounded-sm steel-plate p-4 relative" style={{borderColor:"#facc1555"}}>
+        <span className="riv-tl"/><span className="riv-tr"/><span className="riv-bl"/><span className="riv-br"/>
+        <div className="mono text-[10px] tracking-widest mb-2" style={{color:"#facc15"}}>+ MOLTEN IDEA</div>
+        <div className="flex gap-2 flex-wrap mb-2">
+          {(["idea","worst","reverse","mood","kano"] as const).map(b=>(
+            <button key={b} onClick={()=>setBucket(b)}
+              className="mono text-[9px] tracking-widest px-2 py-1 rounded-sm font-black"
+              style={{background:bucket===b?colorFor(b):"transparent",color:bucket===b?"#000":colorFor(b),border:`1px solid ${colorFor(b)}66`}}>
+              {b==="idea"?"💡 NORMAL":b==="worst"?"💀 WORST":b==="reverse"?"🔄 REVERSE":b==="mood"?"🎨 MOOD":"✨ KANO"}
+            </button>
+          ))}
+        </div>
+        {bucket==="kano" && (
+          <div className="flex gap-1 mb-2 flex-wrap">
+            {(["must","perf","delight","indiff","reverse"] as const).map(c=>(
+              <button key={c} onClick={()=>setKanoCat(c)}
+                className="mono text-[8px] tracking-widest px-1.5 py-0.5 rounded-sm"
+                style={{background:kanoCat===c?"#22c55e":"transparent",color:kanoCat===c?"#000":"#22c55e",border:"1px solid #22c55e66"}}>
+                {c.toUpperCase()}
+              </button>
+            ))}
+          </div>
+        )}
+        <textarea value={text} onChange={e=>setText(e.target.value)} rows={2}
+          onKeyDown={e=>{if(e.key==="Enter"&&(e.metaKey||e.ctrlKey))add();}}
+          placeholder={bucket==="worst"?"What's the worst possible way to do this?":bucket==="reverse"?"How would you achieve the OPPOSITE?":bucket==="mood"?"Vibe / aesthetic / feeling to capture…":bucket==="kano"?"A feature idea + how it delights…":"One idea per strike…"}
+          className="w-full bg-transparent outline-none pencil text-sm p-2 rounded-sm resize-none"
+          style={{border:"1px solid var(--fr-borderSoft)",color:"var(--fr-fg)"}}/>
+        <div className="flex items-center gap-2 mt-2 flex-wrap">
+          <select value={pid} onChange={e=>setPid(e.target.value)}
+            className="mono text-[10px] px-2 py-1 rounded-sm outline-none"
+            style={{background:"var(--fr-card2)",border:"1px solid var(--fr-borderSoft)",color:"var(--fr-fg)"}}>
+            <option value="">global</option>
+            {projects.map(p=><option key={p.id} value={p.id}>{p.icon} {p.codename}</option>)}
+          </select>
+          <button onClick={()=>{
+            const trigger = document.getElementById("idea-random") as HTMLButtonElement|null;
+            const WORDS = ["kaizen","forge","strike","anvil","ember","quench","spark","obsidian","hammer","molten","rivet","grain","copper","temper","crucible","blade","smelt","kiln","foundry"];
+            setText(`What if we ${WORDS[Math.floor(Math.random()*WORDS.length)]} it with ${WORDS[Math.floor(Math.random()*WORDS.length)]}?`);
+          }} id="idea-random"
+            className="mono text-[10px] tracking-widest px-2 py-1 rounded-sm flex items-center gap-1"
+            style={{border:"1px dashed #a78bfa66",color:"#a78bfa"}}><Shuffle size={10}/> RANDOM SEED</button>
+          <div className="flex-1"/>
+          <button onClick={add}
+            className="mono text-[10px] font-black tracking-widest px-3 py-1.5 rounded-sm flex items-center gap-1"
+            style={{background:"#facc15",color:"#000"}}><Sparkles size={11}/> STRIKE</button>
+        </div>
+      </div>
+      <div className="grid md:grid-cols-2 gap-2">
+        {ideas.map(i=>(
+          <div key={i.id} className="p-3 rounded-sm steel-plate relative" style={{borderColor:`${colorFor(i.kind,i.kanoCat)}55`}}>
+            <span className="riv-tl"/><span className="riv-tr"/><span className="riv-bl"/><span className="riv-br"/>
+            <div className="flex items-center gap-2 mb-1">
+              <span className="mono text-[8px] tracking-widest font-black px-1.5 py-0.5 rounded-sm"
+                style={{background:`${colorFor(i.kind,i.kanoCat)}22`,color:colorFor(i.kind,i.kanoCat),border:`1px solid ${colorFor(i.kind,i.kanoCat)}55`}}>
+                {labelFor(i.kind,i.kanoCat)}
+              </span>
+              <span className="mono text-[8px] ml-auto flex items-center gap-1" style={{color:"var(--fr-fgMuted)"}}>
+                <button onClick={()=>vote(i.id,1)} style={{color:"var(--fr-green)"}}><ThumbsUp size={9}/></button>
+                {(i.votes||0)}
+                <button onClick={()=>vote(i.id,-1)} style={{color:"var(--fr-red)"}}><ThumbsDown size={9}/></button>
+                <button onClick={()=>updateForge(f=>({ideas:f.ideas.filter(x=>x.id!==i.id)}))} style={{color:"var(--fr-red)"}}><Trash2 size={9}/></button>
+              </span>
+            </div>
+            <p className="pencil text-sm" style={{color:"var(--fr-fg)"}}>{i.text}</p>
+          </div>
+        ))}
+        {ideas.length===0 && <div className="md:col-span-2 mono text-[11px] italic text-center py-8" style={{color:"var(--fr-fgDim)"}}>No ideas smelted yet. Diverge first, converge later.</div>}
+      </div>
+    </>
+  );
+}
+
+function PersonasPanel({projects,defaultProj}:{projects:any[];defaultProj?:string}){
+  const {forge,updateForge} = useStore();
+  const list = forge.personas.filter(p=>defaultProj?p.projectId===defaultProj:true);
+  const [draft,setDraft] = useState({name:"",role:"",goal:"",pain:"",pid:defaultProj||""});
+  const add = () => {
+    if(!draft.name.trim()) return;
+    updateForge(f=>({personas:[{id:uid(),name:draft.name,role:draft.role,goal:draft.goal,pain:draft.pain,projectId:draft.pid||undefined},...f.personas]}));
+    setDraft({name:"",role:"",goal:"",pain:"",pid:draft.pid});
+  };
+  return (
+    <>
+      <div className="rounded-sm steel-plate p-4 relative" style={{borderColor:"#ec489955"}}>
+        <span className="riv-tl"/><span className="riv-tr"/><span className="riv-bl"/><span className="riv-br"/>
+        <div className="mono text-[10px] tracking-widest mb-2" style={{color:"#ec4899"}}>+ FORGE PERSONA</div>
+        <div className="grid md:grid-cols-2 gap-2">
+          <input value={draft.name} onChange={e=>setDraft({...draft,name:e.target.value})} placeholder="Name (e.g. Tired Tina)"
+            className="bg-transparent outline-none mono text-sm px-2 py-1.5 rounded-sm"
+            style={{border:"1px solid var(--fr-borderSoft)",color:"var(--fr-fg)"}}/>
+          <input value={draft.role} onChange={e=>setDraft({...draft,role:e.target.value})} placeholder="Role / job-to-be-done"
+            className="bg-transparent outline-none pencil text-xs px-2 py-1.5 rounded-sm italic"
+            style={{border:"1px solid var(--fr-borderSoft)",color:"var(--fr-fg)"}}/>
+          <input value={draft.goal} onChange={e=>setDraft({...draft,goal:e.target.value})} placeholder="Goal"
+            className="bg-transparent outline-none pencil text-xs px-2 py-1.5 rounded-sm md:col-span-1"
+            style={{border:"1px solid var(--fr-borderSoft)",color:"var(--fr-fg)"}}/>
+          <input value={draft.pain} onChange={e=>setDraft({...draft,pain:e.target.value})} placeholder="Biggest pain"
+            className="bg-transparent outline-none pencil text-xs px-2 py-1.5 rounded-sm md:col-span-1"
+            style={{border:"1px solid var(--fr-borderSoft)",color:"var(--fr-fg)"}}/>
+        </div>
+        <div className="flex items-center gap-2 mt-2">
+          <select value={draft.pid} onChange={e=>setDraft({...draft,pid:e.target.value})}
+            className="mono text-[10px] px-2 py-1 rounded-sm outline-none"
+            style={{background:"var(--fr-card2)",border:"1px solid var(--fr-borderSoft)",color:"var(--fr-fg)"}}>
+            <option value="">global</option>
+            {projects.map(p=><option key={p.id} value={p.id}>{p.icon} {p.codename}</option>)}
+          </select>
+          <button onClick={add} className="mono text-[10px] font-black tracking-widest px-3 py-1.5 rounded-sm ml-auto"
+            style={{background:"#ec4899",color:"#000"}}>FORGE</button>
+        </div>
+      </div>
+      <div className="grid md:grid-cols-2 gap-3">
+        {list.map(p=>{
+          const proj = projects.find(x=>x.id===p.projectId);
+          return (
+            <div key={p.id} className="rounded-sm steel-plate p-4 relative" style={{borderColor:"#ec489944"}}>
+              <span className="riv-tl"/><span className="riv-tr"/><span className="riv-bl"/><span className="riv-br"/>
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 rounded-full flex items-center justify-center text-2xl"
+                  style={{background:"rgba(236,72,153,0.15)",border:"1.5px solid #ec489955"}}>👤</div>
+                <div className="flex-1">
+                  <div className="font-black text-lg">{p.name||"Unnamed"}</div>
+                  <div className="mono text-[9px] tracking-widest" style={{color:proj?.color||"#ec4899"}}>{proj?`${proj.icon} ${proj.codename} · `:""}{p.role||"no role"}</div>
+                </div>
+                <button onClick={()=>updateForge(f=>({personas:f.personas.filter(x=>x.id!==p.id)}))} style={{color:"var(--fr-red)"}}><Trash2 size={11}/></button>
+              </div>
+              <div className="mt-3 grid grid-cols-2 gap-2 mono text-[10px]">
+                <div>
+                  <div style={{color:"#22c55e"}}>WANTS</div>
+                  <p className="pencil text-xs mt-1" style={{color:"var(--fr-fg)"}}>{p.goal||"—"}</p>
+                </div>
+                <div>
+                  <div style={{color:"#ef4444"}}>PAIN</div>
+                  <p className="pencil text-xs mt-1" style={{color:"var(--fr-fg)"}}>{p.pain||"—"}</p>
+                </div>
+              </div>
+            </div>
+          );
+        })}
+        {list.length===0 && <div className="md:col-span-2 mono text-[11px] italic text-center py-8" style={{color:"var(--fr-fgDim)"}}>No personas forged. Who are you building for?</div>}
+      </div>
+    </>
+  );
+}
+
+function DecisionMatrixPanel({projects,defaultProj}:{projects:any[];defaultProj?:string}){
+  const {forge,updateForge} = useStore();
+  const list = forge.decisionMatrix.filter(d=>defaultProj?d.projectId===defaultProj:true);
+  const [title,setTitle] = useState(""); const [crit,setCrit] = useState(""); const [pid,setPid] = useState(defaultProj||"");
+  const [activeId,setActiveId] = useState<string|null>(null);
+  const add = () => {
+    if(!title.trim()) return;
+    const row:DecisionMatrixRow = {id:uid(),title,projectId:pid||undefined,criteria:[]};
+    updateForge(f=>({decisionMatrix:[row,...f.decisionMatrix]}));
+    setTitle(""); setActiveId(row.id);
+  };
+  const addCrit = (id:string) => {
+    if(!crit.trim()) return;
+    updateForge(f=>({decisionMatrix:f.decisionMatrix.map(d=>d.id===id?{...d,criteria:[...d.criteria,{label:crit,weight:3,score:0}]}:d)}));
+    setCrit("");
+  };
+  return (
+    <>
+      <div className="rounded-sm steel-plate p-4 relative" style={{borderColor:"#a78bfa55"}}>
+        <span className="riv-tl"/><span className="riv-tr"/><span className="riv-bl"/><span className="riv-br"/>
+        <div className="mono text-[10px] tracking-widest mb-2" style={{color:"#a78bfa"}}>+ DECISION MATRIX</div>
+        <div className="flex gap-2 flex-wrap">
+          <input value={title} onChange={e=>setTitle(e.target.value)} placeholder="Decision title (e.g. Pick framework)"
+            className="flex-1 bg-transparent outline-none mono text-sm px-2 py-1.5 rounded-sm"
+            style={{border:"1px solid var(--fr-borderSoft)",color:"var(--fr-fg)"}}/>
+          <select value={pid} onChange={e=>setPid(e.target.value)}
+            className="mono text-[10px] px-2 py-1 rounded-sm outline-none"
+            style={{background:"var(--fr-card2)",border:"1px solid var(--fr-borderSoft)",color:"var(--fr-fg)"}}>
+            <option value="">global</option>
+            {projects.map(p=><option key={p.id} value={p.id}>{p.icon} {p.codename}</option>)}
+          </select>
+          <button onClick={add} className="mono text-[10px] font-black tracking-widest px-3 py-1.5 rounded-sm"
+            style={{background:"#a78bfa",color:"#000"}}>ADD</button>
+        </div>
+      </div>
+      <div className="space-y-3">
+        {list.map(d=>{
+          const total = d.criteria.reduce((n,c)=>n+c.weight*c.score,0);
+          const max = d.criteria.reduce((n,c)=>n+c.weight*10,0)||1;
+          return (
+            <div key={d.id} className="rounded-sm steel-plate p-4 relative" style={{borderColor:"#a78bfa44"}}>
+              <span className="riv-tl"/><span className="riv-tr"/><span className="riv-bl"/><span className="riv-br"/>
+              <div className="flex items-center justify-between gap-2 flex-wrap">
+                <h4 className="font-black text-lg">{d.title}</h4>
+                <div className="flex items-center gap-2 mono text-[10px]">
+                  <span style={{color:"#a78bfa"}}>SCORE: {total}</span>
+                  <button onClick={()=>updateForge(f=>({decisionMatrix:f.decisionMatrix.filter(x=>x.id!==d.id)}))} style={{color:"var(--fr-red)"}}><Trash2 size={10}/></button>
+                </div>
+              </div>
+              <div className="h-1.5 rounded-full overflow-hidden mt-2" style={{background:"var(--fr-borderSoft)"}}>
+                <div className="h-full" style={{width:`${total/max*100}%`,background:"#a78bfa",boxShadow:"0 0 6px #a78bfa"}}/>
+              </div>
+              <div className="mt-3 space-y-1.5">
+                {d.criteria.map((c,i)=>(
+                  <div key={i} className="grid grid-cols-[1fr_auto_auto_auto_auto] items-center gap-2 mono text-[10px]">
+                    <input value={c.label} onChange={e=>updateForge(f=>({decisionMatrix:f.decisionMatrix.map(x=>x.id===d.id?{...x,criteria:x.criteria.map((y,j)=>j===i?{...y,label:e.target.value}:y)}:x)}))}
+                      className="bg-transparent outline-none pencil text-xs" style={{color:"var(--fr-fg)"}}/>
+                    <span style={{color:"var(--fr-fgMuted)"}}>W{c.weight}</span>
+                    <input type="range" min={1} max={5} value={c.weight} onChange={e=>updateForge(f=>({decisionMatrix:f.decisionMatrix.map(x=>x.id===d.id?{...x,criteria:x.criteria.map((y,j)=>j===i?{...y,weight:Number(e.target.value)}:y)}:x)}))}
+                      style={{accentColor:"#a78bfa"}} className="w-16"/>
+                    <span style={{color:"var(--fr-fgMuted)"}}>S{c.score}</span>
+                    <input type="range" min={0} max={10} value={c.score} onChange={e=>updateForge(f=>({decisionMatrix:f.decisionMatrix.map(x=>x.id===d.id?{...x,criteria:x.criteria.map((y,j)=>j===i?{...y,score:Number(e.target.value)}:y)}:x)}))}
+                      style={{accentColor:"#22c55e"}} className="w-20"/>
+                  </div>
+                ))}
+              </div>
+              <div className="flex gap-1 mt-2">
+                <input value={activeId===d.id?crit:""} onChange={e=>{setCrit(e.target.value);setActiveId(d.id);}}
+                  onKeyDown={e=>{if(e.key==="Enter"){addCrit(d.id);}}}
+                  placeholder="+ criteria"
+                  className="flex-1 bg-transparent outline-none mono text-[10px] px-2 py-1 rounded-sm"
+                  style={{border:"1px dashed #a78bfa66",color:"var(--fr-fg)"}}/>
+                <button onClick={()=>addCrit(d.id)} className="mono text-[9px] font-black tracking-widest px-2 py-1 rounded-sm"
+                  style={{background:"#a78bfa",color:"#000"}}>+CRIT</button>
+              </div>
+            </div>
+          );
+        })}
+        {list.length===0 && <div className="mono text-[11px] italic text-center py-8" style={{color:"var(--fr-fgDim)"}}>No matrices yet. When two choices look equal, weight criteria.</div>}
+      </div>
+    </>
+  );
+}
+
+function SmelterTimer(){
+  const [secs,setSecs] = useState(0); const [running,setRunning] = useState(false);
+  useEffect(()=>{
+    if(!running) return;
+    const id = setInterval(()=>setSecs(s=>s+1),1000);
+    return ()=>clearInterval(id);
+  },[running]);
+  const mm = String(Math.floor(secs/60)).padStart(2,"0");
+  const ss = String(secs%60).padStart(2,"0");
+  return (
+    <div className="flex items-center gap-2 mono text-[10px]" style={{color:"var(--fr-fgMuted)"}}>
+      <TimerIcon size={11}/>
+      <button onClick={()=>setRunning(r=>!r)} className="mono text-[10px] font-black tracking-widest px-2 py-0.5 rounded-sm"
+        style={{background:running?"var(--fr-red)":"var(--fr-green)",color:"#000"}}>{running?"STOP":"GO"}</button>
+      <span>{mm}:{ss}</span>
+      <button onClick={()=>{setSecs(0);setRunning(false);}} className="opacity-60">reset</button>
     </div>
   );
 }
