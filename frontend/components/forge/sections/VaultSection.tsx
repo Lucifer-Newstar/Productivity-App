@@ -2,20 +2,34 @@
 /**
  * VaultSection — /projects/vault
  * Archive of shipped projects + dead projects w/ obituaries, export backup,
- * and cold-storage toggle from active list.
+ * CSV export/import of tasks, JSON backup restore, cold-storage toggle.
  */
-import { useState } from "react";
+import { useState, useRef } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import {
-  Archive, Skull, CheckCircle2, Download, RotateCcw,
-  BookOpen, Trash2,
+  Archive, Skull, CheckCircle2, Download, RotateCcw, Upload,
+  BookOpen, Trash2, FileText,
 } from "lucide-react";
 import { useStore } from "../../../lib/store";
+import type { ProjectTask } from "../../../lib/forgeTypes";
+
+const uid = () => Math.random().toString(36).slice(2,10)+Date.now().toString(36);
+const today = () => new Date().toISOString().slice(0,10);
+
+function tasksToCSV(tasks:ProjectTask[], projects:Record<string,any>){
+  const rows = [["id","title","project","status","priority","dueDate","estimateMins","actualMins","pomodoros","effort","impact","energy","focus","tags","createdAt","completedAt"]];
+  for(const t of tasks){
+    rows.push([t.id,t.title.replace(/"/g,'""'),projects[t.projectId]?.codename||"",t.status,t.priority,t.dueDate||"",String(t.estimateMins||""),String(t.actualMins||""),String(t.pomodoros||0),String(t.effort||""),String(t.impact||""),String(t.energy||""),String(t.focus||""),(t.tags||[]).join("|"),t.createdAt,t.completedAt||""]);
+  }
+  return rows.map(r=>r.map(c=>`"${String(c).replace(/"/g,'""')}"`).join(",")).join("\n");
+}
 
 export default function VaultSection() {
   const { forge, updateForge } = useStore();
   const [tab, setTab] = useState<"shipped"|"dead"|"archive">("shipped");
+  const fileRef = useRef<HTMLInputElement>(null);
+  const projectById: Record<string,any> = Object.fromEntries(forge.projects.map(p=>[p.id,p]));
 
   const shipped = forge.projects.filter(p => p.status === "done");
   const dead = forge.projects.filter(p => p.status === "dead");
@@ -33,6 +47,31 @@ export default function VaultSection() {
     const a = document.createElement("a");
     a.href = url; a.download = `kaizen-forge-${new Date().toISOString().slice(0,10)}.json`; a.click();
     URL.revokeObjectURL(url);
+    window.dispatchEvent(new CustomEvent("career:toast",{detail:{title:"BACKUP SAVED",sub:"JSON downloaded",color:"#22c55e",icon:"check"}}));
+  };
+  const exportCSV = () => {
+    const csv = tasksToCSV(forge.tasks, projectById);
+    const blob = new Blob([csv],{type:"text/csv"});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href=url; a.download=`kaizen-tasks-${new Date().toISOString().slice(0,10)}.csv`; a.click();
+    URL.revokeObjectURL(url);
+    window.dispatchEvent(new CustomEvent("career:toast",{detail:{title:"CSV EXPORTED",sub:`${forge.tasks.length} blocks`,color:"#06b6d4",icon:"check"}}));
+  };
+  const importJSON = (file:File) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      try {
+        const data = JSON.parse(reader.result as string);
+        if(!data.projects||!data.tasks) throw new Error("bad file");
+        if(confirm("Replace current Forge state with this backup?")){
+          updateForge(()=>data);
+          window.dispatchEvent(new CustomEvent("career:burst",{detail:{color:"#22c55e",count:30}}));
+          window.dispatchEvent(new CustomEvent("career:toast",{detail:{title:"RESTORED",sub:"Backup loaded",color:"#22c55e",icon:"check"}}));
+        }
+      } catch(e){ alert("Invalid forge backup file"); }
+    };
+    reader.readAsText(file);
   };
 
   const list = tab==="shipped" ? shipped : tab==="dead" ? dead : archived;
@@ -48,12 +87,27 @@ export default function VaultSection() {
             // shipped, dead, and cold-storage — the graveyard of finished work
           </p>
         </div>
-        <button onClick={exportJSON}
-          className="relative px-3 py-2 rounded-sm steel-plate mono text-[10px] font-black tracking-widest flex items-center gap-1"
-          style={{background:"var(--fr-card2)",borderColor:"var(--fr-borderSoft)",color:"var(--fr-fg)"}}>
-          <span className="riv-tl"/><span className="riv-tr"/><span className="riv-bl"/><span className="riv-br"/>
-          <Download size={12}/> EXPORT
-        </button>
+        <div className="flex gap-2">
+          <button onClick={exportCSV}
+            className="relative px-3 py-2 rounded-sm steel-plate mono text-[10px] font-black tracking-widest flex items-center gap-1"
+            style={{background:"var(--fr-card2)",borderColor:"var(--fr-borderSoft)",color:"var(--fr-fg)"}}>
+            <span className="riv-tl"/><span className="riv-tr"/><span className="riv-bl"/><span className="riv-br"/>
+            <FileText size={12}/> CSV
+          </button>
+          <button onClick={exportJSON}
+            className="relative px-3 py-2 rounded-sm steel-plate mono text-[10px] font-black tracking-widest flex items-center gap-1"
+            style={{background:"var(--fr-card2)",borderColor:"var(--fr-borderSoft)",color:"var(--fr-fg)"}}>
+            <span className="riv-tl"/><span className="riv-tr"/><span className="riv-bl"/><span className="riv-br"/>
+            <Download size={12}/> BACKUP
+          </button>
+          <button onClick={()=>fileRef.current?.click()}
+            className="relative px-3 py-2 rounded-sm steel-plate mono text-[10px] font-black tracking-widest flex items-center gap-1"
+            style={{background:"var(--fr-card2)",borderColor:"var(--fr-borderSoft)",color:"var(--fr-fg)"}}>
+            <span className="riv-tl"/><span className="riv-tr"/><span className="riv-bl"/><span className="riv-br"/>
+            <Upload size={12}/> RESTORE
+          </button>
+          <input ref={fileRef} type="file" accept=".json" className="hidden" onChange={e=>{const f=e.target.files?.[0];if(f)importJSON(f);e.target.value="";}}/>
+        </div>
       </div>
 
       {/* Tabs */}
