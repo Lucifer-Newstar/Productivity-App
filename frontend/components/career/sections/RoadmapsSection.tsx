@@ -533,6 +533,62 @@ export default function RoadmapsSection() {
   const [bumpQueue, setBumpQueue] = useState<BumpPrompt[]>([]);
   const prevDoneRef = useRef<Set<string>>(new Set());
 
+  // Custom roadmap wizard state
+  const [wizOpen, setWizOpen] = useState(false);
+  const [wizStep, setWizStep] = useState<1|2|3>(1);
+  const [wiz, setWiz] = useState<{
+    name: string; icon: string; color: string; description: string;
+    weeklyHoursTarget: number; priority: number; startLevel: number; targetLevel: number;
+    phases: { id: string; title: string; description: string; milestones: { id: string; title: string; hoursEstimate: number; targetProficiency: number }[] }[];
+  }>({
+    name: "", icon: "🎯", color: "#22d3ee", description: "",
+    weeklyHoursTarget: 8, priority: 7, startLevel: 1, targetLevel: 8,
+    phases: [{ id: uid(), title: "Phase 1 — Foundations", description: "", milestones: [] }],
+  });
+  const WIZ_COLORS = ["#22d3ee","#a78bfa","#34d399","#f472b6","#fb923c","#facc15","#818cf8","#f87171"];
+  const WIZ_ICONS = ["🎯","🚀","⚡","🧠","🛠️","🔥","📡","💻","🧪","📚","🏗️","🎓"];
+  const wizTotalMilestones = wiz.phases.reduce((n,p)=>n+p.milestones.length, 0);
+  const wizTotalHours = wiz.phases.reduce((n,p)=>n+p.milestones.reduce((k,m)=>k+m.hoursEstimate,0), 0);
+
+  const startWizard = () => {
+    setWiz({
+      name: "", icon: "🎯", color: "#22d3ee", description: "",
+      weeklyHoursTarget: 8, priority: 7, startLevel: 1, targetLevel: 8,
+      phases: [{ id: uid(), title: "Phase 1 — Foundations", description: "", milestones: [] }],
+    });
+    setWizStep(1);
+    setWizOpen(true);
+  };
+  const addWizPhase = () => setWiz(w => ({ ...w, phases: [...w.phases, { id: uid(), title: `Phase ${w.phases.length+1}`, description: "", milestones: [] }] }));
+  const rmWizPhase = (pid: string) => setWiz(w => ({ ...w, phases: w.phases.filter(p=>p.id!==pid) }));
+  const upWizPhase = (pid: string, fn: (p: typeof wiz.phases[0]) => typeof wiz.phases[0]) =>
+    setWiz(w => ({ ...w, phases: w.phases.map(p => p.id===pid ? fn(p) : p) }));
+  const addWizMs = (pid: string) => upWizPhase(pid, p => ({ ...p, milestones: [...p.milestones, { id: uid(), title: "", hoursEstimate: 4, targetProficiency: 5 }] }));
+  const rmWizMs = (pid: string, mid: string) => upWizPhase(pid, p => ({ ...p, milestones: p.milestones.filter(m=>m.id!==mid) }));
+  const upWizMs = (pid: string, mid: string, patch: Partial<typeof wiz.phases[0]["milestones"][0]>) =>
+    upWizPhase(pid, p => ({ ...p, milestones: p.milestones.map(m => m.id===mid ? { ...m, ...patch } : m) }));
+
+  const saveWizard = () => {
+    if (!wiz.name.trim()) return;
+    const id = "custom-" + uid().slice(0,8) as any;
+    const roadmap: CareerRoadmap = {
+      id, name: wiz.name.trim(), icon: wiz.icon, color: wiz.color, description: wiz.description,
+      template: "custom", weeklyHoursTarget: wiz.weeklyHoursTarget, priority: wiz.priority,
+      status: "active", startLevel: wiz.startLevel, targetLevel: wiz.targetLevel,
+      startedAt: Date.now(),
+      phases: wiz.phases.map(p => ({
+        id: p.id, title: p.title, description: p.description,
+        milestones: p.milestones.filter(m=>m.title.trim()).map(m => ({
+          id: m.id, title: m.title, hoursEstimate: m.hoursEstimate, hoursActual: 0,
+          targetProficiency: m.targetProficiency, resources: [], projects: [],
+          labChecklist: [], quiz: [], done: false,
+        })),
+      })).filter(p => p.milestones.length > 0),
+    };
+    updateCareer(s => ({ roadmaps: [roadmap, ...s.roadmaps] }));
+    setWizOpen(false); setOpenId(id);
+  };
+
   // Fire celebration the moment a roadmap hits 100% (once per roadmap).
   useMemoLikeCelebration(career.roadmaps, celebrated, setCelebrated, setCelebrateId);
 
@@ -988,15 +1044,15 @@ export default function RoadmapsSection() {
                     </button>
                   );
                 })}
-                <button onClick={() => { addRoadmapFromTemplate("custom"); setPicking(false); }}
-                  className="text-left rounded-xl p-4 transition hover:scale-[1.02]"
-                  style={{ background: "linear-gradient(145deg,rgba(212,175,55,0.12),rgba(0,0,0,0.3))", border: "1px dashed rgba(212,175,55,0.5)" }}>
+                <button onClick={() => { setPicking(false); startWizard(); }}
+                  className="text-left rounded-xl p-4 transition hover:scale-[1.02] group"
+                  style={{ background: "linear-gradient(145deg,rgba(250,204,21,0.12),rgba(0,0,0,0.3))", border: "1px dashed rgba(250,204,21,0.5)" }}>
                   <div className="flex items-center gap-3">
                     <div className="text-3xl w-12 h-12 rounded-xl flex items-center justify-center"
-                      style={{ background: "rgba(212,175,55,0.2)", border: "1px solid rgba(212,175,55,0.7)" }}>⚒️</div>
+                      style={{ background: "rgba(250,204,21,0.2)", border: "1px solid rgba(250,204,21,0.7)" }}>⚒️</div>
                     <div className="flex-1">
-                      <div className="emperor-title font-black" style={{ color: "#fde68a" }}>Custom Roadmap</div>
-                      <div className="text-[11px] serif-body italic" style={{ color: "#8b9eb0" }}>Empty canvas — add your own phases & milestones.</div>
+                      <div className="font-mono font-black tracking-wide" style={{ color: "var(--cr-yellow,#facc15)" }}>Custom Wizard</div>
+                      <div className="text-[11px] font-mono" style={{ color: "var(--cr-fgMuted)" }}>Build your own track · guided 3-step forge</div>
                     </div>
                   </div>
                 </button>
@@ -1004,6 +1060,215 @@ export default function RoadmapsSection() {
             </motion.div>
           </motion.div>
         )}
+
+        {/* CUSTOM ROADMAP WIZARD */}
+        <AnimatePresence>
+          {wizOpen && (
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+              className="fixed inset-0 z-50 flex items-center justify-center p-4 md:p-8"
+              style={{ background: "rgba(0,0,0,0.78)", backdropFilter: "blur(6px)" }}
+              onClick={(e) => { if (e.target === e.currentTarget) setWizOpen(false); }}>
+              <motion.div initial={{ scale: 0.92, y: 20 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.92, y: 20 }}
+                className="w-full max-w-3xl rounded-lg p-6 relative overflow-hidden max-h-[90vh] overflow-y-auto font-mono"
+                style={{ background: "linear-gradient(145deg,#0c1a22,#0a1418)", border: `2px solid ${wiz.color}99`, boxShadow: `0 30px 80px -20px ${wiz.color}55` }}>
+                <span className="absolute top-0 left-0 w-4 h-4 pointer-events-none" style={{borderTop:`2px solid ${wiz.color}`,borderLeft:`2px solid ${wiz.color}`}}/>
+                <span className="absolute top-0 right-0 w-4 h-4 pointer-events-none" style={{borderTop:`2px solid ${wiz.color}`,borderRight:`2px solid ${wiz.color}`}}/>
+                <span className="absolute bottom-0 left-0 w-4 h-4 pointer-events-none" style={{borderBottom:`2px solid ${wiz.color}`,borderLeft:`2px solid ${wiz.color}`}}/>
+                <span className="absolute bottom-0 right-0 w-4 h-4 pointer-events-none" style={{borderBottom:`2px solid ${wiz.color}`,borderRight:`2px solid ${wiz.color}`}}/>
+                <button onClick={()=>setWizOpen(false)} className="absolute top-4 right-4 p-2 rounded hover:bg-white/10" style={{color:"var(--cr-fgMuted)"}}>
+                  <X size={18}/>
+                </button>
+                <div className="text-[10px] tracking-[0.3em] mb-1" style={{color:wiz.color}}>FORGE::WIZARD // step {wizStep}/3</div>
+                <h3 className="text-xl font-black tracking-tight flex items-center gap-2" style={{color:"var(--cr-fg)"}}>
+                  <Sparkles size={18} style={{color:wiz.color}}/> FORGE A CUSTOM TRACK
+                </h3>
+                {/* Step indicator */}
+                <div className="flex gap-1 mt-3 mb-4">
+                  {[1,2,3].map(s => (
+                    <div key={s} className="h-1 flex-1 rounded"
+                      style={{ background: s<=wizStep ? wiz.color : "rgba(255,255,255,0.08)", boxShadow: s<=wizStep?`0 0 6px ${wiz.color}`:"none" }}/>
+                  ))}
+                </div>
+
+                {wizStep === 1 && (
+                  <div className="space-y-3">
+                    <div>
+                      <label className="text-[10px] tracking-widest block mb-1" style={{color:"var(--cr-fgMuted)"}}>TRACK NAME</label>
+                      <input autoFocus value={wiz.name} onChange={e=>setWiz(w=>({...w,name:e.target.value}))}
+                        placeholder="e.g. Distributed Systems Engineer"
+                        className="w-full px-3 py-2 rounded text-sm outline-none"
+                        style={{background:"var(--cr-card2)",border:"1px solid var(--cr-border)",color:"var(--cr-fg)"}}/>
+                    </div>
+                    <div>
+                      <label className="text-[10px] tracking-widest block mb-1" style={{color:"var(--cr-fgMuted)"}}>DESCRIPTION</label>
+                      <textarea value={wiz.description} onChange={e=>setWiz(w=>({...w,description:e.target.value}))} rows={2}
+                        placeholder="What will this track accomplish?"
+                        className="w-full px-3 py-2 rounded text-xs outline-none resize-none"
+                        style={{background:"var(--cr-card2)",border:"1px solid var(--cr-border)",color:"var(--cr-fg)"}}/>
+                    </div>
+                    <div>
+                      <label className="text-[10px] tracking-widest block mb-1" style={{color:"var(--cr-fgMuted)"}}>ICON</label>
+                      <div className="flex gap-1 flex-wrap">
+                        {WIZ_ICONS.map(i => (
+                          <button key={i} onClick={()=>setWiz(w=>({...w,icon:i}))}
+                            className="w-9 h-9 rounded text-lg transition"
+                            style={{background:wiz.icon===i?`${wiz.color}28`:"var(--cr-card2)",border:`1.5px solid ${wiz.icon===i?wiz.color:"var(--cr-borderSoft)"}`,boxShadow:wiz.icon===i?`0 0 8px ${wiz.color}66`:"none"}}>{i}</button>
+                        ))}
+                      </div>
+                    </div>
+                    <div>
+                      <label className="text-[10px] tracking-widest block mb-1" style={{color:"var(--cr-fgMuted)"}}>ACCENT COLOR</label>
+                      <div className="flex gap-2 flex-wrap">
+                        {WIZ_COLORS.map(c => (
+                          <button key={c} onClick={()=>setWiz(w=>({...w,color:c}))}
+                            className="w-8 h-8 rounded transition"
+                            style={{background:c,border:`2px solid ${wiz.color===c?"#fff":"transparent"}`,boxShadow:wiz.color===c?`0 0 10px ${c}`:"none"}}/>
+                        ))}
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+                      <NumField label="HRS/WK" value={wiz.weeklyHoursTarget} min={1} max={40} onChange={v=>setWiz(w=>({...w,weeklyHoursTarget:v}))}/>
+                      <NumField label="PRIORITY" value={wiz.priority} min={1} max={10} onChange={v=>setWiz(w=>({...w,priority:v}))}/>
+                      <NumField label="START LVL" value={wiz.startLevel} min={1} max={10} onChange={v=>setWiz(w=>({...w,startLevel:v}))}/>
+                      <NumField label="TARGET LVL" value={wiz.targetLevel} min={1} max={10} onChange={v=>setWiz(w=>({...w,targetLevel:v}))}/>
+                    </div>
+                  </div>
+                )}
+
+                {wizStep === 2 && (
+                  <div className="space-y-3">
+                    <p className="text-[11px]" style={{color:"var(--cr-fgMuted)"}}>
+                      &gt; Define phases and milestones. Each phase groups milestones by theme; give rough hours estimates.
+                    </p>
+                    <div className="space-y-3">
+                      {wiz.phases.map((p, pi) => (
+                        <div key={p.id} className="rounded p-3" style={{background:"var(--cr-card2)",border:`1px solid ${wiz.color}44`}}>
+                          <div className="flex items-center gap-2 mb-2">
+                            <span className="text-[10px] font-bold" style={{color:wiz.color}}>PH{String(pi+1).padStart(2,"0")}</span>
+                            <input value={p.title} onChange={e=>upWizPhase(p.id, x=>({...x,title:e.target.value}))}
+                              className="flex-1 px-2 py-1 rounded text-xs outline-none font-bold"
+                              style={{background:"var(--cr-card)",border:"1px solid var(--cr-borderSoft)",color:"var(--cr-fg)"}}/>
+                            {wiz.phases.length > 1 && (
+                              <button onClick={()=>rmWizPhase(p.id)} className="p-1 rounded hover:bg-red-500/20" style={{color:"var(--cr-red,#f87171)"}}>
+                                <Trash2 size={11}/>
+                              </button>
+                            )}
+                          </div>
+                          <textarea value={p.description||""} onChange={e=>upWizPhase(p.id, x=>({...x,description:e.target.value}))} rows={1}
+                            placeholder="Phase description (optional)"
+                            className="w-full px-2 py-1 rounded text-[11px] outline-none resize-none mb-2"
+                            style={{background:"var(--cr-card)",border:"1px solid var(--cr-borderSoft)",color:"var(--cr-fg)"}}/>
+                          <div className="space-y-1">
+                            {p.milestones.map((m, mi) => (
+                              <div key={m.id} className="flex items-center gap-1.5">
+                                <span className="text-[9px] w-5 shrink-0" style={{color:"var(--cr-fgMuted)"}}>{String(mi+1).padStart(2,"0")}</span>
+                                <input value={m.title} onChange={e=>upWizMs(p.id,m.id,{title:e.target.value})} placeholder="Milestone title"
+                                  className="flex-1 px-2 py-1 rounded text-[11px] outline-none"
+                                  style={{background:"var(--cr-card)",border:"1px solid var(--cr-borderSoft)",color:"var(--cr-fg)"}}/>
+                                <input type="number" value={m.hoursEstimate} min={1} max={200}
+                                  onChange={e=>upWizMs(p.id,m.id,{hoursEstimate:Number(e.target.value)||1})}
+                                  className="w-14 px-1 py-1 rounded text-[10px] outline-none text-center"
+                                  style={{background:"var(--cr-card)",border:"1px solid var(--cr-borderSoft)",color:"var(--cr-accent3,#34d399)"}}/>
+                                <span className="text-[9px]" style={{color:"var(--cr-fgMuted)"}}>h</span>
+                                <input type="number" value={m.targetProficiency} min={1} max={10}
+                                  onChange={e=>upWizMs(p.id,m.id,{targetProficiency:Number(e.target.value)||5})}
+                                  className="w-10 px-1 py-1 rounded text-[10px] outline-none text-center"
+                                  style={{background:"var(--cr-card)",border:"1px solid var(--cr-borderSoft)",color:wiz.color}}/>
+                                <span className="text-[9px]" style={{color:"var(--cr-fgMuted)"}}>lv</span>
+                                <button onClick={()=>rmWizMs(p.id,m.id)} className="p-1 rounded hover:bg-red-500/20" style={{color:"var(--cr-red,#f87171)"}}>
+                                  <X size={10}/>
+                                </button>
+                              </div>
+                            ))}
+                            <button onClick={()=>addWizMs(p.id)}
+                              className="text-[10px] tracking-widest w-full py-1.5 rounded mt-1 transition hover:brightness-125"
+                              style={{background:`${wiz.color}18`,color:wiz.color,border:`1px dashed ${wiz.color}66`}}>
+                              [ + MILESTONE ]
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                    <button onClick={addWizPhase}
+                      className="text-[10px] tracking-widest w-full py-2 rounded transition hover:brightness-125"
+                      style={{background:"var(--cr-card2)",color:wiz.color,border:`1px dashed ${wiz.color}66`}}>
+                      [ + ADD PHASE ]
+                    </button>
+                  </div>
+                )}
+
+                {wizStep === 3 && (
+                  <div className="space-y-3">
+                    <div className="rounded p-3" style={{background:"var(--cr-card2)",border:`1px solid ${wiz.color}55`}}>
+                      <div className="flex items-center gap-3">
+                        <div className="text-3xl w-12 h-12 rounded flex items-center justify-center" style={{background:`${wiz.color}25`,border:`1px solid ${wiz.color}`}}>{wiz.icon}</div>
+                        <div className="flex-1">
+                          <div className="font-black text-base" style={{color:"var(--cr-fg)"}}>{wiz.name||"Untitled Track"}</div>
+                          {wiz.description && <div className="text-[11px] mt-0.5" style={{color:"var(--cr-fgMuted)"}}>{wiz.description}</div>}
+                        </div>
+                      </div>
+                      <div className="grid grid-cols-4 gap-2 mt-3 text-center">
+                        <MiniStat label="PHASES" value={wiz.phases.length} color={wiz.color}/>
+                        <MiniStat label="STONES" value={wizTotalMilestones} color="var(--cr-accent3,#34d399)"/>
+                        <MiniStat label="HOURS" value={wizTotalHours} color="var(--cr-accent2,#fb923c)"/>
+                        <MiniStat label="LVL→" value={`${wiz.startLevel}→${wiz.targetLevel}`} color="var(--cr-violet,#a78bfa)"/>
+                      </div>
+                    </div>
+                    <div className="space-y-2 max-h-64 overflow-y-auto pr-2">
+                      {wiz.phases.map((p, pi) => (
+                        <div key={p.id} className="rounded p-2" style={{background:"var(--cr-card2)",border:`1px solid var(--cr-borderSoft)`}}>
+                          <div className="text-[10px] font-bold tracking-widest mb-0.5" style={{color:wiz.color}}>
+                            PHASE {String(pi+1).padStart(2,"0")} · {p.title}
+                          </div>
+                          {p.milestones.length === 0 ? (
+                            <div className="text-[10px] italic" style={{color:"var(--cr-red,#f87171)"}}>⚠ no milestones defined</div>
+                          ) : p.milestones.map((m, mi) => (
+                            <div key={m.id} className="text-[11px] flex items-center gap-2" style={{color:"var(--cr-fg)"}}>
+                              <span style={{color:"var(--cr-fgMuted)"}}>{String(mi+1).padStart(2,"0")}</span>
+                              <span className="flex-1">{m.title||"(untitled)"}</span>
+                              <span style={{color:"var(--cr-accent3,#34d399)"}}>{m.hoursEstimate}h</span>
+                              <span style={{color:wiz.color}}>lv{m.targetProficiency}</span>
+                            </div>
+                          ))}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Footer */}
+                <div className="flex items-center justify-between mt-5 pt-4" style={{borderTop:`1px solid ${wiz.color}33`}}>
+                  <div className="text-[10px]" style={{color:"var(--cr-fgMuted)"}}>
+                    {wizStep === 1 && "> configure identity"}
+                    {wizStep === 2 && `> ${wizTotalMilestones} milestones · ${wizTotalHours}h total`}
+                    {wizStep === 3 && "> confirm & forge"}
+                  </div>
+                  <div className="flex gap-2">
+                    {wizStep > 1 && (
+                      <button onClick={()=>setWizStep(s => (s-1) as 1|2|3)}
+                        className="text-[10px] tracking-widest px-4 py-2 rounded transition hover:bg-white/5"
+                        style={{color:"var(--cr-fgMuted)",border:"1px solid var(--cr-borderSoft)"}}>[ BACK ]</button>
+                    )}
+                    {wizStep < 3 ? (
+                      <button onClick={()=>{
+                        if (wizStep===1 && !wiz.name.trim()) return;
+                        setWizStep(s => (s+1) as 1|2|3);
+                      }}
+                        className="text-[10px] tracking-widest px-4 py-2 rounded font-black transition hover:brightness-110"
+                        style={{background:wiz.color,color:"#000",boxShadow:`0 0 12px ${wiz.color}55`}}>[ NEXT → ]</button>
+                    ) : (
+                      <button onClick={saveWizard} disabled={!wiz.name.trim()||wizTotalMilestones===0}
+                        className="text-[10px] tracking-widest px-4 py-2 rounded font-black transition hover:brightness-110 disabled:opacity-40"
+                        style={{background:wiz.color,color:"#000",boxShadow:`0 0 12px ${wiz.color}55`}}>
+                        [ ⚒ FORGE TRACK ]
+                      </button>
+                    )}
+                  </div>
+                </div>
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </AnimatePresence>
 
       {/* Skill-bump toasts */}
@@ -1079,6 +1344,26 @@ function StatTile({ label, value, color, icon }: { label: string; value: number 
         <div className="text-[9px] font-bold tracking-widest" style={{ color: "var(--cr-fgMuted)" }}>{label}</div>
         <div className="text-xl font-black leading-tight" style={{ color: "var(--cr-fg)" }}>{value}</div>
       </div>
+    </div>
+  );
+}
+
+function NumField({label,value,min,max,onChange}:{label:string;value:number;min?:number;max?:number;onChange:(v:number)=>void}) {
+  return (
+    <label className="block">
+      <span className="text-[9px] tracking-widest block mb-0.5" style={{color:"var(--cr-fgMuted)"}}>{label}</span>
+      <input type="number" value={value} min={min} max={max} onChange={e=>onChange(Number(e.target.value)||0)}
+        className="w-full px-2 py-1.5 rounded text-sm font-mono outline-none text-center font-bold"
+        style={{background:"var(--cr-card2)",border:"1px solid var(--cr-borderSoft)",color:"var(--cr-fg)"}}/>
+    </label>
+  );
+}
+
+function MiniStat({label,value,color}:{label:string;value:number|string;color:string}) {
+  return (
+    <div className="rounded p-1.5" style={{background:"var(--cr-card)",border:`1px solid ${color}44`}}>
+      <div className="text-lg font-black font-mono" style={{color}}>{value}</div>
+      <div className="text-[8px] tracking-widest font-mono" style={{color:"var(--cr-fgMuted)"}}>{label}</div>
     </div>
   );
 }
