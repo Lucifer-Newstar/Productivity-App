@@ -1,26 +1,13 @@
 /**
- * /health/supplements.tsx — Apothecary section.
- * Wave 1 placeholder. Functional UI ships in later waves per FEATURES.md.
+ * /health/supplements — Apothecary (supp stack, deficiency badges, sunlight).
  */
 import HealthPage from "../../components/health/HealthPage";
+import ApothecarySection from "../../components/health/ApothecarySection";
 
 export default function Page() {
   return (
     <HealthPage section="apothecary">
-      <div className="hlth-card" style={{maxWidth: 720}}>
-        <div className="hlth-card-h">// Apothecary</div>
-        <h2 style={{
-          fontFamily: "var(--hlth-font-display)",
-          fontSize: 26, fontWeight: 900, letterSpacing: "0.04em",
-          margin: "4px 0 8px", color: "var(--hlth-accent-glow)",
-        }}>Apothecary</h2>
-        <p className="hlth-subtle" style={{fontSize: 13, margin: 0}}>
-          Supplement stack, adherence, bloodwork &amp; India-specific deficiency badges.
-        </p>
-        <div className="hlth-subtle" style={{marginTop: 16, fontSize: 11, letterSpacing: "0.15em"}}>
-          // section shell online — content ships in upcoming wave
-        </div>
-      </div>
+      <ApothecarySection />
     </HealthPage>
   );
 }

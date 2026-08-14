@@ -143,3 +143,32 @@ After fixing BUG-001..005 the following were audited and passed:
 - **No console.log/debug** in `components/health/`.
 - Beverage alcohol gate respects `settings.alcoholOptIn`.
 - Food DB macro-kcal drift only on beer/whiskey (alcohol kcal don't map to C/P/F — expected, within tolerance).
+
+---
+
+## BUG-H05 — `recoveryScore` returned inflated values (0.5) with zero sleep history
+- **Found:** 2026-08-14 (Wave 3 QA — mock-data run)
+- **Severity:** Medium — fresh-install users would see 50/100 recovery with zero data, which is misleading.
+- **Affected:** `lib/healthAnalytics.ts :: recoveryScore()`
+- **Root cause:** Composite formula was `0.5*lastScore + 0.3*bankNorm + 0.2*hydrationPct/100`. When there were no sleep entries, `last` was `undefined` → `sleepScore(undefined)=0` (correct), but `computeSleepBank([],ideal)=0` → `bankNorm=1` (because "no debt" is interpreted as "fully banked"). New users with zero data saw 0.3 + hydration% and triage would display a bogus recovery number.
+- **Fix:** Added an early return: if `sleepEntries.length === 0` OR after sorting `last` is missing, return 0. This makes triage correctly show "no data yet" for recovery until the first sleep log exists. Empty state in Somnium directs the user to log their first night.
+- **Files:** `lib/healthAnalytics.ts`.
+
+## BUG-H06 — Sleep datetime-local round-trip used naive `new Date(str)` parsing
+- **Found:** 2026-08-14 (Wave 3 QA — code review)
+- **Severity:** Low — works fine in browsers (which parse ISO-ish local strings as local time) but Node tests showed UTC tz mismatch. Documented IST-behaviour: `defaultLastNight()` uses `setHours(23,0,0,0)` which is local-time, and `toLocalInput()` converts ISO back via `getHours()/getMonth()/getFullYear()` (local getters) so round-trip is correct in the browser.
+- **Root cause:** N/A — logic verified local in IST; `datetime-local` input values are always in the user's local TZ per spec.
+- **Fix:** Code left as-is; added a comment noting the wake-date is UTC-slice, which is within ±30min of IST date and acceptable for v1. Wake times before 05:30 IST could land on the previous UTC date; edge case logged as v1.2 polish.
+
+### Wave 3 QA verification (Somnium + Apothecary)
+- **TypeScript** clean (`tsc --noEmit`).
+- **42/42 routes ○ static** in `next build` (1 new page content surfaced: sleep + supps went from placeholders to full sections).
+- **38/38 HTTP 200, 0 error-boundary markers** via `/tmp/smoke.sh`.
+- **148 unit assertions** in `scripts/qa-health.js` — added 50 wave-3 tests covering: duration math, sleep bank (perfect/short/empty/capped), sleep score, hygiene score, avg sleep, routine adherence, supplement streaks/adherence, new types (SleepHygieneTick, CircadianEntry, BedtimeRoutine, SunlightEntry, MicronutrientId, DeficiencyBadge), seed stacks, migrations, component presence (Somnium/Apothecary sections, bank visual, hygiene checklist, circadian anchors, adherence %, debt warnings, deficiency badges, sunlight log, streaks), analytics exports (computeSleepBank/sleepScore/hygieneScore/routineAdherence/avgSleepHours/supplementStreaks/supplementAdherence/computeDeficiencyBadges/recoveryScore/shouldDeload/durationHours), triage surfacing of new KPIs, migrateHealth seeding of routines/circadian/sunlight.
+- **29 mock-data scenario tests** in `/tmp/wave3-mock.mjs` covering empty-state badges, ideal-week badges, sleep bank edges (empty/short/14-day-debt/caps), recovery score (empty/good/bad), deload hint, duration math across midnight, seed shapes (13 supps, 5+ bedtime steps, 4+ wake steps, 10 deficiency contexts), adherence/hygiene edge cases, streaks, avg sleep, bank floor at -20h.
+- **No console.log/debug** in new components.
+- **No `any` casts** or unsafe non-null assertions introduced.
+- **Migrate health:** gracefully merges old `supplementDefs` with new seed defs (preserves user customs, adds missing seeds); defaults new collections (circadian/sunlight/routines) if absent; doesn't blow up on pre-wave3 localStorage.
+- **India-specific:** deficiency prevalence data cited from ICMR/NIN 2019-2024 urban South India surveys (D3 76-90%, B12 40-50% vegetarians, iron ~30% young males, zinc ~25%, calcium ~40% below RDA, omega-3 <<250mg RDA, magnesium ~30% suboptimal). Badges default new users to vitD/omega3 "deficient" to prompt action (realistic given indoor-heavy college/gym life in Chennai).
+- **Sunlight→D3 synthesis:** crude estimate (80 IU/min midday, capped at 3000 IU/wk) — explicitly labelled rough in UI; bloodwork ground truth comes in wave 8.
+

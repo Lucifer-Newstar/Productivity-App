@@ -19,15 +19,15 @@ but governed: Health owns `nutrition/sleep/body/vitals/mind/biometrics`; Workout
 
 | § | Codename     | Route                       | Status | Domain covered                                              |
 |---|--------------|-----------------------------|--------|-------------------------------------------------------------|
-| 0 | TRIAGE       | `/health`                   | ❌     | Daily triage dashboard — composite score, tiles, alerts     |
-| 1 | FUEL    | `/health/nutrition`         | ❌     | Meals, macros, fasting, micronutrients, recipes, food lib   |
-| 2 | HYDRATION    | `/health/hydration`         | ❌     | Water, caffeine, electrolytes, urine color, climate adj     |
-| 3 | SOMNIUM      | `/health/sleep`             | ❌     | Sleep journal, debt bank, circadian rhythm, routines        |
+| 0 | TRIAGE       | `/health`                   | 🟡     | Daily triage dashboard — live BMR/TDEE/water/protein/sleep/recovery/supp KPI tiles; deep score+quick-log+timeline waves 6+ |
+| 1 | FUEL         | `/health/nutrition`         | 🟡     | Meals timeline, macro donut, 90-dish Indian food DB, repeat-yesterday, manual add; micros/recipes/planner wave 8 |
+| 2 | HYDRATION    | `/health/hydration`         | 🟡     | 8-glass grid, 11 beverages, caffeine tally, electrolytes, undo; urine color/sweat-estimator wave 4-8 |
+| 3 | SOMNIUM      | `/health/sleep`             | 🟡     | Sleep log, bank, hygiene checklist, circadian anchors, bed/wake routines, dream, 7d history; naps/procrastination/social-jetlag waves 8 |
 | 4 | SOMA         | `/health/physique`          | ❌     | Measurements, body fat, photos, strength-to-weight, trends  |
-| 5 | APOTHECARY   | `/health/supplements`       | ❌     | Supps stack, adherence, drug-interaction warnings, 🇮🇳 def.  |
+| 5 | APOTHECARY   | `/health/supplements`       | 🟡     | 13-seed supp stack, streaks, 30d adherence, 🇮🇳 deficiency badges (10 micros, ICMR), sunlight log; bloodwork/drug-interactions waves 5+ |
 | 6 | VITALS       | `/health/vitals`            | ❌     | Heart rate, HRV (manual entry), BP, temp, SpO2, symptoms    |
 | 7 | MIND         | `/health/mind`              | ❌     | Mood, stress, energy, libido, anxiety, journal              |
-| 8 | SYNC LAB     | `/health/sync`              | ❌     | Workout↔Health bridge controls, TDEE model, settings        |
+| 8 | SYNC LAB     | `/health/sync`              | ✅     | Profile editor + 10 Workout bridge toggles                  |
 | 9 | REPORTS      | `/health/reports`           | ❌     | Weekly/Monthly/Annual health reports, CSV export, timeline  |
 
 Legend: ✅ = shipped, 🟡 = partial/MVP, ❌ = planned v1.0.
@@ -156,26 +156,26 @@ make sleep debt real.
 
 | #  | Feature                                                                                 | Status | Notes |
 |----|-----------------------------------------------------------------------------------------|--------|-------|
-| 01 | Bedtime + wake-time fields (time pickers). Auto-calculates duration                     | ❌     | |
-| 02 | Sleep quality 1–10 slider                                                               | ❌     | |
-| 03 | **Dream Journal** — password-hashed text area; tags: Lucid / Nightmare / Bizarre / Prophetic / None | ❌ | Simple PIN, local only |
-| 04 | **Sleep Bank** — tracks cumulative debt vs ideal (default 8h/night, configurable 7–9). "+1" credit for over-sleep, "−1" debt for under-sleep | ❌ | Visual piggy-bank; nudges when debt ≥5h "You owe 5h. Go to bed early." |
+| 01 | Bedtime + wake-time fields (datetime-local pickers). Auto-calculates duration; rejects <2h or >14h | ✅     | cross-midnight safe, duration shown live on form |
+| 02 | Sleep quality 1–10 slider                                                               | ✅     | |
+| 03 | **Dream Journal** — plaintext per-night text; PIN lock wave 8                               | ✅     | stored locally; expand/collapse per night |
+| 04 | **Sleep Bank** — rolling 14-day, 0.5× credit (cap +1h/night), global caps [−20h, +10h], amber nudge ≥5h, red deload ≥10h | ✅ | Visual bank bar with debt-color gradient; 5h amber, 10h red → recovery composite & deload hint |
 | 05 | Sleep debt repayment plan projection (e.g., +30min/night for 10 nights to clear 5h)     | ❌     | |
 | 06 | Sleep Bank Statement — weekly report (avg hours, total debt/credit, trend)              | ❌     | |
-| 07 | Sleep latency (minutes to fall asleep) field                                            | ❌     | |
-| 08 | Wake-ups during night count                                                             | ❌     | |
+| 07 | Sleep latency (minutes to fall asleep) field                                            | ✅     | |
+| 08 | Wake-ups during night count                                                             | ✅     | |
 | 09 | Nap log — duration, time; whether it was power nap vs long nap (affects circadian note) | ❌     | |
-| 10 | **Circadian Rhythm tracker** — logs first sunlight exposure, first meal, last meal, caffeine cutoff, screen-off time | ❌ | Builds rhythm profile over 2 weeks |
+| 10 | **Circadian anchors** — first sunlight / first meal / last meal / caffeine cutoff / screen-off | ✅ | time pickers per anchor with contextual tip |
 | 11 | Circadian score — alignment score vs consistent rhythm (ideal range: wake ±30min)       | ❌     | |
 | 12 | **Bedtime Procrastination logger** — when you delayed despite being tired + reason (Scrolling / Work / Anxiety / Gaming / Social / Other) | ❌ | |
-| 13 | **Sleep Hygiene Score** — checklist (1 = yes, 0 = no): dark room, cool temp (ideal 18–22°C but Chennai AC ~24–26), no caffeine after 4pm, no screens 30min pre-bed, no heavy meal 2h pre-bed, shower/warm bath, consistent wake time | ❌ | Score 1–10; Chennai AC/heat considerations noted |
-| 14 | Bedtime Routine Builder — ordered checklist of custom steps; track adherence %          | ❌     | |
-| 15 | Wake-up Routine Builder — same for morning (sunlight, water, stretching, no phone 15m) | ❌     | |
+| 13 | **Sleep Hygiene Score** — 10-item checklist (no caffeine after 2pm, morning sunlight, trained, no heavy meal <2h bed, no alcohol, screens off 30m, wind-down, dark room, cool 22-26°C, consistent schedule) → score 0–10 | ✅ | Chennai 22-26°C AC note; tips per item |
+| 14 | Bedtime Routine Builder — ordered checklist with add/remove/toggle, adherence %          | ✅     | 6 seed steps (cutoff, phone night shift, Mg+Ashwa, shower, stretch/breath, read) |
+| 15 | Wake-up Routine Builder — ordered checklist with add/remove/toggle, adherence %          | ✅     | 5 seed steps (sunlight, water+salt, creatine, review training, mobility) |
 | 16 | Sleep environment tags: AC / Fan / Open window / Mosquito coil/mat / Humidifier / White noise | ❌ | 🌏 Mosquito concern is Chennai-real; coils release particulate so flagged |
 | 17 | Bedtime mood &amp; anxiety 1–10                                                           | ❌     | |
 | 18 | Readiness contribution — sleep score feeds into Workout readiness                       | ❌     | Workout sync |
 | 19 | Sleep graph (30/90/365 day)                                                             | ❌     | |
-| 20 | Sleep goal setting (target bedtime / target wake)                                       | ❌     | |
+| 20 | Sleep goal setting (ideal hours + routine windows)                                      | ✅     | profile.idealSleepHours default 8; routine windowStart/End |
 | 21 | Ideal bedtime calculator — based on wake-time + desired duration, suggests wind-down start | ❌   | |
 | 22 | Jet-lag / late-night study mode — temporary adjusted schedule                           | ❌     | Exam/onsite weeks common |
 | 23 | Workout-correlation overlay: "On 7h sleep your avg volume was 10% lower than 8h+ nights" | ❌     | Workout sync |
@@ -256,19 +256,19 @@ in ~50%). The app should gently nudge, not diagnose.
 
 | #  | Feature                                                                                 | Status | Notes |
 |----|-----------------------------------------------------------------------------------------|--------|-------|
-| 01 | Supplement logger with quick-add: Whey protein, Creatine monohydrate, Multivitamin, Vit D3, B12 (methylcobalamin), Omega-3 fish oil, Magnesium glycinate/citrate, Zinc, Calcium, Ashwagandha, Pre-workout, BCAA/EAA, Glutamine, Collagen, Probiotic, Custom | ❌ | |
-| 02 | Dose + time-of-day per supplement                                                       | ❌     | |
-| 03 | Daily checkmarks (taken/missed)                                                         | ❌     | |
-| 04 | Adherence streak per supplement                                                         | ❌     | |
-| 05 | Stack schedule view (morning / pre-wo / post-wo / night)                                | ❌     | |
-| 06 | **🇮🇳 Deficiency risk badge** — flags nutrients commonly low in Indian diets (Vit D, B12, Iron, Zinc, Calcium, Omega-3, Magnesium) based on logged food + supplement adherence 🌏 | ❌ | Awareness, not diagnosis |
+| 01 | Supplement logger with 13-seed stack (Whey, Creatine, Multivit, D3, B12, Omega-3, Mg glycinate, Zinc, Calcium, Ashwagandha, Pre-workout, EAA, Probiotic) + custom add | ✅ | colored tiles grouped by time-of-day; click to toggle taken |
+| 02 | Dose + time-of-day per supplement (morning/pre-wo/post-wo/evening/night/any)            | ✅     | |
+| 03 | Daily checkmarks (taken/missed) — click tile to log today                               | ✅     | idempotent (re-tap removes) |
+| 04 | Adherence streak + 30-day adherence % per supplement                                    | ✅     | |
+| 05 | Stack schedule view sorted by time-of-day (morning → pre-wo → post-wo → evening → night → any) | ✅ | |
+| 06 | **🇮🇳 Deficiency risk badges** — 10 nutrients (D, B12, Fe, Zn, Ca, Omega-3, Mg, C, Folate, K) computed from 7d food+supp+sunlight, level (ok/watch/at-risk/deficient) with ICMR prevalence + actionable tip | ✅ | awareness not diagnosis; bloodwork override wave 8 |
 | 07 | "Get bloodwork" nudge — reminder for annual lipid panel, CBC, Vit D, B12, fasting glucose | ❌     | |
 | 08 | Bloodwork result storage (manual entry: date + values + reference ranges)              | ❌     | |
 | 09 | Bloodwork trend chart (key markers over time)                                           | ❌     | |
 | 10 | Simple drug-interaction warning (caffeine + pre-workout, iron + calcium spacing, etc.)  | ❌     | Heuristic only; disclaimer |
 | 11 | Supplement cycle tracking (creatine loading/maintenance, pre-wo tolerance breaks)      | ❌     | |
 | 12 | Supplement cost tracker (monthly spend)                                                 | ❌     | |
-| 13 | "Sunlight exposure" log for Vit D synthesis (minutes + time of day, skin exposure) 🌏   | ❌     | Chennai = good UV most of year; urban indoor lifestyle paradox |
+| 13 | "Sunlight exposure" log (minutes + time-of-day) → contributes to D3 intake estimate (80 IU/min midday, cap 3000 IU/wk) 🌏 | ✅ | Chennai UV strong year-round; midday = best synthesis |
 | 14 | "Skin type" (Fitzpatrick I-VI) — darker skin = more synthesis time needed, flagged for Vit D | ❌     | Most South Indians Type IV-V |
 
 ---
@@ -467,8 +467,8 @@ incremental commit to the `health` branch, merge to `main` only after user appro
 |---|---|---|---|
 | 0 (docs) | Spec, research, arch/algorithms/data-model docs | ✅ | `9ac7369`, `de125c5` |
 | 1 (shell) | types, store slice, HealthShell, 10 FULLSCREEN routes, EkgFlash, HealthHotkeys, Triage live-KPIs, Lab profile editor | ✅ | `c8f0b10` |
-| 2 (core food+water) | meals timeline, macros sliders, 80-dish Indian food lib, repeat-yesterday, 8-glass hydration, dynamic water goal | ❌ next |
-| 3 (sleep+supps) | sleep log, sleep bank, routines, supp log, 🇮🇳 deficiency badges | ❌ |
+| 2 (core food+water) | meals timeline, macros donut, 90-dish Indian food lib, repeat-yesterday, 8-glass hydration, dynamic water goal | ✅ | `8090f10` |
+| 3 (sleep+supps) | sleep log, sleep bank, routines, supp log, 🇮🇳 deficiency badges, sunlight log | ✅ | wave-3 commit |
 | 4 (physique core) | Navy BF%, tape measurements, photo capture | ❌ |
 | 5 (vitals+mind) | HR/BP, symptom log, mood/stress, burnout flag | ❌ |
 | 6 (reports) | timeline, weekly/monthly reports, CSV/JSON export | ❌ |

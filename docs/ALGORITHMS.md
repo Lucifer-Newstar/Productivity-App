@@ -439,31 +439,91 @@ present: none / some / high).
 
 Educational heuristic only — not a glycemic-index calculator.
 
-## H10. Sleep Bank
+## H10. Sleep Bank (implemented Wave 3)
 
 ```
-dayDelta = actualHours − idealHours      // positive = credit, negative = debt
-bank = rollingSum(dayDelta over last 14 days)
-bank capped at [−20h, +10h]              // can't hoard infinite credit
+window = last 14 nights with valid duration (0 < duration < 16)
+bank = 0
+for each night in window:
+  delta = durationHours − idealHours
+  if delta < 0:   bank += delta                 # debit 1:1
+  else:           bank += min(delta × 0.5, 1.0) # credit accrues half-rate, capped +1h/night
+bank = clamp(bank, −20h, +10h)
 ```
 
-- `bank ≤ −5h` → nudge "You owe 5h. Go to bed early."
-- `bank ≤ −10h` → strong warning, push rest day to Workout, flag overtraining risk.
-- Weekly statement shows total debt/credit and avg hours.
+- Credit is half-rate because you can't "bank" sleep the way you accrue debt
+  (empirical: sleep extension has diminishing returns beyond ~9h, per Basner &
+  Dinges 2009; banking 8h of surplus doesn't erase a week of 5h nights).
+- Capping credit at +1h/night prevents gaming the metric.
+- Global caps of [−20h, +10h] match the 14-day window: worst case ≈ 2 × all-nighter
+  equivalent worth of chronic debt; best case ≈ a long weekend's worth of recovery.
+- Thresholds (implemented):
+  - `bank ≤ −5h` → amber nudge on Somnium "Sleep debt ≥5h — skip PR attempts today."
+  - `bank ≤ −10h` → red banner "Pushing deload to Workout — drop volume 30-50%."
+    Sets the flag for Workout to read (wave 7 full bridge integration; triage
+    surfaces today).
+- 7-day bar history on Somnium shows hours vs ideal; bank bar visualises position.
 
-## H11. Recovery Quality Score (0–100)
+### H10a. Single-night sleep score (0–1)
 
 ```
-score = 0.30 × sleepScore
-      + 0.25 × (1 − |rhr − rhrBaseline|/rhrBaseline × 5)   // penalise HR deviation
-      + 0.15 × mood/10
-      + 0.15 × nutritionScore
-      + 0.15 × (1 − soreness/10)
+durationFrac = min(1, durationHours / idealHours)
+qualityFrac  = quality / 10     # user-subjective 1-10
+score = 0.6 × durationFrac + 0.4 × qualityFrac
 ```
 
-- rhrBaseline = 14-day rolling average resting HR.
-- Each component clamped to [0,1], output × 100.
-- Score &lt; 50 → caution, &lt; 35 → suggest deload.
+Duration weighted slightly higher than subjective quality because you can feel
+"8/10 refreshed" on 5h of sleep due to caffeine masking.
+
+### H10b. Sleep hygiene score (0–10)
+
+Ten boolean checkpoints; each tick = 1 point:
+
+1. No caffeine after 2pm (☕ half-life ~6h — even 2pm dose is ~25% circulating at 8pm)
+2. Morning sunlight within 30 min of waking (circadian anchor)
+3. Trained / moved today
+4. No heavy meal <2h before bed
+5. No alcohol tonight
+6. Screens off 30 min before bed
+7. Wind-down ritual ≥5 min
+8. Pitch-black room
+9. Cool room (22-26°C for Chennai ambient AC/cross-vent)
+10. Consistent bed/wake ±30 min of schedule
+
+### H10c. Duration hours
+
+`durationHours = (wakeTime − bedTime) / 3.6e6` on ISO datetimes. Wake time earlier
+than bed time (shouldn't happen with the datetime-local pair because bed is
+"last night" and wake "this morning" by construction) returns 0 and UI rejects
+<2h or >14h.
+
+## H11. Recovery Quality Score (v1, implemented Wave 3)
+
+Wave 3 ships a simplified composite that doesn't yet need Vitals/Mind data:
+
+```
+lastScore    = sleepScore(lastNightEntry, idealHours)   # 0-1
+bankHours    = computeSleepBank(all entries, idealHours)
+bankNorm     = clamp(1 − max(0, -bankHours) / 10, 0, 1) # 1 = no debt, 0 = ≥10h debt
+hydrationFrac= min(1, todayWaterMl / waterGoalMl)
+recovery     = 0.5 × lastScore + 0.3 × bankNorm + 0.2 × hydrationFrac
+```
+
+- Returns **0** if there are zero sleep entries (no data = no bogus score).
+- Output 0–1, displayed ×100 on triage.
+- Thresholds (display-only in wave 3):
+  - ≥80 green (good to push), 60–79 amber (normal), <60 red (pull back).
+- Vitals (HRV/RHR) + Mind (mood/stress) multipliers arrive in wave 5 to bring
+  this in line with the full multi-factor spec above.
+
+### H11a. Deload push hint
+
+```
+shouldDeload = computeSleepBank(sleep, ideal) ≤ −10
+```
+
+Simple binary flag for Workout to consume. Wave 7 layers in HRV/RHR/soreness
+for a multi-factor overreaching detector.
 
 ## H12. Training Status classifier
 
@@ -501,6 +561,60 @@ Rolling 28-day window:
 | Maintenance | ±0.5 kg/mo | stable     | stable         |
 
 User can override manually at any time.
+
+## H15. Supplement adherence & streaks (implemented Wave 3)
+
+```
+30d adherence% = days_taken_in_last_30 / 30 × 100   (per-suppId)
+streak(suppId) = consecutive days with a "taken" log ending today, max 365
+```
+
+- Streaks walk backwards from today via `Date.setDate(d-1)` so missed days break
+  the streak; 0 if today not taken.
+- Overall adherence displayed on Apothecary & triage is 7d adherence across all
+  supplements (percent of supp×day slots taken).
+
+## H16. Micronutrient deficiency badges (heuristic, Wave 3)
+
+Per nutrient (10 tracked: D3, B12, iron, zinc, calcium, omega-3, magnesium,
+vitC, folate, potassium) over a trailing 7-day window:
+
+```
+totalIntake = Σ foodContributions(items logged)        // rough keyword hints (see FOOD_MICRO_HINTS)
+             + Σ suppDoses(supplementLog "taken")       // per-suppId doses in SUPP_MICRO_DOSE
+             + sunContribution(sunlight)                // vitamin D only: 80 IU/min midday, cap 3000 IU/wk
+fraction = totalIntake / (RDA × 7)
+level    = "ok"        if fraction ≥ 0.9
+         | "watch"     if 0.6 ≤ fraction < 0.9
+         | "at_risk"   if 0.3 ≤ fraction < 0.6
+         | "deficient" if fraction < 0.3
+```
+
+- RDAs use ICMR 2020 values for adult men (D3 600 IU, B12 2.4 mcg, iron 19mg,
+  zinc 12mg, calcium 600mg, omega-3 250mg EPA+DHA, magnesium 420mg, vitC 80mg,
+  folate 300mcg, potassium 3500mg).
+- Food hints are coarse keyword matches (e.g. "fish curry" → 400mg omega-3,
+  300 IU D3, 2.0 mcg B12). Wave 8 replaces this with a proper nutrient DB.
+- Sunlight→D3 is a very rough synthesis estimate for South Indian skin type V
+  at noon (Chennai 13°N, UV index high year-round). Midday sun = best D3;
+  morning/evening = primarily circadian, negligible D3. The 80 IU/min figure
+  is a conservative midpoint across skin-type-IV/V synthesis studies
+  (spring/summer midday UV in Chennai = ~10-20 min = ~1000-3000 IU).
+- Prevalence context for India (ICMR/NIN 2019-2024 urban surveys) shown under
+  each badge so the user understands why D3/omega3 default to "deficient"
+  for a new Chennai user.
+- **Always shows tip:** "estimates, not diagnosis — get bloodwork". Wave 8
+  lets users pin bloodwork results to override estimates.
+
+## H17. Routine adherence %
+
+```
+adherence% = steps_done_today / total_steps × 100
+```
+
+Per routine (bedtime / wake). Steps are ordered checklists; toggling flips
+`doneToday` boolean, reset is implicit when the day rolls over (no cron; the
+adherence number is "today so far").
 
 ---
 

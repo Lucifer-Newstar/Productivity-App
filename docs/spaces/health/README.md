@@ -27,16 +27,19 @@ being built as a full-bleed "vitals-signs OS" (working theme name:
 - **State slice:** `health: HealthState` in the root Zustand store, localStorage
   key `kaizen.root`, migration `migrateHealth`. Types in `lib/healthTypes.ts`.
 
-## Status at a glance
+## Status at a glance (post-Wave 3)
 
-- **Docs:** ✅ FEATURES.md (257 features across 10 sections, this README, QA)
-- **Shell/components:** ❌ Not yet implemented — Wave 1
-- **Routes:** ❌ Only `/health` placeholder (SpaceTasks) exists today
-- **Algorithms:** ✅ Specified in `docs/ALGORITHMS.md` (Mifflin/Katch BMR, TDEE,
-  Navy BF%, dynamic hydration goal with Chennai climate multiplier, sleep
-  bank, sugar-spike heuristic, recovery score, training-status classifier)
+- **Docs:** ✅ FEATURES.md (257 features across 10 sections, this README, QA, ALGORITHMS)
+- **Shell/components:** ✅ Wave 1 shipped — VITAL-SIGN/CLINIC themes, HealthShell, HealthHotkeys, EkgFlash, 10 FULLSCREEN routes
+- **FUEL (Wave 2):** ✅ Meals timeline, 90-dish Indian food DB, macro donut, repeat-yesterday, manual add
+- **HYDRATION (Wave 2):** ✅ 8-glass grid, 11 beverages with hydration coefficients, EFSA 400mg caffeine cap + post-4pm warning, electrolytes, undo
+- **SOMNIUM (Wave 3):** ✅ Sleep log (bed/wake/quality/latency/wakeups/dream/hygiene), 14-day sleep bank, circadian anchors, bed/wake routine builders with adherence %, 7-night bar history
+- **APOTHECARY (Wave 3):** ✅ 13-seed supplement stack, streaks + 30d adherence, 🇮🇳 deficiency risk badges (10 micronutrients, ICMR prevalence), sunlight log for Vit D
+- **TRIAGE (Wave 3):** Live KPIs — BW/BMI/BMR/TDEE/water/protein/sleep bank/recovery/supp adherence/deficiency count
+- **SOMA / VITALS / MIND / REPORTS:** ❌ upcoming waves 4-6
 - **Workout bridge contract:** ✅ Documented (directional read-only pull,
-  advisory push flags — see ALGORITHMS.md)
+  advisory push flags — see ALGORITHMS.md); bodyweight/sessions/PRs/readiness
+  consumed live; sleep-debt/recovery/deload flags computed, deeper push wired in wave 7
 
 ## Implementation plan (9 waves)
 

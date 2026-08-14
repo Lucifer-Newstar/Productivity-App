@@ -149,13 +149,82 @@ assert(missingFoods.length === 0, `Essentials present (missing: ${missingFoods.j
 assert(/"nonveg"/.test(dbSrc), "Non-veg tag present");
 assert(/"high-protein"/.test(dbSrc), "High-protein tag present");
 
-// ---------- Health types ----------
+// ---------- Sleep analytics (wave 3) ----------
+section("Sleep duration & bank");
+// Re-implement the two core algorithms inline since we can't import TS modules from JS.
+function durationHours(bedIso, wakeIso){ const b=new Date(bedIso).getTime(), w=new Date(wakeIso).getTime(); return (w-b)/3.6e6; }
+function computeSleepBank(entries, ideal, lastN=14){
+  const sorted=[...entries].filter(e=>e.durationHours>0&&e.durationHours<16).sort((a,b)=>a.date.localeCompare(b.date)).slice(-lastN);
+  let bank=0;
+  for(const e of sorted){ const d=e.durationHours-ideal; if(d<0)bank+=d; else bank+=Math.min(d*0.5,1.0); bank=Math.max(-20,Math.min(10,bank)); }
+  return Math.round(bank*10)/10;
+}
+function sleepScore(e, ideal){ if(!e)return 0; const dur=Math.min(1,e.durationHours/ideal); const q=((e.quality??5))/10; return Math.max(0,Math.min(1,0.6*dur+0.4*q)); }
+function hygieneScore(tick){ const KEYS=["noCaffeineAfter14","noScreensBeforeBed","darkRoom","coolRoom","consistentSchedule","noHeavyMealLate","noAlcohol","exercisedToday","sunlightMorning","relaxedBeforeBed"]; if(!tick)return 0; const hits=KEYS.reduce((n,k)=>n+(tick[k]?1:0),0); return Math.round((hits/KEYS.length)*10); }
+function avgSleep(entries,n=7){ const s=[...entries].filter(e=>e.durationHours>0).sort((a,b)=>b.date.localeCompare(a.date)).slice(0,n); return s.length?s.reduce((s,e)=>s+e.durationHours,0)/s.length:0; }
+function routineAdherence(steps){ if(!steps.length)return 0; return Math.round((steps.filter(s=>s.doneToday).length/steps.length)*100); }
+
+const bed = new Date(Date.now()-29*3600e3).toISOString(); // last night ~23:00
+const wake = new Date(Date.now()-21*3600e3).toISOString(); // ~07:00
+assertClose(durationHours(bed, wake), 8, 0.01, "23:00 -> 07:00 = 8h");
+assertClose(durationHours(new Date(Date.now()-7*3600e3).toISOString(), new Date().toISOString()), 7, 0.01, "7h duration calc");
+// Perfect sleep for 7 nights: bank should be slightly positive (capped at +1/night)
+let entries = []; for(let i=6;i>=0;i--){ const d=new Date(Date.now()-i*86400e3).toISOString().slice(0,10); entries.push({id:"x",date:d,bedTime:"x",wakeTime:"x",durationHours:8,quality:8});}
+// Exact ideal gives 0 delta, so bank stays 0. Test with 9h nights to earn +0.5/night.
+const over=[]; for(let i=6;i>=0;i--){ const d=new Date(Date.now()-i*86400e3).toISOString().slice(0,10); over.push({id:"x",date:d,bedTime:"x",wakeTime:"x",durationHours:9,quality:8});}
+assertClose(computeSleepBank(over,8), 3.5, 0.1, "7 nights at 9h = +3.5h credit (0.5h/night)");
+assert(computeSleepBank(entries,8) === 0, "7 perfect (exactly 8h) nights → 0 bank (no surplus no deficit)");
+// 7 nights of 5h each: -3*7 = -21, capped at -20
+const bad=[]; for(let i=6;i>=0;i--){ const d=new Date(Date.now()-i*86400e3).toISOString().slice(0,10); bad.push({id:"x",date:d,bedTime:"x",wakeTime:"x",durationHours:5,quality:5});}
+assert(computeSleepBank(bad,8) <= -14, "7 nights at 5h = bank ≤ -14h (1:1 debit)");
+assert(computeSleepBank(bad,8) >= -20, "Bank capped at -20h");
+// Edge: zero entries = 0
+assert(computeSleepBank([],8) === 0, "Empty entries → bank = 0");
+assertClose(sleepScore({durationHours:8,quality:10},8), 1, 0.01, "Perfect night = 1.0 score");
+assertClose(sleepScore({durationHours:4,quality:2},8), 0.6*0.5+0.4*0.2, 0.01, "Bad night ~0.38 score");
+assert(hygieneScore({}) === 0, "Empty hygiene → 0");
+assert(hygieneScore({darkRoom:true,coolRoom:true}) === 2, "2/10 ticks = 2/10");
+const allTicks = {noCaffeineAfter14:true,noScreensBeforeBed:true,darkRoom:true,coolRoom:true,consistentSchedule:true,noHeavyMealLate:true,noAlcohol:true,exercisedToday:true,sunlightMorning:true,relaxedBeforeBed:true};
+assert(hygieneScore(allTicks) === 10, "All ticks = 10/10");
+assertClose(avgSleep([{date:"2025-01-03",durationHours:6},{date:"2025-01-02",durationHours:8},{date:"2025-01-01",durationHours:10}]), 8, 0.01, "avgSleep = 8 over 3 nights");
+assert(routineAdherence([{doneToday:true},{doneToday:false}]) === 50, "1/2 steps = 50%");
+assert(routineAdherence([]) === 0, "Empty routine = 0%");
+
+// Supplement streak/adherence logic
+function suppStreaks(logs){ const streaks={}; const bySupp={}; for(const l of logs){ if(!l.taken)continue; (bySupp[l.suppId]||=[]).push(l.date);} for(const [id,dates] of Object.entries(bySupp)){ const set=new Set(dates); let streak=0; const d=new Date(); for(let i=0;i<365;i++){ const k=d.toISOString().slice(0,10); if(set.has(k)){streak++;d.setDate(d.getDate()-1);} else break;} streaks[id]=streak;} return streaks;}
+function suppAdherence(logs,suppId,lastN=30){ const d=new Date(); const days=[]; for(let i=0;i<lastN;i++){days.push(d.toISOString().slice(0,10)); d.setDate(d.getDate()-1);} const ds=new Set(days); const taken=new Set(); for(const l of logs){ if(!l.taken)continue; if(suppId&&l.suppId!==suppId)continue; if(ds.has(l.date))taken.add(l.date);} return Math.round((taken.size/lastN)*100); }
+const todayStr = new Date().toISOString().slice(0,10);
+const yStr = new Date(Date.now()-86400e3).toISOString().slice(0,10);
+const two = suppStreaks([{id:"1",date:todayStr,suppId:"creatine",taken:true},{id:"2",date:yStr,suppId:"creatine",taken:true}]);
+assert(two.creatine >= 2, `2-day streak for creatine detected (got ${two.creatine})`);
+assert(suppAdherence([{date:todayStr,suppId:"creatine",taken:true}],"creatine",7) >= 14, "1/7 days = ~14% adherence");
+
+// Wave-3 types must exist
 section("Types / store wiring");
 const typesSrc = fs.readFileSync(path.join(__dirname, '..', 'lib/healthTypes.ts'), 'utf8');
 assert(/WaterEntry[\s\S]*?caffeineMg\?:\s*number/.test(typesSrc), "WaterEntry.caffeineMg field exists");
 assert(/export type WaterBeverage =[^}]*"alcohol"/.test(typesSrc), "WaterBeverage includes alcohol");
 assert(/syncPushHydration/.test(typesSrc), "HealthSettings has bridge toggles");
 assert(/climateMult: number/.test(typesSrc), "Profile.climateMult exists");
+assert(/SleepHygieneTick/.test(typesSrc), "SleepHygieneTick type exists");
+assert(/CircadianEntry/.test(typesSrc), "CircadianEntry type exists");
+assert(/BedtimeRoutine/.test(typesSrc), "BedtimeRoutine type exists");
+assert(/SunlightEntry/.test(typesSrc), "SunlightEntry type exists");
+assert(/MicronutrientId/.test(typesSrc), "MicronutrientId type exists");
+assert(/DeficiencyBadge/.test(typesSrc), "DeficiencyBadge type exists");
+assert(/SEED_SUPPLEMENT_DEFS/.test(typesSrc), "SEED_SUPPLEMENT_DEFS seed exists");
+assert(/DEFAULT_BEDTIME_ROUTINE/.test(typesSrc), "DEFAULT_BEDTIME_ROUTINE exists");
+assert(/DEFAULT_WAKE_ROUTINE/.test(typesSrc), "DEFAULT_WAKE_ROUTINE exists");
+assert(/INDIAN_DEFICIENCY_CONTEXT/.test(typesSrc), "INDIAN_DEFICIENCY_CONTEXT exists");
+// Must-seed supps
+for (const s of ["whey","creatine","vitd3","b12","omega3","magnesium","zinc","ashwa","multivit"]) {
+  const re = new RegExp(`id:\\s*"${s}"`);
+  assert(re.test(typesSrc), `Seed supp def includes ${s}`);
+}
+assert(/circadian:/.test(typesSrc), "HealthState.circadian exists");
+assert(/sunlight:/.test(typesSrc), "HealthState.sunlight exists");
+assert(/bedtimeRoutine:/.test(typesSrc), "HealthState.bedtimeRoutine exists");
+assert(/wakeRoutine:/.test(typesSrc), "HealthState.wakeRoutine exists");
 
 // Store wiring
 const storeSrc = fs.readFileSync(path.join(__dirname, '..', 'lib/store.tsx'), 'utf8');
@@ -202,6 +271,49 @@ const syncPage = fs.readFileSync(path.join(pagesDir, 'sync.tsx'), 'utf8');
 assert(/updateHealth/.test(syncPage), "Sync lab uses updateHealth action");
 assert(/syncReadBodyweight/.test(syncPage), "Sync lab exposes bridge toggles");
 assert(/gender|ageYears|heightCm/.test(syncPage), "Sync lab edits profile constants");
+
+// Wave 3 pages render actual sections
+const sleepPage = fs.readFileSync(path.join(pagesDir, 'sleep.tsx'), 'utf8');
+assert(/SomniumSection/.test(sleepPage), "Sleep page renders SomniumSection");
+const suppPage = fs.readFileSync(path.join(pagesDir, 'supplements.tsx'), 'utf8');
+assert(/ApothecarySection/.test(suppPage), "Supplements page renders ApothecarySection");
+const compDir = path.join(__dirname,'..','components','health');
+assert(fs.existsSync(path.join(compDir,'SomniumSection.tsx')), "SomniumSection component exists");
+assert(fs.existsSync(path.join(compDir,'ApothecarySection.tsx')), "ApothecarySection component exists");
+const somSrc = fs.readFileSync(path.join(compDir,'SomniumSection.tsx'),'utf8');
+const apoSrc = fs.readFileSync(path.join(compDir,'ApothecarySection.tsx'),'utf8');
+assert(/sleep bank|SLEEP BANK/i.test(somSrc), "Sleep bank visual present");
+assert(/HYGIENE_ITEMS|hygiene/.test(somSrc), "Hygiene checklist present");
+assert(/circadian|CIRCADIAN/i.test(somSrc), "Circadian anchors present");
+assert(/routineAdherence|adherence/.test(somSrc), "Routine adherence % present");
+assert(/DELIMITED|debt|SLEEP_DEBT/.test(somSrc), "Debt warnings present");
+assert(/deficiency|DEFICIENCY|badges/i.test(apoSrc), "Deficiency badges present in apothecary");
+assert(/sunlight|SUNLIGHT/i.test(apoSrc), "Sunlight log present");
+assert(/streak/.test(apoSrc), "Supplement streaks shown");
+assert(/adherence/.test(apoSrc), "Supplement adherence % shown");
+assert(/india|ICMR|prevalence/i.test(apoSrc) || /INDIAN_DEFICIENCY_CONTEXT/.test(typesSrc), "India-specific prevalence context cited");
+
+// Analytics exports wave-3 functions
+const analyticsSrc = fs.readFileSync(path.join(__dirname,'..','lib','healthAnalytics.ts'),'utf8');
+for (const fn of ["computeSleepBank","sleepScore","hygieneScore","routineAdherence","avgSleepHours","supplementStreaks","supplementAdherence","computeDeficiencyBadges","recoveryScore","shouldDeload","durationHours"]) {
+  const re = new RegExp(`export function ${fn}`);
+  assert(re.test(analyticsSrc), `healthAnalytics exports ${fn}`);
+}
+assert(/SLEEP_DEBT_WARN/.test(analyticsSrc), "SLEEP_DEBT_WARN constant exists");
+assert(/SLEEP_DEBT_STRONG/.test(analyticsSrc), "SLEEP_DEBT_STRONG constant exists");
+assert(/MICRO_DAILY_TARGETS/.test(analyticsSrc), "MICRO_DAILY_TARGETS table exists");
+assert(/FOOD_MICRO_HINTS/.test(analyticsSrc), "FOOD_MICRO_HINTS table exists");
+
+// Triage page surfaces wave-3 KPIs
+const triage = fs.readFileSync(path.join(pagesDir,'index.tsx'),'utf8');
+assert(/sleepBank|computeSleepBank/.test(triage), "Triage shows sleep bank KPI");
+assert(/recovery|recoveryScore/.test(triage), "Triage shows recovery score KPI");
+assert(/deficiency|deficiencyCount/.test(triage), "Triage shows deficiency risk KPI");
+assert(/suppAdh|supplementAdherence/.test(triage), "Triage shows supplement adherence KPI");
+
+// migrateHealth updated for new collections
+assert(/circadian/.test(storeSrc) && /sunlight/.test(storeSrc), "migrateHealth handles new wave-3 collections");
+assert(/bedtimeRoutine/.test(storeSrc) && /wakeRoutine/.test(storeSrc), "migrateHealth seeds routines");
 
 // ---------- No console.log leftovers ----------
 section("Cleanup — no console.log/debug");

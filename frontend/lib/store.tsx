@@ -46,7 +46,7 @@ import type {
 import type {
   HealthState, HealthProfile, HealthSettings,
 } from "./healthTypes";
-import { emptyHealthState } from "./healthTypes";
+import { emptyHealthState, DEFAULT_BEDTIME_ROUTINE, DEFAULT_WAKE_ROUTINE, SEED_SUPPLEMENT_DEFS } from "./healthTypes";
 import { isDoneStatus as isTaskDone } from "../components/forge/forgeUtils";
 
 // Generate ids for runtime-created entities.
@@ -356,6 +356,13 @@ const SEED_HEALTH: HealthState = (() => {
 function migrateHealth(raw: any): HealthState {
   if (!raw || typeof raw !== "object") return SEED_HEALTH;
   const base = emptyHealthState();
+  // Merge supp defs: keep any user-added defs but ensure seed defs exist by id.
+  const existingDefs = Array.isArray(raw.supplementDefs) ? raw.supplementDefs : [];
+  const mergedDefs = [...SEED_SUPPLEMENT_DEFS];
+  for (const d of existingDefs) {
+    if (!d?.id) continue;
+    if (!mergedDefs.find(x => x.id === d.id)) mergedDefs.push(d);
+  }
   return {
     ...base,
     ...raw,
@@ -366,10 +373,14 @@ function migrateHealth(raw: any): HealthState {
     water: raw.water ?? [],
     sleep: raw.sleep ?? [],
     measurements: raw.measurements ?? [],
-    supplementDefs: raw.supplementDefs ?? [],
+    supplementDefs: mergedDefs,
     supplementLog: raw.supplementLog ?? [],
     vitals: raw.vitals ?? [],
     mind: raw.mind ?? [],
+    circadian: raw.circadian ?? [],
+    sunlight: raw.sunlight ?? [],
+    bedtimeRoutine: raw.bedtimeRoutine ?? DEFAULT_BEDTIME_ROUTINE,
+    wakeRoutine: raw.wakeRoutine ?? DEFAULT_WAKE_ROUTINE,
   };
 }
 

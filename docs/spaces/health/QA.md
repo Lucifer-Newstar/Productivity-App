@@ -1,12 +1,13 @@
 # Health Space QA
 
-Last audited: 2026-08-14 (Wave 1+2 shipped on `health` branch).
+Last audited: 2026-08-14 (Wave 3 shipped on `health` branch).
 
 ## Current state
 
 - `/health/*` routes live (10 FULLSCREEN routes): triage, fuel, hydration, somnium, soma, apothecary, vitals, mind, lab, reports.
 - Wave 1 (shell) shipped: types, store slice (`kaizen.health`), VITAL-SIGN dark + CLINIC light themes, HealthShell with left rail + EKG trace, EkgFlash transition, HealthHotkeys (g-chord, t, ?), mounted-guard bootsplash.
 - Wave 2 (fuel+hydration) shipped: meal timeline, 90-dish Indian food DB, manual quick-add, macro donut SVG, repeat-yesterday, TDEE target; 8-glass visual grid, 11 beverages with hydration coefficients, caffeine tally with EFSA 400mg cap + post-4pm sleep warning, electrolytes flag, undo, chronological log.
+- Wave 3 (somnium+apothecary) shipped: sleep log (bed/wake datetimes with auto duration, quality 1-10, latency, wakeups, dream journal, 10-item hygiene checklist), 14-day rolling sleep bank (capped [-20h, +10h], 0.5× credit accrual), deload hint pushed to Workout at ≥10h debt; bedtime/wake routine builders (ordered checklists with per-step add/remove + adherence %); circadian zeitgeber anchors (first sun, first meal, caffeine cutoff, last meal, screen-off times); 13-seed supplement stack (whey, creatine, multivit, D3, B12, omega-3, magnesium, zinc, calcium, ashwagandha, pre-workout, EAA, probiotic) with quick-toggle tiles, streak counts, 30-day adherence %, custom add/remove; India-specific micronutrient deficiency badges (10 nutrients: D3, B12, iron, zinc, calcium, omega-3, magnesium, vitC, folate, potassium) computed from 7-day food+supp+sunlight intake with ICMR/NIN prevalence context; sunlight exposure log with time-of-day; recovery score 0-100 on triage (50% last-night + 30% bank + 20% hydration); triage KPI row extended with sleep bank, recovery, supp adherence, deficiency count.
 - Lab (§08) is fully functional: profile editor (gender/age/height/activity/goal/climate mult/sleep/IF window/units/target weight) + 10 Workout bridge toggles.
 
 ## QA gates per wave
@@ -58,6 +59,23 @@ Each wave must satisfy before commit:
   - H03 Repeat-Yesterday spread bug fixed (was corrupting meals array)
   - H04 Fuel TDEE target replaced with real `tdee()` import
 - [x] Smoke-tested routes: /health, /health/nutrition, /health/hydration, /health/sync all render the correct section titles (TRIAGE, FUEL, HYDRATION, Lab/bridge)
+
+## Wave 3 QA (2026-08-14) — Somnium + Apothecary
+
+- [x] tsc strict: 0 errors
+- [x] `next build`: **42/42 routes ○ static** (sleep 8.27 kB / 185 kB First Load JS, supplements 6.61 kB / 183 kB, triage 4.29 kB / 181 kB)
+- [x] Smoke test: **38/38 PASS, 0 FAIL** (sleep + supplements no-longer-placeholder routes)
+- [x] Unit QA (`scripts/qa-health.js`): **148 assertions ALL GREEN** (50 new for wave 3: duration math, sleep bank edges/perfect/short/capped, sleep score, hygiene score, avg sleep, routine adherence, supplement streaks/adherence, new types, seed stacks, migrations, component presence, analytics exports, triage KPIs)
+- [x] Mock-data scenario tests (`/tmp/wave3-mock.mjs`, 29 scenarios): empty-state deficiency badges, ideal-week badges (fish+D3+sun clears D3/omega3 risk), sleep bank edges (empty/short/14-day/caps at ±20/+10), recovery score (empty/good/bad), deload hint trigger, duration across midnight, seed shapes, adherence/hygiene math, streak calc, bank floor at -20h.
+- [x] Bugs found and fixed (2) — see `docs/bugs/BUGS.md` BUG-H05..H06:
+  - H05 recoveryScore returned inflated 0.5 with zero sleep history → added early return 0 on empty.
+  - H06 datetime-local round-trip logic verified (works in IST browsers; UTC-offset edge case documented for v1.2).
+- [x] `migrateHealth()` updated to handle new collections (circadian, sunlight, bedtimeRoutine, wakeRoutine) and merge seed supplement defs with any user-added defs (no data loss on pre-wave3 localStorage).
+- [x] No `console.log/debug` in new components.
+- [x] Alcohol opt-in gate unchanged; no new unsafe non-null assertions.
+- [x] India-specific micronutrient prevalence data cited from ICMR/NIN 2019-2024 surveys.
+- [x] Seed defaults tuned for 20yo Chennai lifter (stack: creatine 5g morning, D3 1000IU, B12, omega-3 1g with dinner, magnesium glycinate 300mg night, ashwagandha 600mg night, whey post-WO; routines: 22:30-23:30 bedtime wind-down, 06:00-07:00 sunrise + hydration + creatine + mobility).
+- [x] Permanent medical disclaimer remains visible in footer; deficiency badge section explicitly states "estimates, not diagnosis — get bloodwork".
 
 ## Backlog (pre-implementation)
 

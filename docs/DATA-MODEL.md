@@ -170,68 +170,80 @@ breakdown.
 
 ---
 
-## Health (VITAL-SIGN OS) — planned
+## Health (VITAL-SIGN OS) — shipped state (Waves 1-3)
 
-Health state lives under `health: HealthState` in `frontend/lib/healthTypes.ts`
-(created when Wave 1 ships). Hydrated through `migrateHealth`; seeded with
-profile defaults for a 20yo male lifter in Chennai.
+Health state lives under `health: HealthState` in `frontend/lib/healthTypes.ts`.
+Hydrated through `migrateHealth` (idempotent); seeded with profile defaults for
+a 20yo male lifter in Chennai (175cm, moderate activity, maintain, climate×1.1,
+8h ideal sleep, 12-20 IF window). Persisted at localStorage key `kaizen.health`.
 
 ```
-HealthState
- ├── profile: HealthProfile
- │    └── {gender, age, heightCm, weightKg, targetWeightKg, bfGoalPct,
- │         activityLevel, goal (bulk|cut|maintain|recomp), city,
- │         climateMultOverride, units, theme, dreamJournalPin}
- ├── meals:             MealEntry[]           # Breakfast/Lunch/Dinner/Snack entries
- │    └── items:        MealItem[]            # individual foods within meal (linked to foodDb)
- ├── foodLibrary:       FoodLibraryItem[]     # user's 20 frequent meals (auto-tracked + pinned)
- ├── recipes:           Recipe[]              # ingredients[] + kcal/macros per serving
- ├── restaurants:       RestaurantEntry[]     # saved Chennai eatery presets
- ├── mealPlans:         MealPlan[]            # 7-day meal planner grids
- ├── mealPrep:          MealPrepWeek[]        # weekly prep checklists
- ├── waterLog:          WaterEntry[]          # ml + beverage type + electrolytes flag
- ├── caffeineLog:       CaffeineEntry[]       # mg + source + time
- ├── sleep:             SleepEntry[]          # bed/wake/duration/quality/latency/wakeups
- ├── dreams:            DreamEntry[]          # PIN-protected entries
- ├── sleepRoutines:     SleepRoutine[]        # bedtime/wakeup routines (checklist)
- ├── circadian:         CircadianLog[]        # first light, meals, caffeine cutoff, screen-off
- ├── bodyMeasurements:  MeasurementEntry[]    # waist/neck/chest/arm/thigh/etc. in cm
- ├── bodyFat:           BodyFatEstimate[]     # Navy-method BF% (waist/neck/height)
- ├── progressPhotos:    ProgressPhoto[]       # dataURL/IndexDB references (offline)
- ├── supplements:       Supplement[]          # defs: name, dose, schedule
- ├── supplementLog:     SupplementDose[]      # per-day taken/missed
- ├── sunlight:          SunlightLog[]         # minutes + time + skin exposure
- ├── bloodwork:         BloodworkResult[]     # manual entries w/ reference ranges
- ├── vitals:            VitalsEntry[]         # RHR, BP, HRV, temp, SpO2, resp rate
- ├── symptoms:          SymptomEntry[]        # illness/symptom logs
- ├── injuries:          InjuryEntry[]         # body part + severity + dates
- ├── medications:       MedicationEntry[]     # OTC/Rx
- ├── mental:            MindEntry[]           # mood/stress/energy/anxiety/focus/ libido 1-10
- ├── journal:           JournalEntry[]        # free-text daily entries
- ├── meditation:        MeditationEntry[]     # minutes
- ├── gratitude:         GratitudeEntry[]      # 3 things/day
- ├── steps:             StepsEntry[]          # manual count
- ├── healthScores:      DailyScore[]          # cached 0–100 composite
- ├── habits:            HealthHabitState[]    # per-habit streaks for water/sleep/protein/etc.
- ├── goals:             HealthGoal[]          # target weight/BF/waist/macros/step/etc.
- └── settings:          HealthSettings        # nudges, reminder schedule, workout sync toggles
+HealthState (as of Wave 3)
+ ├── profile:            HealthProfile      # gender/age/height/targets/activity/goal/city/climateMult/units/idealSleep/eatingWindow
+ ├── scores:             DailyScore[]       # wave 6 — cached 0-100 composite
+ ├── meals:              MealEntry[]        # Breakfast/Lunch/Dinner/Snack (Wave 2 ✓)
+ │    └── items:         MealItem[]         # name+kcal+C/P/F (linked to 90-dish Indian food DB or manual)
+ ├── water:              WaterEntry[]       # ml + beverage + electrolytes + caffeineMg (Wave 2 ✓)
+ ├── sleep:              SleepEntry[]       # bed/wake ISO / durationH / quality 1-10 / latencyMin / wakeUps / dream? / hygiene? / note?
+ ├── measurements:       MeasurementEntry[] # Wave 4 (multi-site tape)
+ ├── supplementDefs:     SupplementDef[]    # 13 seeded + user customs (whey/creatine/multivit/D3/B12/omega3/Mg/Zn/Ca/ashwa/pre/eaa/probiotic)
+ ├── supplementLog:      SupplementLog[]    # per-day per-suppId taken? + time + dose
+ ├── vitals:             VitalsEntry[]      # Wave 5 (HR/BP/HRV/temp/SpO2)
+ ├── mind:               MindEntry[]        # Wave 5 (mood/stress/energy/anxiety/focus/libido + journal)
+ ├── circadian:          CircadianEntry[]   # per-date firstSunlight/firstMeal/lastMeal/caffeineCutoff/screenOff (HH:MM)
+ ├── sunlight:           SunlightEntry[]    # id/date/minutes/timeOfDay(morning|midday|afternoon|evening)
+ ├── bedtimeRoutine:     BedtimeRoutine     # windowStart/End + steps[] (ordered checklist)
+ ├── wakeRoutine:        WakeRoutine        # windowStart/End + steps[] (ordered checklist)
+ └── settings:           HealthSettings     # nudges/sound/quietHours/alcoholOptIn + 10 Workout bridge toggles
 ```
 
-### Key entity notes
+### Key entity notes (Waves 1-3)
 
-- **MealItem.foodId** links into either `foodLibrary`, the seed `healthFoodDb.ts`
-  (80+ Indian dishes pre-seeded), or a free-text entry. Kcal/macros default from
-  the DB but are overridable per entry (user rough-log override always wins).
-- **Macros are tracked as grams** (carbs, protein, fat) + kcal; sliders are a
-  convenience UI over grams — the slider normalises to logged kcal, so users
-  never have to use a food scale.
-- **Bodyweight is NOT duplicated** — Health reads `workout.bodyweight[]` as the
-  source of truth via selector. `health.bodyMeasurements` is for tape-only data.
-- **Photos** are stored offline (dataURL in localStorage up to size cap,
-  IndexedDB for larger sets in v1.2). No network upload, fully offline-first.
-- **PIN protection** for dream journal + bloodwork uses a local salted SHA-256
-  hash (not a secure auth system — deterring casual shoulder-surfing only).
-- **IDs** are `h_${nanoid()}` (or typed prefix `meal_`, `sleep_`, etc.).
+- **MealItem** has optional food-link; manual quick-adds are free-text. 90-dish
+  seed DB in `healthFoodDb.ts` (South/ North/ street/ sweets/ drinks/ gym/ fruit).
+- **WaterEntry.beverage** drives hydration coefficient & caffeine tally (EFSA
+  400mg/day cap, post-4pm warning, coconut water default electrolyte beverage).
+- **SleepEntry.date** is the wake-day (YYYY-MM-DD IST). One entry per wake day;
+  re-logging overwrites. Hygiene is a 10-boolean tick map (see H10b).
+- **SupplementDef.seed merge:** migrateHealth unions pre-wave-3 defs with
+  `SEED_SUPPLEMENT_DEFS` keyed by id so new seeds appear without wiping customs.
+- **CircadianEntry** is sparse (only filled-in fields persisted; empty entries
+  are pruned so the array doesn't grow unboundedly).
+- **BedtimeRoutine/WakeRoutine** each carry an ordered `steps[]` of
+  `{id, label, doneToday}`. Done flags are day-scoped and reset when the day
+  rolls over (no cron — "today" is implicit via the current date on render).
+- **Bodyweight is NOT duplicated** — Health reads `workout.bodyweight[]` via
+  selector as source of truth. `measurements[]` is for tape-only data.
+- **PIN protection** for dream journal is deferred (dreams stored plaintext
+  locally; PIN lock comes in a later wave).
+- **IDs** are random via the shared `uid()` helper (36-rad chars).
+
+### Deferred (Wave 4+):
+
+- Recipes, restaurants, meal planner, meal prep (Wave 8 v1.1 niceties).
+- Progress photos, Navy BF%, weight-class charts (Wave 4 Soma).
+- HR/BP/HRV/temp/SpO2, symptoms/illness/injury/meds (Wave 5 Vitals).
+- Mood/stress/energy/anxiety/focus/libido sliders, free journal, crisis
+  helplines (Vandrevala 1860-2662-345 / iCall 9152987821 / NIMHANS) (Wave 5 Mind).
+- Timeline, weekly/monthly/annual reports, CSV/JSON export, streaks (Wave 6 Reports).
+- Full workout bridge (reverse TDEE, pre/post-wo cards, S:W from PRs, recovery
+  wired into Workout deload detector) (Wave 7).
+- Restaurant mode, recipe analyzer, IF clock visualizer, sugar-spike estimator,
+  bloodwork pinning to override deficiency estimates (Wave 8).
+
+### Workout bridge (directional)
+
+Health **reads** from Workout: bodyweight, sessions, cardioLogs, PRs, readiness,
+routine muscle focus, caffeine/hydration fields on sessions.
+Health **advises** Workout via: hydration warning %, sleep-debt flags, recovery
+score, injury restrictions, deload suggestions, TDEE-derived calorie target.
+Health never mutates Workout collections directly. See ALGORITHMS.md for the
+full contract table.
+
+### Persistence
+
+Same Zustand + localStorage root (`"kaizen.health"`) — health is fully
+offline-first. No backend calls in v1.
 
 ### Workout bridge (directional)
 

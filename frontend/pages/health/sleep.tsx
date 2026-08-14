@@ -1,26 +1,13 @@
 /**
- * /health/sleep.tsx — Somnium section.
- * Wave 1 placeholder. Functional UI ships in later waves per FEATURES.md.
+ * /health/sleep — Somnium (sleep journal, bank, routines, circadian).
  */
 import HealthPage from "../../components/health/HealthPage";
+import SomniumSection from "../../components/health/SomniumSection";
 
 export default function Page() {
   return (
     <HealthPage section="somnium">
-      <div className="hlth-card" style={{maxWidth: 720}}>
-        <div className="hlth-card-h">// Somnium</div>
-        <h2 style={{
-          fontFamily: "var(--hlth-font-display)",
-          fontSize: 26, fontWeight: 900, letterSpacing: "0.04em",
-          margin: "4px 0 8px", color: "var(--hlth-accent-glow)",
-        }}>Somnium</h2>
-        <p className="hlth-subtle" style={{fontSize: 13, margin: 0}}>
-          Sleep journal, debt bank, circadian rhythm &amp; bedtime routines.
-        </p>
-        <div className="hlth-subtle" style={{marginTop: 16, fontSize: 11, letterSpacing: "0.15em"}}>
-          // section shell online — content ships in upcoming wave
-        </div>
-      </div>
+      <SomniumSection />
     </HealthPage>
   );
 }

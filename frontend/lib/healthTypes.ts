@@ -137,13 +137,68 @@ export type WaterBeverage =
 
 export interface SleepEntry {
   id: string;
-  date: string;
-  bedTime: string;    // ISO datetime
-  wakeTime: string;   // ISO datetime
+  date: string;          // YYYY-MM-DD of the wake day (IST)
+  bedTime: string;       // ISO datetime
+  wakeTime: string;      // ISO datetime
   durationHours: number;
-  quality: number;    // 1-10
-  latencyMin?: number;
-  wakeUps?: number;
+  quality: number;       // 1-10
+  latencyMin?: number;   // minutes to fall asleep
+  wakeUps?: number;      // number of nighttime awakenings
+  /** Dream journal text (encrypted via PIN in future; plaintext for now). */
+  dream?: string;
+  /** Hygiene checklist ticked for this night. */
+  hygiene?: SleepHygieneTick;
+  note?: string;
+}
+
+export interface SleepHygieneTick {
+  noCaffeineAfter14?: boolean;
+  noScreensBeforeBed?: boolean;
+  darkRoom?: boolean;
+  coolRoom?: boolean;
+  consistentSchedule?: boolean;
+  noHeavyMealLate?: boolean;
+  noAlcohol?: boolean;
+  exercisedToday?: boolean;
+  sunlightMorning?: boolean;
+  relaxedBeforeBed?: boolean;
+}
+
+/** Circadian rhythm checkpoints — single row per day, optional. */
+export interface CircadianEntry {
+  date: string;            // YYYY-MM-DD
+  firstSunlight?: string;  // HH:MM
+  firstMeal?: string;      // HH:MM
+  lastMeal?: string;       // HH:MM
+  caffeineCutoff?: string; // HH:MM
+  screenOff?: string;      // HH:MM
+}
+
+/** Bedtime / wake routine — ordered checklist. */
+export interface RoutineStep {
+  id: string;
+  label: string;
+  icon?: string;
+  doneToday?: boolean;
+}
+export interface BedtimeRoutine {
+  windowStart: string;   // HH:MM e.g. "22:30"
+  windowEnd: string;     // HH:MM e.g. "23:30"
+  steps: RoutineStep[];
+}
+export interface WakeRoutine {
+  windowStart: string;   // HH:MM
+  windowEnd: string;     // HH:MM
+  steps: RoutineStep[];
+}
+
+/** Daily sunlight exposure — used for Vit-D synthesis estimates. */
+export interface SunlightEntry {
+  id: string;
+  date: string;
+  minutes: number;
+  timeOfDay: "morning" | "midday" | "afternoon" | "evening";
+  note?: string;
 }
 
 export interface MeasurementEntry {
@@ -171,9 +226,13 @@ export interface MeasurementEntry {
 export interface SupplementDef {
   id: string;
   name: string;
+  shortName?: string;   // 2-4 char rail label
+  color?: string;       // accent hex
   doseMg?: number;
-  doseUnits?: string;
+  doseUnits?: string;   // "mg" | "mcg" | "g" | "IU" | "ml"
   timeOfDay: "morning" | "preworkout" | "postworkout" | "evening" | "night" | "any";
+  /** Which deficiency this supplement addresses (for risk badges). */
+  addresses?: MicronutrientId[];
   notes?: string;
 }
 export interface SupplementLog {
@@ -182,6 +241,22 @@ export interface SupplementLog {
   suppId: string;
   taken: boolean;
   time?: string;
+  doseMg?: number;
+  note?: string;
+}
+
+export type MicronutrientId =
+  | "vitD" | "vitB12" | "iron" | "zinc" | "calcium" | "omega3"
+  | "magnesium" | "vitC" | "folate" | "potassium";
+
+/** Deficiency risk badge level per micronutrient, derived from food+supp+sunlight. */
+export type DeficiencyLevel = "ok" | "watch" | "at_risk" | "deficient";
+export interface DeficiencyBadge {
+  id: MicronutrientId;
+  label: string;
+  level: DeficiencyLevel;
+  tip: string;
+  indiaPrevalence?: string; // human-readable stat for context
 }
 
 export interface VitalsEntry {
@@ -222,6 +297,10 @@ export interface HealthState {
   supplementLog: SupplementLog[];
   vitals: VitalsEntry[];
   mind: MindEntry[];
+  circadian: CircadianEntry[];
+  sunlight: SunlightEntry[];
+  bedtimeRoutine: BedtimeRoutine;
+  wakeRoutine: WakeRoutine;
   settings: HealthSettings;
   /** Wave-1 daily score computed at read time, persisted here for history charts. */
   lastScoreDate?: string;
@@ -264,6 +343,64 @@ export const DEFAULT_SETTINGS: HealthSettings = {
   syncPushDeload: true,
 };
 
+/** Default bedtime routine tuned for a Chennai lifter on a college+gym schedule. */
+export const DEFAULT_BEDTIME_ROUTINE: BedtimeRoutine = {
+  windowStart: "22:30",
+  windowEnd:   "23:30",
+  steps: [
+    { id: "bt1", label: "Last caffeine cut-off (3pm hard stop)" },
+    { id: "bt2", label: "Phone on night shift / warm light" },
+    { id: "bt3", label: "Magnesium + Ashwagandha" },
+    { id: "bt4", label: "Cold / lukewarm shower" },
+    { id: "bt5", label: "5 min stretch + box breathing" },
+    { id: "bt6", label: "Read (no screens) 10 min" },
+  ],
+};
+
+/** Default wake routine tuned for early morning lifter / college student. */
+export const DEFAULT_WAKE_ROUTINE: WakeRoutine = {
+  windowStart: "06:00",
+  windowEnd:   "07:00",
+  steps: [
+    { id: "wk1", label: "Get 5-10 min sunlight within 30 min of waking" },
+    { id: "wk2", label: "Hydrate (500ml water + pinch salt)" },
+    { id: "wk3", label: "Creatine 5g" },
+    { id: "wk4", label: "Review today's training + macros" },
+    { id: "wk5", label: "10 min movement / mobility" },
+  ],
+};
+
+/** Seeded starter supplement stack for a 20yo Indian male lifter in Chennai. */
+export const SEED_SUPPLEMENT_DEFS: SupplementDef[] = [
+  { id: "whey",      name: "Whey Protein",     shortName: "WHEY", color: "#f59e0b", doseMg: 30000, doseUnits: "g",  timeOfDay: "postworkout", addresses: [], notes: "25-30g scoop with milk/water post lift" },
+  { id: "creatine",  name: "Creatine Monohydrate", shortName: "CRE",  color: "#ef4444", doseMg: 5000,  doseUnits: "g",  timeOfDay: "morning", addresses: [], notes: "5g daily, any time, don't load" },
+  { id: "multivit",  name: "Multivitamin",     shortName: "MVT",  color: "#10b981", doseMg: 1,     doseUnits: "tab",timeOfDay: "morning", addresses: ["vitB12","zinc","folate"], notes: "With breakfast" },
+  { id: "vitd3",     name: "Vitamin D3",       shortName: "D3",   color: "#fbbf24", doseMg: 1000,  doseUnits: "IU", timeOfDay: "morning", addresses: ["vitD"], notes: "Chennai indoor life = high deficiency risk" },
+  { id: "b12",       name: "Vitamin B12",      shortName: "B12",  color: "#a78bfa", doseMg: 1.5,   doseUnits: "mcg",timeOfDay: "morning", addresses: ["vitB12"], notes: "Vegetarian/veg risk" },
+  { id: "omega3",    name: "Omega-3 Fish Oil", shortName: "OMG3", color: "#06b6d4", doseMg: 1000,  doseUnits: "mg", timeOfDay: "evening", addresses: ["omega3"], notes: "1g EPA+DHA with dinner" },
+  { id: "magnesium", name: "Magnesium Glycinate", shortName: "MG", color: "#84cc16", doseMg: 300,   doseUnits: "mg", timeOfDay: "night",   addresses: ["magnesium"], notes: "300-400mg before bed" },
+  { id: "zinc",      name: "Zinc",             shortName: "ZN",   color: "#64748b", doseMg: 15,    doseUnits: "mg", timeOfDay: "evening", addresses: ["zinc"], notes: "15-30mg, not with coffee" },
+  { id: "calcium",   name: "Calcium",          shortName: "CA",   color: "#f472b6", doseMg: 500,   doseUnits: "mg", timeOfDay: "evening", addresses: ["calcium"], notes: "If milk intake is low" },
+  { id: "ashwa",     name: "Ashwagandha",      shortName: "ASH",  color: "#22d3ee", doseMg: 600,   doseUnits: "mg", timeOfDay: "night",   addresses: [], notes: "KSM-66 preferred, take ~1hr before bed" },
+  { id: "preworkout",name: "Pre-workout",      shortName: "PRE",  color: "#ec4899", doseMg: 1,     doseUnits: "scoop", timeOfDay: "preworkout", addresses: [], notes: "Avoid within 6hrs of bed" },
+  { id: "eaa",       name: "EAA / BCAA",       shortName: "EAA",  color: "#3b82f6", doseMg: 10000, doseUnits: "g",  timeOfDay: "preworkout", addresses: [], notes: "Intra-workout optional" },
+  { id: "probiotic", name: "Probiotic",        shortName: "PRO",  color: "#fb923c", doseMg: 10,    doseUnits: "B CFU", timeOfDay: "morning", addresses: [], notes: "With breakfast on empty-ish stomach" },
+];
+
+/** Indian deficiency prevalence context (ICMR 2019-2024 urban south India surveys). */
+export const INDIAN_DEFICIENCY_CONTEXT: Record<MicronutrientId, { label: string; prevalence: string; tip: string; }> = {
+  vitD:     { label: "Vitamin D",   prevalence: "76-90% urban Indian adults insufficient (ICMR/NIN 2020)", tip: "10-30 min unprotected midday sun most days; consider D3 1000-2000 IU/d." },
+  vitB12:   { label: "Vitamin B12", prevalence: "40-50% vegetarians deficient",                             tip: "B12 1.5mcg/d or fortified foods; get tested if fatigue/tingling." },
+  iron:     { label: "Iron",        prevalence: "~30% young adult males marginal/low ferritin",            tip: "Red meat, leafy greens, lemon juice for absorption." },
+  zinc:     { label: "Zinc",        prevalence: "~25% Indian adults low intake",                           tip: "Pumpkin seeds, chicken, legumes; 15mg supp if low." },
+  calcium:  { label: "Calcium",     prevalence: "~40% below RDA (600mg/d)",                                tip: "Milk/curd/paneer, ragi, sesame; 500mg supp if dairy <2 servings." },
+  omega3:   { label: "Omega-3",     prevalence: "Very low in Indian diets <100mg EPA+DHA/d vs 250mg RDA", tip: "Fatty fish 2x/week or 1g fish oil." },
+  magnesium:{ label: "Magnesium",   prevalence: "Sub-optimal in ~30% with processed/grain-heavy diets",    tip: "Nuts, dark chocolate, greens; 300mg glycinate at night." },
+  vitC:     { label: "Vitamin C",   prevalence: "Usually adequate with fruit/veg; seasonal dips",          tip: "1 amla = ~600mg; lime, guava, oranges." },
+  folate:   { label: "Folate",      prevalence: "~20-30% marginal (esp. non-veg low)",                     tip: "Leafy greens, lentils, fortified cereals." },
+  potassium:{ label: "Potassium",   prevalence: "Often low in high-sodium restaurant diets",               tip: "Coconut water, banana, sweet potato post-workout." },
+};
+
 export function emptyHealthState(): HealthState {
   return {
     profile: { ...DEFAULT_PROFILE },
@@ -272,10 +409,14 @@ export function emptyHealthState(): HealthState {
     water: [],
     sleep: [],
     measurements: [],
-    supplementDefs: [],
+    supplementDefs: SEED_SUPPLEMENT_DEFS.map(s => ({ ...s })),
     supplementLog: [],
     vitals: [],
     mind: [],
+    circadian: [],
+    sunlight: [],
+    bedtimeRoutine: JSON.parse(JSON.stringify(DEFAULT_BEDTIME_ROUTINE)),
+    wakeRoutine: JSON.parse(JSON.stringify(DEFAULT_WAKE_ROUTINE)),
     settings: { ...DEFAULT_SETTINGS },
   };
 }
