@@ -13,16 +13,16 @@
  * An aggregate donut shows weekly hours allocation across active roadmaps.
  */
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Map, Plus, Check, ChevronDown, ChevronRight, Clock, Target,
   Archive, Trash2, Flame, Zap, BookOpen, FolderKanban, FlaskConical,
-  X, Star, Lock, Trophy, Circle, Percent,
+  X, Star, Lock, Trophy, Circle, Percent, TrendingUp, Sparkles,
 } from "lucide-react";
 import { useStore } from "../../../lib/store";
 import { TEMPLATE_LIST, cloneTemplate } from "../../../lib/careerRoadmaps";
-import type { CareerRoadmap, CareerMilestone } from "../../../lib/careerTypes";
+import type { CareerRoadmap, CareerMilestone, CareerSkill } from "../../../lib/careerTypes";
 import { useTheme } from "../../../lib/theme";
 
 const uid = () => Math.random().toString(36).slice(2, 10) + Date.now().toString(36);
@@ -528,9 +528,69 @@ export default function RoadmapsSection() {
   const [celebrateId, setCelebrateId] = useState<string | null>(null);
   const [weekOverride, setWeekOverride] = useState<Record<string, number>>({});
   const [celebrated, setCelebrated] = useState<Set<string>>(new Set());
+  // Skill-bump toast queue: fires when a milestone completes and its skillTags match inventory.
+  type BumpPrompt = { id: string; skillId: string; skillName: string; delta: number; msTitle: string; ts: number };
+  const [bumpQueue, setBumpQueue] = useState<BumpPrompt[]>([]);
+  const prevDoneRef = useRef<Set<string>>(new Set());
 
   // Fire celebration the moment a roadmap hits 100% (once per roadmap).
   useMemoLikeCelebration(career.roadmaps, celebrated, setCelebrated, setCelebrateId);
+
+  // Detect newly-completed milestones → fire skill-bump toasts for matching skillTags.
+  useEffect(() => {
+    const doneIds = new Set<string>();
+    career.roadmaps.forEach(r => r.phases.forEach(ph => ph.milestones.forEach(ms => {
+      if (ms.done) doneIds.add(ms.id);
+    })));
+    const prev = prevDoneRef.current;
+    const newlyDone: CareerMilestone[] = [];
+    career.roadmaps.forEach(r => r.phases.forEach(ph => ph.milestones.forEach(ms => {
+      if (ms.done && !prev.has(ms.id)) newlyDone.push(ms);
+    })));
+    if (newlyDone.length > 0) {
+      const byName = new globalThis.Map<string, CareerSkill>();
+      career.skills.forEach(s => byName.set(s.name.toLowerCase(), s));
+      const prompts: BumpPrompt[] = [];
+      newlyDone.forEach(ms => {
+        (ms.skillTags || []).forEach(tag => {
+          const key = tag.toLowerCase().trim();
+          const skill = byName.get(key);
+          if (skill) {
+            const delta = Math.max(1, Math.round((ms.targetProficiency || 5) / 3));
+            prompts.push({
+              id: uid(), skillId: skill.id, skillName: skill.name, delta,
+              msTitle: ms.title, ts: Date.now(),
+            });
+          }
+        });
+      });
+      if (prompts.length) {
+        setBumpQueue(q => [...q, ...prompts].slice(-6));
+        // auto-dismiss after 10s
+        setTimeout(() => {
+          setBumpQueue(q => q.filter(p => !prompts.find(pp => pp.id === p.id)));
+        }, 10000);
+      }
+    }
+    prevDoneRef.current = doneIds;
+  }, [career.roadmaps, career.skills]);
+
+  const applyBump = (p: BumpPrompt) => {
+    updateCareer(s => ({
+      skills: s.skills.map(sk => {
+        if (sk.id !== p.skillId) return sk;
+        const newLevel = Math.min(10, sk.proficiency + p.delta);
+        return {
+          ...sk,
+          proficiency: newLevel,
+          lastUsedAt: Date.now(),
+          growth: [...(sk.growth || []), { date: new Date().toISOString().slice(0, 10), level: newLevel }],
+        };
+      }),
+    }));
+    setBumpQueue(q => q.filter(x => x.id !== p.id));
+  };
+  const dismissBump = (id: string) => setBumpQueue(q => q.filter(x => x.id !== id));
 
   const visible = career.roadmaps.filter((r) => r.status !== "archived");
   const archived = career.roadmaps.filter((r) => r.status === "archived");
@@ -920,6 +980,56 @@ export default function RoadmapsSection() {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* Skill-bump toasts */}
+      <div className="fixed bottom-4 right-4 z-[60] flex flex-col gap-2 max-w-[340px] pointer-events-none">
+        <AnimatePresence>
+          {bumpQueue.map((p, i) => (
+            <motion.div key={p.id}
+              initial={{ opacity: 0, x: 40, y: 10 }}
+              animate={{ opacity: 1, x: 0, y: 0 }}
+              exit={{ opacity: 0, x: 40 }}
+              transition={{ duration: 0.25, delay: i * 0.05 }}
+              className="relative rounded-lg p-3 pointer-events-auto backdrop-blur-sm"
+              style={{
+                background: "rgba(10,22,36,0.92)",
+                border: "1px solid var(--cr-accent)",
+                boxShadow: "0 0 20px rgba(34,211,238,0.3)",
+              }}>
+              <span className="absolute top-0 left-0 w-2.5 h-2.5" style={{borderTop:"1.5px solid var(--cr-accent)",borderLeft:"1.5px solid var(--cr-accent)"}}/>
+              <span className="absolute top-0 right-0 w-2.5 h-2.5" style={{borderTop:"1.5px solid var(--cr-accent)",borderRight:"1.5px solid var(--cr-accent)"}}/>
+              <span className="absolute bottom-0 left-0 w-2.5 h-2.5" style={{borderBottom:"1.5px solid var(--cr-accent)",borderLeft:"1.5px solid var(--cr-accent)"}}/>
+              <span className="absolute bottom-0 right-0 w-2.5 h-2.5" style={{borderBottom:"1.5px solid var(--cr-accent)",borderRight:"1.5px solid var(--cr-accent)"}}/>
+              <div className="flex items-start gap-2">
+                <TrendingUp size={14} className="mt-0.5 shrink-0" style={{color:"var(--cr-accent)"}}/>
+                <div className="flex-1 min-w-0">
+                  <div className="text-[9px] font-mono tracking-[0.25em] mb-0.5" style={{color:"var(--cr-accent)"}}>SKILL_BUMP.query</div>
+                  <p className="text-[11px] font-mono leading-snug" style={{color:"var(--cr-fg)"}}>
+                    Milestone <span className="font-bold" style={{color:"var(--cr-accent3)"}}>&quot;{p.msTitle.length>32?p.msTitle.slice(0,32)+"…":p.msTitle}&quot;</span> done.
+                    <br/>Bump <span className="font-bold" style={{color:"var(--cr-accent2)"}}>{p.skillName}</span>
+                    <span className="font-bold" style={{color:"var(--cr-accent3)"}}> +{p.delta}</span> ?
+                  </p>
+                  <div className="flex gap-1.5 mt-2">
+                    <button onClick={()=>applyBump(p)}
+                      className="text-[9px] font-mono tracking-[0.2em] px-2 py-1 rounded flex items-center gap-1 transition hover:brightness-125"
+                      style={{background:"var(--cr-accent3)",color:"#000",fontWeight:700}}>
+                      <Sparkles size={9}/> [ BUMP ]
+                    </button>
+                    <button onClick={()=>dismissBump(p.id)}
+                      className="text-[9px] font-mono tracking-[0.2em] px-2 py-1 rounded transition hover:bg-white/10"
+                      style={{color:"var(--cr-fgMuted)",border:"1px solid var(--cr-borderSoft)"}}>
+                      LATER
+                    </button>
+                  </div>
+                </div>
+                <button onClick={()=>dismissBump(p.id)} className="shrink-0 transition hover:text-red-400" style={{color:"var(--cr-fgMuted)"}}>
+                  <X size={11}/>
+                </button>
+              </div>
+            </motion.div>
+          ))}
+        </AnimatePresence>
+      </div>
 
       {/* Celebration */}
       <AnimatePresence>
