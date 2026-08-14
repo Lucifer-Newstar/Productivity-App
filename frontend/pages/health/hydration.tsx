@@ -1,26 +1,13 @@
 /**
- * /health/hydration.tsx — Hydration section.
- * Wave 1 placeholder. Functional UI ships in later waves per FEATURES.md.
+ * /health/hydration — water, caffeine, electrolytes.
  */
 import HealthPage from "../../components/health/HealthPage";
+import HydrationSection from "../../components/health/HydrationSection";
 
-export default function Page() {
+export default function HydrationPage() {
   return (
     <HealthPage section="hydration">
-      <div className="hlth-card" style={{maxWidth: 720}}>
-        <div className="hlth-card-h">// Hydration</div>
-        <h2 style={{
-          fontFamily: "var(--hlth-font-display)",
-          fontSize: 26, fontWeight: 900, letterSpacing: "0.04em",
-          margin: "4px 0 8px", color: "var(--hlth-accent-glow)",
-        }}>Hydration</h2>
-        <p className="hlth-subtle" style={{fontSize: 13, margin: 0}}>
-          Water, caffeine, electrolytes — with Chennai climate multiplier baked in.
-        </p>
-        <div className="hlth-subtle" style={{marginTop: 16, fontSize: 11, letterSpacing: "0.15em"}}>
-          // section shell online — content ships in upcoming wave
-        </div>
-      </div>
+      <HydrationSection />
     </HealthPage>
   );
 }

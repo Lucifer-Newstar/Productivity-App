@@ -129,6 +129,7 @@ export interface WaterEntry {
   ml: number;
   beverage: WaterBeverage;
   electrolytes: boolean;
+  caffeineMg?: number;
 }
 export type WaterBeverage =
   | "water" | "coconut" | "coffee" | "tea" | "juice"
