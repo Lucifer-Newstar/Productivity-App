@@ -437,3 +437,21 @@ Tasks: subtask indentation in kanban, recurring templates UI, batch edit, clonin
 Smelter: scratch dividers, screenshot timeline, mind-map, Kano categories surfaced on idea board (must/performance/delight/indifferent/reverse), Porter/PEST/BMC/VPC/Lean/user-story/event-storming/journey-map/service-blueprint/prototype/wireframe/storyboard, Buy-a-Feature, product backlog, sprint planning, paired comparison, design thinking, drawing canvas, mood boards, audio/voice notes, affinity grouping, scorecards, mind-map animation/export, voting (thumbs up/down exist), reverse/worst-idea brainstorm (modes exist on IDEAS tab).
 Review: velocity projection lines, effort/impact variance report, skills-gained sync → career, network-from-project sync.
 Global: project comparison, template library, energy/time balance dial, CSV import for tasks.
+
+## Wave 7 (post-MVP hardening)
+
+| Area | Feature | Status |
+|---|---|---|
+| Foundry | Forge calendar 14-day heat grid (dues/milestones/ships, today marker, heat coloring, legend) | ✅ |
+| Foundry | Weekly review launcher + steel-plate modal (wins/learnings/next/distractions/mood/rating/hours, auto-logged ships, re-stampable) | ✅ |
+| Foundry | StreakStrip 84-day heat strip (current/longest, green cells turn red ≥7d streak) | ✅ |
+| Foundry | Cross-project workload heatmap (active heats × 12 weeks, amber intensity) | ✅ |
+| Foundry | Velocity projection bar (hatched cyan, linear regression over last 8 weeks) | ✅ |
+| Foundry | Project templates (BLANK/SAAS/CONTENT/RESEARCH/BUILD) w/ boilerplate milestones/risks/premortem/QA | ✅ |
+| Foundry | Quick actions row: PRINT FORGE / SMELTER/SPRINTS / STAMP WEEK / QUARRY | ✅ |
+| Cross-cutting | Print stylesheet (strips chrome/orbs/animations, white bg, black ink, plate borders, break-inside avoid) | ✅ |
+| Smelter | SPRINTS tab (create/start/close/delete, ideal-burndown red line, velocity target, task checklist across projects, status pills) | ✅ |
+| Quarry | Batch mode (BATCH toggle, checkboxes on cards, orange toolbar: move-to-col/P0-P3/TODAY/NEXT/MELT/CLEAR) | ✅ |
+| Drilldown | Resource summary gauges (avg util %, over-budget count, total) with color thresholds | ✅ |
+| Store | Streak auto-increment in updateForge (yesterday continuity, 365-day history cap) | ✅ |
+| Demo | Seeded sprints S1/S2, 2 weekly reviews, streak history (5 days) | ✅ |

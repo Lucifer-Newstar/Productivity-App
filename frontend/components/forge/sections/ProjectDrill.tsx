@@ -452,6 +452,27 @@ export default function ProjectDrill() {
 
           {/* Resources */}
           <SectionPlate icon={<PackageOpen size={14}/>} title="RESOURCES" color="#06b6d4">
+            {/* Workload heat */}
+            {(project.resources||[]).length>0 && (() => {
+              const over = (project.resources||[]).filter(r=>r.allocated && r.used>r.allocated);
+              const avg = (project.resources||[]).reduce((n,r)=>n+(r.allocated?r.used/r.allocated:0),0)/(project.resources||[]).length;
+              return (
+                <div className="grid grid-cols-3 gap-2 mb-3">
+                  <div className="p-2 rounded-sm text-center" style={{background:"var(--fr-card2)",border:"1px solid var(--fr-borderSoft)"}}>
+                    <div className="mono text-[9px] tracking-widest" style={{color:"var(--fr-fgMuted)"}}>UTIL AVG</div>
+                    <div className="font-black" style={{color:avg>1?"var(--fr-red)":avg>0.85?"var(--fr-amber)":"var(--fr-green)"}}>{Math.round(avg*100)}%</div>
+                  </div>
+                  <div className="p-2 rounded-sm text-center" style={{background:over.length?"rgba(239,68,68,0.08)":"var(--fr-card2)",border:`1px solid ${over.length?"rgba(239,68,68,0.4)":"var(--fr-borderSoft)"}`}}>
+                    <div className="mono text-[9px] tracking-widest" style={{color:over.length?"var(--fr-red)":"var(--fr-fgMuted)"}}>OVER BUDGET</div>
+                    <div className="font-black" style={{color:over.length?"var(--fr-red)":"var(--fr-green)"}}>{over.length}</div>
+                  </div>
+                  <div className="p-2 rounded-sm text-center" style={{background:"var(--fr-card2)",border:"1px solid var(--fr-borderSoft)"}}>
+                    <div className="mono text-[9px] tracking-widest" style={{color:"var(--fr-fgMuted)"}}>TOTAL</div>
+                    <div className="font-black">{(project.resources||[]).length}</div>
+                  </div>
+                </div>
+              );
+            })()}
             <div className="space-y-2">
               {(project.resources||[]).map(r=>{
                 const pct = r.allocated?Math.round(r.used/r.allocated*100):0;
