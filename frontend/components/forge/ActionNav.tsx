@@ -1,4 +1,12 @@
 "use client";
+/**
+ * ActionNav — the animated STRIKE (hammer) button in ForgePage.
+ *
+ * Lives top-left of the Forge chrome. Clicking it toggles the ActionPanel
+ * (command card) and fires a 14-particle amber spark burst for that satisfying
+ * "hot metal" feel. Particle trajectories are pre-computed per render for
+ * determinism; colors span molten-amber/cream gradient.
+ */
 import { Hammer } from "lucide-react";
 import { useTheme } from "../../lib/theme";
 import { useCallback, useRef, useState } from "react";

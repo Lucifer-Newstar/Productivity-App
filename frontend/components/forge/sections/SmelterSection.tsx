@@ -492,7 +492,7 @@ export default function SmelterSection() {
         )}
         {tab==="mindmap" && (
           <motion.div key="mm" initial={{opacity:0,y:8}} animate={{opacity:1,y:0}} exit={{opacity:0}} className="space-y-3">
-            <SectionHeading icon={BrainCircuit} color="#818cf8" kicker="THINKING" title="Mindmap" sub="Freeform radial thinking (use Scratch + STRIKE for now)."/>
+            <SectionHeading icon={BrainCircuit} color="#818cf8" kicker="THINKING" title="Mindmap" sub="Radial tree — click + to branch out, edit text inline."/>
             <MindmapTab/>
           </motion.div>
         )}

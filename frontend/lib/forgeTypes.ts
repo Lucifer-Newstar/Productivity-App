@@ -1,8 +1,33 @@
 /**
- * Forge / Projects OS data model.
+ * Forge / Projects OS data model (lib/forgeTypes.ts).
  *
- * Industrial foundry (dark) / drafting-room vellum (light) themed space.
- * Cross-links to Career (skills, portfolio, network).
+ * THE source of truth for the Forge domain. Every section of the Forge
+ * (Foundry, Quarry, Smelter, Vault + drilldown) consumes these interfaces.
+ *
+ * Design principles:
+ *   · All dates are ISO yyyy-mm-dd STRINGS (no Date objects) — keeps hydration
+ *     cheap, CSV round-trivable, and localStorage-safe.
+ *   · Every entity has an `id: string` (random via uid()).
+ *   · Optional `projectId` on cross-project collections (notes, decisions,
+ *     canvases) scopes them to a single heat; unset = global/cross-project.
+ *   · ProjectTask.status is typed as the 5-step default (todo/doing/review/
+ *     blocked/done), but user-defined customStatuses can be stored as custom
+ *     id strings (Quarry falls back at runtime via isDoneStatus()).
+ *   · ForgeState shape mirrors the SEED_FORGE constant in lib/store.tsx — new
+ *     collections MUST be added to BOTH:
+ *       1) ForgeState here,
+ *       2) SEED_FORGE (with empty-array default),
+ *       3) migrateForge() (with ?? [] fallback),
+ *       4) buildForgeDemo() in lib/forgeDemo.ts (if you want QA demo data).
+ *
+ * Themes:  Industrial foundry (dark, default) / drafting-room vellum (light).
+ * Cross-links: Forge project.tags → Career.skills (fuzzy prof bump on SHIP);
+ *              ProjectStakeholder.contactId → Career.network contacts.
+ *
+ * Collections added in wave 10 (all implemented editors in Canvases.tsx):
+ *   mindmaps, canvases (free-form), voiceNotes, bmc, vpc, lean, porter, pestel,
+ *   userStories, eventStorms, journeyMaps, blueprints (service), wireframes,
+ *   buyAFeature, paired (comparison), affinity, customStatuses, auditLog.
  */
 
 export type ProjectHealth = "on-track" | "blocked" | "off-track" | "done" | "dead" | "paused";

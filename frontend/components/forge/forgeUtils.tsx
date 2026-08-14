@@ -1,11 +1,29 @@
 "use client";
+/**
+ * forgeUtils — pure date/math helpers used across all Forge sections.
+ *
+ * Kept colocated with components (instead of in lib/) because they are
+ * Forge-specific (status labels, health colors, velocity regression) and
+ * should not leak into Career/Workout utilities.
+ *
+ * Date helpers operate on ISO yyyy-mm-dd strings at LOCAL midnight to avoid
+ * timezone drift when comparing due dates across reloads.
+ */
 import type { ProjectTask, ForgeProject } from "../../lib/forgeTypes";
 
+/** Milliseconds in a day — used for all date arithmetic. */
 export const DAY_MS = 86_400_000;
+
+/** @returns today as yyyy-mm-dd in local time. */
 export const todayISO = () => new Date().toISOString().slice(0,10);
+
+/** @returns ISO date n days in the past. */
 export const daysAgo = (n: number) => new Date(Date.now() - n*DAY_MS).toISOString().slice(0,10);
+
+/** @returns ISO date n days in the future. */
 export const daysFrom = (n: number) => new Date(Date.now() + n*DAY_MS).toISOString().slice(0,10);
 
+/** @returns whole-day difference (b - a) in days, for two ISO date strings. */
 export function daysBetween(a: string, b: string): number {
   const da = new Date(a + "T00:00:00").getTime();
   const db = new Date(b + "T00:00:00").getTime();
