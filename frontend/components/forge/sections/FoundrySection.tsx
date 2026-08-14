@@ -13,6 +13,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   Flame, Hammer, Plus, AlertTriangle, CheckCircle2, XCircle, CircleDot,
   Clock, Zap, Skull, Archive, TrendingUp, Target, Activity, BarChart3, X,
+  Smile, Frown, Meh,
 } from "lucide-react";
 import { useStore } from "../../../lib/store";
 import { useTheme } from "../../../lib/theme";
@@ -100,6 +101,9 @@ export default function FoundrySection() {
           <Plus size={14}/> LIGHT FORGE
         </button>
       </div>
+
+      {/* Daily forge pulse */}
+      <ForgePulse/>
 
       {/* Velocity + burndown plate */}
       <VelocityPlate projects={forge.projects} tasks={forge.tasks}/>
@@ -334,6 +338,16 @@ export default function FoundrySection() {
                   style={{background:"var(--fr-card2)",border:"1px solid var(--fr-borderSoft)"}}>
                   <span style={{color:proj?.color||"var(--fr-fgDim)"}}>{proj?.icon||"•"}</span>
                   <span className="flex-1 pencil italic" style={{color:"var(--fr-fgMuted)"}}>{pi.text}</span>
+                  <button onClick={()=>{
+                    // Promote to task
+                    const pid = pi.projectId || forge.projects.find(p=>!p.archived)?.id;
+                    if(pid){
+                      updateForge(f=>({tasks:[{id:"t-"+Math.random().toString(36).slice(2,10),projectId:pid,title:pi.text,status:"todo",priority:"P2",pomodoros:0,energy:3,focus:3,tags:[],subtaskIds:[],comments:[],createdAt:new Date().toISOString().slice(0,10),effort:3,impact:3},...f.tasks],parking:f.parking.filter(x=>x.id!==pi.id)}));
+                      window.dispatchEvent(new CustomEvent("career:toast",{detail:{title:"PROMOTED→QUARRY",sub:pi.text.slice(0,40),color:"#f59e0b",icon:"zap"}}));
+                    }
+                  }} title="Promote to task"
+                    className="opacity-50 hover:opacity-100 mono text-[9px] font-black tracking-widest px-1"
+                    style={{color:"var(--fr-amber)"}}>▲TASK</button>
                   <button onClick={()=>updateForge(f=>({parking:f.parking.filter(x=>x.id!==pi.id)}))}
                     className="opacity-50 hover:opacity-100" style={{color:"var(--fr-red)"}}><X size={10}/></button>
                 </div>
@@ -502,4 +516,42 @@ function getWeek(d:Date) {
   t.setUTCDate(t.getUTCDate() + 4 - dayNum);
   const yearStart = new Date(Date.UTC(t.getUTCFullYear(),0,1));
   return Math.ceil((((+t - +yearStart)/86400000)+1)/7);
+}
+
+function ForgePulse(){
+  const {forge,updateForge} = useStore();
+  const todayStr = new Date().toISOString().slice(0,10);
+  const active = forge.projects.filter(p=>!p.archived && p.status!=="dead"&&p.status!=="done");
+  const [pid,setPid] = useState<string>(active[0]?.id||"");
+  const [score,setScore] = useState<number>(5);
+  const loggedToday = active.filter(p=>(p.satisfactionLog||[]).some(s=>s.date===todayStr)).length;
+  const submit = () => {
+    if(!pid) return;
+    updateForge(f=>({projects:f.projects.map(p=>p.id===pid?{...p,satisfactionLog:[{id:"sl-"+Math.random().toString(36).slice(2,8),date:todayStr,score},...(p.satisfactionLog||[]).filter(s=>s.date!==todayStr)]}:p)}));
+    window.dispatchEvent(new CustomEvent("career:toast",{detail:{title:"PULSE LOGGED",sub:`${score}/10 for today`,color:"#22c55e",icon:"check"}}));
+  };
+  if(active.length===0) return null;
+  return (
+    <div className="rounded-sm steel-plate p-4 relative flex items-center gap-3 flex-wrap" style={{borderColor:"#22c55e55"}}>
+      <span className="riv-tl"/><span className="riv-tr"/><span className="riv-bl"/><span className="riv-br"/>
+      <Smile size={16} style={{color:"#22c55e"}}/>
+      <div className="mono text-[10px] tracking-widest" style={{color:"#22c55e"}}>DAILY PULSE · {loggedToday}/{active.length} logged today</div>
+      <select value={pid} onChange={e=>setPid(e.target.value)}
+        className="mono text-[10px] px-2 py-1 rounded-sm outline-none"
+        style={{background:"var(--fr-card2)",border:"1px solid var(--fr-borderSoft)",color:"var(--fr-fg)"}}>
+        {active.map(p=><option key={p.id} value={p.id}>{p.icon} {p.codename}</option>)}
+      </select>
+      <div className="flex gap-0.5">
+        {[1,2,3,4,5,6,7,8,9,10].map(n=>{
+          const c = n>=8?"#22c55e":n>=5?"#f59e0b":"#ef4444";
+          return <button key={n} onClick={()=>setScore(n)}
+            className="w-6 h-6 rounded-sm mono text-[9px] font-black"
+            style={{background:score===n?c:"transparent",color:score===n?"#000":c,border:`1px solid ${c}55`}}>{n}</button>;
+        })}
+      </div>
+      <button onClick={submit}
+        className="mono text-[10px] font-black tracking-widest px-3 py-1.5 rounded-sm ml-auto"
+        style={{background:"#22c55e",color:"#000"}}>LOG</button>
+    </div>
+  );
 }
