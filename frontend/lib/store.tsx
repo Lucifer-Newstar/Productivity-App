@@ -431,6 +431,7 @@ interface StoreState {
   logMilestoneHours: (roadmapId: string, phaseId: string, milestoneId: string, hours: number) => void;
   archiveRoadmap: (roadmapId: string) => void;
   deleteRoadmap: (roadmapId: string) => void;
+  seedCareerDemo: () => void;
   // workout library
   workout: WorkoutState;
   addExercise: (e: Omit<WorkoutExercise, "id" | "createdAt">) => void;
@@ -772,6 +773,17 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
 
   const deleteRoadmap = useCallback<StoreState["deleteRoadmap"]>((rmId) => {
     setCareer((c) => ({ ...c, roadmaps: c.roadmaps.filter((r) => r.id !== rmId) }));
+  }, [setCareer]);
+
+  // seedCareerDemo: populate every career module with rich mock data (QA/demo).
+  const seedCareerDemo = useCallback(() => {
+    import("./careerDemo").then(({ buildCareerDemo }) => {
+      const demo = buildCareerDemo();
+      // Reseed templates
+      const { TEMPLATE_LIST, cloneTemplate } = require("./careerRoadmaps");
+      demo.roadmaps = TEMPLATE_LIST.map((t: any) => cloneTemplate(t.template));
+      setCareer(demo as any);
+    });
   }, [setCareer]);
 
   // Helpers for drilling into milestones
@@ -1293,7 +1305,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     addAchievement, deleteAchievement, setLinkedin,
     updateCareer, addRoadmapFromTemplate, toggleMilestoneDone, updateMilestone,
     toggleLabItem, toggleResourceComplete, toggleProjectComplete, setQuizAnswer, logMilestoneHours,
-    archiveRoadmap, deleteRoadmap,
+    archiveRoadmap, deleteRoadmap, seedCareerDemo,
     workout, addExercise, updateExercise, deleteExercise,
     logPR, deletePR, addSkill, deleteSkill, addProgression, toggleProgressionDone, updateProgression, deleteProgression,
     addRoutine, updateRoutine, deleteRoutine, addBlock, updateBlock, deleteBlock, reorderBlocks,

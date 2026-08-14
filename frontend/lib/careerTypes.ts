@@ -147,7 +147,7 @@ export interface NetworkContact {
   healthScore: number;         // 1-10
   influenceScore: number;      // 1-10
   birthday?: string;
-  interests?: string;          // hobbies, kids, pets, sports
+  interests?: string[] | string;  // hobbies, kids, pets, sports
   lastContactAt?: number;
   nextFollowUpAt?: number;
   notes?: string;
@@ -240,6 +240,7 @@ export interface PortfolioProject {
   title: string;
   summary?: string;
   role?: string;
+  category?: string;
   technologies?: string[];
   results?: string;
   challenges?: string;

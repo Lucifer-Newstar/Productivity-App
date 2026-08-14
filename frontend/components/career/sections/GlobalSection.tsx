@@ -54,7 +54,7 @@ const TABS = [
 ] as const;
 
 export default function GlobalSection() {
-  const { career, updateCareer } = useStore();
+  const { career, updateCareer, seedCareerDemo } = useStore();
   const [visionText, setVisionText] = useState("");
   const [eventDraft, setEventDraft] = useState<Partial<TimelineEvent>>({ title:"", type:"milestone", date: today() });
   const [sat, setSat] = useState(7);
@@ -200,6 +200,20 @@ export default function GlobalSection() {
               {timeline.length === 0 && (
                 <div className="text-center py-10 text-sm italic" style={{color:"var(--cr-fgMuted)"}}>No events yet.</div>
               )}
+            </div>
+
+            {/* QA / demo seeding */}
+            <div className="rounded-sm p-3 hud-corner relative" style={{...card, borderColor:"#f472b655"}}>
+              <span className="c-tr"/><span className="c-bl"/>
+              <div className="flex items-center justify-between flex-wrap gap-2">
+                <div>
+                  <div className="text-[10px] tracking-[0.25em] font-bold" style={{color:"#f472b6"}}>// QA.demo_tools</div>
+                  <p className="text-[11px] font-mono mt-0.5" style={{color:"var(--cr-fgMuted)"}}>Populate every module with rich mock data.</p>
+                </div>
+                <button onClick={()=>{ if(confirm("Replace all career data with demo dataset?")) seedCareerDemo(); }}
+                  className="text-[10px] tracking-widest font-bold px-3 py-1.5 rounded-sm"
+                  style={{background:"#f472b6",color:"#000"}}>[ SEED DEMO ]</button>
+              </div>
             </div>
           </motion.div>
         )}
