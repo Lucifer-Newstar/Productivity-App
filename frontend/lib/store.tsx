@@ -41,7 +41,7 @@ import type {
   ForgeState, ForgeProject, ProjectTask, ScratchNote, DecisionEntry,
   SwotRow, ProConItem, ScenarioEntry, FiveWhy, LessonEntry, Retrospective,
   ParkingLotItem, PomodoroSession, Persona, DecisionMatrixRow, Idea,
-  Fishbone, SixHats, Scamper,
+  Fishbone, SixHats, Scamper, Sprint, WeeklyReview,
 } from "./forgeTypes";
 
 // Generate ids for runtime-created entities.
@@ -286,11 +286,15 @@ const SEED_FORGE: ForgeState = (() => {
     fishbones: [],
     sixHats: [],
     scamper: [],
+    sprints: [],
+    reviews: [],
+    streak: { lastActive: "", current: 0, longest: 0, history: [] },
     settings: {
       workStartHour: 9,
       workEndHour: 18,
       defaultEnergyPeak: "morning",
       forgeName: "THE FORGE",
+      sprintLengthDays: 14,
     },
   };
 })();
@@ -316,6 +320,9 @@ function migrateForge(raw: any): ForgeState {
     fishbones: raw.fishbones ?? [],
     sixHats: raw.sixHats ?? [],
     scamper: raw.scamper ?? [],
+    sprints: raw.sprints ?? [],
+    reviews: raw.reviews ?? [],
+    streak: raw.streak ?? SEED_FORGE.streak,
     settings: { ...SEED_FORGE.settings, ...(raw.settings ?? {}) },
   };
 }
@@ -889,10 +896,27 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
       return { ...c, ...patch };
     }), [setCareer]);
 
+  const _applyStreak = (next: ForgeState): ForgeState => {
+    // If today has any done tasks completed today, mark active day & bump streak.
+    const today = todayIso();
+    const doneToday = next.tasks.some(t => t.status === "done" && t.completedAt === today);
+    if (!doneToday) return next;
+    if (next.streak.lastActive === today) return next; // already counted
+    const hist = new Set(next.streak.history);
+    hist.add(today);
+    // Determine continuity: was yesterday (or lastActive day-1) the previous active day?
+    const yesterday = new Date(Date.now() - DAY).toISOString().slice(0,10);
+    const wasYesterday = next.streak.lastActive === yesterday;
+    const current = wasYesterday ? next.streak.current + 1 : 1;
+    const longest = Math.max(next.streak.longest, current);
+    return { ...next, streak: { lastActive: today, current, longest, history: Array.from(hist).sort().slice(-365) } };
+  };
+
   const updateForge = useCallback<StoreState["updateForge"]>((updater) =>
     setForge((f) => {
       const patch = updater(f);
-      return { ...f, ...patch };
+      const merged: ForgeState = { ...f, ...patch };
+      return _applyStreak(merged);
     }), [setForge]);
 
   const seedForgeDemo = useCallback<StoreState["seedForgeDemo"]>(() => {

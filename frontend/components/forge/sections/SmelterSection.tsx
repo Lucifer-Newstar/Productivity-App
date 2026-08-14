@@ -9,10 +9,11 @@ import {
   Flame, Plus, Trash2, ScrollText, Lightbulb, Search,
   Target, HelpCircle, History, Scale, Zap, Users,
   Grid3x3, Brain, ThumbsUp, ThumbsDown, Timer as TimerIcon,
-  Sparkles, Shuffle, Palette, Shapes,
+  Sparkles, Shuffle, Palette, Shapes, Flag, CheckCircle2, Play,
 } from "lucide-react";
 import { useStore } from "../../../lib/store";
-import type { DecisionMatrixRow, Fishbone, SixHats, Persona, Scamper } from "../../../lib/forgeTypes";
+import type { DecisionMatrixRow, Fishbone, SixHats, Persona, Scamper, Sprint } from "../../../lib/forgeTypes";
+import { addDays, todayISO } from "../forgeUtils";
 
 const uid = () => Math.random().toString(36).slice(2,10);
 const today = () => new Date().toISOString().slice(0,10);
@@ -32,6 +33,7 @@ const TABS = [
   { id: "whys", label: "5 WHYS", icon: HelpCircle, color: "#ec4899" },
   { id: "lessons", label: "LESSONS", icon: Lightbulb, color: "#22c55e" },
   { id: "retro", label: "RETRO", icon: History, color: "#ef4444" },
+  { id: "sprints", label: "SPRINTS", icon: Flag, color: "#f59e0b" },
 ] as const;
 
 const SWOT_Q: { k:"S"|"W"|"O"|"T"; label:string; color:string }[] = [
@@ -388,8 +390,164 @@ export default function SmelterSection() {
             </div>
           </motion.div>
         )}
+
+        {tab==="sprints" && (
+          <motion.div key="sp" initial={{opacity:0,y:8}} animate={{opacity:1,y:0}} exit={{opacity:0}} className="space-y-4">
+            <SprintsPanel/>
+          </motion.div>
+        )}
       </AnimatePresence>
     </div>
+  );
+}
+
+function SprintsPanel() {
+  const { forge, updateForge } = useStore();
+  const [name,setName] = useState("");
+  const [goal,setGoal] = useState("");
+  const [len,setLen] = useState(forge.settings.sprintLengthDays||14);
+  const [pid,setPid] = useState<string>("");
+  const [velocity,setVelocity] = useState<number>(12);
+  const activeProjects = forge.projects.filter(p=>!p.archived);
+
+  const addSprint = () => {
+    if (!name.trim()) return;
+    const t = todayISO();
+    const sp: Sprint = {
+      id: "sp-"+uid(), name: name.trim(), goal: goal.trim(),
+      startDate: t, endDate: addDays(t,len-1), status:"planning",
+      projectId: pid||undefined, velocityTarget: velocity, taskIds: [],
+    };
+    updateForge(f => ({
+      sprints: [sp, ...f.sprints],
+      settings: { ...f.settings, sprintLengthDays: len },
+    }));
+    setName(""); setGoal("");
+    window.dispatchEvent(new CustomEvent("career:toast",{detail:{title:"SPRINT PLANNED",sub:sp.name,color:"#f59e0b",icon:"flag"}}));
+  };
+  const startSprint = (id:string) => {
+    // Close any currently-active sprint
+    updateForge(f => ({ sprints: f.sprints.map(s => s.id===id ? { ...s, status: "active" as const } : s.status==="active" ? { ...s, status: "closed" as const, completedAt: todayISO() } : s) }));
+    window.dispatchEvent(new CustomEvent("career:burst",{detail:{color:"#f59e0b",count:25}}));
+  };
+  const closeSprint = (id:string) => {
+    updateForge(f => ({ sprints: f.sprints.map(s => s.id===id ? { ...s, status: "closed" as const, completedAt: todayISO() } : s) }));
+    window.dispatchEvent(new CustomEvent("career:toast",{detail:{title:"SPRINT CLOSED",sub:"locked",color:"#22c55e",icon:"check"}}));
+  };
+  const toggleTask = (sid:string, tid:string) => {
+    updateForge(f => ({ sprints: f.sprints.map(s => s.id===sid ? { ...s, taskIds: s.taskIds.includes(tid) ? s.taskIds.filter(x=>x!==tid) : [...s.taskIds,tid] } : s) }));
+  };
+  const deleteSprint = (id:string) => updateForge(f => ({ sprints: f.sprints.filter(s=>s.id!==id) }));
+
+  const backlog = forge.tasks.filter(t => t.status!=="done" && !forge.sprints.some(s => s.taskIds.includes(t.id) && s.status!=="closed"));
+  const sorted = [...forge.sprints].sort((a,b)=>(a.status==="active"?-1:b.status==="active"?1:b.startDate.localeCompare(a.startDate)));
+
+  return (
+    <>
+      <div className="rounded-sm steel-plate p-4 relative" style={{borderColor:"#f59e0b55"}}>
+        <span className="riv-tl"/><span className="riv-tr"/><span className="riv-bl"/><span className="riv-br"/>
+        <div className="mono text-[10px] tracking-widest mb-2" style={{color:"#f59e0b"}}>+ NEW SPRINT</div>
+        <div className="grid md:grid-cols-3 gap-2">
+          <input value={name} onChange={e=>setName(e.target.value)} placeholder="S3 · CRUCIBLE"
+            className="px-3 py-2 rounded-sm outline-none mono text-xs"
+            style={{background:"var(--fr-card2)",border:"1px solid var(--fr-borderSoft)",color:"var(--fr-fg)"}}/>
+          <select value={pid} onChange={e=>setPid(e.target.value)}
+            className="px-3 py-2 rounded-sm outline-none mono text-xs"
+            style={{background:"var(--fr-card2)",border:"1px solid var(--fr-borderSoft)",color:"var(--fr-fg)"}}>
+            <option value="">ALL HEATS (cross-project)</option>
+            {activeProjects.map(p=><option key={p.id} value={p.id}>{p.icon} {p.codename}</option>)}
+          </select>
+          <div className="flex gap-1">
+            <input type="number" min={3} max={30} value={len} onChange={e=>setLen(Number(e.target.value))}
+              className="w-20 px-2 py-2 rounded-sm outline-none mono text-xs"
+              style={{background:"var(--fr-card2)",border:"1px solid var(--fr-borderSoft)",color:"var(--fr-fg)"}}/>
+            <span className="mono text-[10px] flex items-center" style={{color:"var(--fr-fgMuted)"}}>days</span>
+            <input type="number" min={1} value={velocity} onChange={e=>setVelocity(Number(e.target.value))}
+              className="w-20 px-2 py-2 rounded-sm outline-none mono text-xs ml-2"
+              style={{background:"var(--fr-card2)",border:"1px solid var(--fr-borderSoft)",color:"var(--fr-fg)"}}/>
+            <span className="mono text-[10px] flex items-center" style={{color:"var(--fr-fgMuted)"}}>target</span>
+          </div>
+          <input value={goal} onChange={e=>setGoal(e.target.value)} placeholder="sprint goal (1-line, sharp)"
+            className="md:col-span-3 px-3 py-2 rounded-sm outline-none mono text-xs"
+            style={{background:"var(--fr-card2)",border:"1px solid var(--fr-borderSoft)",color:"var(--fr-fg)"}}/>
+        </div>
+        <div className="flex justify-end mt-2">
+          <button onClick={addSprint}
+            className="mono text-[10px] font-black tracking-widest px-4 py-2 rounded-sm flex items-center gap-1"
+            style={{background:"#f59e0b",color:"#000"}}><Flag size={11}/> PLAN SPRINT</button>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        {sorted.map(s => {
+          const proj = s.projectId ? forge.projects.find(p=>p.id===s.projectId) : null;
+          const cStatus = s.status==="active"?"#f59e0b":s.status==="closed"?"#22c55e":"#94a3b8";
+          const sprintTasks = forge.tasks.filter(t => s.taskIds.includes(t.id));
+          const doneCount = sprintTasks.filter(t=>t.status==="done").length;
+          const pct = sprintTasks.length?Math.round(doneCount/sprintTasks.length*100):0;
+          const totalDays = Math.max(1, Math.ceil((new Date(s.endDate).getTime()-new Date(s.startDate).getTime())/86400000)+1);
+          const elapsed = Math.min(totalDays, Math.max(0, Math.ceil((Date.now()-new Date(s.startDate).getTime())/86400000)+1));
+          const idealPct = s.status==="closed"?100:Math.round(elapsed/totalDays*100);
+          const tasksToShow = proj ? sprintTasks.filter(t=>t.projectId===s.projectId||!s.projectId).concat(
+            forge.tasks.filter(t=>t.projectId===s.projectId&&t.status!=="done"&&!s.taskIds.includes(t.id)).slice(0,12)
+          ) : sprintTasks.concat(backlog.filter(t=>!s.taskIds.includes(t.id)).slice(0,10));
+          return (
+            <div key={s.id} className="rounded-sm steel-plate p-4 relative" style={{borderColor:`${cStatus}66`}}>
+              <span className="riv-tl"/><span className="riv-tr"/><span className="riv-bl"/><span className="riv-br"/>
+              <div className="flex items-start justify-between gap-2">
+                <div className="min-w-0">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className="mono text-[10px] tracking-widest" style={{color:cStatus}}>
+                      {s.status==="active"?"▶ ACTIVE":s.status==="closed"?"✓ CLOSED":"◌ PLANNING"}
+                    </span>
+                    {proj && <span className="mono text-[9px] tracking-widest" style={{color:proj.color}}>{proj.icon} {proj.codename}</span>}
+                  </div>
+                  <h4 className="text-lg font-black tracking-wide leading-tight mt-0.5">{s.name}</h4>
+                  {s.goal && <p className="pencil italic text-xs mt-0.5" style={{color:"var(--fr-fgMuted)"}}>{s.goal}</p>}
+                  <div className="mono text-[10px] tracking-widest mt-1" style={{color:"var(--fr-fgMuted)"}}>
+                    {s.startDate} → {s.endDate} · {doneCount}/{sprintTasks.length} shipped · target {s.velocityTarget||"—"}
+                  </div>
+                </div>
+                <div className="flex gap-1 shrink-0">
+                  {s.status==="planning" && <button onClick={()=>startSprint(s.id)} title="Start sprint"
+                    className="p-1.5 rounded-sm" style={{background:"#f59e0b",color:"#000"}}><Play size={11}/></button>}
+                  {s.status==="active" && <button onClick={()=>closeSprint(s.id)} title="Close sprint"
+                    className="p-1.5 rounded-sm" style={{background:"#22c55e",color:"#000"}}><CheckCircle2 size={11}/></button>}
+                  <button onClick={()=>deleteSprint(s.id)} className="p-1.5 rounded-sm" style={{color:"var(--fr-red)"}}><Trash2 size={11}/></button>
+                </div>
+              </div>
+
+              <div className="mt-3 h-2 rounded-full overflow-hidden relative" style={{background:"var(--fr-borderSoft)"}}>
+                <motion.div initial={{width:0}} animate={{width:`${pct}%`}} transition={{duration:0.8}}
+                  className="h-full" style={{background:"linear-gradient(90deg,var(--fr-amber),var(--fr-green))",boxShadow:"0 0 6px var(--fr-amber)"}}/>
+                <div className="absolute top-0 bottom-0 w-px" style={{left:`${idealPct}%`,background:"var(--fr-red)",boxShadow:"0 0 4px var(--fr-red)"}} title="ideal burndown"/>
+              </div>
+              <div className="flex justify-between mono text-[9px] tracking-widest mt-1" style={{color:"var(--fr-fgMuted)"}}>
+                <span>{pct}% shipped</span>
+                <span style={{color:"var(--fr-amber)"}}>ideal {idealPct}%</span>
+              </div>
+
+              <div className="mt-3 space-y-1 max-h-48 overflow-y-auto">
+                {tasksToShow.slice(0,12).map(t => {
+                  const p = forge.projects.find(x=>x.id===t.projectId);
+                  const selected = s.taskIds.includes(t.id);
+                  return (
+                    <label key={t.id} className="flex items-center gap-2 p-1.5 rounded-sm cursor-pointer text-xs"
+                      style={{background:selected?"rgba(245,158,11,0.08)":"var(--fr-card2)",border:`1px solid ${selected?"rgba(245,158,11,0.4)":"var(--fr-borderSoft)"}`}}>
+                      <input type="checkbox" checked={selected} onChange={()=>toggleTask(s.id,t.id)} className="accent-amber-500"/>
+                      <span className={t.status==="done"?"line-through opacity-60":""}>{t.title}</span>
+                      <span className="ml-auto mono text-[9px] tracking-widest" style={{color:p?.color||"var(--fr-fgDim)"}}>{p?.icon}{p?.codename}</span>
+                    </label>
+                  );
+                })}
+                {tasksToShow.length===0 && <div className="mono text-[10px] italic p-2 text-center" style={{color:"var(--fr-fgDim)"}}>Pick tasks from the backlog.</div>}
+              </div>
+            </div>
+          );
+        })}
+        {sorted.length===0 && <EmptyState icon={Flag} label="No sprints yet." sub="Plan your first sprint — 1-2 weeks, one sharp goal."/>}
+      </div>
+    </>
   );
 }
 

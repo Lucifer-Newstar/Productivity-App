@@ -398,6 +398,58 @@ export interface PomodoroSession {
   completed: boolean;
 }
 
+export interface Sprint {
+  id: string;
+  name: string;
+  goal: string;
+  startDate: string;
+  endDate: string;
+  status: "planning" | "active" | "closed";
+  projectId?: string;  // optional — if unset = cross-project sprint
+  taskIds: string[];
+  velocityTarget?: number;
+  completedAt?: string;
+  retrospective?: string;
+}
+
+export interface WeeklyReview {
+  id: string;
+  weekOf: string;     // Monday yyyy-mm-dd
+  mood?: 1|2|3|4|5;
+  shipped: string[];  // task ids
+  carry: string[];    // task ids carrying over
+  wins: string;
+  learnings: string;
+  nextWeekFocus: string;
+  distractions: string;
+  hoursWorked?: number;
+  rating?: 1|2|3|4|5;
+  createdAt: string;
+}
+
+export interface ProjectTemplate {
+  id: string;
+  name: string;
+  codename: string;
+  icon: string;
+  color: string;
+  description: string;
+  sections: {
+    hasMilestones: boolean;
+    hasPremortem: boolean;
+    hasRisks: boolean;
+    hasStakeholders: boolean;
+    hasQualityChecks: boolean;
+  };
+  boilerplate: {
+    brief?: string;
+    why?: string;
+    successMetrics?: string;
+    checkinFreq: CheckinFreq;
+    defaultTags: string[];
+  };
+}
+
 export interface ForgeState {
   projects: ForgeProject[];
   tasks: ProjectTask[];
@@ -417,10 +469,19 @@ export interface ForgeState {
   fishbones: Fishbone[];
   sixHats: SixHats[];
   scamper: Scamper[];
+  sprints: Sprint[];
+  reviews: WeeklyReview[];
+  streak: {
+    lastActive: string;   // yyyy-mm-dd
+    current: number;      // days
+    longest: number;
+    history: string[];    // iso dates w/ >=1 completed task
+  };
   settings: {
     workStartHour: number;
     workEndHour: number;
     defaultEnergyPeak: "morning" | "afternoon" | "evening";
     forgeName: string;
+    sprintLengthDays: number;
   };
 }

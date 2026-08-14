@@ -13,12 +13,15 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   Flame, Hammer, Plus, AlertTriangle, CheckCircle2, XCircle, CircleDot,
   Clock, Zap, Skull, Archive, TrendingUp, Target, Activity, BarChart3, X,
-  Smile, Frown, Meh,
+  Smile, Frown, Meh, Calendar as CalendarIcon, FlameKindling, Printer,
+  ClipboardCheck,
 } from "lucide-react";
 import { useStore } from "../../../lib/store";
 import { useTheme } from "../../../lib/theme";
 import type { ForgeProject, ProjectTask } from "../../../lib/forgeTypes";
 import { FORGE_NAV } from "../ForgeShell";
+import { daysAgo, daysFrom, todayISO, daysBetween, addDays } from "../forgeUtils";
+import { useState as useStateHook } from "react";
 
 const HEALTH: Record<ForgeProject["status"], { label: string; color: string; Icon: any; ring: string }> = {
   "on-track":  { label: "ON TRACK",  color: "#22c55e", Icon: CheckCircle2,  ring: "rgba(34,197,94,0.4)" },
@@ -60,15 +63,29 @@ export default function FoundrySection() {
     if (!draft.title.trim()) return;
     const id = "p-" + uid();
     const today = new Date().toISOString().slice(0,10);
+    const T = TEMPLATES.find(x=>x.id===tpl) || TEMPLATES[0];
+    const milestones = T.sections.hasMilestones
+      ? [{id:uid(),title:"Kickoff",date:today,done:true},{id:uid(),title:"MVP",date:"",done:false},{id:uid(),title:"Ship",date:"",done:false}]
+      : [];
+    const premortem = T.sections.hasPremortem
+      ? [{id:uid(),failure:"Scope creep kills the deadline",mitigation:"Cut features ruthlessly; weekly cut list",likelihood:"med" as const}]
+      : [];
+    const risks = T.sections.hasRisks
+      ? [{id:uid(),description:"Timeline slips",probability:"med" as const,impact:"med" as const,mitigation:"Weekly ship cadence, WIP limits",contingency:"Cut scope to core loop",status:"open" as const}]
+      : [];
+    const qualityChecks = T.sections.hasQualityChecks
+      ? [{id:uid(),label:"tsc --noEmit clean",category:"standards" as const,done:false},
+         {id:uid(),label:"Dogfood for 1 day",category:"review" as const,done:false}]
+      : [];
     updateForge(f => ({
       projects: [{
-        id, codename: draft.codename.trim() || `BLANK-${String(f.projects.length+1).padStart(2,"0")}`,
+        id, codename: draft.codename.trim() || `${T.id.toUpperCase().slice(0,5)}-${String(f.projects.length+1).padStart(2,"0")}`,
         title: draft.title.trim(), brief:"", why:"", successMetrics:"", rejectionCriteria:"",
         status: "on-track", priority: 5, energyDemand: 5, complexity: 5,
         color: draft.color, icon: draft.icon,
         createdAt: today, archived: false, checkinFreq:"weekly",
         budget:{actual:0,currency:"$"},
-        stakeholders:[],milestones:[],premortem:[],risks:[],issues:[],qualityChecks:[],
+        stakeholders:[],milestones,premortem,risks,issues:[],qualityChecks,
         comms:[],scope:"",tags:[],links:[],velocityPoints:[],
       },...f.projects],
     }));
@@ -80,6 +97,20 @@ export default function FoundrySection() {
 
   const COLORS = ["#f59e0b","#ea580c","#ef4444","#06b6d4","#22c55e","#a78bfa","#ec4899","#facc15"];
   const ICONS = ["🔥","⚒️","⚡","🧪","📖","💨","🏗️","🎯","🧱","🪓","🛠️","⚙️"];
+
+  const TEMPLATES = [
+    { id:"blank",    name:"BLANK",        icon:"🔥", color:"#f59e0b", sections:{hasMilestones:false,hasPremortem:false,hasRisks:false,hasStakeholders:false,hasQualityChecks:false}, blurb:"Start from zero." },
+    { id:"saas",     name:"SAAS LAUNCH",  icon:"🚀", color:"#06b6d4", sections:{hasMilestones:true,hasPremortem:true,hasRisks:true,hasStakeholders:true,hasQualityChecks:true}, blurb:"MVP → launch: risks, QA, stakeholders." },
+    { id:"content",  name:"CONTENT DROP", icon:"📝", color:"#ec4899", sections:{hasMilestones:true,hasPremortem:false,hasRisks:false,hasStakeholders:false,hasQualityChecks:true}, blurb:"Blog/newsletter/episode." },
+    { id:"research", name:"RESEARCH",     icon:"🧪", color:"#a78bfa", sections:{hasMilestones:true,hasPremortem:true,hasRisks:true,hasStakeholders:true,hasQualityChecks:false}, blurb:"Experiments, premortems, stakeholders." },
+    { id:"build",    name:"BUILD / HW",   icon:"🏗️", color:"#ea580c", sections:{hasMilestones:true,hasPremortem:true,hasRisks:true,hasStakeholders:true,hasQualityChecks:true}, blurb:"Hardware/construction: risk-heavy." },
+  ];
+  const [tpl,setTpl] = useState<string>("blank");
+  const applyTemplate = (id:string) => {
+    const t = TEMPLATES.find(x=>x.id===id); if(!t) return;
+    setDraft(d=>({...d, icon:t.icon, color:t.color}));
+    setTpl(id);
+  };
 
   return (
     <div className="space-y-6">
@@ -108,6 +139,37 @@ export default function FoundrySection() {
       {/* Velocity + burndown plate */}
       <VelocityPlate projects={forge.projects} tasks={forge.tasks}/>
 
+      {/* Forge calendar (14-day heat map of dues + completions) */}
+      <ForgeCalendar projects={forge.projects} tasks={forge.tasks} streak={forge.streak}/>
+
+      {/* Streak heat strip */}
+      <StreakStrip streak={forge.streak}/>
+
+      {/* Quick actions row */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+        <button onClick={()=>window.print()}
+          className="relative rounded-sm steel-plate p-3 flex items-center gap-2 text-[10px] font-black tracking-widest"
+          style={{background:"var(--fr-card2)",borderColor:"var(--fr-borderSoft)",color:"var(--fr-fg)"}}>
+          <span className="riv-tl"/><span className="riv-tr"/><span className="riv-bl"/><span className="riv-br"/>
+          <Printer size={12} style={{color:"var(--fr-steel)"}}/> PRINT FORGE
+        </button>
+        <Link href="/projects/smelter" className="block">
+          <div className="relative rounded-sm steel-plate p-3 flex items-center gap-2 text-[10px] font-black tracking-widest"
+            style={{background:"var(--fr-card2)",borderColor:"var(--fr-borderSoft)",color:"var(--fr-fg)"}}>
+            <span className="riv-tl"/><span className="riv-tr"/><span className="riv-bl"/><span className="riv-br"/>
+            <FlameKindling size={12} style={{color:"var(--fr-red)"}}/> SMELTER / SPRINTS
+          </div>
+        </Link>
+        <WeeklyReviewLauncher/>
+        <Link href="/projects/quarry" className="block">
+          <div className="relative rounded-sm steel-plate p-3 flex items-center gap-2 text-[10px] font-black tracking-widest"
+            style={{background:"var(--fr-card2)",borderColor:"var(--fr-borderSoft)",color:"var(--fr-fg)"}}>
+            <span className="riv-tl"/><span className="riv-tr"/><span className="riv-bl"/><span className="riv-br"/>
+            <Target size={12} style={{color:"var(--fr-orange)"}}/> QUARRY
+          </div>
+        </Link>
+      </div>
+
       {/* Quick-forge inline */}
       <AnimatePresence>
         {showForge && (
@@ -129,6 +191,19 @@ export default function FoundrySection() {
                   placeholder="ANVIL"
                   className="w-full px-3 py-2 rounded-sm outline-none mono text-sm uppercase"
                   style={{background:"var(--fr-card2)",border:"1px solid var(--fr-border)",color:"var(--fr-fg)"}}/>
+              </div>
+              <div className="md:col-span-2">
+                <label className="mono text-[10px] tracking-widest block mb-1" style={{color:"var(--fr-fgMuted)"}}>TEMPLATE</label>
+                <div className="flex flex-wrap gap-1.5">
+                  {TEMPLATES.map(t=>(
+                    <button key={t.id} onClick={()=>applyTemplate(t.id)}
+                      className="mono text-[10px] font-black tracking-widest px-2 py-1.5 rounded-sm flex items-center gap-1"
+                      style={{background:tpl===t.id?`${t.color}33`:"var(--fr-card2)",color:tpl===t.id?t.color:"var(--fr-fgMuted)",border:`1.5px solid ${tpl===t.id?t.color:"var(--fr-borderSoft)"}`}}
+                      title={t.blurb}>
+                      <span>{t.icon}</span>{t.name}
+                    </button>
+                  ))}
+                </div>
               </div>
               <div className="md:col-span-2">
                 <label className="mono text-[10px] tracking-widest block mb-1" style={{color:"var(--fr-fgMuted)"}}>HEAT COLOR</label>
@@ -357,6 +432,9 @@ export default function FoundrySection() {
         </div>
       )}
 
+      {/* Workload heatmap: active projects × last 12 weeks */}
+      <WorkloadHeatmap projects={forge.projects} tasks={forge.tasks}/>
+
       {/* Cold stock */}
       {cold.length > 0 && (
         <div>
@@ -441,6 +519,13 @@ function VelocityPlate({projects,tasks}:{projects:any[];tasks:any[]}) {
   const total = active + shipped;
   const burnPct = total ? Math.round(burnt/total*100) : 0;
   const avgVel = Math.round(weeks.reduce((n,w)=>n+w.shipped,0)/weeks.length*10)/10;
+  // Project next week's velocity via linear regression slope
+  const xs = weeks.map((_,i)=>i); const n=xs.length;
+  const mx = xs.reduce((a,b)=>a+b,0)/n; const my = avgVel;
+  let num=0, den=0;
+  weeks.forEach((w,i)=>{ num += (xs[i]-mx)*(w.shipped-my); den += (xs[i]-mx)**2; });
+  const slope = den?num/den:0;
+  const proj = Math.max(0, Math.round((weeks[n-1].shipped+slope)*10)/10);
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
@@ -465,10 +550,18 @@ function VelocityPlate({projects,tasks}:{projects:any[];tasks:any[]}) {
               <div className="mono text-[8px] tracking-widest" style={{color:"var(--fr-fgMuted)"}}>{w.label}</div>
             </div>
           ))}
+          {/* Projection bar (ghost) */}
+          <div className="flex-1 flex flex-col items-center gap-1 h-full justify-end">
+            <div className="flex items-end gap-0.5 w-full justify-center" style={{height:"100%"}}>
+              <div className="w-2.5 rounded-t" style={{height:`${(proj/(maxShip||1))*100}%`,background:"repeating-linear-gradient(135deg,var(--fr-cyan) 0 3px,transparent 3px 6px)",opacity:0.55,boxShadow:"0 0 6px var(--fr-cyan)"}} title={`projected: ${proj}`}/>
+            </div>
+            <div className="mono text-[8px] tracking-widest" style={{color:"var(--fr-cyan)"}}>+1</div>
+          </div>
         </div>
-        <div className="flex items-center gap-3 mt-2 mono text-[9px] tracking-widest" style={{color:"var(--fr-fgMuted)"}}>
+        <div className="flex items-center gap-3 mt-2 mono text-[9px] tracking-widest flex-wrap" style={{color:"var(--fr-fgMuted)"}}>
           <span className="flex items-center gap-1"><span className="w-2 h-2" style={{background:"var(--fr-amber)"}}/>SHIPPED</span>
           <span className="flex items-center gap-1"><span className="w-2 h-2" style={{background:"rgba(148,163,184,0.4)"}}/>CREATED</span>
+          <span className="flex items-center gap-1"><span className="w-2 h-2" style={{background:"repeating-linear-gradient(135deg,var(--fr-cyan) 0 2px,transparent 2px 4px)"}}/>PROJECTED {proj}</span>
         </div>
       </div>
 
@@ -552,6 +645,328 @@ function ForgePulse(){
       <button onClick={submit}
         className="mono text-[10px] font-black tracking-widest px-3 py-1.5 rounded-sm ml-auto"
         style={{background:"#22c55e",color:"#000"}}>LOG</button>
+    </div>
+  );
+}
+
+/* 14-day upcoming calendar heat: dues, milestones, completions, today marker */
+function ForgeCalendar({projects,tasks,streak}:{projects:ForgeProject[];tasks:ProjectTask[];streak:{current:number;longest:number;history:string[]}}) {
+  const today = todayISO();
+  const days: {iso:string;label:string;dow:string;dueTasks:ProjectTask[];doneTasks:ProjectTask[];milestones:{title:string;project:ForgeProject;done:boolean}[];isToday:boolean;isFuture:boolean}[] = [];
+  for (let i=-3;i<=10;i++) {
+    const iso = addDays(today, i);
+    const d = new Date(iso+"T00:00:00");
+    const dows = ["S","M","T","W","T","F","S"];
+    const dueTasks = tasks.filter(t => t.dueDate === iso && t.status!=="done");
+    const doneTasks = tasks.filter(t => t.completedAt === iso);
+    const milestones: {title:string;project:ForgeProject;done:boolean}[] = [];
+    projects.forEach(p => p.milestones.forEach(m => { if (m.date === iso) milestones.push({title:m.title,project:p,done:m.done}); }));
+    days.push({
+      iso, label: String(d.getDate()).padStart(2,"0"), dow: dows[d.getDay()],
+      dueTasks, doneTasks, milestones, isToday: iso===today, isFuture: i>0,
+    });
+  }
+  return (
+    <div className="rounded-sm steel-plate p-4 relative" style={{borderColor:"var(--fr-amber)"}}>
+      <span className="riv-tl"/><span className="riv-tr"/><span className="riv-bl"/><span className="riv-br"/>
+      <div className="flex items-center gap-2 mb-3 flex-wrap">
+        <CalendarIcon size={14} style={{color:"var(--fr-amber)"}}/>
+        <h3 className="mono text-[11px] font-black tracking-[0.25em]" style={{color:"var(--fr-amber)"}}>FORGE HEAT · 14 DAY</h3>
+        <span className="mono text-[10px]" style={{color:"var(--fr-fgMuted)"}}>// dues · ships · milestones</span>
+        <div className="ml-auto flex items-center gap-3 mono text-[10px] tracking-widest">
+          <span style={{color:"var(--fr-amber)"}}>🔥 STREAK {streak.current}d</span>
+          <span style={{color:"var(--fr-fgMuted)"}}>longest {streak.longest}d</span>
+        </div>
+      </div>
+      <div className="grid grid-cols-7 md:grid-cols-14 gap-1.5">
+        {days.map((d,i)=>{
+          const heat = d.doneTasks.length + d.milestones.filter(m=>m.done).length;
+          const hasDue = d.dueTasks.length>0;
+          const hasMilestone = d.milestones.length>0;
+          let bg = "var(--fr-card2)";
+          if (heat>=3) bg="var(--fr-green)";
+          else if (heat===2) bg="rgba(34,197,94,0.55)";
+          else if (heat===1) bg="rgba(34,197,94,0.22)";
+          return (
+            <div key={d.iso} className="rounded-sm p-1.5 relative min-h-[72px]"
+              style={{background:bg,border:`1px solid ${d.isToday?"var(--fr-amber)":"var(--fr-borderSoft)"}`,
+                boxShadow: d.isToday?"0 0 10px var(--fr-amber)":"none"}}>
+              <div className="flex items-center justify-between">
+                <span className="mono text-[9px] tracking-widest" style={{color:d.isToday?"var(--fr-amber)":"var(--fr-fgMuted)"}}>{d.dow}</span>
+                <span className="mono text-[10px] font-black" style={{color:d.isToday?"var(--fr-amber)":"var(--fr-fg)"}}>{d.label}</span>
+              </div>
+              <div className="mt-1 space-y-0.5">
+                {d.dueTasks.slice(0,2).map(t=>{
+                  const proj = projects.find(p=>p.id===t.projectId);
+                  return <div key={t.id} className="text-[9px] truncate flex items-center gap-1" style={{color:"var(--fr-red)"}}>
+                    <span style={{color:proj?.color}}>{proj?.icon}</span>{t.title.slice(0,16)}
+                  </div>;
+                })}
+                {d.milestones.slice(0,1).map(m=>(
+                  <div key={m.title} className="text-[9px] truncate flex items-center gap-1" style={{color:m.done?"var(--fr-green)":"var(--fr-orange)"}}>
+                    ◆ {m.title.slice(0,16)}
+                  </div>
+                ))}
+                {d.doneTasks.slice(0,1).map(t=>{
+                  const proj = projects.find(p=>p.id===t.projectId);
+                  return <div key={t.id} className="text-[9px] truncate flex items-center gap-1 opacity-80" style={{color:"var(--fr-green)"}}>
+                    <span style={{color:proj?.color}}>{proj?.icon}</span>✓ {t.title.slice(0,14)}
+                  </div>;
+                })}
+                {d.dueTasks.length>2 && <div className="text-[9px] mono" style={{color:"var(--fr-red)"}}>+{d.dueTasks.length-2}</div>}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+      <div className="flex items-center gap-3 mt-2 mono text-[9px] tracking-widest flex-wrap" style={{color:"var(--fr-fgMuted)"}}>
+        <span className="flex items-center gap-1"><span className="w-2 h-2 inline-block" style={{background:"var(--fr-card2)",border:"1px solid var(--fr-borderSoft)"}}/>cold</span>
+        <span className="flex items-center gap-1"><span className="w-2 h-2 inline-block" style={{background:"rgba(34,197,94,0.22)"}}/>1 ship</span>
+        <span className="flex items-center gap-1"><span className="w-2 h-2 inline-block" style={{background:"rgba(34,197,94,0.55)"}}/>2 ships</span>
+        <span className="flex items-center gap-1"><span className="w-2 h-2 inline-block" style={{background:"var(--fr-green)"}}/>3+ hot</span>
+        <span className="flex items-center gap-1"><span style={{color:"var(--fr-red)"}}>●</span> due</span>
+        <span className="flex items-center gap-1"><span style={{color:"var(--fr-orange)"}}>◆</span> milestone</span>
+      </div>
+    </div>
+  );
+}
+
+/* Weekly Review launcher + modal */
+function WeeklyReviewLauncher() {
+  const { forge, updateForge } = useStore();
+  const projects = forge.projects;
+  const [open, setOpen] = useState(false);
+  const thisMonday = (() => {
+    const d = new Date(); const dow = (d.getDay()+6)%7; d.setDate(d.getDate()-dow); return d.toISOString().slice(0,10);
+  })();
+  const existing = forge.reviews.find(r => r.weekOf === thisMonday);
+  const [wins,setWins] = useState(existing?.wins||"");
+  const [learnings,setLearnings] = useState(existing?.learnings||"");
+  const [nextWeek,setNextWeek] = useState(existing?.nextWeekFocus||"");
+  const [distractions,setDistractions] = useState(existing?.distractions||"");
+  const [mood,setMood] = useState<1|2|3|4|5>(existing?.mood||3);
+  const [rating,setRating] = useState<1|2|3|4|5>(existing?.rating||3);
+  const [hrs,setHrs] = useState<string>(String(existing?.hoursWorked||""));
+  const weekShipped = forge.tasks.filter(t=>{
+    if(t.status!=="done"||!t.completedAt) return false;
+    return t.completedAt >= thisMonday;
+  });
+  const save = () => {
+    const id = existing?.id || "wr-"+Math.random().toString(36).slice(2,10);
+    const rev = { id, weekOf:thisMonday, mood, rating, wins, learnings, nextWeekFocus:nextWeek, distractions,
+      hoursWorked: Number(hrs)||0, shipped:weekShipped.map(t=>t.id), carry:[],
+      createdAt: existing?.createdAt||todayISO() };
+    updateForge(f => ({ reviews: existing ? f.reviews.map(r=>r.id===id?rev:r) : [rev,...f.reviews] }));
+    window.dispatchEvent(new CustomEvent("career:burst",{detail:{color:"#22c55e",count:30}}));
+    window.dispatchEvent(new CustomEvent("career:toast",{detail:{title:"WEEK STAMPED",sub:"review sealed",color:"#22c55e",icon:"check"}}));
+    setOpen(false);
+  };
+  return (
+    <>
+      <button onClick={()=>setOpen(true)}
+        className="relative w-full rounded-sm steel-plate p-3 flex items-center gap-2 text-[10px] font-black tracking-widest text-left"
+        style={{background:"var(--fr-card2)",borderColor:existing?"var(--fr-green)":"var(--fr-violet, #a78bfa)",color:"var(--fr-fg)"}}>
+        <span className="riv-tl"/><span className="riv-tr"/><span className="riv-bl"/><span className="riv-br"/>
+        <ClipboardCheck size={12} style={{color:existing?"var(--fr-green)":"#a78bfa"}}/>
+        {existing ? "WEEK STAMPED" : "STAMP WEEK"}
+      </button>
+      <AnimatePresence>
+        {open && (
+          <motion.div initial={{opacity:0}} animate={{opacity:1}} exit={{opacity:0}}
+            className="fixed inset-0 z-[70] flex items-center justify-center p-4" style={{background:"rgba(0,0,0,0.7)"}}
+            onClick={()=>setOpen(false)}>
+            <motion.div initial={{scale:0.95,y:10}} animate={{scale:1,y:0}} exit={{scale:0.95,y:10}}
+              onClick={e=>e.stopPropagation()}
+              className="relative w-full max-w-2xl steel-plate p-6 max-h-[90vh] overflow-y-auto"
+              style={{background:"var(--fr-card)",borderColor:"var(--fr-amber)",color:"var(--fr-fg)"}}>
+              <span className="riv-tl"/><span className="riv-tr"/><span className="riv-bl"/><span className="riv-br"/>
+              <div className="flex items-start justify-between mb-4 gap-3">
+                <div>
+                  <h2 className="text-2xl font-black tracking-widest" style={{color:"var(--fr-amber)"}}>WEEKLY REVIEW</h2>
+                  <p className="mono text-[11px] tracking-widest mt-1" style={{color:"var(--fr-fgMuted)"}}>// week of {thisMonday} · {weekShipped.length} blocks shipped</p>
+                </div>
+                <button onClick={()=>setOpen(false)} className="mono text-[10px] tracking-widest px-2 py-1 rounded-sm" style={{color:"var(--fr-fgMuted)",border:"1px solid var(--fr-borderSoft)"}}>ESC</button>
+              </div>
+              <div className="space-y-3">
+                <LabeledReview label="WINS / SHIPPED" color="var(--fr-green)">
+                  <textarea value={wins} onChange={e=>setWins(e.target.value)} rows={3}
+                    placeholder="What shipped? What felt like a win?"
+                    className="w-full p-2 rounded-sm outline-none mono text-xs"
+                    style={{background:"var(--fr-card2)",border:"1px solid var(--fr-borderSoft)",color:"var(--fr-fg)"}}/>
+                </LabeledReview>
+                <LabeledReview label="LEARNINGS" color="var(--fr-amber)">
+                  <textarea value={learnings} onChange={e=>setLearnings(e.target.value)} rows={2}
+                    placeholder="What did you learn? What sucked?"
+                    className="w-full p-2 rounded-sm outline-none mono text-xs"
+                    style={{background:"var(--fr-card2)",border:"1px solid var(--fr-borderSoft)",color:"var(--fr-fg)"}}/>
+                </LabeledReview>
+                <LabeledReview label="NEXT WEEK FOCUS" color="var(--fr-cyan)">
+                  <textarea value={nextWeek} onChange={e=>setNextWeek(e.target.value)} rows={2}
+                    placeholder="Top 1-3 priorities for next week"
+                    className="w-full p-2 rounded-sm outline-none mono text-xs"
+                    style={{background:"var(--fr-card2)",border:"1px solid var(--fr-borderSoft)",color:"var(--fr-fg)"}}/>
+                </LabeledReview>
+                <LabeledReview label="DISTRACTIONS / LEAKS" color="var(--fr-red)">
+                  <textarea value={distractions} onChange={e=>setDistractions(e.target.value)} rows={2}
+                    placeholder="What stole time? What to cut?"
+                    className="w-full p-2 rounded-sm outline-none mono text-xs"
+                    style={{background:"var(--fr-card2)",border:"1px solid var(--fr-borderSoft)",color:"var(--fr-fg)"}}/>
+                </LabeledReview>
+                <div className="grid grid-cols-3 gap-3">
+                  <div>
+                    <div className="mono text-[10px] tracking-widest mb-1" style={{color:"var(--fr-fgMuted)"}}>MOOD</div>
+                    <div className="flex gap-1">
+                      {([1,2,3,4,5] as const).map(n=>(
+                        <button key={n} onClick={()=>setMood(n)}
+                          className="w-7 h-7 rounded-sm text-xs"
+                          style={{background:mood===n?"var(--fr-amber)":"var(--fr-card2)",color:mood===n?"#000":"var(--fr-fgMuted)",border:"1px solid var(--fr-borderSoft)"}}>
+                          {n===1?"💀":n===2?"😒":n===3?"😐":n===4?"🙂":"🔥"}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                  <div>
+                    <div className="mono text-[10px] tracking-widest mb-1" style={{color:"var(--fr-fgMuted)"}}>RATING</div>
+                    <div className="flex gap-1">
+                      {([1,2,3,4,5] as const).map(n=>(
+                        <button key={n} onClick={()=>setRating(n)}
+                          className="w-7 h-7 rounded-sm text-xs font-black"
+                          style={{background:rating===n?"var(--fr-green)":"var(--fr-card2)",color:rating===n?"#000":"var(--fr-fgMuted)",border:"1px solid var(--fr-borderSoft)"}}>{n}</button>
+                      ))}
+                    </div>
+                  </div>
+                  <div>
+                    <div className="mono text-[10px] tracking-widest mb-1" style={{color:"var(--fr-fgMuted)"}}>HOURS</div>
+                    <input type="number" value={hrs} onChange={e=>setHrs(e.target.value)}
+                      className="w-full p-2 rounded-sm outline-none mono text-xs"
+                      style={{background:"var(--fr-card2)",border:"1px solid var(--fr-borderSoft)",color:"var(--fr-fg)"}}/>
+                  </div>
+                </div>
+                {weekShipped.length>0 && (
+                  <div className="p-2 rounded-sm" style={{background:"rgba(34,197,94,0.08)",border:"1px dashed rgba(34,197,94,0.4)"}}>
+                    <div className="mono text-[10px] tracking-widest mb-1" style={{color:"var(--fr-green)"}}>✓ AUTO-LOGGED SHIPS THIS WEEK ({weekShipped.length})</div>
+                    <ul className="mono text-[10px] space-y-0.5" style={{color:"var(--fr-fgMuted)"}}>
+                      {weekShipped.slice(0,10).map(t=>{
+                        const p = projects.find(x=>x.id===t.projectId);
+                        return <li key={t.id}>{p?.icon} {t.title}</li>;
+                      })}
+                    </ul>
+                  </div>
+                )}
+              </div>
+              <div className="flex justify-end gap-2 mt-5">
+                <button onClick={()=>setOpen(false)} className="mono text-[10px] tracking-widest px-3 py-2" style={{color:"var(--fr-fgMuted)"}}>CANCEL</button>
+                <button onClick={save}
+                  className="mono text-[10px] font-black tracking-widest px-4 py-2 rounded-sm flex items-center gap-1"
+                  style={{background:"var(--fr-green)",color:"#000",boxShadow:"0 0 14px rgba(34,197,94,0.5)"}}>
+                  <CheckCircle2 size={12}/> STAMP WEEK
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </>
+  );
+}
+
+function LabeledReview({label,color,children}:{label:string;color:string;children:React.ReactNode}) {
+  return (
+    <div>
+      <div className="mono text-[10px] tracking-widest mb-1" style={{color}}>{label}</div>
+      {children}
+    </div>
+  );
+}
+
+function WorkloadHeatmap({projects,tasks}:{projects:ForgeProject[];tasks:ProjectTask[]}) {
+  const WEEKS = 12;
+  const active = projects.filter(p=>!p.archived && p.status!=="dead").slice(0,8);
+  // Build week buckets
+  const weekStart = (w:number) => {
+    const d = new Date(); d.setHours(0,0,0,0);
+    const dow = (d.getDay()+6)%7; d.setDate(d.getDate()-dow);
+    d.setDate(d.getDate() - w*7);
+    return d;
+  };
+  const weeks = Array.from({length:WEEKS},(_,i)=>weekStart(WEEKS-1-i));
+  const cellFor = (pid:string, d:Date) => {
+    const end = new Date(d); end.setDate(end.getDate()+7);
+    const n = tasks.filter(t => t.projectId===pid && t.completedAt && new Date(t.completedAt)>=d && new Date(t.completedAt)<end).length;
+    return n;
+  };
+  const weekLabel = (d:Date) => `${d.getMonth()+1}/${d.getDate()}`;
+  return (
+    <div className="rounded-sm steel-plate p-4 relative" style={{borderColor:"var(--fr-cyan)"}}>
+      <span className="riv-tl"/><span className="riv-tr"/><span className="riv-bl"/><span className="riv-br"/>
+      <div className="flex items-center gap-2 mb-3 flex-wrap">
+        <BarChart3 size={14} style={{color:"var(--fr-cyan)"}}/>
+        <h3 className="mono text-[11px] font-black tracking-[0.25em]" style={{color:"var(--fr-cyan)"}}>WORKLOAD · 12W</h3>
+        <span className="mono text-[10px]" style={{color:"var(--fr-fgMuted)"}}>// ships per project per week</span>
+      </div>
+      {active.length === 0 ? (
+        <p className="mono text-[11px] italic text-center py-4" style={{color:"var(--fr-fgDim)"}}>Light the furnace first.</p>
+      ) : (
+        <div className="overflow-x-auto">
+          <table className="w-full text-[10px] mono">
+            <thead>
+              <tr>
+                <th className="text-left font-normal pr-2 py-1" style={{color:"var(--fr-fgMuted)"}}>heat</th>
+                {weeks.map((w,i)=>(
+                  <th key={i} className="font-normal text-center px-0.5" style={{color:"var(--fr-fgMuted)"}}>{weekLabel(w)}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {active.map(p=>(
+                <tr key={p.id}>
+                  <td className="pr-2 py-0.5 whitespace-nowrap" style={{color:p.color}}>{p.icon} {p.codename}</td>
+                  {weeks.map((w,i)=>{
+                    const n = cellFor(p.id,w);
+                    const intensity = Math.min(1, n/5);
+                    const bg = n===0 ? "var(--fr-card2)" : `rgba(245,158,11,${0.15 + intensity*0.85})`;
+                    const fg = n>=3 ? "#000" : "var(--fr-fg)";
+                    return <td key={i} className="p-0.5 text-center">
+                      <div className="w-6 h-6 rounded-sm flex items-center justify-center font-black"
+                        style={{background:bg,color:fg,border:"1px solid var(--fr-borderSoft)"}}>{n||""}</div>
+                    </td>;
+                  })}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+      <div className="flex items-center gap-2 mt-2 mono text-[9px] tracking-widest" style={{color:"var(--fr-fgMuted)"}}>
+        <span>less</span>
+        {[0.1,0.3,0.5,0.7,1].map(a=><span key={a} className="w-4 h-4 rounded-sm" style={{background:`rgba(245,158,11,${a})`}}/>)}
+        <span>more</span>
+      </div>
+    </div>
+  );
+}
+
+function StreakStrip({streak}:{streak:{current:number;longest:number;history:string[]}}) {
+  const today = todayISO();
+  // last 84 days
+  const days: {iso:string;has:boolean}[] = [];
+  const hist = new Set(streak.history);
+  for (let i=83;i>=0;i--) days.push({ iso: addDays(today,-i), has: hist.has(addDays(today,-i)) });
+  return (
+    <div className="rounded-sm steel-plate p-3 relative flex items-center gap-3 flex-wrap" style={{borderColor:"var(--fr-green)"}}>
+      <span className="riv-tl"/><span className="riv-tr"/><span className="riv-bl"/><span className="riv-br"/>
+      <FlameKindling size={14} style={{color:streak.current>=7?"var(--fr-red)":"var(--fr-amber)"}}/>
+      <div className="mono text-[10px] tracking-widest" style={{color:"var(--fr-fg)"}}>
+        <span style={{color:"var(--fr-amber)",fontSize:14}} className="font-black">{streak.current}d</span> STREAK · longest {streak.longest}d
+      </div>
+      <div className="flex gap-0.5 flex-1 flex-wrap justify-end">
+        {days.map((d,i)=>{
+          const dow = new Date(d.iso+"T00:00:00").getDay();
+          const isWeekend = dow===0||dow===6;
+          const bg = d.has ? (streak.current>=7?"var(--fr-red)":"var(--fr-green)") : (isWeekend?"var(--fr-borderSoft)":"var(--fr-card2)");
+          return <div key={i} title={d.iso} className="w-2.5 h-4 rounded-sm" style={{background:bg,opacity:d.has?1:0.5}}/>;
+        })}
+      </div>
     </div>
   );
 }

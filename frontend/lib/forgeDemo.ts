@@ -364,11 +364,28 @@ export function buildForgeDemo(): ForgeState {
         adapt:"Copy Harry's Dry launch page", modify:"Make CTA 2x bigger, amber instead of cyan",
         put:"Use hero as LinkedIn post too", eliminate:"Remove nav links (distraction)", reverse:"Try exit-intent CTA first" },
     ],
+    sprints: [
+      { id: uid(), name: "S1 · IGNITION", goal: "Boot the Forge OS and seed first three projects",
+        startDate: daysAgo(10), endDate: daysAgo(1), status: "closed",
+        taskIds: tasks.slice(0,5).filter(t=>t.status==="done").map(t=>t.id),
+        velocityTarget: 8, completedAt: daysAgo(1) },
+      { id: uid(), name: "S2 · ANVIL", goal: "Ship Kanban drag-drop, Smelter tabs, and velocity viz",
+        startDate: today(), endDate: daysFrom(13), status: "active",
+        taskIds: tasks.filter(t=>t.status!=="done").slice(0,8).map(t=>t.id), velocityTarget: 12 },
+    ],
+    reviews: [
+      { id: uid(), weekOf: daysAgo(14), mood: 3, shipped: [], carry: [], wins: "Kickoff week — Forge concept locked.",
+        learnings: "Start with the theme system FIRST.", nextWeekFocus: "Foundry shell", distractions: "", hoursWorked: 18, rating: 3, createdAt: daysAgo(7) },
+      { id: uid(), weekOf: daysAgo(7), mood: 4, shipped: [], carry: [], wins: "Shipped Foundry + Quarry + hotkeys.",
+        learnings: "Streaks > motivation. Ship in waves.", nextWeekFocus: "Sprints, review mode, calendar.", distractions: "Twitter doomscroll", hoursWorked: 24, rating: 4, createdAt: today() },
+    ],
+    streak: { lastActive: today(), current: 5, longest: 12, history: [daysAgo(4),daysAgo(3),daysAgo(2),daysAgo(1),today()] },
     settings: {
       workStartHour: 9,
       workEndHour: 18,
       defaultEnergyPeak: "morning",
       forgeName: "THE FORGE",
+      sprintLengthDays: 14,
     },
   };
 }

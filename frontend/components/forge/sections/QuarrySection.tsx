@@ -51,6 +51,23 @@ export default function QuarrySection() {
   const [projId, setProjId] = useState<string>("");
   const [openTask, setOpenTask] = useState<string|null>(null);
   const [dragId, setDragId] = useState<string|null>(null);
+  const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [batchMode, setBatchMode] = useState(false);
+  const toggleSel = (id:string) => setSelected(s=>{const n=new Set(s); n.has(id)?n.delete(id):n.add(id); return n;});
+  const clearSel = () => setSelected(new Set());
+  const batchOp = (patch: Partial<ProjectTask>) => {
+    if (selected.size===0) return;
+    updateForge(f => ({ tasks: f.tasks.map(t => selected.has(t.id) ? { ...t, ...patch, completedAt: patch.status==="done"?today():t.completedAt } : t) }));
+    window.dispatchEvent(new CustomEvent("career:toast",{detail:{title:"BATCH APPLIED",sub:`${selected.size} blocks updated`,color:"#f59e0b",icon:"zap"}}));
+    clearSel();
+  };
+  const batchDelete = () => {
+    if (selected.size===0) return;
+    if (!confirm(`Delete ${selected.size} blocks?`)) return;
+    updateForge(f => ({ tasks: f.tasks.filter(t=>!selected.has(t.id)) }));
+    clearSel();
+    window.dispatchEvent(new CustomEvent("career:toast",{detail:{title:"BATCH DELETED",sub:`${selected.size} blocks melted down`,color:"#ef4444",icon:"trash"}}));
+  };
 
   const activeProjects = forge.projects.filter(p => !p.archived && p.status!=="dead");
 
@@ -179,7 +196,45 @@ export default function QuarrySection() {
         <div className="mono text-[10px] tracking-widest" style={{color:"var(--fr-fgMuted)"}}>
           {visibleTasks.length} BLOCKS · {visibleTasks.filter(t=>t.status==="done").length} SHIPPED
         </div>
+        <button onClick={()=>{setBatchMode(v=>!v);clearSel();}}
+          className="mono text-[10px] tracking-widest font-bold px-3 py-1.5 rounded-sm"
+          style={{background:batchMode?"var(--fr-orange)":"transparent",color:batchMode?"#000":"var(--fr-fgMuted)",border:`1px solid ${batchMode?"var(--fr-orange)":"var(--fr-borderSoft)"}`}}>
+          {batchMode?"EXIT BATCH":"BATCH"}
+        </button>
       </div>
+
+      {/* Batch ops bar */}
+      {batchMode && (
+        <div className="rounded-sm steel-plate p-2 relative flex items-center gap-2 flex-wrap"
+          style={{borderColor:"var(--fr-orange)",background:"rgba(234,88,12,0.08)"}}>
+          <span className="riv-tl"/><span className="riv-tr"/><span className="riv-bl"/><span className="riv-br"/>
+          <span className="mono text-[10px] tracking-widest font-black" style={{color:"var(--fr-orange)"}}>
+            SELECTED · {selected.size}
+          </span>
+          <span className="mono text-[9px]" style={{color:"var(--fr-fgMuted)"}}>click cards to toggle</span>
+          <div className="h-6 w-px" style={{background:"var(--fr-borderSoft)"}}/>
+          {COLS.map(c=>(
+            <button key={c.id} onClick={()=>batchOp({status:c.id})} disabled={selected.size===0}
+              className="mono text-[9px] font-black tracking-widest px-2 py-1 rounded-sm disabled:opacity-30"
+              style={{background:`${c.color}22`,color:c.color,border:`1px solid ${c.color}55`}}>→{c.label}</button>
+          ))}
+          {(["P0","P1","P2","P3"] as const).map(p=>(
+            <button key={p} onClick={()=>batchOp({priority:p})} disabled={selected.size===0}
+              className="mono text-[9px] font-black tracking-widest px-2 py-1 rounded-sm disabled:opacity-30"
+              style={{background:"var(--fr-card2)",color:"var(--fr-fg)",border:"1px solid var(--fr-borderSoft)"}}>{p}</button>
+          ))}
+          <button onClick={()=>batchOp({today:true})} disabled={selected.size===0}
+            className="mono text-[9px] font-black tracking-widest px-2 py-1 rounded-sm disabled:opacity-30"
+            style={{background:"var(--fr-cyan)",color:"#000"}}>TODAY</button>
+          <button onClick={()=>batchOp({nextAction:true})} disabled={selected.size===0}
+            className="mono text-[9px] font-black tracking-widest px-2 py-1 rounded-sm disabled:opacity-30"
+            style={{background:"var(--fr-amber)",color:"#000"}}>▶NEXT</button>
+          <button onClick={batchDelete} disabled={selected.size===0}
+            className="mono text-[9px] font-black tracking-widest px-2 py-1 rounded-sm disabled:opacity-30 ml-auto"
+            style={{background:"var(--fr-red)",color:"#000"}}>MELT</button>
+          <button onClick={clearSel} className="mono text-[9px] tracking-widest px-2 py-1 rounded-sm" style={{color:"var(--fr-fgMuted)"}}>CLEAR</button>
+        </div>
+      )}
 
       {matrixMode === "kanban" && (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-3">
@@ -214,6 +269,10 @@ export default function QuarrySection() {
                         style={{background:"var(--fr-card2)",borderLeft:`3px solid ${t.stuck?"#ef4444":proj?.color||"#888"}`}}>
                         <div className="p-2">
                           <div className="flex items-start gap-1.5">
+                            {batchMode && (
+                              <input type="checkbox" checked={selected.has(t.id)} onChange={()=>toggleSel(t.id)}
+                                className="mt-1 accent-amber-500 shrink-0"/>
+                            )}
                             <button onClick={()=>toggleTask(t.id)}
                               className="mt-0.5 w-4 h-4 rounded-sm shrink-0 flex items-center justify-center"
                               style={{background:t.status==="done"?col.color:"transparent",border:`1.5px solid ${t.status==="done"?col.color:"var(--fr-fgMuted)"}`}}>

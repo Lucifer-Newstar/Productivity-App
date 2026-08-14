@@ -348,6 +348,23 @@ export default function ForgeShell({ section, actionButton, actionPanel, childre
         .forge-root[data-lt="1"] button.steel-plate:active {
           transform: translate(1px, 1px) rotate(0.3deg);
         }
+        /* Print-friendly: strip blur/orbs/animations, force light vellum palette */
+        @media print {
+          .forge-root { background: #fff !important; color: #000 !important; }
+          .forge-root .forge-grid, .forge-root .forge-vignette, .forge-root .forge-grain,
+          .forge-root [aria-hidden].blur-3xl, .forge-root header .hazard-stripe,
+          .forge-root footer, .forge-root button, .forge-root nav { display: none !important; }
+          .forge-root .steel-plate {
+            box-shadow: none !important; border: 1px solid #999 !important;
+            background: #fff !important; break-inside: avoid; page-break-inside: avoid;
+          }
+          .forge-root main { overflow: visible !important; }
+          .forge-root * { animation: none !important; color: #000 !important; }
+          .forge-root .steel-plate .riv-tl, .forge-root .steel-plate .riv-tr,
+          .forge-root .steel-plate .riv-bl, .forge-root .steel-plate .riv-br { display: none !important; }
+          .forge-root h1,.forge-root h2,.forge-root h3,.forge-root h4 { color:#000 !important; }
+          .forge-root a { color:#000 !important; text-decoration: underline; }
+        }
       `}</style>
 
       {/* Background layers */}
