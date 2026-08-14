@@ -93,7 +93,7 @@ export default function ActionNav({ open, onToggle }: { open: boolean; onToggle:
           border: `1px solid ${color}88`,
           background: "transparent",
           opacity: 0.8,
-        }}>N</span>
+        }}>⌘K</span>
     </button>
   );
 }

@@ -9,7 +9,7 @@
  *   g s / g 3   → Smelter
  *   g v / g 4   → Vault
  *   g h         → Home (/)
- *   n           → open STRIKE panel (action palette)
+ *   n  /  ⌘K    → open STRIKE panel (action palette)
  *   t           → toggle theme (foundry/drafting)
  *   Esc         → close STRIKE / close help
  *   /           → open STRIKE panel (like cmd+k)
@@ -101,7 +101,11 @@ export default function ForgeHotkeys({ currentSection, panelOpen, setPanelOpen }
 
       // Don't hijack while typing
       if (isTypingTarget(e.target)) return;
-      // Don't hijack browser/cmdr shortcuts
+      // Cmd/Ctrl+K = STRIKE panel (universal command-palette muscle memory)
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
+        e.preventDefault(); setPanelOpen(!panelOpen); disarm(); return;
+      }
+      // Don't hijack other browser/cmdr shortcuts
       if (e.metaKey || e.ctrlKey || e.altKey) return;
 
       const k = e.key.toLowerCase();
