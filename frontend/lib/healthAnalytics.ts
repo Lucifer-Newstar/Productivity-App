@@ -14,6 +14,7 @@ import type {
   ActivityLevel, Gender, HealthProfile, HealthState,
   SleepEntry, SleepHygieneTick, SupplementDef, SupplementLog,
   MealEntry, SunlightEntry, DeficiencyBadge, MicronutrientId, DeficiencyLevel,
+  MeasurementEntry,
 } from "./healthTypes";
 import { INDIAN_DEFICIENCY_CONTEXT } from "./healthTypes";
 
@@ -349,6 +350,118 @@ export function computeDeficiencyBadges(
 /** Convenience: is any critical badge at "deficient" or "at_risk"? */
 export function hasDeficiencyRisk(badges: DeficiencyBadge[]): boolean {
   return badges.some(b => b.level === "deficient" || b.level === "at_risk");
+}
+
+// ---------------- Physique / body composition ----------------
+
+/**
+ * US Navy body-fat %, men (metric).
+ *   BF% = 495 / (1.0324 − 0.19077·log10(waist−neck) + 0.15456·log10(height)) − 450
+ * Waist measured at navel, neck at narrowest point, both in cm. Height in cm.
+ * Standard error ±3-4% vs DEXA; fine for trend tracking.
+ */
+export function navyBF_m(waistCm: number, neckCm: number, heightCm: number): number {
+  if (!(waistCm > neckCm) || waistCm <= 0 || neckCm <= 0 || heightCm <= 0) return 0;
+  const denom = 1.0324 - 0.19077 * Math.log10(waistCm - neckCm) + 0.15456 * Math.log10(heightCm);
+  return Math.max(3, Math.min(50, 495 / denom - 450));
+}
+
+/** US Navy body-fat %, women (metric) — hip included. Stored but gated behind gender flag. */
+export function navyBF_f(waistCm: number, neckCm: number, hipCm: number, heightCm: number): number {
+  if (!(waistCm > neckCm) || hipCm <= 0) return 0;
+  const denom = 1.29579 - 0.35004 * Math.log10(waistCm + hipCm - neckCm) + 0.22100 * Math.log10(heightCm);
+  return Math.max(8, Math.min(55, 495 / denom - 450));
+}
+
+/** Lean body mass (kg) */
+export function lbmKg(weightKg: number, bfPct: number): number {
+  return weightKg * (1 - bfPct / 100);
+}
+/** Fat mass (kg) */
+export function fatMassKg(weightKg: number, bfPct: number): number {
+  return weightKg * bfPct / 100;
+}
+
+/** BMI category for display (lifter caveat appended in UI). */
+export function bmiCategory(bmiVal: number): { label: string; color: string; caveat?: string } {
+  if (bmiVal < 18.5) return { label: "Underweight", color: "#60a5fa" };
+  if (bmiVal < 25)   return { label: "Normal",    color: "#10b981" };
+  if (bmiVal < 30)   return { label: "Overweight",color: "#f59e0b", caveat: "Lifters often land here from lean mass" };
+  return { label: "Obese", color: "#ef4444", caveat: "Lifters with thick builds may false-flag" };
+}
+
+/**
+ * Strength-to-weight ratio classification by bodyweight multiples (men, untrained→elite).
+ * Standards approximate (kg/kg), based on Lon Kilgore / Mark Rippetoe / ExRx tiered
+ * tables for 18-35yo natural lifters.
+ */
+export const SW_STANDARDS: Record<string, { beginner: number; intermediate: number; advanced: number; elite: number }> = {
+  back_squat:    { beginner: 0.75, intermediate: 1.25, advanced: 1.75, elite: 2.5 },
+  bench_press:   { beginner: 0.55, intermediate: 0.95, advanced: 1.35, elite: 1.8 },
+  deadlift:      { beginner: 0.9,  intermediate: 1.5,  advanced: 2.2,  elite: 3.0 },
+  overhead_press:{ beginner: 0.35, intermediate: 0.55, advanced: 0.75, elite: 1.05 },
+  pullup:        { beginner: 0,    intermediate: 5,    advanced: 12,   elite: 20 }, // reps not BW ratio
+};
+
+export function strengthClass(ratioOrReps: number, tableKey: keyof typeof SW_STANDARDS): { tier: string; color: string } {
+  const s = SW_STANDARDS[tableKey];
+  if (!s) return { tier: "—", color: "#64748b" };
+  if (tableKey === "pullup") {
+    if (ratioOrReps >= s.elite) return { tier: "Elite", color: "#fbbf24" };
+    if (ratioOrReps >= s.advanced) return { tier: "Advanced", color: "#a78bfa" };
+    if (ratioOrReps >= s.intermediate) return { tier: "Intermediate", color: "#10b981" };
+    return { tier: "Beginner", color: "#64748b" };
+  }
+  if (ratioOrReps >= s.elite) return { tier: "Elite", color: "#fbbf24" };
+  if (ratioOrReps >= s.advanced) return { tier: "Advanced", color: "#a78bfa" };
+  if (ratioOrReps >= s.intermediate) return { tier: "Intermediate", color: "#10b981" };
+  if (ratioOrReps >= s.beginner) return { tier: "Novice", color: "#60a5fa" };
+  return { tier: "Beginner", color: "#64748b" };
+}
+
+/** Waist-to-height ratio (central adiposity proxy). Ratio <0.5 healthy; >0.6 high risk. */
+export function whtr(waistCm: number, heightCm: number): number {
+  if (!heightCm) return 0;
+  return waistCm / heightCm;
+}
+
+/** Asymmetry flag: if L-R difference in any pair exceeds 1.0cm, returns list of offending pairs. */
+export interface Asymmetry { site: string; diff: number; }
+export function detectAsymmetries(m: MeasurementEntry): Asymmetry[] {
+  const out: Asymmetry[] = [];
+  const pairs: [string, number|undefined, number|undefined][] = [
+    ["Arms",    m.armLeftCm,     m.armRightCm],
+    ["Forearms",m.forearmLeftCm, m.forearmRightCm],
+    ["Thighs",  m.thighLeftCm,   m.thighRightCm],
+    ["Calves",  m.calfLeftCm,    m.calfRightCm],
+  ];
+  for (const [site, l, r] of pairs) {
+    if (l != null && r != null) {
+      const diff = Math.abs(l - r);
+      if (diff >= 1.0) out.push({ site, diff: Math.round(diff*10)/10 });
+    }
+  }
+  return out;
+}
+
+/** Latest measurement entry (by date) or undefined. */
+export function latestMeasurement(entries: MeasurementEntry[]): MeasurementEntry | undefined {
+  if (!entries.length) return undefined;
+  return [...entries].sort((a,b)=>b.date.localeCompare(a.date))[0];
+}
+
+/**
+ * Resolve current BF%: latest measurement's navyBfPct if present, else compute
+ * from latest measurements + profile height. Returns 0 if insufficient data.
+ */
+export function currentBfPct(entries: MeasurementEntry[], heightCm: number): number {
+  const last = latestMeasurement(entries);
+  if (!last) return 0;
+  if (last.navyBfPct != null && last.navyBfPct > 0) return last.navyBfPct;
+  if (last.waistCm != null && last.neckCm != null) {
+    return navyBF_m(last.waistCm, last.neckCm, last.heightCm ?? heightCm);
+  }
+  return 0;
 }
 
 // ---------------- Recovery / workout-advisory flags (wave 3 light; deeper in wave 7) ----------------

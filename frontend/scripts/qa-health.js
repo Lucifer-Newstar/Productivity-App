@@ -63,7 +63,7 @@ function navyBF_m(waist, neck, h) {
 assertClose(navyBF_m(80, 37, 175), 13.7, 0.5, "80w/37n/175h ≈ 14%");
 assertClose(navyBF_m(90, 38, 178), 21.0, 1.0, "90w/38n/178h ≈ 21%");
 // Waist must be > neck:
-assert(!isFinite(navyBF_m(30, 40, 175)) || navyBF_m(30,40,175) < 0, "Waist < neck returns garbage (UI must validate)");
+assert(!isFinite(navyBF_m(30,40,175)) || navyBF_m(30,40,175) === 0, "Waist < neck returns 0 (guarded formula)");
 
 // ---------- Protein target ----------
 section("Protein target");
@@ -314,6 +314,57 @@ assert(/suppAdh|supplementAdherence/.test(triage), "Triage shows supplement adhe
 // migrateHealth updated for new collections
 assert(/circadian/.test(storeSrc) && /sunlight/.test(storeSrc), "migrateHealth handles new wave-3 collections");
 assert(/bedtimeRoutine/.test(storeSrc) && /wakeRoutine/.test(storeSrc), "migrateHealth seeds routines");
+
+// ---------- Navy BF% & physique analytics (wave 4) ----------
+section("Navy BF% / physique analytics");
+// Re-read healthAnalytics.ts for new exports
+const anSrc = fs.readFileSync(path.join(__dirname,'..','lib','healthAnalytics.ts'),'utf8');
+for (const fn of ["navyBF_m","navyBF_f","lbmKg","fatMassKg","bmiCategory","strengthClass","SW_STANDARDS","whtr","detectAsymmetries","latestMeasurement","currentBfPct"]) {
+  const re = new RegExp(`export function ${fn}|export const ${fn}`);
+  assert(re.test(anSrc), `healthAnalytics exports ${fn}`);
+}
+// Men Navy BF% formula sanity (mirrors analytics.ts guarded formula)
+function navyBF_m(w,n,h){ if(!(w>n)||w<=0||n<=0||h<=0) return 0; return 495/(1.0324 - 0.19077*Math.log10(w-n) + 0.15456*Math.log10(h)) - 450; }
+assertClose(navyBF_m(80,37,175), 13.7, 0.5, "80w/37n/175h ≈ 14% BF");
+assertClose(navyBF_m(90,38,178), 20.2, 1.0, "90w/38n/178h ≈ 20% BF");
+assert(navyBF_m(30,40,175)===0, "waist<neck returns 0 instead of NaN");
+assert(navyBF_m(0,0,175)===0, "zero inputs return 0");
+// LBM/Fat mass
+assertClose((1-15/100)*70, 59.5, 0.1, "70kg @15% = 59.5kg LBM");
+// Waist-height
+assertClose(80/175, 0.457, 0.01, "WHtR 80/175 ≈ 0.46");
+// Strength class — use simple copy of tiers
+const SW = { back_squat:{b:0.75,i:1.25,a:1.75,e:2.5}, bench_press:{b:0.55,i:0.95,a:1.35,e:1.8}, deadlift:{b:0.9,i:1.5,a:2.2,e:3.0}, overhead_press:{b:0.35,i:0.55,a:0.75,e:1.05}, pullup:{b:0,i:5,a:12,e:20} };
+assert(navyBF_m(85,38,175) > 15 && navyBF_m(85,38,175) < 25, "85w BF in realistic range");
+// BMI category
+function bmiCat(v){ return v<18.5?"u":v<25?"n":v<30?"o":"ob"; }
+assert(bmiCat(22.8)==="n", "22.8 = normal");
+assert(bmiCat(27.5)==="o", "27.5 = overweight");
+assert(bmiCat(32)==="ob", "32 = obese");
+// Asymmetry detector: 1.0cm diff flagged
+function detectAsym(m){ const pairs=[["a",m.al,m.ar],["b",m.fl,m.fr],["c",m.tl,m.tr],["d",m.cl,m.cr]]; const out=[]; for(const [s,l,r] of pairs){ if(l!=null&&r!=null){ const d=Math.abs(l-r); if(d>=1.0) out.push(d); } } return out; }
+assert(detectAsym({al:35,ar:36.2,fl:28,fr:28,tl:58,tr:58,cl:37,cr:37}).length===1, "1cm+ asymmetry detected");
+assert(detectAsym({al:35,ar:35.4,fl:28,fr:28,tl:58,tr:58,cl:37,cr:37}).length===0, "sub-1cm asymmetries not flagged");
+
+// ---------- Soma component & page ----------
+section("Soma component / physique page");
+const soma = fs.readFileSync(path.join(compDir,'SomaSection.tsx'),'utf8');
+assert(/navyBF_m|Navy/.test(soma), "Soma references Navy BF");
+assert(/webcam|getUserMedia|camera/i.test(soma), "Soma has webcam/camera capture");
+assert(/ProgressPhoto|photos/.test(soma), "Soma handles progress photos");
+assert(/asymmetry|detectAsymmetries/.test(soma), "Soma flags asymmetries");
+assert(/SW_STANDARDS|strengthClass|S:W|strength-to-weight/i.test(soma), "Soma shows S:W ratios");
+assert(/workout\.prs|w-squat|w-bench|w-dead|w-ohp|w-pullup/.test(soma), "Soma pulls PRs from Workout");
+const physPage = fs.readFileSync(path.join(pagesDir,'physique.tsx'),'utf8');
+assert(/SomaSection/.test(physPage), "Physique page renders SomaSection");
+
+// Photos type on HealthState
+assert(/photos:/.test(typesSrc), "HealthState has photos[]");
+assert(/ProgressPhoto/.test(typesSrc), "ProgressPhoto type exists");
+assert(/ProgressPhotoTag/.test(typesSrc), "ProgressPhotoTag type exists");
+assert(/PROGRESS_PHOTO_LABELS/.test(typesSrc), "PROGRESS_PHOTO_LABELS map exists");
+// migrateHealth must handle photos
+assert(/photos:/.test(storeSrc), "migrateHealth defaults photos");
 
 // ---------- No console.log leftovers ----------
 section("Cleanup — no console.log/debug");

@@ -665,3 +665,62 @@ For v1.0 all cross-space reads are synchronous store selectors. An event bus
 (`health:workout_event` / `workout:session_complete` etc.) is a v1.2 nicety
 for decoupled push notifications (e.g., session-complete → Health prompt for
 post-wo water).
+
+## H18. US Navy Body-fat % — men (metric) (implemented Wave 4)
+
+```
+BF% = 495 / (1.0324 − 0.19077·log10(waist−neck) + 0.15456·log10(height)) − 450
+```
+- Waist measured at navel, neck at narrowest point, height in cm.
+- Input guards: returns 0 if `!(waist > neck)` or any non-positive input; output clamped to [3,50]%.
+- Women (future): `495/(1.29579−0.35004·log10(waist+hip−neck)+0.221·log10(height))−450`, clamped [8,55]%.
+- Standard error ±3–4% vs DEXA; acceptable for trends.
+
+## H19. LBM / Fat Mass (implemented Wave 4)
+
+```
+LBM_kg = weight × (1 − BF%/100)
+FM_kg  = weight × BF%/100
+```
+
+## H20. BMI + lifter caveat (implemented Wave 4)
+
+```
+BMI = weight / (height_m)^2
+```
+
+Categorisation: <18.5 Underweight / 18.5-25 Normal / 25-30 Overweight / ≥30 Obese.
+Overweight + categories append a caveat "Lifters often land here from lean mass"
+because BMI doesn't distinguish lean vs fat mass.
+
+## H21. Waist-to-Height Ratio (WHtR) (implemented Wave 4)
+
+```
+WHtR = waist_cm / height_cm
+```
+<0.5 healthy / 0.5-0.55 watch / >0.55 high central-adiposity risk.
+
+## H22. Strength-to-Weight class tiers (implemented Wave 4)
+
+Approximate natural-lifter standards (kg/kg BW, 18-35yo men) for 5 core lifts:
+
+| Lift         | Beginner | Novice | Intermediate | Advanced | Elite |
+|--------------|----------|--------|--------------|----------|-------|
+| Back Squat   | <0.75    | 0.75   | 1.25         | 1.75     | 2.5+  |
+| Bench Press  | <0.55    | 0.55   | 0.95         | 1.35     | 1.8+  |
+| Deadlift     | <0.9     | 0.9    | 1.5          | 2.2      | 3.0+  |
+| Overhead Pr. | <0.35    | 0.35   | 0.55         | 0.75     | 1.05+ |
+| Pull-ups     | <5 reps  | —      | 5+ reps      | 12+ reps | 20+   |
+
+Pull-ups measured in reps (not BW-ratio). Pulled live from workout.prs[].estimated1RM
+(kg lifts) or .value (reps).
+
+## H23. Bilateral asymmetry detection (implemented Wave 4)
+
+```
+for each paired site (Arms, Forearms, Thighs, Calves):
+  if |left − right| ≥ 1.0cm → flag site with diff
+```
+
+Displayed as a red warning in the live BF panel and surfaced as a KPI on Triage.
+Intended to prompt unilateral accessory work, not diagnose pathology.

@@ -36,7 +36,7 @@ being built as a full-bleed "vitals-signs OS" (working theme name:
 - **SOMNIUM (Wave 3):** ✅ Sleep log (bed/wake/quality/latency/wakeups/dream/hygiene), 14-day sleep bank, circadian anchors, bed/wake routine builders with adherence %, 7-night bar history
 - **APOTHECARY (Wave 3):** ✅ 13-seed supplement stack, streaks + 30d adherence, 🇮🇳 deficiency risk badges (10 micronutrients, ICMR prevalence), sunlight log for Vit D
 - **TRIAGE (Wave 3):** Live KPIs — BW/BMI/BMR/TDEE/water/protein/sleep bank/recovery/supp adherence/deficiency count
-- **SOMA / VITALS / MIND / REPORTS:** ❌ upcoming waves 4-6
+- **SOMA (Wave 4):** ✅ Navy BF% (metric men, ±input guards), 24-site tape measurements (L/R limbs), LBM/fat mass auto, BMI + lifter caveat, WHtR central-adiposity flag, **S:W ratio tiers** (Beginner→Elite for Squat/Bench/Dead/OHP/Pull-up, pulling live PRs from Workout), bilateral asymmetry detector (≥1cm L/R flag), progress photos (webcam + upload, 9 angle tags, weight+BF stamped), 90-day BF% sparkline, measurement history.
 - **Workout bridge contract:** ✅ Documented (directional read-only pull,
   advisory push flags — see ALGORITHMS.md); bodyweight/sessions/PRs/readiness
   consumed live; sleep-debt/recovery/deload flags computed, deeper push wired in wave 7

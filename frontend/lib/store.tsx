@@ -373,6 +373,7 @@ function migrateHealth(raw: any): HealthState {
     water: raw.water ?? [],
     sleep: raw.sleep ?? [],
     measurements: raw.measurements ?? [],
+    photos: raw.photos ?? [],
     supplementDefs: mergedDefs,
     supplementLog: raw.supplementLog ?? [],
     vitals: raw.vitals ?? [],

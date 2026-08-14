@@ -204,11 +204,15 @@ export interface SunlightEntry {
 export interface MeasurementEntry {
   id: string;
   date: string;
+  /** Navy BF% inputs */
   neckCm?: number;
+  waistCm?: number;
+  hipCm?: number; // for women's formula
+  heightCm?: number; // optional override of profile height
+  /** Circumference sites (cm) */
   chestCm?: number;
   chestFlexedCm?: number;
-  waistCm?: number;
-  hipCm?: number;
+  shoulderCm?: number;
   armLeftCm?: number;
   armRightCm?: number;
   forearmLeftCm?: number;
@@ -217,11 +221,44 @@ export interface MeasurementEntry {
   thighRightCm?: number;
   calfLeftCm?: number;
   calfRightCm?: number;
-  shoulderCm?: number;
   wristCm?: number;
   ankleCm?: number;
+  /** Bodyweight snapshot (copied from Workout at log time, optional manual override) */
+  weightKg?: number;
+  /** Computed Navy BF% cached at save-time so historical values don't shift if constants change */
+  navyBfPct?: number;
   note?: string;
 }
+
+/** Progress photo — stored as dataURL (localStorage sized; bigger sets move to IndexedDB later) */
+export interface ProgressPhoto {
+  id: string;
+  date: string;
+  /** Angles are multi-select via bit flags but exposed as tags[] for simplicity */
+  tags: ProgressPhotoTag[];
+  /** base64 dataURL (image/jpeg or image/png) */
+  dataUrl: string;
+  /** Weight + BF% stamped at time of photo (for before/after comparisons) */
+  weightKg?: number;
+  bfPct?: number;
+  note?: string;
+}
+export type ProgressPhotoTag =
+  | "front_relaxed" | "front_flexed"
+  | "side_relaxed" | "side_flexed"
+  | "back_relaxed"  | "back_flexed"
+  | "progress" | "pump" | "other";
+export const PROGRESS_PHOTO_LABELS: Record<ProgressPhotoTag, string> = {
+  front_relaxed: "Front relaxed",
+  front_flexed:  "Front flexed",
+  side_relaxed:  "Side relaxed",
+  side_flexed:   "Side flexed",
+  back_relaxed:  "Back relaxed",
+  back_flexed:   "Back flexed",
+  progress:      "Progress check",
+  pump:          "Post-workout pump",
+  other:         "Other",
+};
 
 export interface SupplementDef {
   id: string;
@@ -293,6 +330,7 @@ export interface HealthState {
   water: WaterEntry[];
   sleep: SleepEntry[];
   measurements: MeasurementEntry[];
+  photos: ProgressPhoto[];
   supplementDefs: SupplementDef[];
   supplementLog: SupplementLog[];
   vitals: VitalsEntry[];
@@ -409,6 +447,7 @@ export function emptyHealthState(): HealthState {
     water: [],
     sleep: [],
     measurements: [],
+    photos: [],
     supplementDefs: SEED_SUPPLEMENT_DEFS.map(s => ({ ...s })),
     supplementLog: [],
     vitals: [],

@@ -23,7 +23,7 @@ but governed: Health owns `nutrition/sleep/body/vitals/mind/biometrics`; Workout
 | 1 | FUEL         | `/health/nutrition`         | 🟡     | Meals timeline, macro donut, 90-dish Indian food DB, repeat-yesterday, manual add; micros/recipes/planner wave 8 |
 | 2 | HYDRATION    | `/health/hydration`         | 🟡     | 8-glass grid, 11 beverages, caffeine tally, electrolytes, undo; urine color/sweat-estimator wave 4-8 |
 | 3 | SOMNIUM      | `/health/sleep`             | 🟡     | Sleep log, bank, hygiene checklist, circadian anchors, bed/wake routines, dream, 7d history; naps/procrastination/social-jetlag waves 8 |
-| 4 | SOMA         | `/health/physique`          | ❌     | Measurements, body fat, photos, strength-to-weight, trends  |
+| 4 | SOMA         | `/health/physique`          | 🟡     | Navy BF%, 24-site tape, S:W tiering for 5 lifts, asymmetry flag, webcam/file progress photos, BF% sparkline |
 | 5 | APOTHECARY   | `/health/supplements`       | 🟡     | 13-seed supp stack, streaks, 30d adherence, 🇮🇳 deficiency badges (10 micros, ICMR), sunlight log; bloodwork/drug-interactions waves 5+ |
 | 6 | VITALS       | `/health/vitals`            | ❌     | Heart rate, HRV (manual entry), BP, temp, SpO2, symptoms    |
 | 7 | MIND         | `/health/mind`              | ❌     | Mood, stress, energy, libido, anxiety, journal              |
@@ -468,7 +468,7 @@ incremental commit to the `health` branch, merge to `main` only after user appro
 | 0 (docs) | Spec, research, arch/algorithms/data-model docs | ✅ | `9ac7369`, `de125c5` |
 | 1 (shell) | types, store slice, HealthShell, 10 FULLSCREEN routes, EkgFlash, HealthHotkeys, Triage live-KPIs, Lab profile editor | ✅ | `c8f0b10` |
 | 2 (core food+water) | meals timeline, macros donut, 90-dish Indian food lib, repeat-yesterday, 8-glass hydration, dynamic water goal | ✅ | `8090f10` |
-| 3 (sleep+supps) | sleep log, sleep bank, routines, supp log, 🇮🇳 deficiency badges, sunlight log | ✅ | wave-3 commit |
+| 3 (sleep+supps) | sleep log, sleep bank, routines, supp log, 🇮🇳 deficiency badges, sunlight log | ✅ | `dbbbb14` |
 | 4 (physique core) | Navy BF%, tape measurements, photo capture | ❌ |
 | 5 (vitals+mind) | HR/BP, symptom log, mood/stress, burnout flag | ❌ |
 | 6 (reports) | timeline, weekly/monthly reports, CSV/JSON export | ❌ |

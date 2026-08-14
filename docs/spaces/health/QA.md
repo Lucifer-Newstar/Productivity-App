@@ -86,3 +86,18 @@ Each wave must satisfy before commit:
 - AI food photo recognition out of scope for v1
 - Women's menstrual cycle hidden by default (male profile) but types exist
 - Alcohol tracker opt-in (TN legal age 21; hidden by default)
+
+## Wave 4 QA (2026-08-14) — Soma (physique)
+
+- [x] tsc strict: 0 errors
+- [x] `next build`: **42/42 routes ○ static** (`/health/physique` 6.78 kB / 187 kB)
+- [x] Smoke test: **38/38 PASS, 0 FAIL**
+- [x] Unit QA (`scripts/qa-health.js`): **183 assertions ALL GREEN** (+35 wave-4)
+- [x] Mock-data scenarios (`/tmp/wave4-mock.mjs`): **28/28 PASS** — BF% edge cases, LBM/fat math, BMI tiers, strength classes for 5 lifts, WHtR, asymmetries, measurement sorting/cache-precedence, photo-label shapes, seed preservation, Katch BMR
+- [x] Bugs found+fixed (2):
+  - H07 template-literal typo in live-BF panel (backtick misplaced → TS1005; fixed)
+  - H08 Navy BF% input-guards added (waist>neck, positive inputs, clamped output range)
+- [x] Progress photo flow: file upload works, webcam uses facingMode:user with graceful fallback, tags 9 presets, photos persisted to `health.photos[]`, capped at 200 entries
+- [x] S:W ratios pull live PRs (w-squat/w-bench/w-dead/w-ohp/w-pullup), kg lifts use estimated1RM, pullup uses raw reps; tiering Beginner/Novice/Intermediate/Advanced/Elite per ExRx/Kilgore/Rippetoe tables
+- [x] Asymmetry detector flags ≥1.0cm L-R differences pre-save; pairs are Arms/Forearms/Thighs/Calves
+- [x] Triage KPI row extended with BF% and asymmetry count tiles when data present; §04 marked ✓

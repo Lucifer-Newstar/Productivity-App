@@ -9,7 +9,7 @@ import HealthPage from "../../components/health/HealthPage";
 import { useStore } from "../../lib/store";
 import { bmrMifflin, tdee, waterGoalMl, proteinTargetG, bmi, formatMl, formatKcal,
   computeSleepBank, avgSleepHours, formatHours, recoveryScore,
-  supplementAdherence, computeDeficiencyBadges } from "../../lib/healthAnalytics";
+  supplementAdherence, computeDeficiencyBadges, currentBfPct, lbmKg, detectAsymmetries, latestMeasurement } from "../../lib/healthAnalytics";
 
 export default function TriagePage() {
   const { health, workout } = useStore();
@@ -35,6 +35,12 @@ export default function TriagePage() {
   const badges = computeDeficiencyBadges({ meals: health.meals, supplementLog: health.supplementLog, sunlight: health.sunlight });
   const deficiencyCount = badges.filter(b => b.level==="deficient" || b.level==="at_risk").length;
 
+  // Wave 4 KPIs
+  const bfPct = currentBfPct(health.measurements, health.profile.heightCm);
+  const lastM = latestMeasurement(health.measurements);
+  const asym = lastM ? detectAsymmetries(lastM) : [];
+  const lbm = bfPct > 0 ? Math.round(lbmKg(weightKg, bfPct)*10)/10 : 0;
+
   const today = new Date().toLocaleDateString("en-IN", { weekday: "long", day: "numeric", month: "long", year: "numeric", timeZone: "Asia/Kolkata" });
 
   return (
@@ -50,8 +56,10 @@ export default function TriagePage() {
             Good day, commander.
           </h2>
           <p className="hlth-subtle" style={{ fontSize: 13, margin: 0 }}>
-            {today}. Wave 3 online — sleep bank, supplement stack, deficiency badges.
-            Recovery score: <b style={{color: recovery>=80?"#10b981":recovery>=60?"#f59e0b":"#ef4444"}}>{recovery}/100</b>.
+            {today}. Wave 4 online — Navy BF%, tape measurements, S:W ratios, progress photos.
+            Recovery score: <b style={{color: recovery>=80?"#10b981":recovery>=60?"#f59e0b":"#ef4444"}}>{recovery}/100</b>
+            {bfPct > 0 && <> · BF <b style={{color:bfPct>20?"#ef4444":bfPct>12?"#f59e0b":"#10b981"}}>{bfPct.toFixed(1)}%</b></>}
+            {asym.length>0 && <> · <b style={{color:"#ef4444"}}>{asym.length} asymmetry flag(s)</b></>}.
             Profile tuned for a 20yo lifter in Chennai; adjust in <strong style={{ color: "var(--hlth-fg)" }}>§08 Lab</strong>.
           </p>
         </div>
@@ -69,6 +77,8 @@ export default function TriagePage() {
         <Kpi label="Supps (7d)" value={`${suppAdh}%`} unit="" hint={`${health.supplementDefs.length} in stack`} color="#22d3ee"/>
         <Kpi label="Deficiency risk" value={deficiencyCount.toString()} unit="" hint={deficiencyCount?`${deficiencyCount} flagged`:"all clear"}
              color={deficiencyCount?"#ef4444":"#10b981"}/>
+        {bfPct > 0 && <Kpi label="Body fat" value={bfPct.toFixed(1)} unit="%" hint={`Navy · ${lbm}kg LBM`} color={bfPct>20?"#ef4444":bfPct>12?"#f59e0b":"#10b981"}/>}
+        {asym.length>0 && <Kpi label="Asymmetry" value={asym.length.toString()} unit="" hint={asym.map(a=>`${a.site} ${a.diff}cm`).join(", ")} color="#ef4444"/>}
 
         <div className="hlth-card" style={{ gridColumn: "1 / -1" }}>
           <div className="hlth-card-h">// Section status</div>
@@ -78,7 +88,7 @@ export default function TriagePage() {
               ["01", "Fuel",       "Wave 2 ✓ meals/macros"],
               ["02", "Hydration",  "Wave 2 ✓ water/caffeine"],
               ["03", "Somnium",    "Wave 3 ✓ sleep bank/rhythm"],
-              ["04", "Soma",       "Wave 4 (measurements, BF%)"],
+              ["04", "Soma",       "Wave 4 ✓ Navy BF, tape, S:W, photos"],
               ["05", "Apothecary", "Wave 3 ✓ supps/badges/sun"],
               ["06", "Vitals",     "Wave 5 (HR, BP, HRV)"],
               ["07", "Mind",       "Wave 5 (mood, stress)"],

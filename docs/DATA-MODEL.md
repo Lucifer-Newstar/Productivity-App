@@ -152,6 +152,19 @@ ForgeState
 - `customStatuses` ids are free-form strings (runtime editable) — never hardcode
   `"done"`; use `isDoneStatus(id)` which treats the **last** column as shipped.
 
+### MeasurementEntry fields (v1 wave 4)
+- Required: `date`, optional weightKg (snapshotted from Workout at log-time)
+- Navy inputs: `neckCm`, `waistCm`, `hipCm` (female), optional `heightCm` override
+- Circumference sites (all cm, L/R bilateral for limbs): shoulders, chest relaxed, chest flexed, L/R arm, L/R forearm, L/R thigh, L/R calf, wrist, ankle
+- `navyBfPct` cached at save-time so historical values don't shift if constants change
+- `note` free-text
+
+### ProgressPhoto fields
+- `dataUrl` (image/jpeg base64; 480px wide JPEG 0.75 quality from webcam, arbitrary resolution from upload)
+- `tags[]` — 9 preset: front/side/back × relaxed/flexed, progress, pump, other
+- Weight + BF% stamped at save-time for before/after comparison
+- Storage budget: capped at 200 entries (dataURLs ~30KB each @ 480px ≈ 6MB worst-case); IndexedDB migration deferred to v1.2
+
 ### Persistence
 
 Same Zustand + localStorage root (`"kaizen.root"`) as the rest of the app —
@@ -240,6 +253,19 @@ score, injury restrictions, deload suggestions, TDEE-derived calorie target.
 Health never mutates Workout collections directly. See ALGORITHMS.md for the
 full contract table.
 
+### MeasurementEntry fields (v1 wave 4)
+- Required: `date`, optional weightKg (snapshotted from Workout at log-time)
+- Navy inputs: `neckCm`, `waistCm`, `hipCm` (female), optional `heightCm` override
+- Circumference sites (all cm, L/R bilateral for limbs): shoulders, chest relaxed, chest flexed, L/R arm, L/R forearm, L/R thigh, L/R calf, wrist, ankle
+- `navyBfPct` cached at save-time so historical values don't shift if constants change
+- `note` free-text
+
+### ProgressPhoto fields
+- `dataUrl` (image/jpeg base64; 480px wide JPEG 0.75 quality from webcam, arbitrary resolution from upload)
+- `tags[]` — 9 preset: front/side/back × relaxed/flexed, progress, pump, other
+- Weight + BF% stamped at save-time for before/after comparison
+- Storage budget: capped at 200 entries (dataURLs ~30KB each @ 480px ≈ 6MB worst-case); IndexedDB migration deferred to v1.2
+
 ### Persistence
 
 Same Zustand + localStorage root (`"kaizen.health"`) — health is fully
@@ -253,6 +279,19 @@ Health **advises** Workout via: hydration warning %, sleep-debt flags, recovery
 score, injury restrictions, deload suggestions, TDEE-derived calorie target.
 Health never mutates Workout collections directly. See ALGORITHMS.md for the
 full contract table.
+
+### MeasurementEntry fields (v1 wave 4)
+- Required: `date`, optional weightKg (snapshotted from Workout at log-time)
+- Navy inputs: `neckCm`, `waistCm`, `hipCm` (female), optional `heightCm` override
+- Circumference sites (all cm, L/R bilateral for limbs): shoulders, chest relaxed, chest flexed, L/R arm, L/R forearm, L/R thigh, L/R calf, wrist, ankle
+- `navyBfPct` cached at save-time so historical values don't shift if constants change
+- `note` free-text
+
+### ProgressPhoto fields
+- `dataUrl` (image/jpeg base64; 480px wide JPEG 0.75 quality from webcam, arbitrary resolution from upload)
+- `tags[]` — 9 preset: front/side/back × relaxed/flexed, progress, pump, other
+- Weight + BF% stamped at save-time for before/after comparison
+- Storage budget: capped at 200 entries (dataURLs ~30KB each @ 480px ≈ 6MB worst-case); IndexedDB migration deferred to v1.2
 
 ### Persistence
 

@@ -172,3 +172,33 @@ After fixing BUG-001..005 the following were audited and passed:
 - **India-specific:** deficiency prevalence data cited from ICMR/NIN 2019-2024 urban South India surveys (D3 76-90%, B12 40-50% vegetarians, iron ~30% young males, zinc ~25%, calcium ~40% below RDA, omega-3 <<250mg RDA, magnesium ~30% suboptimal). Badges default new users to vitD/omega3 "deficient" to prompt action (realistic given indoor-heavy college/gym life in Chennai).
 - **Sunlight→D3 synthesis:** crude estimate (80 IU/min midday, capped at 3000 IU/wk) — explicitly labelled rough in UI; bloodwork ground truth comes in wave 8.
 
+
+---
+
+## BUG-H07 — Soma live-BF readout template-literal typo (caught at tsc)
+- **Found:** 2026-08-14 (Wave 4 build)
+- **Severity:** Build-breaking (TS1005)
+- **Root cause:** Ternary inside a nested template literal backtick in the live-BF panel had a misplaced backtick after `+"55"` — JSX closed the template expression early causing a parse error.
+- **Fix:** Rewrote the border string as `border:`1px solid ${...}:"var(--hlth-border-soft)"`` (single ternary inside the template literal).
+- **Files:** `components/health/SomaSection.tsx`.
+
+## BUG-H08 — Navy BF% formula could return NaN on invalid inputs (guarded)
+- **Found:** 2026-08-14 (Wave 4 QA code review)
+- **Severity:** Medium — typing bad values could produce NaN and break downstream LBM/fat calculations.
+- **Root cause:** `Math.log10(waist-neck)` is -Infinity/NaN when waist ≤ neck or inputs are zero/NaN, producing nonsensical BF% values.
+- **Fix:** Added input guards at the top of `navyBF_m`/`navyBF_f`: returns 0 if `!(waistCm > neckCm)` or any input ≤ 0. Clamp outputs to [3,50] for men and [8,55] for women.
+- **Files:** `lib/healthAnalytics.ts`.
+
+### Wave 4 QA verification (Soma — body composition)
+- **TypeScript** clean.
+- **42/42 routes ○ static**; `/health/physique` 6.78 kB / 187 kB First Load JS.
+- **38/38 smoke PASS.**
+- **183 unit assertions** in `scripts/qa-health.js` (added 35 wave-4 tests covering Navy BF formula + guards, LBM/fatMass, BMI category + lifter caveat, strength-class tiering for 5 lifts, WHtR categories, asymmetry threshold, latestMeasurement, currentBfPct cached-or-computed, PROGRESS_PHOTO_LABELS, SomaSection PR pulls / webcam capture / photo tags / photos[] state shape, migrate photos default).
+- **28 mock-data scenarios** in `/tmp/wave4-mock.mjs` covering BF% edge cases, LBM/fat math, BMI categories, strength classes, WHtR, asymmetries, measurement sorting, BF cache precedence, photo labels, seed preservation, empty-state shape, Katch BMR.
+- **No console.log/debug** in `SomaSection.tsx`.
+- **Camera:** `getUserMedia` with `facingMode:"user"`; graceful fallback to file upload on permission denial.
+- **S:W ratios** correctly map w-squat/w-bench/w-dead/w-ohp/w-pullup; kg lifts use estimated1RM; pull-up uses raw reps.
+- **Triage** extended with BF% + asymmetry KPIs; §04 marked ✓ in section status.
+- **Lifter BMI caveat** fires automatically on overweight+ categories.
+- **Asymmetry flag** in live form shows red warning with offending site(s) + diff in cm before save.
+- **Progress photos** capped at 200 entries; webcam preview mirrored via CSS `scaleX(-1)`; EXIF orientation deferred to v1.2.
