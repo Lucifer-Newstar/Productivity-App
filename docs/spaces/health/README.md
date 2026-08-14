@@ -1,23 +1,99 @@
-# Health space ❤️
+# Health space ❤️ — VITAL-SIGN OS
 
-The **Health** space currently renders `<SpaceTasks space="health" />` — a
-reusable scoped task list (add/toggle/delete with priority chips, dark/light
-themed, shared TopNav). It is a **placeholder** pending a full-bleed vitals/OS
-redesign.
+The **Health** space is Kaizen's non-exercise wellness tracker — nutrition,
+hydration, sleep, physique, supplements, vitals, and mental wellness. It is
+being built as a full-bleed "vitals-signs OS" (working theme name:
+**VITAL-SIGN**) with a deep two-way bridge to Workout.
 
-- Route: `/health`
-- Shell: shared TopNav + padded main column (not FULLSCREEN yet)
-- State: uses the cross-space `tasks` collection in the root store (filtered by `space === "health"`)
-- Theme: inherits Workout/Kaizen obsidian-gold by default
+- **Brand color:** `#a3e635` (EKG lime-green)
+- **Accent alerts:** blood-red `#ef4444`
+- **Dark theme (VITAL-SIGN, default):** deep navy→black (`#0a1628 → #050a14 → #000`), live EKG SVG trace across top, circular gauge readouts, JetBrains Mono data, Chakra Petch/Space Grotesk headers, ICU monitor aesthetic.
+- **Light theme (CLINIC):** sterile white/off-white (`#fafafa → #f1f5f9`), slate ink, lime accents, faint chart-grid paper background, soft shadows.
+- **Routes (all FULLSCREEN):**
+  - `/health` → TRIAGE (daily dashboard + health score)
+  - `/health/nutrition` → MESS HALL
+  - `/health/hydration` → HYDRATION
+  - `/health/sleep` → SOMNIUM
+  - `/health/physique` → SOMA (measurements, body fat, photos)
+  - `/health/supplements` → APOTHECARY
+  - `/health/vitals` → VITALS
+  - `/health/mind` → MIND
+  - `/health/sync` → SYNC LAB (profile + workout bridge)
+  - `/health/reports` → REPORTS
+- **Profile defaults (user):** 20yo male, Chennai TN India — tropical wet-dry
+  climate (~70-80% RH, 35+°C 8 months/year); ICMR-aligned micronutrient targets
+  flagging Vit D/B12/iron/zinc/calcium/omega-3 as at-risk per regional
+  deficiency data; 80+ Indian dishes pre-seeded in the food library.
+- **State slice:** `health: HealthState` in the root Zustand store, localStorage
+  key `kaizen.root`, migration `migrateHealth`. Types in `lib/healthTypes.ts`.
 
-## Planned v1.0 theme (not yet implemented)
-Medical / vitals-signs OS aesthetic:
-- Deep navy + EKG-green `#10b981` + blood-red `#ef4444` + white `#f8fafc`
-- Live EKG trace SVG across the top
-- Tiles for HRV, resting HR, water, sleep hours/quality, steps, supplements, mood, nutrition log
-- 30-day trend sparklines
-- Full-screen (FULLSCREEN flag) when built out
+## Status at a glance
 
-## QA status
-- `/health` returns 200 OK, renders SpaceTasks correctly, add/toggle/delete work via root store.
-- No dedicated Health components, types, or theme yet.
+- **Docs:** ✅ FEATURES.md (257 features across 10 sections, this README, QA)
+- **Shell/components:** ❌ Not yet implemented — Wave 1
+- **Routes:** ❌ Only `/health` placeholder (SpaceTasks) exists today
+- **Algorithms:** ✅ Specified in `docs/ALGORITHMS.md` (Mifflin/Katch BMR, TDEE,
+  Navy BF%, dynamic hydration goal with Chennai climate multiplier, sleep
+  bank, sugar-spike heuristic, recovery score, training-status classifier)
+- **Workout bridge contract:** ✅ Documented (directional read-only pull,
+  advisory push flags — see ALGORITHMS.md)
+
+## Implementation plan (9 waves)
+
+1. **Wave 1 (shell):** types, store slice, migration, seeds, HealthShell, routes, nav, theme tokens, hotkeys.
+2. **Wave 2 (food + water core):** meals timeline, macros sliders, food lib (Indian seeded), repeat-yesterday, 8-glass grid, dynamic water goal.
+3. **Wave 3 (sleep + supps):** sleep log, sleep bank, routines, supplement log, deficiency badges.
+4. **Wave 4 (physique core):** weight sync, Navy BF%, LBM, tape measurements, photo capture.
+5. **Wave 5 (vitals + mind):** HR/BP, symptom log, mood/stress, burnout/overtraining flag.
+6. **Wave 6 (reports):** timeline, weekly/monthly reports, CSV/JSON export.
+7. **Wave 7 (workout bridge deep):** TDEE reverse-eng, pre/post-wo cards, S:W ratios, recovery score, sync toggles.
+8. **Wave 8 (v1.1 niceties):** restaurant mode, recipes, meal planner, meal prep, advanced micros, bloodwork.
+9. **Wave 9 (QA + polish):** bug sweep, tsc/next build/29+ route smoke, light-theme CLINIC pass, docs finalize, pre-merge QA → `main`.
+
+## Workout ↔ Health bridge (summary)
+
+| Direction | What | How |
+|---|---|---|
+| Health **reads** Workout | bodyweight (source of truth), sessions, cardio, PRs, readiness, routine focus | Store selectors — no mutation |
+| Health **advises** Workout | hydration %, sleep debt, recovery score, injury flags, deload hints, TDEE cal target, supp markers | Advisory props/flags surfaced in Workout UI |
+| Forbidden | Health mutating Workout collections directly; circular imports between healthAnalytics and workoutAnalytics | Enforced via code review |
+
+Full contract table and all algorithms live in [`docs/ALGORITHMS.md`](/docs/ALGORITHMS.md).
+
+## Theme detail — VITAL-SIGN (dark, default)
+
+The visual language is "ICU patient monitor meets cyberpunk medical bay":
+
+- Background: deep navy radial gradient, faint EKG grid (10px dotted)
+- Primary: EKG lime `#10b981` / `#34d399` (active traces, healthy values)
+- Alert: blood-red `#ef4444` / `#f87171` (warnings, debt, spikes)
+- Trace: cyan `#06b6d4` (secondary pulses, sync lines)
+- Text: white `#f8fafc`
+- Gauges: circular SVG ring gauges for score tiles
+- Signature transition: **EkgFlash** — horizontal lime pulse trace sweeping across the screen on route change (distinct from Forge's vertical amber HammerStrike, Career's cyan HudFlash, and Workout's katana SectionSlash)
+- Typography: JetBrains Mono for all data/numerals (monospace for readability), Inter for body copy, Chakra Petch or Space Grotesk for display headers
+- Sound: optional subtle "monitor blip" (off by default; WebAudio, no assets)
+
+## Theme detail — CLINIC (light)
+
+Sterile, calm, paper-chart feeling:
+
+- Background: off-white `#fafafa → #f1f5f9` with very faint grey chart grid
+- Primary: lime-green `#84cc16` for active data
+- Alert: red `#dc2626` reserved only for actual warnings
+- Typography: same fonts, darker weights
+- No glow, no pulse animation by default (restful, non-alarm feel)
+
+## Medical disclaimer
+
+This is an **educational/awareness tool, not a medical device**. A permanent
+footer/settings link states: "Educational tool. Not medical advice. Consult
+qualified healthcare professionals for medical concerns." No feature claims
+to diagnose or treat any condition.
+
+## Sub-pages
+
+- [FEATURES.md](./FEATURES.md) — full 257-feature spec (the build checklist)
+- [QA.md](./QA.md) — per-wave QA checklist + known gaps
+- [`docs/bugs/BUGS.md`](/docs/bugs/BUGS.md) — bugs found & fixed
+- [`docs/ALGORITHMS.md`](/docs/ALGORITHMS.md) — all formulas + bridge contract

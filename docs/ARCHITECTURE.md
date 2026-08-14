@@ -2,7 +2,8 @@
 
 Kaizen is a **Next.js 14.2.15** monorepo-style app (Pages Router + an App Router
 home). It is a single codebase hosting 5 spaces — Workout, Projects (branded
-"Forge" in UI), Career, Health, Entertainment — not 5 separate apps.
+"Forge" in UI), Career, Health ("VITAL-SIGN" medical OS), Entertainment —
+not 5 separate apps.
 
 ```
 productivity-app/
@@ -22,7 +23,17 @@ productivity-app/
 │   │   │   └── p/[id].tsx         # → ProjectDrill (single-project deep-dive)
 │   │   ├── workout/               # Workout space (12 routes)
 │   │   ├── career/                # Career space (9 SECTORs)
-│   │   ├── health/                # Health placeholder (SpaceTasks)
+│   │   ├── health/                # Health space (VITAL-SIGN OS; 10 routes under construction)
+│   │   │   ├── index.tsx          # → TRIAGE dashboard
+│   │   │   ├── nutrition.tsx      # → MessHallSection (meals, macros, fasting)
+│   │   │   ├── hydration.tsx      # → HydrationSection
+│   │   │   ├── sleep.tsx          # → SomniumSection
+│   │   │   ├── physique.tsx       # → SomaSection (measurements, BF%, photos)
+│   │   │   ├── supplements.tsx    # → ApothecarySection
+│   │   │   ├── vitals.tsx         # → VitalsSection
+│   │   │   ├── mind.tsx           # → MindSection
+│   │   │   ├── sync.tsx           # → SyncLabSection (bridge + profile)
+│   │   │   └── reports.tsx        # → ReportsSection
 │   │   └── entertainment/         # Entertainment placeholder (SpaceTasks)
 │   ├── components/
 │   │   ├── TopNav.tsx             # Cross-space top nav (Spaces, search, theme, avatar)
@@ -31,6 +42,13 @@ productivity-app/
 │   │   │   Pomodoro.tsx / Calendar.tsx / SpaceTasks.tsx   # home + shared components
 │   │   ├── workout/               # Workout UI (WorkoutShell, ActiveWorkout, MuscleHeatmap, ...)
 │   │   ├── career/                # Career UI (CareerShell, CareerFx, 9 SECTOR sections)
+│   │   ├── health/                # Health UI (planned — see health branch)
+│   │   │   ├── HealthPage.tsx     # FULLSCREEN wrapper (EkgFlash + HealthHotkeys + HealthShell)
+│   │   │   ├── HealthShell.tsx    # EKG rail, vitals tiles, score gauge, clock, heart-trace footer
+│   │   │   ├── HealthHotkeys.tsx  # ? / g / n / t / Esc
+│   │   │   ├── healthUtils.ts     # Date helpers, Navy BF%, Mifflin/Katch BMR, TDEE, spike risk
+│   │   │   ├── healthFoodDb.ts    # Seeded Indian food library (80+ dishes)
+│   │   │   └── sections/          # Triage/MessHall/Hydration/Somnium/Soma/Apothecary/Vitals/Mind/SyncLab/Reports
 │   │   └── forge/                 # Projects UI
 │   │       ├── ForgePage.tsx      # FULLSCREEN wrapper (HammerStrike + ForgeHotkeys + ForgeShell)
 │   │       ├── ForgeShell.tsx     # I-beam rail, hazard beam, temp gauge, UTC clock, gears,
@@ -69,7 +87,8 @@ productivity-app/
   - `/workout/*` — `WorkoutShell` (imperial obsidian; rail + top-bar + ambient blobs)
   - `/projects/*` — `ForgeShell` v2 (industrial foundry; I-beam rail, hazard stripe, temp gauge, UTC clock, gears, diamond-plate footer, settings, ember soundscape)
   - `/career/*` — `CareerShell` (night-HUD / blueprint dual themes with HudFlash transition)
-  - `/health` and `/entertainment` currently use the shared `SpaceTasks` component through `TopNav` and are queued for full-bleed redesigns.
+  - `/health/*` — `HealthShell` (VITAL-SIGN: deep navy + EKG-green + blood-red; EKG trace, circular gauge readouts, ICU-monitor aesthetic; CLINIC light mode) — under construction on `health` branch.
+  - `/entertainment` currently uses the shared `SpaceTasks` component through `TopNav` and is queued for a full-bleed cinema/neon redesign.
 
 ## State management
 - **Zustand** root store in `lib/store.tsx` with localStorage persistence to `kaizen.root`. SSR-safe:
@@ -77,7 +96,8 @@ productivity-app/
   - Mount effect hydrates from `localStorage`.
   - Subsequent writes re-persist automatically.
 - Seeds are built by builder functions (`buildWorkoutDemo`, `buildForgeDemo`, `buildCareerDemo`) anchored at `A = Date.now()` so relative dates stay fresh per page load without hydration mismatches.
-- Migrations (`migrateCareer`, `migrateWorkout`, `migrateForge`) run on hydration to backfill missing collections with seed defaults and normalize legacy shapes.
+- Migrations (`migrateCareer`, `migrateWorkout`, `migrateForge`, `migrateHealth`) run on hydration to backfill missing collections with seed defaults and normalize legacy shapes.
+- **Health ↔ Workout bridge:** Health reads bodyweight/sessions/cardio/PRs/readiness from Workout as source of truth (selectors, no mutation). Health pushes advisory flags (hydration warnings, sleep-debt nudges, recovery score, injury flags, deload hints) that Workout surfaces but does not enforce. See `docs/ALGORITHMS.md` §"Health ↔ Workout bridge contract" for the full directional table. Circular imports between health and workout analytics are forbidden; `healthAnalytics` may import workout utilities (Epley 1RM) but never the reverse.
 - The root store exposes typed actions per space. The Projects space additionally:
   - `logForgeAction(action, target?, detail?)` — audit log, capped 500 entries.
   - `_applyStreak(setForge)` wrapper — increments `forge.streak` on any shipped task (uses `isDoneStatus(status, customStatuses)` to honour custom columns — see BUG-001).
@@ -91,15 +111,16 @@ Dark mode is default. Each FULLSCREEN space ships **two distinct visual language
 | Workout | Imperial obsidian `#0a0709` + crimson `#b91c1c` + emperor gold `#d4af37`; Cinzel/Cormorant/Shippori Mincho; kanji 改善+善; crown sigil; katana slashes; damascus/grille/k-blade; ambient mesh blobs | Parchment + burgundy + bronze |
 | Career ("Night HUD") | Deep navy→black radial (`#0a1624→#05080d→#02050a`), animated cyan grid, scanlines, sweep beam, cyan/indigo/acid-green/pink/orange/yellow accents, JetBrains Mono, `USR::K` seal, HudFlash transitions | Blueprint paper `#f5f1e6→#ebe4d0→#ddd3ba`, static 2-layer blue grid, deep cyan-blue `#0c4a6e` ink, burnt-orange `#c2410c` pencil, registration corners, Terminal icon |
 | Projects ("Forge", "Foundry") | Deep iron `#0f0d0b→#080706→#000` radial, molten amber `#f59e0b`, hot-orange `#ea580c`, quench-cyan `#06b6d4`, blood-red `#ef4444`, steel `#94a3b8`, violet `#818cf8`, pink `#f472b6`; Bebas Neue headings; I-beam rail, 6 px 135° chevron hazard stripe, temp gauge, diamond-plate footer, weld seams, rivets | Drafting Room: yellowed vellum `#f3ecdd→#e8dec4→#d9cba9`, brass grommets `#92400e`, burnt-orange `#c2410c` pencil, 20/100 px grid, rotated APPROVED stamps, Special Elite pencil type |
+| Health ("VITAL-SIGN") | Deep navy→black (`#0a1628→#050a14→#000`), EKG lime-green `#10b981`/`#34d399` primary, blood-red `#ef4444`/`#f87171` alerts, cyan `#06b6d4` trace accents, white `#f8fafc` readouts; JetBrains Mono data, Chakra Petch/Space Grotesk headers; live EKG SVG top trace, circular gauge tiles, ICU monitor aesthetic | CLINIC: sterile white/off-white `#fafafa→#f1f5f9`, slate `#334155` ink, lime-green accents, faint chart-grid paper background, soft shadows, red reserved for alarms |
 
-Non-FULLSCREEN pages (home, `/health`, `/entertainment`) use the shared TopNav with an obsidian/parchment dual theme.
+Non-FULLSCREEN pages (home, `/entertainment`) use the shared TopNav with an obsidian/parchment dual theme. (`/health` is FULLSCREEN VITAL-SIGN when built out.)
 
 `ThemeProvider` reads `kaizen.theme` from localStorage and sets `.dark` on `<html>` before paint.
 
 ## Animation
 - Framer Motion `layoutId` for sliding pills (nav, tabs).
 - `AnimatePresence` wraps section content for fade/slide/scale transitions.
-- Each space has a signature page transition: Workout (section-slash katana), Career (HudFlash cyan sweep), Projects (HammerStrike vertical amber line + radial heat bloom).
+- Each space has a signature page transition: Workout (section-slash katana), Career (HudFlash cyan sweep), Projects (HammerStrike vertical amber line + radial heat bloom), Health (EkgFlash horizontal lime-green pulse trace).
 - CSS keyframes for: ambient mesh blobs (18–22 s), gear rotation, ember crackle, rivet pulse, gauge arc, stamp slam, spark spray.
 
 ## Persistence & keys

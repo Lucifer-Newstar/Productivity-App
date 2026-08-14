@@ -290,3 +290,264 @@ The WebAudio beep (`playBeep(freq, ms, vol)`) synthesises a simple sine
 oscillator with an exponential gain ramp-down so it doesn't click. Used for
 rest-timer expiry and PR celebration (880 Hz × 220 ms and a follow-up 1600 Hz
 × 300 ms respectively). No audio assets are shipped with the app.
+
+---
+
+# Health OS algorithms
+
+All Health math lives in `frontend/lib/healthAnalytics.ts` (to be created).
+
+## H1. Daily Health Score (0–100)
+
+Weighted composite of five pillars, each normalised to 0–1:
+
+| Pillar      | Weight | Inputs |
+|-------------|--------|--------|
+| Sleep       | 30%    | `actualHours/goalHours` × `sleepQuality/10`, clamped 0–1 |
+| Nutrition   | 25%    | `0.5×(kcalHit + proteinHit) + 0.25×fibreHit + 0.25×macroBalance`, all 0–1 |
+| Hydration   | 20%    | `waterIntakeMl / dynamicWaterGoalMl`, capped at 1.0 |
+| Movement    | 15%    | `1.0` if workout logged that day OR ≥8000 steps; 0.5 if movement but no wo; 0 otherwise |
+| Mind        | 10%    | `((mood/10) + (1 − stress/10)) / 2` |
+
+`score = (pillars × weights).sum × 100`, rounded to integer. Used by TRIAGE
+tile and weekly reports.
+
+## H2. Dynamic Water Goal
+
+```
+base_ml = 35 × weight_kg
+climateMult = 1.0 | 1.1 for Chennai / coastal-tropical (default) | 1.05 temperate | 1.15 dry-hot
+workoutAdj_ml = 500 × ceil(durationMin / 30) for each resistance/cardio session today
+humidityAdj_ml = 200 if RH ≥ 70%
+heatAdj_ml = 300 if T_ambient ≥ 32°C
+goal_ml = base_ml × climateMult + workoutAdj + humidityAdj + heatAdj
+```
+
+- 35 ml/kg baseline = EFSA adequate intake for sedentary adult men.
+- Climate multiplier informed by tropical-exercise hydration literature
+  (Rivera-Brown &amp; Quiñones, 2020; Frontiers 2025 humid-heat sweat study).
+- Workout sync: pulls duration from WorkoutSession.durationSeconds today.
+
+## H3. Beverage hydration coefficients
+
+Not all fluids are equal net hydrators. Used for "net hydration" tally:
+
+| Beverage        | Coefficient |
+|-----------------|-------------|
+| Water           | 1.00        |
+| Coconut water   | 0.98        |
+| Milk / lassi    | 0.95        |
+| Juice           | 0.90        |
+| Tea             | 0.85        |
+| Coffee          | 0.85 (acute diuretic tolerance in habitual drinkers) |
+| Sports drink    | 0.95        |
+| Soda            | 0.85        |
+| ORS             | 1.00        |
+| Alcohol         | −1.0 (per unit, dehydrating) — optional opt-in |
+
+`netHydrationMl = Σ(volume × coeff)` across beverages.
+
+## H4. Body Fat % — US Navy Method (men, metric)
+
+```
+BF% = 495 / (1.0324 − 0.19077 × log10(waist_cm − neck_cm)
+             + 0.15456 × log10(height_cm))
+     − 450
+```
+
+- Waist measured at navel, neck measured at narrowest point, both cm.
+- Standard error ±3-4% vs DEXA; adequate for tracking trends.
+- Fat mass = weight × BF/100; Lean mass = weight − fat mass.
+- Women's formula (for future profile support):
+  `BF% = 495/(1.29579 − 0.35004 × log10(waist+hip−neck) + 0.221 × log10(height)) − 450`.
+
+## H5. BMR — Mifflin-St Jeor (men)
+
+```
+BMR = 10 × weight_kg + 6.25 × height_cm − 5 × age_years + 5
+```
+
+Most-validated equation for healthy adults (Mifflin 1990, ±10%). Default for
+TDEE when BF% not logged.
+
+### H5b. Katch-McArdle (when BF% is known)
+
+```
+BMR = 370 + 21.6 × LBM_kg
+```
+
+LBM = `weight × (1 − BF%)`. More accurate for trained/lean individuals; used
+automatically whenever ≥1 BF measurement exists in the last 30 days.
+
+## H6. TDEE
+
+```
+TDEE = BMR × activityMult
+```
+
+| Level | Mult | Profile |
+|-------|------|---------|
+| Sedentary      | 1.20 | Desk job, no formal exercise |
+| Light          | 1.375 | Light exercise 1–3/wk |
+| Moderate       | 1.55 | Trained 3–5 days/wk (DEFAULT for a 20yo lifter) |
+| Active         | 1.725 | Hard training 6–7/wk, physical job |
+| Very active    | 1.90 | Elite/twice-daily training |
+
+### H6b. TDEE reverse-engineering (self-correcting)
+
+Every 14 days of consistent logging (≥10 days weight + ≥10 days nutrition +
+≥5 workouts), the model refines TDEE:
+
+```
+avgKcalIn = mean(daily kcal) over window
+avgDeltaKgPerDay = linearRegressSlope(weight over window)
+kcalPerKg = 7700  (approx; pure adipose ≈7700 kcal/kg but mixed tissue ~6500-7800)
+measuredTDEE = avgKcalIn − avgDeltaKgPerDay × kcalPerKg
+```
+
+Displayed alongside the Mifflin estimate; user can choose which drives the
+calorie target.
+
+## H7. Calorie Target by Phase
+
+| Phase        | Target                     |
+|--------------|----------------------------|
+| Cut          | TDEE − 300 kcal (0.3–0.5 kg/week) |
+| Maintenance  | TDEE                        |
+| Bulk         | TDEE + 250 kcal (0.25 kg/week lean bulk) |
+| Recomp       | TDEE (protein 2.0 g/kg LBM, training priority) |
+
+## H8. Protein Target by Phase
+
+- Maintenance: 1.6 g/kg BW (ACSM baseline for trained)
+- Cut: 2.0–2.4 g/kg LBM (muscle-sparing, per Helms et al.)
+- Bulk: 1.6–2.2 g/kg BW
+- Recomp: 2.0 g/kg LBM minimum
+
+Capped at 2.4 g/kg BW (evidence of diminishing returns above).
+
+## H9. Sugar Spike Risk (heuristic)
+
+Inputs per meal: carbQuality ∈ {simple, complex, mixed}, pairing (fat+protein
+present: none / some / high).
+
+| Carbs     | No P/F | Some P/F | High P/F |
+|-----------|--------|----------|----------|
+| Simple    | HIGH   | MEDIUM   | MEDIUM   |
+| Mixed     | MEDIUM | MEDIUM   | LOW      |
+| Complex   | MEDIUM | LOW      | LOW      |
+
+Educational heuristic only — not a glycemic-index calculator.
+
+## H10. Sleep Bank
+
+```
+dayDelta = actualHours − idealHours      // positive = credit, negative = debt
+bank = rollingSum(dayDelta over last 14 days)
+bank capped at [−20h, +10h]              // can't hoard infinite credit
+```
+
+- `bank ≤ −5h` → nudge "You owe 5h. Go to bed early."
+- `bank ≤ −10h` → strong warning, push rest day to Workout, flag overtraining risk.
+- Weekly statement shows total debt/credit and avg hours.
+
+## H11. Recovery Quality Score (0–100)
+
+```
+score = 0.30 × sleepScore
+      + 0.25 × (1 − |rhr − rhrBaseline|/rhrBaseline × 5)   // penalise HR deviation
+      + 0.15 × mood/10
+      + 0.15 × nutritionScore
+      + 0.15 × (1 − soreness/10)
+```
+
+- rhrBaseline = 14-day rolling average resting HR.
+- Each component clamped to [0,1], output × 100.
+- Score &lt; 50 → caution, &lt; 35 → suggest deload.
+
+## H12. Training Status classifier
+
+Combines Recovery Score, strength trend (4-week PR slope), sleep bank, RHR
+deviation, mood:
+
+| State | Trigger pattern |
+|-------|-----------------|
+| Fitness improving | Recovery ≥ 65 + strength slope ≥ 0 + sleep bank ≥ −2 |
+| Maintaining       | 50 ≤ Recovery &lt; 75 + strength flat + bank ≥ −5 |
+| Fatigue accum.    | Recovery 40–55 for 5+ days OR bank &lt; −8 OR RHR +&gt;7bpm |
+| Overreaching      | Recovery &lt; 40 + bank &lt; −10 + strength ↓ + mood ↓ for &gt;7 days → suggest deload |
+
+## H13. Macro balance error
+
+```
+error = |actualCarbsPct − targetCarbsPct|
+      + |actualProteinPct − targetProteinPct|
+      + |actualFatPct − targetFatPct|
+macroBalance = 1 − min(error / 200, 1)
+```
+
+(Each % is expressed 0–100; maximum total deviation = 200% since the three
+always sum to 100%.)
+
+## H14. Bulk/Cut/Recomp auto-detection
+
+Rolling 28-day window:
+
+| Phase | Weight trend | Waist trend | Strength trend |
+|-------|--------------|-------------|----------------|
+| Bulk  | +&gt;0.25 kg/wk | ↑ or stable | ↑ or stable |
+| Cut   | −&gt;0.25 kg/wk | ↓           | stable or ↑ (good cut) / ↓ (too fast) |
+| Recomp | ±1 kg/mo    | ↓           | ↑              |
+| Maintenance | ±0.5 kg/mo | stable     | stable         |
+
+User can override manually at any time.
+
+---
+
+# Health ↔ Workout bridge contract
+
+The two spaces share the root Zustand store but own separate state slices.
+Access happens via selectors — no cross-slice mutation.
+
+## Health READS from Workout (pull)
+
+| Health reads | Workout source | Frequency |
+|---|---|---|
+| Bodyweight entries | `workout.bodyweight[]` | live on mount; Workout is source of truth |
+| Active/completed sessions today | `workout.sessions[] filtered by today` | live |
+| Session duration for water goal | `WorkoutSession.durationSeconds` | on session end |
+| Cardio logs (distance, duration, avg HR, hr2minPost) | `workout.cardioLogs[]` | live |
+| PRs for S:W ratio | `workout.prs[]` | live |
+| Hydration pre/post (workout measures) | `WorkoutSession.hydrationPreMl/PostMl` | per-session |
+| Readiness sliders (soreness, sleep, stress) | `workout.readiness[]` | daily |
+| Caffeine mg logged pre-wo | `WorkoutSession.caffeineMg` | per-session |
+| Training phase (bulk/cut/etc.) | `workout.settings.phase` | live |
+| Joint pain tags | `WorkoutSession.jointPain[]` | per-session |
+| Routine focus (push/pull/legs/etc.) for targeted measurement hints | derived from routine blocks' muscle groups | per-session |
+
+## Health WRITES to Workout (push)
+
+These are advisory signals surfaced in Workout UI, not forced state mutations:
+
+| Health pushes | Workout consumption |
+|---|---|
+| Sleep bank value + sleep score | WorkoutsReadiness view shows "Sleep debt −6h — consider lighter session" |
+| Hydration status (% of goal) | Pre-workout warning card if &lt;60% hydrated |
+| TDEE + calorie target | Nutrition view's surplus/deficit chart |
+| Injury/symptom flags | Session-start nudge ("Left shoulder flagged in Health — skip OHP?") |
+| Recovery score | Readiness view incorporates into composite |
+| Supplement markers (creatine taken today, pre-wo dosed) | Stamped onto WorkoutSession.metadata (when session created while supp logged) |
+| Deload suggestion (H12 Overreaching) | Workout deload-detector incorporates Health flag |
+
+## No circular imports allowed
+
+- `lib/healthAnalytics.ts` may import from `lib/workoutAnalytics.ts` (Epley 1RM reused)
+- `lib/workoutAnalytics.ts` MUST NOT import from healthAnalytics (read-only via selectors)
+- Both slices live under `lib/store.tsx` root; migration functions `migrateHealth` / `migrateWorkout` / `migrateCareer` / `migrateForge` are independent.
+
+## Event bus (future, v1.1+)
+
+For v1.0 all cross-space reads are synchronous store selectors. An event bus
+(`health:workout_event` / `workout:session_complete` etc.) is a v1.2 nicety
+for decoupled push notifications (e.g., session-complete → Health prompt for
+post-wo water).

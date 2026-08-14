@@ -10,13 +10,14 @@ productivity-app/
 │   │   ├── projects/         # Projects space (a.k.a. "Forge")
 │   │   ├── workout/          # Workout space
 │   │   ├── career/           # Career space
-│   │   ├── health/           # Health space (placeholder)
+│   │   ├── health/           # Health space (VITAL-SIGN OS, 10 routes under construction)
 │   │   └── entertainment/    # Entertainment space (placeholder)
 │   ├── app/                  # App Router home "/" (dashboard)
 │   ├── components/           # UI (TopNav, SideNav, SpaceTasks, Dashboard, Notes, Habits, Pomodoro, Calendar, Tasks)
 │   │   ├── forge/            # Projects space (internal codename — routes live at /projects/*)
 │   │   ├── workout/          # Workout space
-│   │   └── career/           # Career space
+│   │   ├── career/           # Career space
+│   │   └── health/           # Health space (planned — see health branch)
 │   └── lib/                  # Shared store, types, themes, algorithms, demo seeds
 ├── backend/                  # Express skeleton (offline-first; frontend does not call it)
 └── docs/                     # You are here
@@ -41,11 +42,12 @@ productivity-app/
 | **projects** (Forge) | `/projects/*` | ✅ | v1.0 shipped — see [`spaces/projects/README.md`](spaces/projects/README.md) |
 | **workout** | `/workout/*` | ✅ | Battle-tested — see [`spaces/workout/README.md`](spaces/workout/README.md) |
 | **career** | `/career/*` | ✅ | Night HUD / Blueprint — see [`spaces/career/README.md`](spaces/career/README.md) |
-| **health** | `/health` | ❌ | `SpaceTasks` stub — awaiting full-bleed vitals theme |
+| **health** | `/health/*` | planned | VITAL-SIGN OS in active build on branch `health` (257 features / 10 sections) — see [`spaces/health/README.md`](spaces/health/README.md) / [`FEATURES.md`](spaces/health/FEATURES.md) |
 | **entertainment** | `/entertainment` | ❌ | `SpaceTasks` stub — awaiting full-bleed cinema theme |
 
 Each space folder holds:
 - `README.md` — routes, theme tokens, architecture, file map.
+- `FEATURES.md` (where applicable) — detailed per-feature checklist.
 - `QA.md` — smoke-test checklist + per-route pass/fail for the last QA sweep.
 
 ### Quality & bugs
@@ -71,6 +73,6 @@ Last known good build (2026-08-14 v1.0):
 
 ## Git conventions
 
-- `main` — stable. Feature branches (`projects`, `career`, `workout`) merge in after explicit approval; they are then kept as historical markers.
+- `main` — stable. Feature branches merge in after explicit approval; old branches (`projects`, `career`, `workout`) have been merged and deleted. Active work lives on short-lived feature branches (e.g. `health`).
 - Author: `Lucifer-Newstar <navin.jairam@gmail.com>` (pass via `git -c user.name=... -c user.email=... commit`).
 - No remote is configured (`fatal: 'origin' does not appear`); the repo is local-only by design.
