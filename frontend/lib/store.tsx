@@ -180,6 +180,10 @@ const EMPTY_PROJECT_DEFAULTS = {
   timeline: [],
   regulatoryChecks: [],
   scopeHistory: [],
+  goNoGos: [],
+  satisfactionLog: [],
+  sponsorLog: [],
+  costBenefit: { oneTimeCost: 0, ongoingCost: 0, projectedBenefit: 0 },
 };
 const EMPTY_TASK_DEFAULTS = {
   comments: [],

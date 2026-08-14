@@ -1,6 +1,6 @@
 # Kaizen Feature Status
 
-Last audited against code on `projects` branch (session: 2026-08-14). Three independent spaces ship today:
+Last audited against code on `projects` branch (session: 2026-08-14, wave 2 forge pass). Three independent spaces ship today:
 **Workout** (battle-tested on `main`, imperial Japanese/obsidian theme), **Career**
 (Night HUD / Blueprint dual themes), and **Forge** (Foundry / Drafting-Room dual themes —
 industrial project/task OS).
@@ -323,6 +323,15 @@ drilldown). Cross-links back to `/career` via a bridge callout on Foundry.
 | 17 | SHIP button → marks complete + archived + completion date + celebration burst | ✅ |
 | 18 | KILL button → prompts for reason + creates obituary, moves to vault | ✅ |
 | 19 | 3 gauge readouts (progress %, budget spent, tasks done/total) | ✅ Animated |
+| 20 | **Gantt mini-chart** (SVG) for dated milestones, auto-scaled timeline with connecting lines, done-state colored | ✅ Auto-renders when ≥2 dated milestones |
+| 21 | File links editor (label + path/URL, add/delete) in brief tab | ✅ |
+| 22 | Goal alignment field (ties heat to life/career goals) | ✅ |
+| 23 | Handover doc + Continuity plan fields (resilience planning) | ✅ |
+| 24 | **OPS tab** (new 7th plate): Change Requests, Resources w/ utilization bars, Quality Metrics, Cost/Benefit calculator (payback months), Social impact, Regulatory/Compliance checklist, Go/No-Go logger, Satisfaction pulse 1–10 w/ sparkline | ✅ |
+| 25 | **Weekly status report generator** — GENERATE THIS WEEK auto-builds from completed tasks, mood, hours; collapsible editor | ✅ |
+| 26 | **Power × Interest stakeholder matrix** (SVG quadrant map: Manage closely / Keep satisfied / Keep informed / Monitor) with stance-colored initials | ✅ Crew tab now shows full editing + matrix |
+| 27 | Stakeholder stance selector (champion/ally/decider/influencer/neutral/opponent) w/ color coding | ✅ |
+| 28 | **SHIP → Portfolio bridge** — confirm dialog pushes a case-study stub (problem/solution/results) to career.projects portfolio | ✅ |
 
 ## 3. Quarry (task kanban) — §02
 
@@ -339,17 +348,19 @@ drilldown). Cross-links back to `/career` via a bridge callout on Foundry.
 | 9 | Eisenhower matrix view (auto-buckets by importance/urgency 1-10 sliders) | ✅ |
 | 10 | Effort × Impact scatter-plot SVG (Quick Wins / Big Bets / Fillers / Thankless quadrants, colored circles w/ project icon, dropshadow) | ✅ |
 | 11 | Matrix mode switcher (KANBAN / EISENHOWER / EFFORT) | ✅ |
-| 12 | Subtasks (expandable) | ❌ Planned v1.1 (type supports subtaskIds[]) |
-| 13 | Drag-and-drop between columns | 🟡 Click-to-move buttons work; HTML5 DnD deferred (not fragile across scrollers) |
-| 14 | Task energy/focus ratings | ✅ Fields on type; surfaces in add/edit when expanded in v1.1 |
-| 15 | Recurring task templates | ❌ |
-| 16 | Archive search | ❌ |
+| 12 | Subtasks (expandable) | ✅ Expandable TaskEditor per card: add/delete/toggle subtasks, title edit, notes, due date, est/actual mins, priority, EFFORT/IMPACT/ENERGY/FOCUS/IMPORTANCE/URGENCY sliders, tags, stuck notes |
+| 13 | Drag-and-drop between columns | ✅ HTML5 draggable on cards, onDragOver/onDrop on columns, live ghosting while dragging |
+| 14 | Task energy/focus ratings + pomodoro quick-log + stuck toggle | ✅ Per-card +🍅 button, JAM toggle, TODAY toggle, aging color (10d amber / 21d red) |
+| 15 | Dependency blocker chips (shows if dependsOn[] are open/done, red/green) | ✅ Per-card; UI for setting dependsOn not yet shipped (type supports it) |
+| 16 | Batch-add (one task per line, Ctrl/Cmd+Enter to strike, project picker) | ✅ |
+| 17 | Recurring task templates | ❌ Type supports recurrence field; UI deferred |
+| 18 | Archive search | ❌ |
 
 ## 4. Smelter (brainstorms & retros) — §03
 
 | # | Feature | Status |
 |---|---|---|
-| 1 | 6-tab system: SCRATCH / DECISIONS / SWOT / 5 WHYS / LESSONS / RETRO | ✅ |
+| 1 | 8-tab system: SCRATCH / DECISIONS / SWOT / **PROS-CONS** / **SCENARIOS** / 5 WHYS / LESSONS / RETRO | ✅ |
 | 2 | Project-scoping dropdown (all heats or single project) | ✅ |
 | 3 | Scratchpad — free-text notes pinned to a project (or global), pencil-font rendering, sorted newest-first | ✅ Inline add + delete |
 | 4 | Decision log — date/decision/alternatives/why/approvals stamp | ✅ APPROVED rubber-stamp when checkboxed |
@@ -357,9 +368,9 @@ drilldown). Cross-links back to `/career` via a bridge callout on Foundry.
 | 6 | 5-whys root-cause drill (problem + 5 why slots) | ✅ Add/delete; styled as numbered drill bits |
 | 7 | Lessons ledger — quick-Log entry at top with date stamp, feed of all lessons w/ category color | ✅ well/poorly/improve/general |
 | 8 | Start/Stop/Continue retro template (one per date, 3 columns, append) | ✅ |
-| 9 | Future scenario planner / "what if" generator | ❌ Deferred |
-| 10 | Reverse-brainstorm / worst-idea generator | ❌ |
-| 11 | Porter / PEST / BMC templates | ❌ Could add via future tabs |
+| 9 | Pros/Cons with ×1–×5 weighting sliders, weighted verdict bar (GO/NO-GO/TOSS-UP stamp) | ✅ |
+| 10 | Future scenario planner (if/then trigger → response playbook) | ✅ |
+| 11 | Reverse-brainstorm / worst-idea / SCAMPER / Porter / PEST / BMC | ❌ |
 
 ## 5. Vault (archive/graveyard) — §04
 
@@ -371,7 +382,7 @@ drilldown). Cross-links back to `/career` via a bridge callout on Foundry.
 | 4 | Cold-storage archived projects | ✅ Steel |
 | 5 | REHEAT button to restore to Foundry (clears archived, sets status back to paused) | ✅ |
 | 6 | One-click JSON export of entire Forge state | ✅ EXPORT button, downloads `kaizen-forge-YYYY-MM-DD.json` |
-| 7 | File reference links (`file:///`) | ❌ Field exists on type; UI editor deferred |
+| 7 | File reference links editor | ✅ In project BRIEF tab |
 
 ## Cross-cutting (Forge)
 
@@ -381,23 +392,34 @@ drilldown). Cross-links back to `/career` via a bridge callout on Foundry.
 | Typography | ✅ Oswald heavy condensed headers + JetBrains Mono metrics + Special Elite pencil annotations; imperial/emperor/serif classes nuked via .forge-root overrides |
 | Theme toggle | ✅ Reuses global useTheme() (Sun/Moon); footer reads `kaizen.forge // v1.0 — foundry` / `vellum` |
 | LocalStorage persistence | ✅ `kaizen.forge` key, `migrateForge()` defensive seed |
-| Career cross-link | ✅ Bridge plate in Foundry links to /career; portfolio-bridge + skill-alignment calls out in UI (auto-push on SHIP deferred to v1.1) |
+| Velocity plate on Foundry | ✅ 8-week bar chart (steel/amber = created/shipped) + pulse grid (BACKLOG/SHIPPED/PROJECTS/AT RISK), avg velocity, burndown % |
+| Career cross-link | ✅ Bridge plate in Foundry links to /career |
 | Section transitions | ✅ HammerStrike: vertical molten amber line slam + radial heat bloom (unique from HudFlash and SectionSlash) |
 | Particles / celebration | ✅ Shared career:burst event used for amber sparks on forge, green confetti on task/project ship, pink for seed |
 | Rubber-stamp animations | ✅ `.forge-stamp` keyframe: scale 1.8→1 rotate -12°→-8° for APPROVED/DEAD/SHIPPED tags |
 | Rivet corner markers (four-dot) on every steel-plate | ✅ Reusable class `.riv-tl/tr/bl/br` positioned absolute negative-offset |
-| Keyboard shortcuts | ❌ v1.0 relies on button clicks; G?/hotkeys to come |
+| Keyboard shortcuts | ❌ v1.x relies on button clicks; G?/hotkeys to come |
 | Career-skill alignment check | 🟡 Callout links to /career; auto-skill-bump on project SHIP deferred |
-| Portfolio builder bridge on SHIP | 🟡 Auto-offer to push shipped project to career.portfolio deferred |
-| Gantt / timeline viz | ❌ |
-| Stakeholder satisfaction tracking over time | ❌ Single scalar at present |
+| Portfolio builder bridge on SHIP | ✅ Confirm-push on SHIP creates PortfolioProject in career state with case-study stub |
+| Gantt / timeline viz | ✅ Mini-Gantt SVG renders when ≥2 dated milestones |
+| Stakeholder satisfaction tracking over time | ✅ Satisfaction pulse (1–10) with sparkline in OPS tab |
+| Change requests / Resources / Quality metrics / Regulatory / Go-NoGo / Cost-benefit / Weekly reports | ✅ All in OPS tab |
 | Backend CRUD `/api/forge/*` | ❌ Frontend offline-first only |
 | All routes static-prerendered | ✅ Next build shows ○ for `/projects`, `/projects/quarry`, `/projects/smelter`, `/projects/vault`, `/projects/p/[id]` |
 | tsc --noEmit clean | ✅ Zero type errors |
 
 ## Career ↔ Forge bridge roadmap
 
-- [ ] "Push to Portfolio" on SHIP: auto-creates a PortfolioProject in career state with title, summary, skills used, and completion date
+- [x] "Push to Portfolio" on SHIP: auto-creates a PortfolioProject in career state with title, summary, skills used, and completion date
 - [ ] Skill gap alert: when a forged project references a skill with proficiency <4, surface a "level this first" nudge linking to Roadmaps
 - [ ] Stakeholder ↔ NetworkContact sync (picker to link a stakeholder to a career.contacts entry)
 - [ ] Side-hustle ↔ project cross-pollination (revenue/hours roll-up from Forge)
+- [ ] Auto-skill-bump on milestone SHIP (match fuzzy tags → career skills)
+
+## Remaining from the 189-feature PM spec (v1.2+ backlog)
+
+Project mgmt: HTML5 drag-drop across columns ✅ done this wave · Gantt ✅ · remaining: calendar view, swimlanes, custom statuses, critical path, float/slack, resource workload heatmap, CSV import/export, print view, weekly review mode, audit trail.
+Tasks: subtask indentation in kanban, recurring templates UI, batch edit, cloning, task-dependency editor UI, completion streak.
+Smelter: scratch dividers, personas, screenshot timeline, mind-map, reverse brainstorm, SCAMPER, Porter/PEST/BMC/VPC/Lean/user-story/event-storming/journey-map/service-blueprint/prototype/wireframe/storyboard, Buy-a-Feature, Kano, product backlog, sprint planning, fishbone, decision matrix, paired comparison, six hats, design thinking, canvas, mood boards, audio/voice, timer, voting/affinity grouping, scorecards, mind-map animation.
+Review: velocity projection lines, effort/impact variance report, skills-gained sync → career, network-from-project sync.
+Global: daily pulse to dashboard, project comparison, backlog/idea bin, template library, energy/time balance dial.

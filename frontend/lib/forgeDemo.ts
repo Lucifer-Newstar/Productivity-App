@@ -76,19 +76,63 @@ export function buildForgeDemo(): ForgeState {
       { id: uid(), title: "Foundry shell (dual theme)", date: daysAgo(3), done: true, doneAt: daysAgo(3), celebration: "cold beer" },
       { id: uid(), title: "Drilldown + tasks", date: daysFrom(3), done: false },
       { id: uid(), title: "Smelter retrospect", date: daysFrom(9), done: false },
+      { id: uid(), title: "Ship v1.0", date: daysFrom(14), done: false },
     ],
-    tags: ["kaizen","meta"],
+    tags: ["kaizen","meta","ui"],
     qualityChecks: [
-      { id: uid(), label: "tsc clean", done: true },
-      { id: uid(), label: "Dual themes verified", done: false },
-      { id: uid(), label: "No theme bleed", done: false },
+      { id: uid(), label: "tsc clean", category:"standards", done: true },
+      { id: uid(), label: "Dual themes verified", category:"review", done: true },
+      { id: uid(), label: "No theme bleed from Workout/Career", category:"standards", done: true },
+      { id: uid(), label: "Static prerender all routes", category:"testing", done: true },
+    ],
+    qualityMetrics: [
+      { id: uid(), label: "Lighthouse perf", target: 95, actual: 92, unit: "score" },
+      { id: uid(), label: "CSS bundle", target: 16, actual: 14.5, unit: "kB" },
+    ],
+    stakeholders: [
+      { id: uid(), name: "Me (Builder)", role: "Owner/Dev/Design", power:"high", interest:"high", stance:"champion" },
+      { id: uid(), name: "Future me", role: "End user", power:"high", interest:"med", stance:"decision-maker" },
+    ],
+    resources: [
+      { id: uid(), name: "Dev time", kind:"people", allocated: 80, used: 42, unit:"hrs" },
+      { id: uid(), name: "Hosting", kind:"software", allocated: 20, used: 0, unit:"$/mo" },
+    ],
+    changeRequests: [
+      { id: uid(), date: daysAgo(1), description:"Add Power/Interest matrix", reason:"PM spec gap", impact:"+2h", approved:"approved" },
+    ],
+    weeklyReports: [
+      { id: uid(), weekOf: daysAgo(7), accomplishments: "- Foundry shell\n- 5 routes prerendered\n- Dual themes locked", nextWeek: "- Drilldown CRUD\n- Quarry kanban", blockers: "", risks: "Theme bleed possible", decisionsNeeded: "", mood: 5, hoursLogged: 18 },
+      { id: uid(), weekOf: today(), accomplishments: "- Beefed task editor\n- Velocity plate\n- Stakeholder matrix", nextWeek: "- Drag-drop\n- Career bridge", blockers: "", risks: "Scope creep", decisionsNeeded: "", mood: 4, hoursLogged: 12 },
+    ],
+    regulatoryChecks: [
+      { label: "LocalStorage only (no server data)", checked: true },
+      { label: "No third-party trackers", checked: true },
+    ],
+    goNoGos: [
+      { id: uid(), date: daysAgo(5), decision:"go", rationale:"Theme direction locked, demo data working.", nextReview: daysFrom(10) },
+    ],
+    costBenefit: { oneTimeCost: 0, ongoingCost: 0, projectedBenefit: 9999 },
+    fileLinks: [
+      { label: "spec", path: "docs/FEATURES.md" },
+      { label: "figma", path: "local://forge-board" },
     ],
     risks: [
       { id: uid(), description: "Feature creep into PM-software territory", probability:"med", impact:"high", mitigation:"Lock v1 scope", contingency:"Archive extras to backlog", status:"open" },
+      { id: uid(), description: "User forgets to back up localStorage", probability:"med", impact:"med", mitigation:"Add JSON export reminder", contingency:"Implement export-on-update", status:"open" },
     ],
     premortem: [
       { id: uid(), failure:"Burns out mid-build and ships half-broken", mitigation:"Daily 15-min pulse, celebrate small wins", likelihood:"med"},
     ],
+    satisfactionLog: [
+      { id: uid(), date: daysAgo(10), score: 4 },
+      { id: uid(), date: daysAgo(7), score: 7 },
+      { id: uid(), date: daysAgo(3), score: 9 },
+      { id: uid(), date: today(), score: 8 },
+    ],
+    scope: "Forge v1: 4 sectors, dual themes, kanban, retro, demo data.",
+    goalAlignment: "Build a productivity OS that sparks joy every time I open it.",
+    handoverDoc: "npm install; npm run dev. Routes under /projects/*. localStorage key kaizen.forge.",
+    continuityPlan: "If offline for >2 weeks, export JSON before stepping away.",
   });
   const p2 = makeProject({
     codename: "KILN",
@@ -108,6 +152,11 @@ export function buildForgeDemo(): ForgeState {
     issues: [
       { id: uid(), description: "Waiting on Forge OS drilldown to land first", impact: "Blocks UI work", priority: "high", owner: "self", status: "open", createdAt: today() },
     ],
+    stakeholders: [
+      { id: uid(), name: "Career space", role: "Consumer", power:"high", interest:"high", stance:"ally" },
+    ],
+    costBenefit: { oneTimeCost: 8, ongoingCost: 0, projectedBenefit: 100 },
+    goNoGos: [{ id: uid(), date: daysFrom(10), decision:"hold", rationale:"Blocked on ANVIL", nextReview: daysFrom(20) }],
   });
   const p3 = makeProject({
     codename: "CRUCIBLE",
@@ -125,6 +174,20 @@ export function buildForgeDemo(): ForgeState {
       { id: uid(), title: "Hero + copy", date: daysAgo(10), done: true, doneAt: daysAgo(9) },
       { id: uid(), title: "Interviews", date: daysAgo(2), done: false },
       { id: uid(), title: "Launch", date: daysFrom(21), done: false },
+    ],
+    risks: [
+      { id: uid(), description:"No validated problem before building", probability:"high", impact:"high", mitigation:"Run 10 interviews this week", contingency:"Pivot to narrower audience", status:"open" },
+    ],
+    changeRequests: [
+      { id: uid(), date: daysAgo(5), description:"Add free PDF lead magnet", reason:"Low email capture rate", impact:"+1 day design work", approved:"approved" },
+    ],
+    weeklyReports: [
+      { id: uid(), weekOf: daysAgo(7), accomplishments: "- Hero drafted\n- Domain bought", nextWeek: "- 10 interviews", blockers: "No warm intro list", risks: "Spinning wheels on copy", decisionsNeeded: "Target audience narrowed?", mood: 3, hoursLogged: 6 },
+    ],
+    costBenefit: { oneTimeCost: 120, ongoingCost: 30, projectedBenefit: 500 },
+    stakeholders: [
+      { id: uid(), name: "Early adopters", role: "Users", power:"high", interest:"med", stance:"neutral" },
+      { id: uid(), name: "Me", role: "Founder", power:"high", interest:"high", stance:"champion" },
     ],
   });
   const p4 = makeProject({

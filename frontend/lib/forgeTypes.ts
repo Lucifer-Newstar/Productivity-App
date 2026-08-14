@@ -120,6 +120,23 @@ export interface WeeklyReport {
   blockers: string;
   risks: string;
   decisionsNeeded: string;
+  mood?: 1|2|3|4|5;
+  hoursLogged?: number;
+}
+
+export interface GoNoGo {
+  id: string;
+  date: string;
+  decision: "go" | "no-go" | "hold";
+  rationale: string;
+  nextReview?: string;
+}
+
+export interface SatisfactionLog {
+  id: string;
+  date: string;
+  score: number; // 1-10
+  note?: string;
 }
 
 export interface ProjectTask {
@@ -296,6 +313,10 @@ export interface ForgeProject {
   continuityPlan?: string;
   regulatoryChecks?: { label: string; checked: boolean }[];
   goalAlignment?: string;
+  goNoGos?: GoNoGo[];
+  satisfactionLog?: SatisfactionLog[];
+  costBenefit?: { oneTimeCost: number; ongoingCost: number; projectedBenefit: number; paybackMonths?: number };
+  sponsorLog?: { date: string; note: string }[];
 }
 
 export interface ParkingLotItem {

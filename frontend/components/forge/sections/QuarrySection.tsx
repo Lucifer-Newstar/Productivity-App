@@ -49,6 +49,7 @@ export default function QuarrySection() {
   const [batchText, setBatchText] = useState("");
   const [projId, setProjId] = useState<string>("");
   const [openTask, setOpenTask] = useState<string|null>(null);
+  const [dragId, setDragId] = useState<string|null>(null);
 
   const activeProjects = forge.projects.filter(p => !p.archived && p.status!=="dead");
 
@@ -170,7 +171,11 @@ export default function QuarrySection() {
           {COLS.map(col => {
             const tasks = visibleTasks.filter(t => t.status === col.id && !t.parentId);
             return (
-              <div key={col.id} className="rounded-sm steel-plate p-3 relative" style={{borderColor:`${col.color}55`,minHeight:200}}>
+              <div key={col.id}
+                className="rounded-sm steel-plate p-3 relative"
+                style={{borderColor:`${col.color}55`,minHeight:200,outline:dragId?`1px dashed ${col.color}88`:"none"}}
+                onDragOver={e=>{e.preventDefault();e.dataTransfer.dropEffect="move";}}
+                onDrop={e=>{e.preventDefault();if(dragId){moveTask(dragId,col.id);setDragId(null);}}}>
                 <span className="riv-tl"/><span className="riv-tr"/><span className="riv-bl"/><span className="riv-br"/>
                 <div className="flex items-center gap-2 mb-3">
                   <col.icon size={12} style={{color:col.color}}/>
@@ -187,7 +192,10 @@ export default function QuarrySection() {
                     const aged = ageColor(t.createdAt);
                     return (
                       <div key={t.id}
-                        className="rounded-sm text-xs"
+                        draggable
+                        onDragStart={e=>{setDragId(t.id);e.dataTransfer.effectAllowed="move";e.dataTransfer.setData("text/plain",t.id);}}
+                        onDragEnd={()=>setDragId(null)}
+                        className={`rounded-sm text-xs ${dragId===t.id?"opacity-50":"cursor-grab active:cursor-grabbing"}`}
                         style={{background:"var(--fr-card2)",borderLeft:`3px solid ${t.stuck?"#ef4444":proj?.color||"#888"}`}}>
                         <div className="p-2">
                           <div className="flex items-start gap-1.5">
@@ -232,6 +240,24 @@ export default function QuarrySection() {
                                   ⚠ {t.stuckNote}
                                 </div>
                               )}
+                              {(t.dependsOn||[]).length>0 && (() => {
+                                const blockers = (t.dependsOn||[]).map(did=>forge.tasks.find(x=>x.id===did)).filter(Boolean);
+                                const openBlockers = blockers.filter(b=>b && b.status!=="done");
+                                return (
+                                  <div className="mt-1 flex items-center gap-1 flex-wrap">
+                                    <span className="mono text-[8px] tracking-widest" style={{color:openBlockers.length?"#ef4444":"var(--fr-green)"}}>
+                                      {openBlockers.length?"⛔BLOCKED:":"✓UNBLOCKED:"}
+                                    </span>
+                                    {blockers.slice(0,2).map(b=>b && (
+                                      <span key={b.id} className="mono text-[8px] px-1 py-0.5 rounded-sm truncate max-w-[80px]"
+                                        style={{background:b.status==="done"?"rgba(34,197,94,0.15)":"rgba(239,68,68,0.15)",
+                                                color:b.status==="done"?"var(--fr-green)":"#ef4444",
+                                                border:`1px solid ${b.status==="done"?"rgba(34,197,94,0.4)":"rgba(239,68,68,0.4)"}`}}
+                                        title={b.title}>{b.title.slice(0,12)}{b.title.length>12?"…":""}</span>
+                                    ))}
+                                  </div>
+                                );
+                              })()}
                             </div>
                           </div>
                           <div className="flex gap-0.5 mt-1.5 flex-wrap">

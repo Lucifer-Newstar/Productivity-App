@@ -12,13 +12,17 @@ import {
   ArrowLeft, Hammer, AlertTriangle, CheckCircle2, XCircle, CircleDot,
   Plus, Trash2, Target, Flame, DollarSign, Users, Calendar, Skull,
   ShieldAlert, Bug, ClipboardCheck, MessageSquare, Scale, X, Save,
-  Archive, RotateCcw, Send, BookOpen, Briefcase,
+  Archive, RotateCcw, Send, BookOpen, Briefcase, FileText, Link2,
+  FileUp, Factory, Gauge as GaugeIcon, GitBranch, Handshake, ThumbsUp, ThumbsDown,
+  PackageOpen, Scroll, Receipt, Activity,
 } from "lucide-react";
 import { useStore } from "../../../lib/store";
 import type {
   ForgeProject, ProjectHealth, ProjectMilestone, ProjectStakeholder,
   PremortemItem, RiskItem, IssueItem, QualityCheck, CommsLogEntry,
+  ChangeRequest, Resource, QualityMetric, WeeklyReport, GoNoGo,
 } from "../../../lib/forgeTypes";
+import type { PortfolioProject } from "../../../lib/careerTypes";
 
 const uid = () => Math.random().toString(36).slice(2,10);
 const today = () => new Date().toISOString().slice(0,10);
@@ -32,11 +36,11 @@ const HEALTH: Record<ProjectHealth, { label: string; color: string; Icon: any }>
   "dead":      { label: "DEAD",      color: "#7f1d1d", Icon: Skull },
 };
 
-type Tab = "brief" | "tasks" | "stakeholders" | "risks" | "comms" | "post";
+type Tab = "brief" | "tasks" | "stakeholders" | "risks" | "ops" | "comms" | "post";
 
 export default function ProjectDrill() {
   const router = useRouter();
-  const { forge, updateForge, career } = useStore();
+  const { forge, updateForge, career, updateCareer } = useStore();
   const id = typeof router.query.id === "string" ? router.query.id : Array.isArray(router.query.id) ? router.query.id[0] : "";
   const project = forge.projects.find(p => p.id === id);
   const [tab, setTab] = useState<Tab>("brief");
@@ -69,7 +73,29 @@ export default function ProjectDrill() {
   const usedHrs = Math.round(tasks.reduce((n,t)=>n+(t.actualMins||0),0)/60);
 
   const ship = () => {
-    patch({ status:"done", completedAt: today(), archived:true });
+    const alreadyInPortfolio = project.portfolioLinkId && career.projects.find(p => p.id === project.portfolioLinkId);
+    const push = !alreadyInPortfolio && confirm("Push this project to your Career portfolio? (case-study stub)");
+    let portfolioId = project.portfolioLinkId;
+    if (push) {
+      const pid = "pf-" + uid();
+      const stub: PortfolioProject = {
+        id: pid,
+        title: project.title,
+        summary: project.brief,
+        role: "Builder / Owner",
+        category: project.tags?.[0] ?? "project",
+        technologies: [...(project.tags ?? [])],
+        results: project.successMetrics,
+        learnings: "",
+        private: false,
+        relevanceTags: [...(project.tags ?? [])],
+        caseStudy: { problem: project.why, solution: project.scope || project.brief, results: project.successMetrics },
+      };
+      updateCareer(c => ({ projects: [stub, ...c.projects] }));
+      portfolioId = pid;
+      window.dispatchEvent(new CustomEvent("career:toast",{detail:{title:"PUSHED→PORTFOLIO",sub:project.title,color:"#06b6d4",icon:"briefcase",timeout:3600}}));
+    }
+    patch({ status:"done", completedAt: today(), archived:true, portfolioLinkId: portfolioId });
     window.dispatchEvent(new CustomEvent("career:burst",{detail:{color:"#22c55e",count:60}}));
     window.dispatchEvent(new CustomEvent("career:toast",{detail:{title:"SHIPPED",sub:project.title,color:"#22c55e",icon:"check",timeout:3200}}));
   };
@@ -167,6 +193,7 @@ export default function ProjectDrill() {
           ["tasks","TASKS", Hammer],
           ["stakeholders","CREW", Users],
           ["risks","RISKS", ShieldAlert],
+          ["ops","OPS", Factory],
           ["comms","COMMS", MessageSquare],
           ["post","POST-MORTEM", BookOpen],
         ] as const).map(([id,lbl,Icon])=>(
@@ -237,6 +264,31 @@ export default function ProjectDrill() {
               </div>
             </div>
             <LabeledArea label="Scope baseline" value={project.scope} onChange={v=>patchField("scope",v)} placeholder="In-scope / out-of-scope."/>
+            <LabeledArea label="Goal alignment" value={project.goalAlignment||""} onChange={v=>patchField("goalAlignment",v)} placeholder="Which career/life goals does this heat fuel?"/>
+            <div>
+              <div className="mono text-[9px] tracking-widest mb-1 flex items-center gap-1" style={{color:"var(--fr-fgMuted)"}}>
+                <Link2 size={10}/> FILE LINKS
+              </div>
+              <div className="space-y-1">
+                {(project.fileLinks||[]).map((fl,i)=>(
+                  <div key={i} className="flex gap-1">
+                    <input value={fl.label} onChange={e=>patch({fileLinks:(project.fileLinks||[]).map((x,j)=>j===i?{...x,label:e.target.value}:x)})}
+                      placeholder="label" className="w-24 bg-transparent outline-none mono text-[11px] px-2 py-1 rounded-sm"
+                      style={{background:"var(--fr-card2)",border:"1px solid var(--fr-borderSoft)",color:"var(--fr-fg)"}}/>
+                    <input value={fl.path} onChange={e=>patch({fileLinks:(project.fileLinks||[]).map((x,j)=>j===i?{...x,path:e.target.value}:x)})}
+                      placeholder="path or URL" className="flex-1 bg-transparent outline-none mono text-[11px] px-2 py-1 rounded-sm"
+                      style={{background:"var(--fr-card2)",border:"1px solid var(--fr-borderSoft)",color:"var(--fr-fg)"}}/>
+                    <button onClick={()=>patch({fileLinks:(project.fileLinks||[]).filter((_,j)=>j!==i)})}
+                      style={{color:"var(--fr-red)"}}><X size={11}/></button>
+                  </div>
+                ))}
+                <button onClick={()=>patch({fileLinks:[...(project.fileLinks||[]),{label:"",path:""}]})}
+                  className="mono text-[10px] tracking-widest py-1 px-2 rounded-sm"
+                  style={{color:"#a78bfa",border:"1px dashed #a78bfa66"}}>+ ADD LINK</button>
+              </div>
+            </div>
+            <LabeledArea label="Handover doc" value={project.handoverDoc||""} onChange={v=>patchField("handoverDoc",v)} placeholder="If you handed this off tomorrow, what would they need?" mono={true}/>
+            <LabeledArea label="Continuity plan" value={project.continuityPlan||""} onChange={v=>patchField("continuityPlan",v)} placeholder="What happens if you get sick / pulled away?" mono={true}/>
           </SectionPlate>
 
           <SectionPlate icon={<DollarSign size={14}/>} title="MILESTONES" color={project.color} className="md:col-span-2">
@@ -253,6 +305,7 @@ export default function ProjectDrill() {
                 <Plus size={11}/> ADD MILESTONE
               </button>
             </div>
+            {project.milestones.filter(m=>m.date).length >= 2 && <GanttMini milestones={project.milestones} color={project.color}/>}
           </SectionPlate>
 
           <SectionPlate icon={<AlertTriangle size={14}/>} title="PREMORTEM (5 FAILURES)" color="#ef4444" className="md:col-span-2">
@@ -275,18 +328,37 @@ export default function ProjectDrill() {
           <TaskPanel project={project}/>
         </motion.div>}
 
-        {tab==="stakeholders" && <motion.div key="s" initial={{opacity:0,y:8}} animate={{opacity:1,y:0}} exit={{opacity:0}}>
+        {tab==="stakeholders" && <motion.div key="s" initial={{opacity:0,y:8}} animate={{opacity:1,y:0}} exit={{opacity:0}} className="space-y-4">
           <SectionPlate icon={<Users size={14}/>} title="CREW & ALLIES" color="#06b6d4">
-            <div className="grid md:grid-cols-2 gap-2">
+            <PowerInterestMatrix stakeholders={project.stakeholders} color="#06b6d4"/>
+            <div className="grid md:grid-cols-2 gap-2 mt-4">
               {project.stakeholders.map(s=>(
-                <div key={s.id} className="p-2 rounded-sm" style={{background:"var(--fr-card2)",border:"1px solid var(--fr-borderSoft)"}}>
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <div className="font-bold text-sm">{s.name}</div>
-                      <div className="mono text-[9px] tracking-widest" style={{color:"var(--fr-fgMuted)"}}>{s.role} · {s.stance}</div>
-                    </div>
+                <div key={s.id} className="p-2 rounded-sm space-y-1" style={{background:"var(--fr-card2)",border:"1px solid var(--fr-borderSoft)"}}>
+                  <div className="flex items-center gap-1">
+                    <input value={s.name} onChange={e=>patch({stakeholders:project.stakeholders.map(x=>x.id===s.id?{...x,name:e.target.value}:x)})}
+                      placeholder="Name" className="flex-1 bg-transparent outline-none text-sm font-bold" style={{color:"var(--fr-fg)"}}/>
                     <button onClick={()=>patch({stakeholders:project.stakeholders.filter(x=>x.id!==s.id)})}
                       style={{color:"var(--fr-red)"}}><Trash2 size={11}/></button>
+                  </div>
+                  <input value={s.role||""} onChange={e=>patch({stakeholders:project.stakeholders.map(x=>x.id===s.id?{...x,role:e.target.value}:x)})}
+                    placeholder="Role" className="w-full bg-transparent outline-none pencil text-xs italic" style={{color:"var(--fr-fgMuted)"}}/>
+                  <div className="grid grid-cols-3 gap-1">
+                    <select value={s.power} onChange={e=>patch({stakeholders:project.stakeholders.map(x=>x.id===s.id?{...x,power:e.target.value as any}:x)})}
+                      className="bg-transparent outline-none mono text-[9px] tracking-widest px-1 py-1 rounded-sm"
+                      style={{background:"var(--fr-card)",border:"1px solid var(--fr-borderSoft)",color:"var(--fr-fg)"}}>
+                      <option value="low">PWR:LOW</option><option value="med">PWR:MED</option><option value="high">PWR:HIGH</option>
+                    </select>
+                    <select value={s.interest} onChange={e=>patch({stakeholders:project.stakeholders.map(x=>x.id===s.id?{...x,interest:e.target.value as any}:x)})}
+                      className="bg-transparent outline-none mono text-[9px] tracking-widest px-1 py-1 rounded-sm"
+                      style={{background:"var(--fr-card)",border:"1px solid var(--fr-borderSoft)",color:"var(--fr-fg)"}}>
+                      <option value="low">INT:LOW</option><option value="med">INT:MED</option><option value="high">INT:HIGH</option>
+                    </select>
+                    <select value={s.stance} onChange={e=>patch({stakeholders:project.stakeholders.map(x=>x.id===s.id?{...x,stance:e.target.value as any}:x)})}
+                      className="bg-transparent outline-none mono text-[9px] tracking-widest px-1 py-1 rounded-sm"
+                      style={{background:"var(--fr-card)",border:"1px solid var(--fr-borderSoft)",color:stanceColor(s.stance)}}>
+                      <option value="champion">CHAMPION</option><option value="ally">ALLY</option><option value="decision-maker">DECIDER</option>
+                      <option value="influencer">INFL'CER</option><option value="neutral">NEUTRAL</option><option value="opponent">OPPONENT</option>
+                    </select>
                   </div>
                 </div>
               ))}
@@ -295,7 +367,7 @@ export default function ProjectDrill() {
                 style={{color:"#06b6d4",border:"1px dashed #06b6d466"}}>+ ADD CREW MEMBER</button>
             </div>
             <p className="pencil text-[11px] italic mt-3" style={{color:"var(--fr-fgMuted)"}}>
-              Tip: cross-link with Career Network contacts (coming soon). For now, name them.
+              Matrix quadrants: top-right = manage closely · top-left = keep satisfied · bottom-right = keep informed · bottom-left = monitor.
             </p>
           </SectionPlate>
         </motion.div>}
@@ -345,6 +417,231 @@ export default function ProjectDrill() {
                 className="w-full py-2 rounded-sm mono text-[10px] tracking-widest"
                 style={{color:"#22c55e",border:"1px dashed #22c55e66"}}>+ ADD CHECK</button>
             </div>
+          </SectionPlate>
+        </motion.div>}
+
+        {tab==="ops" && <motion.div key="o" initial={{opacity:0,y:8}} animate={{opacity:1,y:0}} exit={{opacity:0}} className="space-y-4">
+          {/* Change requests */}
+          <SectionPlate icon={<GitBranch size={14}/>} title="CHANGE REQUESTS" color="#a78bfa">
+            <div className="space-y-2">
+              {(project.changeRequests||[]).map(cr=>(
+                <div key={cr.id} className="p-2 rounded-sm space-y-1" style={{background:"var(--fr-card2)",border:`1px solid ${cr.approved==="approved"?"#22c55e66":cr.approved==="rejected"?"#ef444466":"#a78bfa55"}`}}>
+                  <div className="flex items-center gap-1">
+                    <input type="date" value={cr.date} onChange={e=>patch({changeRequests:(project.changeRequests||[]).map(x=>x.id===cr.id?{...x,date:e.target.value}:x)})}
+                      className="bg-transparent outline-none mono text-[10px]" style={{color:"var(--fr-fgMuted)"}}/>
+                    <select value={cr.approved} onChange={e=>patch({changeRequests:(project.changeRequests||[]).map(x=>x.id===cr.id?{...x,approved:e.target.value as any}:x)})}
+                      className="bg-transparent outline-none mono text-[9px] tracking-widest ml-auto"
+                      style={{color:cr.approved==="approved"?"#22c55e":cr.approved==="rejected"?"#ef4444":"#f59e0b"}}>
+                      <option value="pending">PENDING</option><option value="approved">APPROVED</option><option value="rejected">REJECTED</option>
+                    </select>
+                    <button onClick={()=>patch({changeRequests:(project.changeRequests||[]).filter(x=>x.id!==cr.id)})} style={{color:"var(--fr-red)"}}><X size={10}/></button>
+                  </div>
+                  <input value={cr.description} onChange={e=>patch({changeRequests:(project.changeRequests||[]).map(x=>x.id===cr.id?{...x,description:e.target.value}:x)})}
+                    placeholder="Change description..." className="w-full bg-transparent outline-none text-sm" style={{color:"var(--fr-fg)"}}/>
+                  <input value={cr.reason} onChange={e=>patch({changeRequests:(project.changeRequests||[]).map(x=>x.id===cr.id?{...x,reason:e.target.value}:x)})}
+                    placeholder="Reason" className="w-full bg-transparent outline-none pencil text-xs italic" style={{color:"var(--fr-fgMuted)"}}/>
+                  <input value={cr.impact} onChange={e=>patch({changeRequests:(project.changeRequests||[]).map(x=>x.id===cr.id?{...x,impact:e.target.value}:x)})}
+                    placeholder="Impact (scope/budget/schedule)" className="w-full bg-transparent outline-none mono text-[10px]" style={{color:"var(--fr-amber)"}}/>
+                </div>
+              ))}
+              <button onClick={()=>patch({changeRequests:[...(project.changeRequests||[]),{id:uid(),date:today(),description:"",reason:"",impact:"",approved:"pending"}]})}
+                className="w-full py-2 rounded-sm mono text-[10px] tracking-widest"
+                style={{color:"#a78bfa",border:"1px dashed #a78bfa66"}}>+ ADD CHANGE REQUEST</button>
+            </div>
+          </SectionPlate>
+
+          {/* Resources */}
+          <SectionPlate icon={<PackageOpen size={14}/>} title="RESOURCES" color="#06b6d4">
+            <div className="space-y-2">
+              {(project.resources||[]).map(r=>{
+                const pct = r.allocated?Math.round(r.used/r.allocated*100):0;
+                const over = r.allocated && r.used>r.allocated;
+                return (
+                  <div key={r.id} className="p-2 rounded-sm" style={{background:"var(--fr-card2)",border:"1px solid var(--fr-borderSoft)"}}>
+                    <div className="flex items-center gap-2">
+                      <input value={r.name} onChange={e=>patch({resources:(project.resources||[]).map(x=>x.id===r.id?{...x,name:e.target.value}:x)})}
+                        placeholder="Resource" className="flex-1 bg-transparent outline-none text-sm font-bold" style={{color:"var(--fr-fg)"}}/>
+                      <select value={r.kind} onChange={e=>patch({resources:(project.resources||[]).map(x=>x.id===r.id?{...x,kind:e.target.value as any}:x)})}
+                        className="bg-transparent outline-none mono text-[9px] tracking-widest" style={{color:"var(--fr-fgMuted)"}}>
+                        <option value="people">PEOPLE</option><option value="budget">BUDGET</option>
+                        <option value="equipment">EQUIP</option><option value="software">SW</option>
+                      </select>
+                      <button onClick={()=>patch({resources:(project.resources||[]).filter(x=>x.id!==r.id)})} style={{color:"var(--fr-red)"}}><X size={10}/></button>
+                    </div>
+                    <div className="grid grid-cols-3 gap-1 mt-1 mono text-[10px]">
+                      <label className="flex items-center gap-1"><span style={{color:"var(--fr-fgMuted)"}}>ALL:</span>
+                        <input type="number" value={r.allocated} onChange={e=>patch({resources:(project.resources||[]).map(x=>x.id===r.id?{...x,allocated:Number(e.target.value)||0}:x)})}
+                          className="w-full bg-transparent outline-none" style={{color:"var(--fr-fg)"}}/></label>
+                      <label className="flex items-center gap-1"><span style={{color:"var(--fr-fgMuted)"}}>USED:</span>
+                        <input type="number" value={r.used} onChange={e=>patch({resources:(project.resources||[]).map(x=>x.id===r.id?{...x,used:Number(e.target.value)||0}:x)})}
+                          className="w-full bg-transparent outline-none" style={{color:"var(--fr-fg)"}}/></label>
+                      <label className="flex items-center gap-1"><span style={{color:"var(--fr-fgMuted)"}}>UNIT:</span>
+                        <input value={r.unit} onChange={e=>patch({resources:(project.resources||[]).map(x=>x.id===r.id?{...x,unit:e.target.value}:x)})}
+                          className="w-full bg-transparent outline-none" style={{color:"var(--fr-fg)"}}/></label>
+                    </div>
+                    <div className="h-1.5 rounded-full overflow-hidden mt-1" style={{background:"var(--fr-borderSoft)"}}>
+                      <div className="h-full rounded-full" style={{width:`${Math.min(100,pct)}%`,background:over?"#ef4444":"#06b6d4",boxShadow:`0 0 6px ${over?"#ef4444":"#06b6d4"}`}}/>
+                    </div>
+                  </div>
+                );
+              })}
+              <button onClick={()=>patch({resources:[...(project.resources||[]),{id:uid(),name:"",kind:"people",allocated:0,used:0,unit:"hrs"}]})}
+                className="w-full py-2 rounded-sm mono text-[10px] tracking-widest"
+                style={{color:"#06b6d4",border:"1px dashed #06b6d466"}}>+ ADD RESOURCE</button>
+            </div>
+          </SectionPlate>
+
+          {/* Quality metrics */}
+          <SectionPlate icon={<GaugeIcon size={14}/>} title="QUALITY METRICS" color="#22c55e">
+            <div className="space-y-2">
+              {(project.qualityMetrics||[]).map(q=>(
+                <div key={q.id} className="p-2 rounded-sm flex items-center gap-2" style={{background:"var(--fr-card2)",border:"1px solid var(--fr-borderSoft)"}}>
+                  <input value={q.label} onChange={e=>patch({qualityMetrics:(project.qualityMetrics||[]).map(x=>x.id===q.id?{...x,label:e.target.value}:x)})}
+                    placeholder="Metric" className="flex-1 bg-transparent outline-none text-sm" style={{color:"var(--fr-fg)"}}/>
+                  <input type="number" value={q.actual??""} onChange={e=>patch({qualityMetrics:(project.qualityMetrics||[]).map(x=>x.id===q.id?{...x,actual:Number(e.target.value)}:x)})}
+                    placeholder="actual" className="w-16 bg-transparent outline-none mono text-xs" style={{color:"var(--fr-fg)"}}/>
+                  <span className="mono text-[10px]" style={{color:"var(--fr-fgMuted)"}}>/</span>
+                  <input type="number" value={q.target} onChange={e=>patch({qualityMetrics:(project.qualityMetrics||[]).map(x=>x.id===q.id?{...x,target:Number(e.target.value)||0}:x)})}
+                    className="w-16 bg-transparent outline-none mono text-xs" style={{color:"var(--fr-green)"}}/>
+                  <input value={q.unit} onChange={e=>patch({qualityMetrics:(project.qualityMetrics||[]).map(x=>x.id===q.id?{...x,unit:e.target.value}:x)})}
+                    className="w-12 bg-transparent outline-none mono text-[10px]" style={{color:"var(--fr-fgMuted)"}}/>
+                  <button onClick={()=>patch({qualityMetrics:(project.qualityMetrics||[]).filter(x=>x.id!==q.id)})} style={{color:"var(--fr-red)"}}><X size={10}/></button>
+                </div>
+              ))}
+              <button onClick={()=>patch({qualityMetrics:[...(project.qualityMetrics||[]),{id:uid(),label:"",target:100,unit:"%"}]})}
+                className="w-full py-2 rounded-sm mono text-[10px] tracking-widest"
+                style={{color:"#22c55e",border:"1px dashed #22c55e66"}}>+ ADD METRIC</button>
+            </div>
+          </SectionPlate>
+
+          {/* Cost / benefit calculator */}
+          <SectionPlate icon={<Receipt size={14}/>} title="COST / BENEFIT" color="#f59e0b">
+            <div className="grid grid-cols-3 gap-2">
+              <LabeledInput type="number" label="One-time cost" value={(project.costBenefit as any)?.oneTimeCost??0} onChange={(v:number)=>patch({costBenefit:{...(project.costBenefit||{oneTimeCost:0,ongoingCost:0,projectedBenefit:0}),oneTimeCost:v}})}/>
+              <LabeledInput type="number" label="Ongoing/mo" value={(project.costBenefit as any)?.ongoingCost??0} onChange={(v:number)=>patch({costBenefit:{...(project.costBenefit||{oneTimeCost:0,ongoingCost:0,projectedBenefit:0}),ongoingCost:v}})}/>
+              <LabeledInput type="number" label="Benefit/mo" value={(project.costBenefit as any)?.projectedBenefit??0} onChange={(v:number)=>patch({costBenefit:{...(project.costBenefit||{oneTimeCost:0,ongoingCost:0,projectedBenefit:0}),projectedBenefit:v}})}/>
+            </div>
+            {(() => {
+              const cb = project.costBenefit || {oneTimeCost:0,ongoingCost:0,projectedBenefit:0};
+              const net = cb.projectedBenefit - cb.ongoingCost;
+              const payback = net>0 ? Math.ceil(cb.oneTimeCost/net) : null;
+              return (
+                <div className="grid grid-cols-2 gap-2 mt-2 mono text-[10px]">
+                  <div className="p-2 rounded-sm" style={{background:"var(--fr-card2)",border:"1px solid var(--fr-borderSoft)"}}>
+                    <div style={{color:"var(--fr-fgMuted)"}}>NET/MO</div>
+                    <div className="text-lg font-black" style={{color:net>=0?"#22c55e":"#ef4444"}}>{project.budget.currency}{net}</div>
+                  </div>
+                  <div className="p-2 rounded-sm" style={{background:"var(--fr-card2)",border:"1px solid var(--fr-borderSoft)"}}>
+                    <div style={{color:"var(--fr-fgMuted)"}}>PAYBACK</div>
+                    <div className="text-lg font-black" style={{color:payback?"var(--fr-amber)":"var(--fr-fgDim)"}}>{payback?`${payback} mo`:"—"}</div>
+                  </div>
+                </div>
+              );
+            })()}
+            <LabeledArea label="Social / non-financial impact" value={(project.budgetBenefit as any)?.socialImpact||""}
+              onChange={v=>patch({budgetBenefit:{...(project.budgetBenefit||{}),socialImpact:v}})} placeholder="Who benefits beyond the P&L?"/>
+          </SectionPlate>
+
+          {/* Weekly reports */}
+          <SectionPlate icon={<Scroll size={14}/>} title="WEEKLY REPORTS" color="#ec4899">
+            <button onClick={()=>{
+              const week = new Date().toISOString().slice(0,10);
+              const tasksDone = forge.tasks.filter(t=>t.projectId===project.id && t.completedAt && daysBetween(t.completedAt,week)<=7);
+              const patchBody = {
+                id: uid(), weekOf: week,
+                accomplishments: tasksDone.map(t=>`- ${t.title}`).join("\n"),
+                nextWeek: "", blockers: "", risks: "", decisionsNeeded: "",
+                mood: 3 as const, hoursLogged: Math.round(tasksDone.reduce((n,t)=>n+(t.actualMins||0),0)/60*10)/10,
+              };
+              patch({weeklyReports:[patchBody,...(project.weeklyReports||[])]});
+            }}
+              className="mono text-[10px] font-black tracking-widest px-3 py-2 rounded-sm mb-3 flex items-center gap-1"
+              style={{background:"#ec4899",color:"#000"}}><FileUp size={11}/> GENERATE THIS WEEK</button>
+            <div className="space-y-2">
+              {(project.weeklyReports||[]).map(wr=>(
+                <details key={wr.id} className="p-2 rounded-sm" style={{background:"var(--fr-card2)",border:"1px solid var(--fr-borderSoft)"}}>
+                  <summary className="mono text-[10px] tracking-widest cursor-pointer flex items-center gap-2" style={{color:"#ec4899"}}>
+                    <Calendar size={10}/> week of {wr.weekOf} {wr.hoursLogged?`· ${wr.hoursLogged}h`:""}
+                  </summary>
+                  <div className="space-y-2 mt-2">
+                    <LabeledArea label="Accomplishments" value={wr.accomplishments} onChange={v=>patch({weeklyReports:(project.weeklyReports||[]).map(x=>x.id===wr.id?{...x,accomplishments:v}:x)})}/>
+                    <LabeledArea label="Next week" value={wr.nextWeek} onChange={v=>patch({weeklyReports:(project.weeklyReports||[]).map(x=>x.id===wr.id?{...x,nextWeek:v}:x)})}/>
+                    <LabeledArea label="Blockers" value={wr.blockers} onChange={v=>patch({weeklyReports:(project.weeklyReports||[]).map(x=>x.id===wr.id?{...x,blockers:v}:x)})}/>
+                    <LabeledArea label="Risks" value={wr.risks} onChange={v=>patch({weeklyReports:(project.weeklyReports||[]).map(x=>x.id===wr.id?{...x,risks:v}:x)})}/>
+                    <LabeledArea label="Decisions needed" value={wr.decisionsNeeded} onChange={v=>patch({weeklyReports:(project.weeklyReports||[]).map(x=>x.id===wr.id?{...x,decisionsNeeded:v}:x)})}/>
+                    <button onClick={()=>patch({weeklyReports:(project.weeklyReports||[]).filter(x=>x.id!==wr.id)})}
+                      className="mono text-[10px] tracking-widest" style={{color:"var(--fr-red)"}}>DELETE REPORT</button>
+                  </div>
+                </details>
+              ))}
+              {!(project.weeklyReports||[]).length && <p className="pencil text-xs italic" style={{color:"var(--fr-fgMuted)"}}>No reports yet. Hit GENERATE to auto-build from completed tasks.</p>}
+            </div>
+          </SectionPlate>
+
+          {/* Go / No-Go logger */}
+          <SectionPlate icon={<Handshake size={14}/>} title="GO / NO-GO GATE" color="#fb923c">
+            <div className="space-y-2">
+              {(project.goNoGos||[]).map(g=>(
+                <div key={g.id} className="p-2 rounded-sm" style={{background:"var(--fr-card2)",border:`1px solid ${g.decision==="go"?"#22c55e66":g.decision==="no-go"?"#ef444466":"#f59e0b66"}`}}>
+                  <div className="flex items-center gap-2 mb-1">
+                    <input type="date" value={g.date} onChange={e=>patch({goNoGos:(project.goNoGos||[]).map(x=>x.id===g.id?{...x,date:e.target.value}:x)})}
+                      className="bg-transparent outline-none mono text-[10px]" style={{color:"var(--fr-fgMuted)"}}/>
+                    <select value={g.decision} onChange={e=>patch({goNoGos:(project.goNoGos||[]).map(x=>x.id===g.id?{...x,decision:e.target.value as any}:x)})}
+                      className="bg-transparent outline-none mono text-[10px] font-black tracking-widest"
+                      style={{color:g.decision==="go"?"#22c55e":g.decision==="no-go"?"#ef4444":"#f59e0b"}}>
+                      <option value="go">GO</option><option value="hold">HOLD</option><option value="no-go">NO-GO</option>
+                    </select>
+                    <button onClick={()=>patch({goNoGos:(project.goNoGos||[]).filter(x=>x.id!==g.id)})} className="ml-auto" style={{color:"var(--fr-red)"}}><X size={10}/></button>
+                  </div>
+                  <input value={g.rationale} onChange={e=>patch({goNoGos:(project.goNoGos||[]).map(x=>x.id===g.id?{...x,rationale:e.target.value}:x)})}
+                    placeholder="Rationale" className="w-full bg-transparent outline-none pencil text-xs italic" style={{color:"var(--fr-fg)"}}/>
+                  <input type="date" value={g.nextReview||""} onChange={e=>patch({goNoGos:(project.goNoGos||[]).map(x=>x.id===g.id?{...x,nextReview:e.target.value}:x)})}
+                    className="bg-transparent outline-none mono text-[10px] mt-1" style={{color:"var(--fr-fgMuted)"}}/>
+                </div>
+              ))}
+              <div className="flex gap-1">
+                <button onClick={()=>patch({goNoGos:[...(project.goNoGos||[]),{id:uid(),date:today(),decision:"go",rationale:""}]})}
+                  className="flex-1 py-2 rounded-sm mono text-[10px] font-black tracking-widest" style={{background:"#22c55e",color:"#000"}}><ThumbsUp size={10} className="inline mr-1"/>LOG GO</button>
+                <button onClick={()=>patch({goNoGos:[...(project.goNoGos||[]),{id:uid(),date:today(),decision:"hold",rationale:""}]})}
+                  className="flex-1 py-2 rounded-sm mono text-[10px] font-black tracking-widest" style={{background:"#f59e0b",color:"#000"}}>HOLD</button>
+                <button onClick={()=>patch({goNoGos:[...(project.goNoGos||[]),{id:uid(),date:today(),decision:"no-go",rationale:""}]})}
+                  className="flex-1 py-2 rounded-sm mono text-[10px] font-black tracking-widest" style={{background:"#ef4444",color:"#fff"}}><ThumbsDown size={10} className="inline mr-1"/>NO-GO</button>
+              </div>
+            </div>
+          </SectionPlate>
+
+          {/* Regulatory */}
+          <SectionPlate icon={<ShieldAlert size={14}/>} title="REGULATORY / COMPLIANCE" color="#7f1d1d">
+            <div className="space-y-1">
+              {(project.regulatoryChecks||[]).map((r,i)=>(
+                <div key={i} className="flex items-center gap-2 p-2 rounded-sm" style={{background:"var(--fr-card2)"}}>
+                  <button onClick={()=>patch({regulatoryChecks:(project.regulatoryChecks||[]).map((x,j)=>j===i?{...x,checked:!x.checked}:x)})}
+                    className="w-4 h-4 rounded-sm shrink-0"
+                    style={{background:r.checked?"#22c55e":"transparent",border:`1.5px solid ${r.checked?"#22c55e":"var(--fr-fgMuted)"}`}}>
+                    {r.checked && <CheckCircle2 size={12} color="#000"/>}
+                  </button>
+                  <input value={r.label} onChange={e=>patch({regulatoryChecks:(project.regulatoryChecks||[]).map((x,j)=>j===i?{...x,label:e.target.value}:x)})}
+                    className="flex-1 bg-transparent outline-none text-sm" style={{color:"var(--fr-fg)"}}/>
+                  <button onClick={()=>patch({regulatoryChecks:(project.regulatoryChecks||[]).filter((_,j)=>j!==i)})} style={{color:"var(--fr-red)"}}><X size={10}/></button>
+                </div>
+              ))}
+              <button onClick={()=>patch({regulatoryChecks:[...(project.regulatoryChecks||[]),{label:"",checked:false}]})}
+                className="w-full py-2 rounded-sm mono text-[10px] tracking-widest"
+                style={{color:"#7f1d1d",border:"1px dashed #7f1d1d66"}}>+ ADD COMPLIANCE CHECK</button>
+            </div>
+          </SectionPlate>
+
+          {/* Satisfaction pulse */}
+          <SectionPlate icon={<Activity size={14}/>} title="SATISFACTION PULSE" color="#22c55e">
+            <div className="flex items-center gap-2 mb-2">
+              <span className="mono text-[10px] tracking-widest" style={{color:"var(--fr-fgMuted)"}}>Log today:</span>
+              {[1,2,3,4,5,6,7,8,9,10].map(n=>(
+                <button key={n} onClick={()=>patch({satisfactionLog:[{id:uid(),date:today(),score:n},...(project.satisfactionLog||[])]})}
+                  className="w-7 h-7 rounded-sm mono text-[10px] font-black"
+                  style={{background:n>=8?"#22c55e33":n>=5?"#f59e0b33":"#ef444433",border:`1px solid ${n>=8?"#22c55e":n>=5?"#f59e0b":"#ef4444"}55`,color:"var(--fr-fg)"}}>{n}</button>
+              ))}
+            </div>
+            {(project.satisfactionLog||[]).length>0 && <SatisfactionSpark log={project.satisfactionLog||[]}/>}
           </SectionPlate>
         </motion.div>}
 
@@ -649,5 +946,114 @@ function TaskPanel({project}:{project:ForgeProject}) {
         </div>
       ))}
     </div>
+  );
+}
+
+function stanceColor(s: string): string {
+  if (s==="champion"||s==="ally") return "#22c55e";
+  if (s==="opponent") return "#ef4444";
+  if (s==="decision-maker") return "#f59e0b";
+  if (s==="influencer") return "#a78bfa";
+  return "var(--fr-fgMuted)";
+}
+
+function daysBetween(a:string,b:string):number{
+  return Math.round((+new Date(b)- +new Date(a))/86400000);
+}
+
+function GanttMini({milestones,color}:{milestones:{title:string;date?:string;done:boolean}[];color:string}){
+  const dated = milestones.filter(m=>m.date).sort((a,b)=>a.date!.localeCompare(b.date!));
+  if (dated.length<2) return null;
+  const start = new Date(dated[0].date!);
+  const end = new Date(dated[dated.length-1].date!);
+  const spanDays = Math.max(1, Math.round((+end - +start)/86400000));
+  const W = 600, H = Math.max(80, dated.length*24+20);
+  const pad = 10;
+  return (
+    <div className="mt-4">
+      <div className="mono text-[9px] tracking-widest mb-1" style={{color:"var(--fr-fgMuted)"}}>GANTT · MILESTONE TIMELINE</div>
+      <svg viewBox={`0 0 ${W} ${H}`} className="w-full" style={{maxHeight: H*0.6}}>
+        {Array.from({length:5}).map((_,i)=>{
+          const x = pad + (W-pad*2)*(i/4);
+          return <line key={i} x1={x} x2={x} y1={0} y2={H-18} stroke="var(--fr-borderSoft)" strokeDasharray="2 3"/>;
+        })}
+        {dated.map((m,i)=>{
+          const d = new Date(m.date!);
+          const x = pad + (W-pad*2) * Math.max(0, Math.min(1, (+d - +start)/86400000 / spanDays));
+          const y = 12 + i*24;
+          return (
+            <g key={i}>
+              <circle cx={x} cy={y} r={m.done?6:5} fill={m.done?color:"var(--fr-card2)"} stroke={m.done?"#000":color} strokeWidth={m.done?2:1.5} style={{filter:m.done?`drop-shadow(0 0 4px ${color})`:"none"}}/>
+              <text x={x+9} y={y+4} className="mono" fontSize="10" fill="var(--fr-fgMuted)">{m.title.slice(0,32)}{m.title.length>32?"…":""}</text>
+              {i>0 && <line x1={pad + (W-pad*2)*Math.max(0,Math.min(1,(+new Date(dated[i-1].date!)-+start)/86400000/spanDays))} y1={y-24} x2={x} y2={y} stroke={m.done?color:"var(--fr-borderSoft)"} strokeWidth={m.done?1.5:1} strokeDasharray={m.done?"":"3 3"}/>}
+            </g>
+          );
+        })}
+      </svg>
+    </div>
+  );
+}
+
+function PowerInterestMatrix({stakeholders,color}:{stakeholders:ProjectStakeholder[];color:string}){
+  const W=340,H=280,pad=40;
+  const pwr = (p:string)=>p==="high"?1:p==="med"?0.5:0;
+  const itr = (i:string)=>i==="high"?1:i==="med"?0.5:0;
+  return (
+    <div>
+      <div className="mono text-[9px] tracking-widest mb-1" style={{color:"var(--fr-fgMuted)"}}>POWER × INTEREST MAP</div>
+      <svg viewBox={`0 0 ${W} ${H}`} className="w-full max-w-md">
+        {/* quadrant tints */}
+        <rect x={pad} y={0} width={(W-pad)/2} height={(H-pad)/2} fill="rgba(239,68,68,0.08)"/>
+        <rect x={(W+pad)/2} y={0} width={(W-pad)/2} height={(H-pad)/2} fill="rgba(245,158,11,0.1)"/>
+        <rect x={pad} y={(H-pad)/2} width={(W-pad)/2} height={(H-pad)/2} fill="rgba(148,163,184,0.05)"/>
+        <rect x={(W+pad)/2} y={(H-pad)/2} width={(W-pad)/2} height={(H-pad)/2} fill="rgba(6,182,212,0.08)"/>
+        {/* axes */}
+        <line x1={pad} y1={H-pad} x2={W} y2={H-pad} stroke="var(--fr-border)"/>
+        <line x1={pad} y1={0} x2={pad} y2={H-pad} stroke="var(--fr-border)"/>
+        {/* grid */}
+        <line x1={pad+(W-pad)/2} y1={0} x2={pad+(W-pad)/2} y2={H-pad} stroke="var(--fr-borderSoft)" strokeDasharray="2 3"/>
+        <line x1={pad} y1={(H-pad)/2} x2={W} y2={(H-pad)/2} stroke="var(--fr-borderSoft)" strokeDasharray="2 3"/>
+        {/* labels */}
+        <text x={W-5} y={14} textAnchor="end" fontSize="9" className="mono" fill="#ef4444">KEEP SATISFIED</text>
+        <text x={W-5} y={(H-pad)/2+14} textAnchor="end" fontSize="9" className="mono" fill="#06b6d4">KEEP INFORMED</text>
+        <text x={pad+5} y={14} fontSize="9" className="mono" fill="#f59e0b">MONITOR</text>
+        <text x={pad+5} y={(H-pad)/2+14} fontSize="9" className="mono" fill="#f59e0b">MANAGE CLOSELY</text>
+        <text x={W/2+pad/2} y={H-8} textAnchor="middle" fontSize="9" className="mono" fill="var(--fr-fgMuted)">INTEREST →</text>
+        <text x={12} y={H/2-pad/2} fontSize="9" className="mono" fill="var(--fr-fgMuted)" transform={`rotate(-90 12 ${H/2-pad/2})`}>POWER →</text>
+        {/* dots */}
+        {stakeholders.map((s,i)=>{
+          const cx = pad + 20 + (W-pad-40)*itr(s.interest);
+          const cy = (H-pad-20) - (H-pad-40)*pwr(s.power);
+          const c = stanceColor(s.stance);
+          return (
+            <g key={s.id}>
+              <circle cx={cx} cy={cy} r={10} fill={`${c}33`} stroke={c} strokeWidth="1.5"/>
+              <text x={cx} y={cy+3} textAnchor="middle" fontSize="9" className="mono" fill="var(--fr-fg)" fontWeight="bold">{s.name[0]||"?"}</text>
+            </g>
+          );
+        })}
+        {stakeholders.length===0 && <text x={W/2+pad/2} y={H/2} textAnchor="middle" fontSize="10" className="mono" fill="var(--fr-fgDim)">add crew members to see them on the map</text>}
+      </svg>
+    </div>
+  );
+}
+
+function SatisfactionSpark({log}:{log:{date:string;score:number}[]}){
+  const pts = [...log].slice(0,12).reverse();
+  if (pts.length<2) return null;
+  const W=340,H=80,pad=20;
+  const max = 10;
+  return (
+    <svg viewBox={`0 0 ${W} ${H}`} className="w-full max-w-md">
+      <line x1={pad} y1={H-pad} x2={W} y2={H-pad} stroke="var(--fr-borderSoft)"/>
+      <line x1={pad} y1={pad} x2={W} y2={pad} stroke="var(--fr-borderSoft)" strokeDasharray="2 3"/>
+      {pts.map((p,i)=>{
+        const x = pad + (W-pad*2)*(i/(pts.length-1));
+        const y = (H-pad) - (H-pad*2)*(p.score/max);
+        return <circle key={i} cx={x} cy={y} r={3} fill={p.score>=8?"#22c55e":p.score>=5?"#f59e0b":"#ef4444"}/>;
+      })}
+      <polyline fill="none" stroke="var(--fr-green)" strokeWidth="1.5"
+        points={pts.map((p,i)=>`${pad+(W-pad*2)*(i/(pts.length-1))},${(H-pad)-(H-pad*2)*(p.score/max)}`).join(" ")}/>
+    </svg>
   );
 }
