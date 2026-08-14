@@ -13,7 +13,7 @@ import { useMemo, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Globe, Plus, Sparkles, Trash2, Calendar, Target, Flame, TrendingUp,
-  TreePine, Landmark,
+  TreePine, Landmark, Zap, DollarSign, Clock,
 } from "lucide-react";
 import { useStore } from "../../../lib/store";
 import type {
@@ -47,6 +47,7 @@ const TABS = [
   { id: "timeline",  label: "Timeline",  icon: <Calendar size={12}/>, color: "var(--cr-fg)" },
   { id: "wellbeing", label: "Wellbeing", icon: <Flame size={12}/>,    color: "var(--cr-accent3)" },
   { id: "vision",    label: "Vision",    icon: <Sparkles size={12}/>, color: "#f472b6" },
+  { id: "hustle",    label: "Hustle",    icon: <Zap size={12}/>,      color: "#fb923c" },
   { id: "freedom",   label: "Freedom",   icon: <Landmark size={12}/>, color: "#facc15" },
 ] as const;
 
@@ -56,7 +57,8 @@ export default function GlobalSection() {
   const [eventDraft, setEventDraft] = useState<Partial<TimelineEvent>>({ title:"", type:"milestone", date: today() });
   const [sat, setSat] = useState(7);
   const [burnout, setBurnout] = useState({ workload:5, control:5, rewards:5, community:5, fairness:5, values:5 });
-  const [tab, setTab] = useState<"timeline"|"wellbeing"|"vision"|"freedom">("timeline");
+  const [tab, setTab] = useState<"timeline"|"wellbeing"|"vision"|"hustle"|"freedom">("timeline");
+  const [hustleDraft, setHustleDraft] = useState({ name:"", revenue:0, hoursPerWeek:0, goal:"", stage:"idea" as "idea"|"building"|"launched"|"scaling" });
 
   const timeline: TimelineEvent[] = useMemo(() => {
     const fromAch: TimelineEvent[] = career.achievements.map(a => ({
@@ -259,6 +261,125 @@ export default function GlobalSection() {
                   style={{background:burnoutColor,color:"var(--cr-bg)"}}>Log</button>
               </div>
             </div>
+
+            {/* Burnout history sparkline */}
+            {career.burnoutChecks.length > 1 && (() => {
+              const hist = career.burnoutChecks.slice(0, 30).reverse();
+              const W = 280, H = 70, PAD = 8;
+              const pts = hist.map((b,i) => {
+                const x = PAD + (i/(hist.length-1||1))*(W-PAD*2);
+                const y = PAD + (1 - (b.score??5)/10)*(H-PAD*2);
+                return `${x.toFixed(1)},${y.toFixed(1)}`;
+              }).join(" ");
+              const areaPts = `${PAD},${H-PAD} ${pts} ${W-PAD},${H-PAD}`;
+              return (
+                <div className="rounded-sm p-3 hud-corner relative" style={{...card,borderColor:`${burnoutColor}55`}}>
+                  <span className="c-tr"/><span className="c-bl"/>
+                  <div className="flex items-center justify-between mb-1">
+                    <h4 className="text-[10px] tracking-widest font-bold" style={{color:burnoutColor}}>
+                      <TrendingUp size={10} className="inline mr-1"/> BURNOUT::HISTORY ({Math.min(hist.length,30)} checks)
+                    </h4>
+                    <span className="text-[9px] font-mono" style={{color:"var(--cr-fgMuted)"}}>lower = better</span>
+                  </div>
+                  <svg viewBox={`0 0 ${W} ${H}`} className="w-full" preserveAspectRatio="none" style={{height:70}}>
+                    <defs>
+                      <linearGradient id="bfill" x1="0" x2="0" y1="0" y2="1">
+                        <stop offset="0%" stopColor={burnoutColor} stopOpacity="0.35"/>
+                        <stop offset="100%" stopColor={burnoutColor} stopOpacity="0"/>
+                      </linearGradient>
+                    </defs>
+                    {[0,0.25,0.5,0.75,1].map(t => (
+                      <line key={t} x1={PAD} x2={W-PAD} y1={PAD+t*(H-PAD*2)} y2={PAD+t*(H-PAD*2)}
+                        stroke="rgba(255,255,255,0.05)" strokeDasharray="2 3"/>
+                    ))}
+                    <polygon points={areaPts} fill="url(#bfill)"/>
+                    <polyline points={pts} fill="none" stroke={burnoutColor} strokeWidth="1.5" style={{filter:`drop-shadow(0 0 4px ${burnoutColor})`}}/>
+                    {hist.map((b,i) => {
+                      const x = PAD + (i/(hist.length-1||1))*(W-PAD*2);
+                      const y = PAD + (1 - (b.score??5)/10)*(H-PAD*2);
+                      return <circle key={i} cx={x} cy={y} r={i===hist.length-1?3:1.5} fill={burnoutColor}/>;
+                    })}
+                  </svg>
+                </div>
+              );
+            })()}
+          </motion.div>
+        )}
+
+        {tab === "hustle" && (
+          <motion.div key="hu" initial={{opacity:0,y:8}} animate={{opacity:1,y:0}} exit={{opacity:0}} className="space-y-3">
+            <div className="rounded-sm p-3 hud-corner relative space-y-2" style={{...card, borderColor:"#fb923c66"}}>
+              <span className="c-tr"/><span className="c-bl"/>
+              <h3 className="text-sm tracking-widest font-bold flex items-center gap-2" style={{color:"#fb923c"}}>
+                <Zap size={14}/> SIDE_HUSTLE.forge
+              </h3>
+              <div className="grid md:grid-cols-2 gap-2">
+                <input value={hustleDraft.name} onChange={e=>setHustleDraft(d=>({...d,name:e.target.value}))} placeholder="Hustle name"
+                  className="bg-transparent px-2 py-1.5 rounded text-xs outline-none" style={inputStyle}/>
+                <select value={hustleDraft.stage} onChange={e=>setHustleDraft(d=>({...d,stage:e.target.value as any}))}
+                  className="bg-transparent px-2 py-1.5 rounded text-xs outline-none" style={inputStyle}>
+                  <option value="idea" className="bg-gray-900">Idea</option>
+                  <option value="building" className="bg-gray-900">Building</option>
+                  <option value="launched" className="bg-gray-900">Launched</option>
+                  <option value="scaling" className="bg-gray-900">Scaling</option>
+                </select>
+                <label className="flex items-center gap-2 px-2 py-1.5 rounded text-xs" style={inputStyle}>
+                  <DollarSign size={11} style={{color:"#34d399"}}/>
+                  <input type="number" value={hustleDraft.revenue||""} onChange={e=>setHustleDraft(d=>({...d,revenue:Number(e.target.value)||0}))}
+                    placeholder="$/mo" className="bg-transparent outline-none flex-1"/>
+                </label>
+                <label className="flex items-center gap-2 px-2 py-1.5 rounded text-xs" style={inputStyle}>
+                  <Clock size={11} style={{color:"#fb923c"}}/>
+                  <input type="number" value={hustleDraft.hoursPerWeek||""} onChange={e=>setHustleDraft(d=>({...d,hoursPerWeek:Number(e.target.value)||0}))}
+                    placeholder="h/wk" className="bg-transparent outline-none flex-1"/>
+                </label>
+              </div>
+              <input value={hustleDraft.goal} onChange={e=>setHustleDraft(d=>({...d,goal:e.target.value}))} placeholder="Goal / next milestone"
+                className="w-full bg-transparent px-2 py-1.5 rounded text-xs outline-none" style={inputStyle}/>
+              <button onClick={()=>{
+                if(!hustleDraft.name.trim()) return;
+                updateCareer(c=>({sideHustles:[{id:uid(),name:hustleDraft.name.trim(),hoursPerWeek:hustleDraft.hoursPerWeek,monthlyIncome:hustleDraft.revenue,notes:hustleDraft.goal||undefined},...c.sideHustles]}));
+                setHustleDraft({name:"",revenue:0,hoursPerWeek:0,goal:"",stage:"idea"});
+              }} className="text-[10px] tracking-widest font-bold px-3 py-1.5 rounded-sm"
+                style={{background:"#fb923c",color:"#000"}}>[ + ADD_HUSTLE ]</button>
+            </div>
+            {career.sideHustles.length === 0 && <p className="text-xs italic" style={{color:"var(--cr-fgMuted)"}}>No side hustles logged. Ideas → revenue → freedom.</p>}
+            <div className="grid md:grid-cols-2 gap-2">
+              {career.sideHustles.map(h => {
+                const rate = h.hoursPerWeek>0 ? Math.round((h.monthlyIncome/(h.hoursPerWeek*4.33))*100)/100 : 0;
+                return (
+                  <div key={h.id} className="rounded-sm p-3 hud-corner relative group"
+                    style={{...card, borderColor:"#fb923c44"}}>
+                    <span className="c-tr"/><span className="c-bl"/>
+                    <div className="flex items-start gap-2">
+                      <Zap size={13} className="mt-0.5 shrink-0" style={{color:"#fb923c"}}/>
+                      <div className="flex-1 min-w-0">
+                        <div className="font-bold text-sm" style={{color:"var(--cr-fg)"}}>{h.name}</div>
+                        <div className="flex gap-3 mt-1 text-[10px] font-mono flex-wrap">
+                          <span style={{color:"#34d399"}}>${h.monthlyIncome}/mo</span>
+                          <span style={{color:"#fb923c"}}>{h.hoursPerWeek}h/wk</span>
+                          {rate>0 && <span style={{color:"#a78bfa"}}>${rate}/hr</span>}
+                        </div>
+                        {h.notes && <p className="text-[11px] mt-1" style={{color:"var(--cr-fgMuted)"}}>{h.notes}</p>}
+                      </div>
+                      <button onClick={()=>updateCareer(c=>({sideHustles:c.sideHustles.filter(x=>x.id!==h.id)}))}
+                        className="p-1 rounded opacity-0 group-hover:opacity-100 hover:bg-red-500/20 transition" style={{color:"var(--cr-red,#f87171)"}}>
+                        <Trash2 size={11}/>
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+            {/* Total revenue/hours */}
+            {career.sideHustles.length > 0 && (
+              <div className="rounded-sm p-3 flex items-center justify-around hud-corner" style={{background:"var(--cr-card2)",border:"1px solid #34d39955"}}>
+                <span className="c-tr"/><span className="c-bl"/>
+                <Stat label="TOTAL REV" value={`$${career.sideHustles.reduce((n,h)=>n+h.monthlyIncome,0)}/mo`} color="#34d399"/>
+                <Stat label="TOTAL TIME" value={`${career.sideHustles.reduce((n,h)=>n+h.hoursPerWeek,0)}h/wk`} color="#fb923c"/>
+                <Stat label="AVG $/HR" value={`$${Math.round(career.sideHustles.reduce((n,h)=>n+(h.hoursPerWeek>0?(h.monthlyIncome/(h.hoursPerWeek*4.33)):0),0)/Math.max(1,career.sideHustles.filter(h=>h.hoursPerWeek>0).length))}`} color="#a78bfa"/>
+              </div>
+            )}
           </motion.div>
         )}
 

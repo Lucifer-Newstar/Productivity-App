@@ -183,6 +183,38 @@ export default function DailySection() {
 
       <div className="grid md:grid-cols-2 gap-4">
         <Card title="Standup" color={COLORS.violet} icon={<Target size={14}/>}>
+          <div className="flex gap-1 mb-1 flex-wrap">
+            <button onClick={()=>{
+              const y = new Date(Date.now()-86400000).toISOString().slice(0,10);
+              const yEntry = career.days.find(d=>d.date===y);
+              const yMs = (yEntry?.meetings||[]).map(m=>m.title).filter(Boolean);
+              const yFocus = (yEntry?.focusSessionsMinutes||0);
+              const yFU = (yEntry?.meetings||[]).flatMap(m=>(m.followUps||[]).filter(f=>!f.done).map(f=>f.text)).filter(Boolean);
+              const todayMs = (entry.meetings||[]).map(m=>m.title).filter(Boolean);
+              const todayFU = (entry.meetings||[]).flatMap(m=>(m.followUps||[]).filter(f=>!f.done).map(f=>f.text)).filter(Boolean);
+              const lines: string[] = [];
+              lines.push("Yesterday:");
+              if (yMs.length) lines.push(`  • ${yMs.slice(0,3).join("; ")}`);
+              if (yFocus > 0) lines.push(`  • ${Math.round(yFocus/60*10)/10}h deep focus`);
+              lines.push("Today:");
+              if (todayMs.length) lines.push(`  • ${todayMs.slice(0,3).join("; ")}`);
+              if (todayFU.length) lines.push(`  • follow-ups: ${todayFU.slice(0,3).join("; ")}`);
+              else lines.push("  • focus time + roadmap progress");
+              const blockers: string[] = [];
+              if (yFU.length) blockers.push(`carry-over FUs: ${yFU.slice(0,2).join(", ")}`);
+              lines.push(blockers.length ? `Blockers:\n  • ${blockers.join("\n  • ")}` : "Blockers: none");
+              upd({standup: lines.join("\n")});
+            }}
+              className="text-[9px] font-mono tracking-widest px-2 py-1 rounded-sm transition hover:brightness-125"
+              style={{background:`${COLORS.violet}22`,color:COLORS.violet,border:`1px solid ${COLORS.violet}66`}}>
+              [ ⚡ AUTO-GEN ]
+            </button>
+            {entry.standup && (
+              <button onClick={()=>{navigator.clipboard?.writeText(entry.standup||"").catch(()=>{})}}
+                className="text-[9px] font-mono tracking-widest px-2 py-1 rounded-sm transition hover:brightness-125"
+                style={{background:"rgba(250,204,21,0.15)",color:"#facc15",border:"1px solid rgba(250,204,21,0.5)"}}>[ COPY ]</button>
+            )}
+          </div>
           <textarea value={entry.standup??""} onChange={e=>upd({standup:e.target.value})}
             placeholder={"Yesterday…\nToday…\nBlockers…"} rows={4}
             className="w-full bg-transparent outline-none text-sm resize-none p-2 rounded-sm"
