@@ -33,6 +33,7 @@ import type { LucideIcon } from "lucide-react";
 import { useEffect, useState, useRef } from "react";
 import { useTheme } from "../../lib/theme";
 import { useStore } from "../../lib/store";
+import { isDoneStatus as isTaskDone } from "./forgeUtils";
 
 export type ForgeSectionId = "foundry" | "quarry" | "smelter" | "vault";
 
@@ -233,9 +234,10 @@ export default function ForgeShell({ section, actionButton, actionPanel, childre
     window.dispatchEvent(new CustomEvent("career:toast",{detail:{title:"SETTINGS SAVED",sub:"forge calibrated",color:"#22c55e",icon:"check"}}));
   };
 
+  const isTaskShipped = (s: any) => isTaskDone(s, forge.customStatuses);
   const activeCount = forge.projects.filter(p => !p.archived && p.status !== "dead" && p.status !== "done").length;
   const blockedCount = forge.projects.filter(p => p.status === "blocked" || p.status === "off-track").length;
-  const tasksDue = forge.tasks.filter(t => t.today && t.status !== "done").length;
+  const tasksDue = forge.tasks.filter(t => t.today && !isTaskShipped(t.status)).length;
   const shippedCount = forge.projects.filter(p => p.status === "done").length;
   const activeSprint = forge.sprints.find(s => s.status === "active");
   const temp = 420 + Math.min(580, activeCount * 40 + tasksDue*20);

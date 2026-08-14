@@ -8,11 +8,49 @@
  *
  * Date helpers operate on ISO yyyy-mm-dd strings at LOCAL midnight to avoid
  * timezone drift when comparing due dates across reloads.
+ *
+ * Task status helpers: tasks always use the string id from the *current*
+ * column set — when customStatuses is empty we fall back to the default
+ * 5-col set (todo/doing/review/blocked/done). Use isDoneStatus() everywhere
+ * instead of `t.status === "done"` so that custom last-column-as-shipped
+ * keeps working across stats, subtasks, streaks, recurrence, CSV export, etc.
  */
-import type { ProjectTask, ForgeProject } from "../../lib/forgeTypes";
+import type { ProjectTask, ForgeProject, StatusColumn } from "../../lib/forgeTypes";
 
 /** Milliseconds in a day — used for all date arithmetic. */
 export const DAY_MS = 86_400_000;
+
+/** Default kanban columns used when customStatuses is empty. */
+export const DEFAULT_COLS: StatusColumn[] = [
+  { id: "todo",    label: "TO DO",    color: "#94a3b8" },
+  { id: "doing",   label: "FORGING",  color: "#f59e0b" },
+  { id: "review",  label: "QUENCH",   color: "#06b6d4" },
+  { id: "blocked", label: "JAMMED",   color: "#ef4444" },
+  { id: "done",    label: "SHIPPED",  color: "#22c55e" },
+];
+
+/**
+ * Resolve the effective column list — user-defined cols if present, else
+ * the default 5-col set.
+ */
+export function effectiveCols(customStatuses?: StatusColumn[] | null): StatusColumn[] {
+  if (customStatuses && customStatuses.length >= 2) return customStatuses;
+  return DEFAULT_COLS;
+}
+
+/**
+ * Is the given status id considered "shipped" (the final column)? Works for
+ * both default columns ("done") and custom column sets (last col id).
+ */
+export function isDoneStatus(
+  status: string | undefined | null,
+  customStatuses?: StatusColumn[] | null,
+): boolean {
+  if (!status) return false;
+  if (status === "done") return true; // default shipped id
+  const cols = effectiveCols(customStatuses);
+  return cols[cols.length - 1]?.id === status;
+}
 
 /** @returns today as yyyy-mm-dd in local time. */
 export const todayISO = () => new Date().toISOString().slice(0,10);
@@ -46,13 +84,8 @@ export function weekOfLabel(iso: string) {
   return `${iso.slice(5)} → ${end.slice(5)}`;
 }
 
-export const TASK_STATUSES: { id: ProjectTask["status"]; label: string; color: string }[] = [
-  { id: "todo",    label: "TO DO",    color: "#94a3b8" },
-  { id: "doing",   label: "FORGING",  color: "#f59e0b" },
-  { id: "review",  label: "QUENCH",   color: "#06b6d4" },
-  { id: "blocked", label: "JAMMED",   color: "#ef4444" },
-  { id: "done",    label: "SHIPPED",  color: "#22c55e" },
-];
+export const TASK_STATUSES: { id: ProjectTask["status"]; label: string; color: string }[] =
+  DEFAULT_COLS.map(c => ({ id: c.id as ProjectTask["status"], label: c.label, color: c.color }));
 
 export function statusColor(s: ProjectTask["status"]): string {
   return TASK_STATUSES.find(x => x.id === s)?.color ?? "#94a3b8";

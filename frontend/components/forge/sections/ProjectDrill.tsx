@@ -23,6 +23,7 @@ import type {
   ChangeRequest, Resource, QualityMetric, WeeklyReport, GoNoGo,
 } from "../../../lib/forgeTypes";
 import type { PortfolioProject } from "../../../lib/careerTypes";
+import { isDoneStatus as isTaskDone, effectiveCols } from "../forgeUtils";
 
 const uid = () => Math.random().toString(36).slice(2,10);
 const today = () => new Date().toISOString().slice(0,10);
@@ -45,6 +46,9 @@ export default function ProjectDrill() {
   const project = forge.projects.find(p => p.id === id);
   const [tab, setTab] = useState<Tab>("brief");
 
+  /** Task-level "done" — respects custom columns (last col = shipped). */
+  const isDone = (s: any) => isTaskDone(s, forge.customStatuses);
+
   if (!project) {
     return (
       <div className="min-h-screen flex items-center justify-center mono text-sm">
@@ -63,7 +67,7 @@ export default function ProjectDrill() {
   }));
   const patchField = <K extends keyof ForgeProject>(k: K, v: ForgeProject[K]) => patch({ [k]: v } as any);
   const tasks = forge.tasks.filter(t => t.projectId === project.id);
-  const doneTasks = tasks.filter(t=>t.status==="done").length;
+  const doneTasks = tasks.filter(t=>isDone(t.status)).length;
   const totalMs = project.milestones.length;
   const doneMs = project.milestones.filter(m=>m.done).length;
   const prog = totalMs ? Math.round(doneMs/totalMs*100) : Math.round(doneTasks/Math.max(tasks.length,1)*100);
@@ -979,14 +983,13 @@ function TaskPanel({project}:{project:ForgeProject}) {
     },...f.tasks]}));
     setNewTitle("");
   };
-  const move = (id:string,status:any) => updateForge(f=>({tasks:f.tasks.map(t=>t.id===id?{...t,status,completedAt:status==="done"?today():undefined}:t)}));
-  const cols = [
-    {id:"todo",label:"TO DO",color:"#94a3b8"},
-    {id:"doing",label:"FORGING",color:"#f59e0b"},
-    {id:"review",label:"QUENCH",color:"#06b6d4"},
-    {id:"blocked",label:"JAMMED",color:"#ef4444"},
-    {id:"done",label:"SHIPPED",color:"#22c55e"},
-  ] as const;
+  const cols = effectiveCols(forge.customStatuses).map((c,i)=>({
+    id: c.id, label: c.label.toUpperCase(),
+    color: c.color,
+  }));
+  const shippedColId = cols[cols.length-1]?.id || "done";
+  const isDone = (s:any) => isTaskDone(s, forge.customStatuses);
+  const move = (id:string,status:any) => updateForge(f=>({tasks:f.tasks.map(t=>t.id===id?{...t,status,completedAt:isTaskDone(status, f.customStatuses)?today():undefined}:t)}));
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-3">
       {cols.map(col=>(
@@ -997,12 +1000,12 @@ function TaskPanel({project}:{project:ForgeProject}) {
             {tasks.filter(t=>t.status===col.id).map(t=>(
               <div key={t.id} className="p-2 rounded-sm text-xs" style={{background:"var(--fr-card2)",borderLeft:`3px solid ${col.color}`}}>
                 <div className="flex items-start gap-1.5">
-                  <button onClick={()=>move(t.id,col.id==="done"?"todo":"done")}
+                  <button onClick={()=>move(t.id, isDone(t.status)?"todo":shippedColId)}
                     className="mt-0.5 w-4 h-4 rounded-sm shrink-0"
-                    style={{background:t.status==="done"?col.color:"transparent",border:`1.5px solid ${t.status==="done"?col.color:"var(--fr-fgMuted)"}`}}>
-                    {t.status==="done" && <CheckCircle2 size={10} color="#000"/>}
+                    style={{background:isDone(t.status)?col.color:"transparent",border:`1.5px solid ${isDone(t.status)?col.color:"var(--fr-fgMuted)"}`}}>
+                    {isDone(t.status) && <CheckCircle2 size={10} color="#000"/>}
                   </button>
-                  <span className={`flex-1 ${t.status==="done"?"line-through opacity-60":""}`}>{t.title}</span>
+                  <span className={`flex-1 ${isDone(t.status)?"line-through opacity-60":""}`}>{t.title}</span>
                 </div>
                 <div className="mono text-[8px] tracking-widest mt-1" style={{color:"var(--fr-fgMuted)"}}>{t.priority}</div>
               </div>

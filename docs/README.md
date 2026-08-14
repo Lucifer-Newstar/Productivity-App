@@ -1,52 +1,76 @@
 # Kaizen — Docs index
 
-Kaizen is a 5-space productivity monorepo (Next.js Pages Router + an App Router
-home). This folder is the human-readable map. Start here before touching code.
+Kaizen is a **5-space productivity monorepo** built on Next.js 14 (Pages Router + an App Router `/` dashboard). All spaces live in one frontend, one Zustand store, and one `localStorage` persistence root — there is no standalone "Forge app".
 
-## Top-level docs
+```
+productivity-app/
+├── frontend/
+│   ├── pages/                # Pages Router routes (one folder per space)
+│   │   ├── _app.tsx          # Providers + TopNav vs FULLSCREEN switch
+│   │   ├── projects/         # Projects space (a.k.a. "Forge")
+│   │   ├── workout/          # Workout space
+│   │   ├── career/           # Career space
+│   │   ├── health/           # Health space (placeholder)
+│   │   └── entertainment/    # Entertainment space (placeholder)
+│   ├── app/                  # App Router home "/" (dashboard)
+│   ├── components/           # UI (TopNav, SideNav, SpaceTasks, Dashboard, Notes, Habits, Pomodoro, Calendar, Tasks)
+│   │   ├── forge/            # Projects space (internal codename — routes live at /projects/*)
+│   │   ├── workout/          # Workout space
+│   │   └── career/           # Career space
+│   └── lib/                  # Shared store, types, themes, algorithms, demo seeds
+├── backend/                  # Express skeleton (offline-first; frontend does not call it)
+└── docs/                     # You are here
+```
 
-| File | What it covers |
+> **Note on the "Forge" codename:** the Projects space is branded **"Forge"** in the UI (⚒️ in the top nav, "THE FORGE" wordmark in the full-screen shell, "the forge" / "anvil" / "heat" / "quarry" / "smelter" / "vault" / "foundry" nomenclature inside the space). That is **display branding only** — it is not a standalone app or separate product. Code lives under `components/forge/` because that was the internal module name when the shell was built out; routes live at `/projects/*` per the space architecture.
+
+## Where to look
+
+### Top-level references
+| File | Covers |
 |---|---|
-| `ARCHITECTURE.md` | Monorepo layout, rendering model, state management, theming, persistence, git |
-| `DATA-MODEL.md` | Entity shapes for Workout, Forge, and Career (root store keys) |
-| `FEATURES.md` | Per-space feature audit (✅/🟡/❌) — the living checklist |
-| `ALGORITHMS.md` | Pure math helpers (workout analytics, plate math, Wilks, etc.) |
-| `API.md` | Backend REST route reference |
-| `CAREER.md` | Career-space deep-dive (9 SECTORs, Night HUD + Blueprint themes) |
+| [`ARCHITECTURE.md`](ARCHITECTURE.md) | Monorepo layout, rendering model, state, themes, persistence, build |
+| [`DATA-MODEL.md`](DATA-MODEL.md) | Entity shapes for Workout, Projects, Career (root store) |
+| [`FEATURES.md`](FEATURES.md) | Per-space feature audit (✅/🟡/❌) |
+| [`ALGORITHMS.md`](ALGORITHMS.md) | Pure math helpers (1RM/Wilks, plate loading, readiness, velocity regression) |
+| [`API.md`](API.md) | Backend REST reference |
 
-## Space sub-folders
+### Per-space docs (`docs/spaces/<space>/`)
+| Space | Route | Full-screen | Status |
+|---|---|---|---|
+| **projects** (Forge) | `/projects/*` | ✅ | v1.0 shipped — see [`spaces/projects/README.md`](spaces/projects/README.md) |
+| **workout** | `/workout/*` | ✅ | Battle-tested — see [`spaces/workout/README.md`](spaces/workout/README.md) |
+| **career** | `/career/*` | ✅ | Night HUD / Blueprint — see [`spaces/career/README.md`](spaces/career/README.md) |
+| **health** | `/health` | ❌ | `SpaceTasks` stub — awaiting full-bleed vitals theme |
+| **entertainment** | `/entertainment` | ❌ | `SpaceTasks` stub — awaiting full-bleed cinema theme |
 
-| Folder | Space | Index |
-|---|---|---|
-| `forge/` | Forge PM-OS (`/projects/*`) | [`forge/README.md`](forge/README.md) — routes, theme, architecture, state, canvas catalog, shell niceties |
-| `forge/CANVASES.md` | Forge strategy canvases — all 16 tab reference |
-| `forge/HOTKEYS.md` | Forge keyboard shortcuts |
-| `qa/` | QA / test notes | _(intentionally light — app is offline-first & UI-driven)_ |
+Each space folder holds:
+- `README.md` — routes, theme tokens, architecture, file map.
+- `QA.md` — smoke-test checklist + per-route pass/fail for the last QA sweep.
 
-## Spaces cheat sheet
-
-| Space | Route | Full-screen | Dark theme | Light theme | Status |
-|---|---|---|---|---|---|
-| **Forge** (PM-OS) | `/projects/*` | ✅ | Foundry (iron/amber, hazard stripe, I-beam rail, diamond-plate footer, Bebas Neue) | Drafting Room (vellum/brass/pencil, 20/100 grid, APPROVED stamps) | **v1.0 shipped, merged to main** |
-| **Workout** | `/workout/*` | ✅ | Imperial obsidian (crimson + emperor gold, Cinzel, kanji, crown) | Parchment / burgundy | Shipped (battle-tested) |
-| **Career** | `/career/*` | ✅ | Night HUD (deep navy→black, cyan grid, scanlines, JetBrains Mono) | Blueprint (cream paper, cyan-blue ink, burnt-orange pencil) | Shipped |
-| **Health** | `/health` | ❌ (shared `TopNav` + `SpaceTasks` stub) | n/a | n/a | Placeholder — next up for full-bleed (vitals / EKG-green / blood-red) |
-| **Entertainment** | `/entertainment` | ❌ (shared `TopNav` + `SpaceTasks` stub) | n/a | n/a | Placeholder — next up (cinema neon / film noir) |
+### Quality & bugs
+| Folder | Contents |
+|---|---|
+| [`qa/`](qa/) | Cross-space QA test plans (workout QA report lives there historically) |
+| [`bugs/`](bugs/) | `BUGS.md` — root-cause log of every bug found and fixed, dated |
 
 ## Build & verify
 
 ```bash
 cd frontend
 npx tsc --noEmit      # must be clean
-npx next build        # all 33 routes ○ static (pre-rendered)
+npx next build        # all routes should be ○ (static prerender)
 ```
 
-Forge-only budget: shared CSS ~14.7 kB; Smelter First Load JS ~26 kB.
+Last known good build (2026-08-14 v1.0):
+- 33/33 routes static (○)
+- Shared CSS 14.7 kB
+- Smelter (heaviest Projects page) First Load JS 210 kB
+- 0 TypeScript errors
+- 29/29 HTTP 200 on production smoke test
 
 ## Git conventions
 
-- `main` — stable. Feature branches (`projects`, `career`, `workout`) merge in
-  only after an explicit commander approval on this thread.
-- Author: `Lucifer-Newstar <navin.jairam@gmail.com>` (pass via
-  `git -c user.name=... -c user.email=... commit`).
-- No remote configured — repo is local-only.
+- `main` — stable. Feature branches (`projects`, `career`, `workout`) merge in after explicit approval; they are then kept as historical markers.
+- Author: `Lucifer-Newstar <navin.jairam@gmail.com>` (pass via `git -c user.name=... -c user.email=... commit`).
+- No remote is configured (`fatal: 'origin' does not appear`); the repo is local-only by design.

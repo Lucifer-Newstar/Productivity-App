@@ -43,6 +43,7 @@ import type {
   ParkingLotItem, PomodoroSession, Persona, DecisionMatrixRow, Idea,
   Fishbone, SixHats, Scamper, Sprint, WeeklyReview,
 } from "./forgeTypes";
+import { isDoneStatus as isTaskDone } from "../components/forge/forgeUtils";
 
 // Generate ids for runtime-created entities.
 const uid = () => Math.random().toString(36).slice(2, 10) + Date.now().toString(36);
@@ -914,7 +915,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
   const _applyStreak = (next: ForgeState): ForgeState => {
     // If today has any done tasks completed today, mark active day & bump streak.
     const today = todayIso();
-    const doneToday = next.tasks.some(t => t.status === "done" && t.completedAt === today);
+    const doneToday = next.tasks.some(t => isTaskDone(t.status, next.customStatuses) && t.completedAt === today);
     if (!doneToday) return next;
     if (next.streak.lastActive === today) return next; // already counted
     const hist = new Set(next.streak.history);

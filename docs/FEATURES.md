@@ -1,9 +1,16 @@
 # Kaizen Feature Status
 
-Last audited against code on `projects` branch (session: 2026-08-14, forge wave-5 pass). Three independent spaces ship today:
-**Workout** (battle-tested on `main`, imperial Japanese/obsidian theme), **Career**
-(Night HUD / Blueprint dual themes), and **Forge** (Foundry / Drafting-Room dual themes —
-industrial project/task OS).
+Last audited against code on `main` (session: 2026-08-14, v1.0 pass). Three fully-built spaces ship today:
+**Workout** (imperial Japanese/obsidian, battle-tested), **Career** (Night HUD /
+Blueprint dual themes), and **Projects** (Foundry / Drafting-Room dual themes — branded
+"Forge" in the UI; full project/task OS with 16 strategy canvases). Health and
+Entertainment are placeholders (SpaceTasks) pending full-bleed builds.
+
+Per-space deep dives: [`spaces/workout`](spaces/workout/README.md) ·
+[`spaces/career`](spaces/career/README.md) ·
+[`spaces/projects`](spaces/projects/README.md) ·
+[`spaces/health`](spaces/health/README.md) ·
+[`spaces/entertainment`](spaces/entertainment/README.md). Bug log: [`bugs/BUGS.md`](bugs/BUGS.md).
 
 Legend:
 

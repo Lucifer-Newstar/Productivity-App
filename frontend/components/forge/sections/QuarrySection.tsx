@@ -21,6 +21,7 @@ import {
 } from "lucide-react";
 import { useStore } from "../../../lib/store";
 import type { ProjectTask, TaskStatus, StatusColumn } from "../../../lib/forgeTypes";
+import { DEFAULT_COLS as BASE_DEFAULT_COLS, isDoneStatus as isTaskDone } from "../forgeUtils";
 
 const uid = () => Math.random().toString(36).slice(2,10);
 const today = () => new Date().toISOString().slice(0,10);
@@ -32,15 +33,20 @@ const ageColor = (createdAt:string) => {
   return "var(--fr-fgMuted)";
 };
 
+/** Default columns with lucide icons attached (visual chrome only). */
 const DEFAULT_COLS: { id: TaskStatus; label: string; color: string; icon: any }[] = [
-  { id: "todo",    label: "TO DO",    color: "#94a3b8", icon: Target },
-  { id: "doing",   label: "FORGING",  color: "#f59e0b", icon: Flame },
-  { id: "review",  label: "QUENCH",  color: "#06b6d4", icon: Coffee },
-  { id: "blocked", label: "JAMMED",  color: "#ef4444", icon: AlertTriangle },
-  { id: "done",    label: "SHIPPED", color: "#22c55e", icon: CheckCircle2 },
+  { id: "todo",    label: BASE_DEFAULT_COLS[0].label, color: BASE_DEFAULT_COLS[0].color, icon: Target },
+  { id: "doing",   label: BASE_DEFAULT_COLS[1].label, color: BASE_DEFAULT_COLS[1].color, icon: Flame },
+  { id: "review",  label: BASE_DEFAULT_COLS[2].label, color: BASE_DEFAULT_COLS[2].color, icon: Coffee },
+  { id: "blocked", label: BASE_DEFAULT_COLS[3].label, color: BASE_DEFAULT_COLS[3].color, icon: AlertTriangle },
+  { id: "done",    label: BASE_DEFAULT_COLS[4].label, color: BASE_DEFAULT_COLS[4].color, icon: CheckCircle2 },
 ];
 
 const COLUMN_COLORS = ["#94a3b8","#f59e0b","#06b6d4","#ef4444","#22c55e","#a78bfa","#ec4899","#facc15","#fb923c","#818cf8"];
+
+/** Module-level helper — same as the imported isTaskDone, kept local for readability. */
+const isTaskDoneStatus = (s:string|undefined|null, customStatuses?: StatusColumn[]|null) =>
+  isTaskDone(s, customStatuses);
 
 export default function QuarrySection() {
   const { forge, updateForge, logForgeAction } = useStore();
@@ -101,7 +107,7 @@ export default function QuarrySection() {
   };
   const batchOp = (patch: Partial<ProjectTask> & { status?: string }) => {
     if (selected.size===0) return;
-    const movingToDone = patch.status === "done" || (COLS.length && COLS[COLS.length-1].id === patch.status);
+    const movingToDone = isDoneStatus(patch.status);
     updateForge(f => ({ tasks: f.tasks.map(t => selected.has(t.id) ? { ...t, ...patch, completedAt: movingToDone?today():t.completedAt } as ProjectTask : t) }));
     window.dispatchEvent(new CustomEvent("career:toast",{detail:{title:"BATCH APPLIED",sub:`${selected.size} blocks updated`,color:"#f59e0b",icon:"zap"}}));
     clearSel();
@@ -166,7 +172,9 @@ export default function QuarrySection() {
     };
     updateForge(f => ({ tasks: [...f.tasks, copy] }));
   };
-  const isDoneStatus = (s:string) => s === "done" || (COLS.length>0 && COLS[COLS.length-1].id === s);
+  const isDoneStatus = (s:string|undefined|null) => isTaskDone(s, forge.customStatuses);
+  /** Effective id of the "shipped" column (last col if custom, else "done"). */
+  const shippedId = (): TaskStatus => ((COLS[COLS.length-1]?.id as TaskStatus) || "done");
   const toggleTask = (id: string) => {
     const t = forge.tasks.find(x=>x.id===id); if(!t) return;
     const movingToDone = !isDoneStatus(t.status);
@@ -371,7 +379,7 @@ export default function QuarrySection() {
                           {colTasks.slice(0,5).map(t=>(
                             <div key={t.id} className="p-1 text-[10px] rounded-sm"
                               style={{background:"var(--fr-card)",borderLeft:`2px solid ${t.stuck?"var(--fr-red)":col.color}66`}}>
-                              <span className={t.status==="done"?"line-through opacity-60":""}>{t.title}</span>
+                              <span className={isDoneStatus(t.status)?"line-through opacity-60":""}>{t.title}</span>
                             </div>
                           ))}
                           {colTasks.length>5 && <div className="mono text-[9px] text-center" style={{color:"var(--fr-fgMuted)"}}>+{colTasks.length-5}</div>}
@@ -406,7 +414,7 @@ export default function QuarrySection() {
                   {tasks.map(t => {
                     const proj = projectById[t.projectId];
                     const subs = (t.subtaskIds||[]).map(sid=>forge.tasks.find(x=>x.id===sid)).filter(Boolean) as ProjectTask[];
-                    const doneSubs = subs.filter(s=>s.status==="done").length;
+                    const doneSubs = subs.filter(s=>isDoneStatus(s.status)).length;
                     const isOpen = openTask === t.id;
                     const dueCol = t.dueDate ? (t.dueDate < today() && col.id!=="done" ? "#ef4444" : t.dueDate === today() ? "#f59e0b" : "var(--fr-fgMuted)") : null;
                     const aged = ageColor(t.createdAt);
@@ -426,11 +434,11 @@ export default function QuarrySection() {
                             )}
                             <button onClick={()=>toggleTask(t.id)}
                               className="mt-0.5 w-4 h-4 rounded-sm shrink-0 flex items-center justify-center"
-                              style={{background:t.status==="done"?col.color:"transparent",border:`1.5px solid ${t.status==="done"?col.color:"var(--fr-fgMuted)"}`}}>
-                              {t.status==="done" && <CheckCircle2 size={10} color="#000"/>}
+                              style={{background:isDoneStatus(t.status)?col.color:"transparent",border:`1.5px solid ${isDoneStatus(t.status)?col.color:"var(--fr-fgMuted)"}`}}>
+                              {isDoneStatus(t.status) && <CheckCircle2 size={10} color="#000"/>}
                             </button>
                             <div className="flex-1 min-w-0">
-                              <div className={`flex items-center gap-1.5 ${t.status==="done"?"line-through opacity-60":""}`}>
+                              <div className={`flex items-center gap-1.5 ${isDoneStatus(t.status)?"line-through opacity-60":""}`}>
                                 <span className="flex-1 break-words">{t.title}</span>
                                 <button onClick={()=>setOpenTask(isOpen?null:t.id)} className="shrink-0 opacity-60 hover:opacity-100">
                                   {isOpen ? <ChevronDown size={10}/> : <ChevronRight size={10}/>}
@@ -473,7 +481,7 @@ export default function QuarrySection() {
                               )}
                               {(t.dependsOn||[]).length>0 && (() => {
                                 const blockers = (t.dependsOn||[]).map(did=>forge.tasks.find(x=>x.id===did)).filter(Boolean);
-                                const openBlockers = blockers.filter(b=>b && b.status!=="done");
+                                const openBlockers = blockers.filter(b=>b && !isDoneStatus(b.status));
                                 return (
                                   <div className="mt-1 flex items-center gap-1 flex-wrap">
                                     <span className="mono text-[8px] tracking-widest" style={{color:openBlockers.length?"#ef4444":"var(--fr-green)"}}>
@@ -481,9 +489,9 @@ export default function QuarrySection() {
                                     </span>
                                     {blockers.slice(0,2).map(b=>b && (
                                       <span key={b.id} className="mono text-[8px] px-1 py-0.5 rounded-sm truncate max-w-[80px]"
-                                        style={{background:b.status==="done"?"rgba(34,197,94,0.15)":"rgba(239,68,68,0.15)",
-                                                color:b.status==="done"?"var(--fr-green)":"#ef4444",
-                                                border:`1px solid ${b.status==="done"?"rgba(34,197,94,0.4)":"rgba(239,68,68,0.4)"}`}}
+                                        style={{background:isDoneStatus(b.status)?"rgba(34,197,94,0.15)":"rgba(239,68,68,0.15)",
+                                                color:isDoneStatus(b.status)?"var(--fr-green)":"#ef4444",
+                                                border:`1px solid ${isDoneStatus(b.status)?"rgba(34,197,94,0.4)":"rgba(239,68,68,0.4)"}`}}
                                         title={b.title}>{b.title.slice(0,12)}{b.title.length>12?"…":""}</span>
                                     ))}
                                   </div>
@@ -525,7 +533,7 @@ export default function QuarrySection() {
                           {isOpen && (
                             <motion.div initial={{height:0,opacity:0}} animate={{height:"auto",opacity:1}} exit={{height:0,opacity:0}}
                               className="overflow-hidden border-t" style={{borderColor:"var(--fr-borderSoft)"}}>
-                              <TaskEditor task={t} onPatch={(p)=>patchTask(t.id,p)} onAddSub={(ttl)=>addSubtask(t.id,ttl)} subs={subs} onToggleSub={(sid)=>{const s=forge.tasks.find(x=>x.id===sid);if(s)patchTask(sid,{status:s.status==="done"?"todo":"done",completedAt:s.status==="done"?undefined:today()});}} projectColor={proj?.color||"#f59e0b"}/>
+                              <TaskEditor task={t} onPatch={(p)=>patchTask(t.id,p)} onAddSub={(ttl)=>addSubtask(t.id,ttl)} subs={subs} onToggleSub={(sid)=>{const s=forge.tasks.find(x=>x.id===sid);if(s)patchTask(sid,{status:isDoneStatus(s.status)?"todo":shippedId(),completedAt:isDoneStatus(s.status)?undefined:today()});}} projectColor={proj?.color||"#f59e0b"}/>
                             </motion.div>
                           )}
                         </AnimatePresence>
@@ -538,12 +546,12 @@ export default function QuarrySection() {
                             <div key={s.id}
                               className="flex items-center gap-1.5 p-1.5 rounded-sm text-[11px]"
                               style={{background:"var(--fr-card2)",borderLeft:`2px solid ${proj?.color||"#f59e0b"}66`}}>
-                              <button onClick={()=>{patchTask(s.id,{status:s.status==="done"?"todo":"done",completedAt:s.status==="done"?undefined:today()});}}
+                              <button onClick={()=>{patchTask(s.id,{status:isDoneStatus(s.status)?"todo":shippedId(),completedAt:isDoneStatus(s.status)?undefined:today()});}}
                                 className="w-3.5 h-3.5 rounded-sm shrink-0 flex items-center justify-center"
-                                style={{background:s.status==="done"?col.color:"transparent",border:`1.5px solid ${s.status==="done"?col.color:"var(--fr-fgMuted)"}`}}>
-                                {s.status==="done" && <CheckCircle2 size={8} color="#000"/>}
+                                style={{background:isDoneStatus(s.status)?col.color:"transparent",border:`1.5px solid ${isDoneStatus(s.status)?col.color:"var(--fr-fgMuted)"}`}}>
+                                {isDoneStatus(s.status) && <CheckCircle2 size={8} color="#000"/>}
                               </button>
-                              <span className={`flex-1 ${s.status==="done"?"line-through opacity-60":""}`}>{s.title}</span>
+                              <span className={`flex-1 ${isDoneStatus(s.status)?"line-through opacity-60":""}`}>{s.title}</span>
                               <button onClick={()=>{
                                 // delete subtask + remove from parent subtaskIds
                                 updateForge(f=>({
@@ -600,8 +608,8 @@ export default function QuarrySection() {
         </div>
       )}
 
-      {matrixMode==="eisenhower" && <EisenhowerView tasks={visibleTasks} projects={projectById} onMove={moveTask}/>}
-      {matrixMode==="effort" && <EffortImpactView tasks={visibleTasks.filter(t=>t.status!=="done")} projects={projectById}/>}
+      {matrixMode==="eisenhower" && <EisenhowerView tasks={visibleTasks} projects={projectById} onToggle={toggleTask} customStatuses={forge.customStatuses}/>}
+      {matrixMode==="effort" && <EffortImpactView tasks={visibleTasks.filter(t=>!isTaskDoneStatus(t.status, forge.customStatuses))} projects={projectById}/>}
     </div>
   );
 }
@@ -611,6 +619,8 @@ function TaskEditor({task,onPatch,onAddSub,subs,onToggleSub,projectColor}:{
   task: ProjectTask; onPatch:(p:Partial<ProjectTask>)=>void;
   onAddSub:(title:string)=>void; subs:ProjectTask[]; onToggleSub:(id:string)=>void; projectColor:string;
 }) {
+  const { forge } = useStore();
+  const isDone = (s:string|undefined|null) => isTaskDoneStatus(s, forge.customStatuses);
   const [subText,setSubText] = useState("");
   const [tagText,setTagText] = useState("");
   const Slider = ({label,value,min=1,max=5,onChange,color}:{label:string;value:number;min?:number;max?:number;onChange:(v:number)=>void;color:string}) => (
@@ -692,7 +702,7 @@ function TaskEditor({task,onPatch,onAddSub,subs,onToggleSub,projectColor}:{
           </select>
         </div>
       </div>
-      {task.status==="done" && (
+      {isDone(task.status) && (
         <div>
           <div className="mono text-[8px] tracking-widest mb-1" style={{color:"var(--fr-green)"}}>✓ HOW'D IT GO?</div>
           <div className="flex gap-1">
@@ -725,17 +735,17 @@ function TaskEditor({task,onPatch,onAddSub,subs,onToggleSub,projectColor}:{
       </div>
       <div>
         <div className="mono text-[8px] tracking-widest mb-1 flex items-center gap-1" style={{color:"var(--fr-fgMuted)"}}>
-          <ListChecks size={8}/> SUBTASKS ({subs.filter(s=>s.status==="done").length}/{subs.length})
+          <ListChecks size={8}/> SUBTASKS ({subs.filter(s=>isDone(s.status)).length}/{subs.length})
         </div>
         <div className="space-y-0.5 mb-1">
           {subs.map(s=>(
             <div key={s.id} className="flex items-center gap-1 mono text-[10px]">
               <button onClick={()=>onToggleSub(s.id)}
                 className="w-3 h-3 rounded-sm shrink-0"
-                style={{background:s.status==="done"?"var(--fr-green)":"transparent",border:`1px solid ${s.status==="done"?"var(--fr-green)":"var(--fr-fgMuted)"}`}}>
-                {s.status==="done" && <CheckCircle2 size={8} color="#000"/>}
+                style={{background:isDone(s.status)?"var(--fr-green)":"transparent",border:`1px solid ${isDone(s.status)?"var(--fr-green)":"var(--fr-fgMuted)"}`}}>
+                {isDone(s.status) && <CheckCircle2 size={8} color="#000"/>}
               </button>
-              <span className={s.status==="done"?"line-through opacity-60":""}>{s.title}</span>
+              <span className={isDone(s.status)?"line-through opacity-60":""}>{s.title}</span>
             </div>
           ))}
         </div>
@@ -770,6 +780,7 @@ function DependsEditor({task}:{task:ProjectTask}){
   // Uses setDep in closure via parent; but we don't have direct access to forge/updateForge here.
   // Accept via context: useStore() locally.
   const { forge, updateForge } = useStore();
+  const isDone = (s:string|undefined|null) => isTaskDoneStatus(s, forge.customStatuses);
   const others = forge.tasks.filter(x=>x.projectId===task.projectId && x.id!==task.id && !x.parentId);
   const sel = (task.dependsOn||[]).slice();
   const toggle = (id:string) => {
@@ -783,7 +794,7 @@ function DependsEditor({task}:{task:ProjectTask}){
         {others.slice(0,12).map(o=>(
           <label key={o.id} className="flex items-center gap-1 mono text-[9px]">
             <input type="checkbox" checked={sel.includes(o.id)} onChange={()=>toggle(o.id)}/>
-            <span className={o.status==="done"?"line-through opacity-50":""}>{o.title.slice(0,36)}</span>
+            <span className={isDone(o.status)?"line-through opacity-50":""}>{o.title.slice(0,36)}</span>
           </label>
         ))}
         {others.length===0 && <div className="mono text-[9px] italic" style={{color:"var(--fr-fgDim)"}}>no other blocks yet</div>}
@@ -792,7 +803,8 @@ function DependsEditor({task}:{task:ProjectTask}){
   );
 }
 
-function EisenhowerView({tasks,projects,onMove}:{tasks:ProjectTask[];projects:Record<string,any>;onMove:(id:string,s:TaskStatus)=>void}) {
+function EisenhowerView({tasks,projects,onToggle,customStatuses}:{tasks:ProjectTask[];projects:Record<string,any>;onToggle:(id:string)=>void;customStatuses?:StatusColumn[]|null}) {
+  const done = (s:string|undefined|null) => isTaskDoneStatus(s, customStatuses);
   const imp = (t:ProjectTask) => (t.importance ?? 5);
   const urg = (t:ProjectTask) => (t.urgency ?? 5);
   const quads = [
@@ -813,12 +825,12 @@ function EisenhowerView({tasks,projects,onMove}:{tasks:ProjectTask[];projects:Re
               return (
                 <div key={t.id} className="p-2 rounded-sm flex items-center gap-2 text-xs"
                   style={{background:"var(--fr-card2)",borderLeft:`3px solid ${p?.color||"#888"}`}}>
-                  <button onClick={()=>onMove(t.id,t.status==="done"?"todo":"done")}
+                  <button onClick={()=>onToggle(t.id)}
                     className="w-4 h-4 rounded-sm shrink-0"
-                    style={{background:t.status==="done"?q.color:"transparent",border:`1.5px solid ${t.status==="done"?q.color:"var(--fr-fgMuted)"}`}}>
-                    {t.status==="done" && <CheckCircle2 size={10} color="#000"/>}
+                    style={{background:done(t.status)?q.color:"transparent",border:`1.5px solid ${done(t.status)?q.color:"var(--fr-fgMuted)"}`}}>
+                    {done(t.status) && <CheckCircle2 size={10} color="#000"/>}
                   </button>
-                  <span className={`flex-1 ${t.status==="done"?"line-through opacity-60":""}`}>{t.title}</span>
+                  <span className={`flex-1 ${done(t.status)?"line-through opacity-60":""}`}>{t.title}</span>
                   <span className="mono text-[8px]" style={{color:"var(--fr-fgMuted)"}}>imp{imp(t)}/urg{urg(t)}</span>
                 </div>
               );

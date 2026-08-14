@@ -18,6 +18,7 @@ import { useStore } from "../../../lib/store";
 import type { DecisionMatrixRow, Fishbone, SixHats, Persona, Scamper, Sprint, ProjectTask } from "../../../lib/forgeTypes";
 import { addDays, todayISO } from "../forgeUtils";
 import { BMCTab, VPCTab, LeanTab, PorterTab, PestelTab, StoriesTab, AffinityTab, BuyAFeatureTab, PairedTab, JourneyTab, BlueprintTab, EventStormTab, MindmapTab, CanvasTab, WireframeTab, VoiceTab } from "./Canvases";
+import { isDoneStatus as isTaskDone } from "../forgeUtils";
 
 const uid = () => Math.random().toString(36).slice(2,10);
 const today = () => new Date().toISOString().slice(0,10);
@@ -66,6 +67,7 @@ const SWOT_Q: { k:"S"|"W"|"O"|"T"; label:string; color:string }[] = [
 
 export default function SmelterSection() {
   const { forge, updateForge } = useStore();
+  const isDone = (s: any) => isTaskDone(s, forge.customStatuses);
   const [tab, setTab] = useState<typeof TABS[number]["id"]>("scratch");
   const [projFilter, setProjFilter] = useState<string>("all");
 
@@ -521,6 +523,7 @@ export default function SmelterSection() {
 
 function SprintsPanel() {
   const { forge, updateForge } = useStore();
+  const isDone = (s: any) => isTaskDone(s, forge.customStatuses);
   const [name,setName] = useState("");
   const [goal,setGoal] = useState("");
   const [len,setLen] = useState(forge.settings.sprintLengthDays||14);
@@ -557,7 +560,7 @@ function SprintsPanel() {
   };
   const deleteSprint = (id:string) => updateForge(f => ({ sprints: f.sprints.filter(s=>s.id!==id) }));
 
-  const backlog = forge.tasks.filter(t => t.status!=="done" && !forge.sprints.some(s => s.taskIds.includes(t.id) && s.status!=="closed"));
+  const backlog = forge.tasks.filter(t => !isDone(t.status) && !forge.sprints.some(s => s.taskIds.includes(t.id) && s.status!=="closed"));
   const sorted = [...forge.sprints].sort((a,b)=>(a.status==="active"?-1:b.status==="active"?1:b.startDate.localeCompare(a.startDate)));
 
   return (
@@ -601,13 +604,13 @@ function SprintsPanel() {
           const proj = s.projectId ? forge.projects.find(p=>p.id===s.projectId) : null;
           const cStatus = s.status==="active"?"#f59e0b":s.status==="closed"?"#22c55e":"#94a3b8";
           const sprintTasks = forge.tasks.filter(t => s.taskIds.includes(t.id));
-          const doneCount = sprintTasks.filter(t=>t.status==="done").length;
+          const doneCount = sprintTasks.filter(t=>isDone(t.status)).length;
           const pct = sprintTasks.length?Math.round(doneCount/sprintTasks.length*100):0;
           const totalDays = Math.max(1, Math.ceil((new Date(s.endDate).getTime()-new Date(s.startDate).getTime())/86400000)+1);
           const elapsed = Math.min(totalDays, Math.max(0, Math.ceil((Date.now()-new Date(s.startDate).getTime())/86400000)+1));
           const idealPct = s.status==="closed"?100:Math.round(elapsed/totalDays*100);
           const tasksToShow = proj ? sprintTasks.filter(t=>t.projectId===s.projectId||!s.projectId).concat(
-            forge.tasks.filter(t=>t.projectId===s.projectId&&t.status!=="done"&&!s.taskIds.includes(t.id)).slice(0,12)
+            forge.tasks.filter(t=>t.projectId===s.projectId&&!isDone(t.status)&&!s.taskIds.includes(t.id)).slice(0,12)
           ) : sprintTasks.concat(backlog.filter(t=>!s.taskIds.includes(t.id)).slice(0,10));
           return (
             <div key={s.id} className="rounded-sm steel-plate p-4 relative" style={{borderColor:`${cStatus}66`}}>
@@ -646,7 +649,7 @@ function SprintsPanel() {
               </div>
 
               {/* Burndown mini-chart */}
-              <SprintBurndown sprint={s} tasks={sprintTasks}/>
+              <SprintBurndown sprint={s} tasks={sprintTasks} customStatuses={forge.customStatuses}/>
 
               <div className="mt-3 space-y-1 max-h-48 overflow-y-auto">
                 {tasksToShow.slice(0,12).map(t => {
@@ -656,7 +659,7 @@ function SprintsPanel() {
                     <label key={t.id} className="flex items-center gap-2 p-1.5 rounded-sm cursor-pointer text-xs"
                       style={{background:selected?"rgba(245,158,11,0.08)":"var(--fr-card2)",border:`1px solid ${selected?"rgba(245,158,11,0.4)":"var(--fr-borderSoft)"}`}}>
                       <input type="checkbox" checked={selected} onChange={()=>toggleTask(s.id,t.id)} className="accent-amber-500"/>
-                      <span className={t.status==="done"?"line-through opacity-60":""}>{t.title}</span>
+                      <span className={isDone(t.status)?"line-through opacity-60":""}>{t.title}</span>
                       <span className="ml-auto mono text-[9px] tracking-widest" style={{color:p?.color||"var(--fr-fgDim)"}}>{p?.icon}{p?.codename}</span>
                     </label>
                   );
@@ -1398,7 +1401,8 @@ function ScamperPanel({projects,defaultProj}:{projects:any[];defaultProj?:string
   );
 }
 
-function SprintBurndown({sprint,tasks}:{sprint:Sprint;tasks:ProjectTask[]}){
+function SprintBurndown({sprint,tasks,customStatuses}:{sprint:Sprint;tasks:ProjectTask[];customStatuses?:any[]|null}){
+  const isDone = (s:any) => isTaskDone(s, customStatuses);
   // Compute per-day cumulative completions from startDate through today (or endDate if closed)
   const start = new Date(sprint.startDate+"T00:00:00").getTime();
   const end = new Date(sprint.endDate+"T00:00:00").getTime();
@@ -1411,7 +1415,7 @@ function SprintBurndown({sprint,tasks}:{sprint:Sprint;tasks:ProjectTask[]}){
   // Cumulative done per day
   const completionsByDay: Record<string,number> = {};
   tasks.forEach(t=>{
-    if(t.status==="done" && t.completedAt){
+    if(isDone(t.status) && t.completedAt){
       const d = t.completedAt;
       if(new Date(d+"T00:00:00").getTime()>=start && new Date(d+"T00:00:00").getTime()<=end){
         completionsByDay[d] = (completionsByDay[d]||0)+1;

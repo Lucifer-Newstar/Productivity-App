@@ -1,8 +1,18 @@
 # Data Model Reference
 
-Every persisted entity lives in `frontend/lib/types.ts`. This document
-describes the entities and their relationships at a high level so a new
-contributor can orient themselves quickly.
+Kaizen's state is split across typed modules:
+
+- `frontend/lib/types.ts` — shared Task, Note, Habit, Space, SPACES, and the
+  legacy re-exports of Workout + Career shapes.
+- `frontend/lib/careerTypes.ts` — Career data model (9 sectors).
+- `frontend/lib/forgeTypes.ts` — Projects space data model (40+ collections in
+  ForgeState).
+- Workout types live in `types.ts` for legacy reasons and are being incrementally
+  split out.
+
+Per-space deep dives live under `docs/spaces/<space>/`. This document covers
+the entity shapes and relationships at a high level so a new contributor can
+orient themselves quickly.
 
 ```
 WorkoutState

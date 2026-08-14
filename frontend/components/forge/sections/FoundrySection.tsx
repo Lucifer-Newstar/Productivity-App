@@ -22,6 +22,11 @@ import type { ForgeProject, ProjectTask } from "../../../lib/forgeTypes";
 import { FORGE_NAV } from "../ForgeShell";
 import { daysAgo, daysFrom, todayISO, daysBetween, addDays } from "../forgeUtils";
 import { useState as useStateHook } from "react";
+import { isDoneStatus as isTaskDone, effectiveCols } from "../forgeUtils";
+
+/** Curried helper — task done-check honouring custom columns. */
+const taskShipped = (customStatuses?: any[] | null) => (s: string | undefined | null) =>
+  isTaskDone(s, customStatuses);
 
 const HEALTH: Record<ForgeProject["status"], { label: string; color: string; Icon: any; ring: string }> = {
   "on-track":  { label: "ON TRACK",  color: "#22c55e", Icon: CheckCircle2,  ring: "rgba(34,197,94,0.4)" },
@@ -41,6 +46,12 @@ export default function FoundrySection() {
   const [showForge, setShowForge] = useState(false);
   const [draft, setDraft] = useState({ title: "", codename: "", color: "#f59e0b", icon: "🔥" });
 
+  /** Task-level "is done" respecting custom columns. */
+  const isTaskShipped = (s: string | undefined | null) => isTaskDone(s, forge.customStatuses);
+  const taskCols = effectiveCols(forge.customStatuses);
+  const taskShippedId = taskCols[taskCols.length - 1]?.id || "done";
+
+  // Project-level statuses are a fixed enum (done = shipped) — different from task columns.
   const active = forge.projects.filter(p => !p.archived && p.status !== "dead" && p.status !== "done");
   const cold = forge.projects.filter(p => p.status === "off-track" || p.status === "blocked" || p.status === "paused");
   const shipped = forge.projects.filter(p => p.status === "done" || p.archived);
@@ -48,7 +59,7 @@ export default function FoundrySection() {
   const onTrack = active.filter(p => p.status === "on-track").length;
   const blocked = forge.projects.filter(p => p.status === "blocked" || p.status === "off-track").length;
 
-  const todayTasks = forge.tasks.filter(t => t.today && t.status !== "done")
+  const todayTasks = forge.tasks.filter(t => t.today && !isTaskShipped(t.status))
     .sort((a,b) => (b.priority < a.priority ? 1 : -1));
 
   const progressOf = (p: ForgeProject) => {
@@ -57,7 +68,7 @@ export default function FoundrySection() {
     return Math.round((ms.filter(m=>m.done).length / ms.length) * 100);
   };
   const nextTask = (p: ForgeProject): ProjectTask | undefined =>
-    forge.tasks.find(t => t.projectId === p.id && t.status !== "done");
+    forge.tasks.find(t => t.projectId === p.id && !isTaskShipped(t.status));
 
   const submitForge = () => {
     if (!draft.title.trim()) return;
@@ -265,16 +276,23 @@ export default function FoundrySection() {
               return (
                 <div key={t.id} className="flex items-center gap-2 p-2 rounded-sm"
                   style={{background:"var(--fr-card2)",border:"1px solid var(--fr-borderSoft)"}}>
-                  <button onClick={()=>updateForge(f=>({tasks:f.tasks.map(x=>x.id===t.id?{...x,status:x.status==="done"?"todo":"done",completedAt:x.status==="done"?undefined:new Date().toISOString().slice(0,10)}:x)}))}
+                  <button onClick={()=>updateForge(f=>{
+                    const doneId = ((f.customStatuses && f.customStatuses.length>=2)
+                      ? f.customStatuses[f.customStatuses.length-1].id
+                      : "done") as ProjectTask["status"];
+                    const target = f.tasks.find(x=>x.id===t.id);
+                    const already = target ? isTaskDone(target.status, f.customStatuses) : false;
+                    return {tasks:f.tasks.map(x=>x.id===t.id?{...x,status:already?"todo":doneId,completedAt:already?undefined:new Date().toISOString().slice(0,10)}:x)};
+                  })}
                     className="w-5 h-5 rounded shrink-0 flex items-center justify-center"
                     style={{
-                      background: t.status==="done"?"var(--fr-green)":"transparent",
-                      border:`2px solid ${t.status==="done"?"var(--fr-green)":"var(--fr-fgMuted)"}`,
+                      background: isTaskShipped(t.status)?"var(--fr-green)":"transparent",
+                      border:`2px solid ${isTaskShipped(t.status)?"var(--fr-green)":"var(--fr-fgMuted)"}`,
                     }}>
-                    {t.status==="done" && <CheckCircle2 size={12} color="#000"/>}
+                    {isTaskShipped(t.status) && <CheckCircle2 size={12} color="#000"/>}
                   </button>
                   <div className="flex-1 min-w-0">
-                    <div className={`text-sm ${t.status==="done"?"line-through opacity-50":""}`}>{t.title}</div>
+                    <div className={`text-sm ${isTaskShipped(t.status)?"line-through opacity-50":""}`}>{t.title}</div>
                     <div className="mono text-[10px] flex items-center gap-2" style={{color:"var(--fr-fgMuted)"}}>
                       <span style={{color:proj?.color}}>{proj?.icon} {proj?.codename}</span>
                       <span>·</span>
@@ -520,8 +538,8 @@ function VelocityPlate({projects,tasks}:{projects:any[];tasks:any[]}) {
     }
   });
   const maxShip = Math.max(4,...weeks.map(w=>w.shipped));
-  const active = tasks.filter(t=>t.status!=="done").length;
-  const shipped = tasks.filter(t=>t.status==="done").length;
+  const active = tasks.filter(t=>!isTaskDone(t.status)).length;
+  const shipped = tasks.filter(t=>isTaskDone(t.status)).length;
   const burnt = shipped;
   const total = active + shipped;
   const burnPct = total ? Math.round(burnt/total*100) : 0;
@@ -664,7 +682,7 @@ function ForgeCalendar({projects,tasks,streak}:{projects:ForgeProject[];tasks:Pr
     const iso = addDays(today, i);
     const d = new Date(iso+"T00:00:00");
     const dows = ["S","M","T","W","T","F","S"];
-    const dueTasks = tasks.filter(t => t.dueDate === iso && t.status!=="done");
+    const dueTasks = tasks.filter(t => t.dueDate === iso && !isTaskDone(t.status));
     const doneTasks = tasks.filter(t => t.completedAt === iso);
     const milestones: {title:string;project:ForgeProject;done:boolean}[] = [];
     projects.forEach(p => p.milestones.forEach(m => { if (m.date === iso) milestones.push({title:m.title,project:p,done:m.done}); }));
@@ -741,6 +759,7 @@ function ForgeCalendar({projects,tasks,streak}:{projects:ForgeProject[];tasks:Pr
 /* Weekly Review launcher + modal */
 function WeeklyReviewLauncher() {
   const { forge, updateForge } = useStore();
+  const isTaskShipped = taskShipped(forge.customStatuses);
   const projects = forge.projects;
   const [open, setOpen] = useState(false);
   const thisMonday = (() => {
@@ -755,7 +774,7 @@ function WeeklyReviewLauncher() {
   const [rating,setRating] = useState<1|2|3|4|5>(existing?.rating||3);
   const [hrs,setHrs] = useState<string>(String(existing?.hoursWorked||""));
   const weekShipped = forge.tasks.filter(t=>{
-    if(t.status!=="done"||!t.completedAt) return false;
+    if(!isTaskDone(t.status)||!t.completedAt) return false;
     return t.completedAt >= thisMonday;
   });
   const save = () => {
