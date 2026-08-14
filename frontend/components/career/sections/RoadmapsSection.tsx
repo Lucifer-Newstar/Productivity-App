@@ -182,7 +182,7 @@ function HoursDonut({ roadmaps }: { roadmaps: CareerRoadmap[] }) {
 
 function Badge({ label, color }: { label: string; color: string }) {
   return (
-    <span className="px-2 py-0.5 text-[10px] emperor-title tracking-widest rounded"
+    <span className="px-2 py-0.5 text-[10px] font-mono tracking-widest rounded"
       style={{ color, background: `${color}18`, border: `1px solid ${color}55` }}>{label}</span>
   );
 }
@@ -330,7 +330,7 @@ function MilestoneRow({
               {/* Resources */}
               {ms.resources.length > 0 && (
                 <div>
-                  <div className="text-[10px] emperor-title tracking-widest mb-1" style={{ color: "#67e8f9" }}>RESOURCES</div>
+                  <div className="text-[10px] font-mono tracking-widest mb-1" style={{ color: "var(--cr-accent)" }}>RESOURCES</div>
                   <ul className="space-y-0.5">
                     {ms.resources.map((r) => (
                       <li key={r.id} className="flex items-start gap-2">
@@ -343,7 +343,7 @@ function MilestoneRow({
                           {r.completed && <Check size={10} strokeWidth={3} color="#0a0709" />}
                         </button>
                         <span className={r.completed ? "line-through opacity-60" : ""}>
-                          <BookOpen size={10} className="inline mr-1 -mt-0.5" style={{ color: "#67e8f9" }}/>
+                          <BookOpen size={10} className="inline mr-1 -mt-0.5" style={{ color: "var(--cr-accent)" }}/>
                           {r.title}
                           <span className="ml-1 text-[10px] opacity-60">({r.type})</span>
                         </span>
@@ -356,20 +356,20 @@ function MilestoneRow({
               {/* Projects */}
               {ms.projects.length > 0 && (
                 <div>
-                  <div className="text-[10px] emperor-title tracking-widest mb-1" style={{ color: "#d4af37" }}>PRACTICAL PROJECTS</div>
+                  <div className="text-[10px] font-mono tracking-widest mb-1" style={{ color: "var(--cr-yellow,#facc15)" }}>PRACTICAL PROJECTS</div>
                   <ul className="space-y-0.5">
                     {ms.projects.map((p) => (
                       <li key={p.id} className="flex items-start gap-2">
                         <button onClick={()=>onToggleProject(p.id)}
                           className="w-4 h-4 mt-0.5 rounded shrink-0 flex items-center justify-center"
                           style={{
-                            background: p.completed ? "#d4af37" : "transparent",
-                            border: `1.5px solid ${p.completed ? "#d4af37" : "rgba(212,175,55,0.5)"}`,
+                            background: p.completed ? "var(--cr-yellow,#facc15)" : "transparent",
+                            border: `1.5px solid ${p.completed ? "var(--cr-yellow,#facc15)" : "rgba(250,204,21,0.4)"}`,
                           }}>
                           {p.completed && <Check size={10} strokeWidth={3} color="#0a0709" />}
                         </button>
                         <span className={p.completed ? "line-through opacity-60" : ""}>
-                          <FolderKanban size={10} className="inline mr-1 -mt-0.5" style={{ color: "#d4af37" }}/>{p.title}
+                          <FolderKanban size={10} className="inline mr-1 -mt-0.5" style={{ color: "var(--cr-yellow,#facc15)" }}/>{p.title}
                         </span>
                       </li>
                     ))}
@@ -380,7 +380,7 @@ function MilestoneRow({
               {/* Lab checklist */}
               {ms.labChecklist.length > 0 && (
                 <div>
-                  <div className="text-[10px] emperor-title tracking-widest mb-1" style={{ color: "#ec4899" }}>LAB CHECKLIST</div>
+                  <div className="text-[10px] font-mono tracking-widest mb-1" style={{ color: "#ec4899" }}>LAB CHECKLIST</div>
                   <ul className="space-y-0.5">
                     {ms.labChecklist.map((l) => (
                       <li key={l.id} className="flex items-start gap-2">
@@ -403,7 +403,7 @@ function MilestoneRow({
 
               {/* Mastery self-check */}
               <div>
-                <div className="text-[10px] emperor-title tracking-widest mb-1" style={{ color: "#a3e635" }}>
+                <div className="text-[10px] font-mono tracking-widest mb-1" style={{ color: "#a3e635" }}>
                   MASTERY CHECK
                 </div>
                 <div className="space-y-1">
@@ -412,7 +412,7 @@ function MilestoneRow({
                       <span className="text-[11px] flex-1">{q.question}</span>
                       {(["yes","partial","no"] as const).map((a) => (
                         <button key={a} onClick={()=>onQuiz(q.id,a)}
-                          className="text-[9px] emperor-title tracking-wider px-1.5 py-0.5 rounded"
+                          className="text-[9px] font-mono tracking-wider px-1.5 py-0.5 rounded"
                           style={{
                             background: q.selfRating === a
                               ? (a === "yes" ? "rgba(163,230,53,0.25)" : a === "partial" ? "rgba(245,158,11,0.25)" : "rgba(239,68,68,0.25)")
@@ -812,7 +812,7 @@ export default function RoadmapsSection() {
 
               {/* Action row */}
               <div className="flex items-center justify-between mt-3">
-                <span className="text-[10px] emperor-title px-2 py-1 rounded"
+                <span className="text-[10px] font-mono px-2 py-1 rounded"
           style={{
                 color: r.status === "active" ? "var(--cr-accent)" : r.status === "paused" ? "var(--cr-accent2)" : prog.pct===100 ? "var(--cr-accent3)" : "var(--cr-fgMuted)",
                 background: r.status === "active" ? "rgba(34,211,238,0.12)"
@@ -843,7 +843,7 @@ export default function RoadmapsSection() {
       {archived.length > 0 && (
         <details className="rounded-xl p-4"
           style={{ background: isDark ? "rgba(10,20,24,0.5)" : "rgba(200,180,140,0.1)", border: "1px dashed rgba(107,114,128,0.3)" }}>
-          <summary className="text-xs emperor-title tracking-widest cursor-pointer"
+          <summary className="text-xs font-mono tracking-widest cursor-pointer"
             style={{ color: isDark ? "#6b7280" : "#8b7355" }}>ARCHIVED ({archived.length})</summary>
           <div className="mt-3 grid md:grid-cols-2 gap-2">
             {archived.map((r) => (
@@ -883,15 +883,15 @@ export default function RoadmapsSection() {
                   <div className="w-16 h-16 rounded-2xl flex items-center justify-center text-3xl"
                     style={{ background: `${active.color}22`, border: `2px solid ${active.color}70` }}>{active.icon}</div>
                   <div>
-                    <h3 className="imperial-name text-2xl font-black" style={{ color: isDark ? "#f3e9d2" : "#1a0f0a" }}>
+                    <h3 className="font-mono text-xl md:text-2xl font-black tracking-tight" style={{ color: "var(--cr-fg)" }}>
                       {active.name}
                     </h3>
-                    <p className="serif-body italic text-sm mt-1 max-w-xl" style={{ color: isDark ? "#a8b8c8" : "#7c5a44" }}>
+                    <p className="font-mono text-xs mt-1 max-w-xl" style={{ color: "var(--cr-fgMuted)" }}>
                       {active.description}
                     </p>
-                    <div className="flex gap-2 mt-2 flex-wrap text-[11px] emperor-title tracking-wider">
+                    <div className="flex gap-2 mt-2 flex-wrap text-[11px] font-mono tracking-wider">
                       <Badge label={`LVL ${active.startLevel} → ${active.targetLevel}`} color={active.color}/>
-                      <Badge label={`${active.weeklyHoursTarget}h/wk`} color="#d4af37"/>
+                      <Badge label={`${active.weeklyHoursTarget}h/wk`} color="var(--cr-yellow,#facc15)"/>
                       <Badge label={`Priority ${active.priority}/10`} color="#b91c1c"/>
                       <Badge label={`${prog.hoursDone|0}/${prog.hoursTotal}h`} color="#ec4899"/>
                     </div>
@@ -903,11 +903,11 @@ export default function RoadmapsSection() {
                     const el = document.getElementById(`ms-${prog.currentMilestone!.ms.id}`);
                     setTimeout(() => el?.scrollIntoView({ behavior: "smooth", block: "center" }), 100);
                   }}
-                    className="emperor-title font-black tracking-[0.2em] text-xs px-4 py-3 rounded-xl flex items-center gap-2 shrink-0"
+                    className="font-mono font-black tracking-[0.2em] text-xs px-4 py-3 rounded-xl flex items-center gap-2 shrink-0"
                     style={{
-                      background: "linear-gradient(135deg,#d4af37,#9c7a1a)", color: "#1a0f0a",
-                      border: "1.5px solid rgba(253,230,138,0.7)",
-                      boxShadow: "0 8px 20px -8px rgba(212,175,55,0.9)",
+                      background: "var(--cr-accent)", color: "#000",
+                      border: "1.5px solid var(--cr-accent)",
+                      boxShadow: "0 0 16px var(--cr-accent)66",
                     }}>
                     <Zap size={14}/> NEXT ACTION
                   </button>
@@ -918,8 +918,8 @@ export default function RoadmapsSection() {
 
               {/* Weekly hours slider */}
               <div className="mb-5">
-                <div className="flex items-center justify-between text-[10px] emperor-title tracking-widest mb-1">
-                  <span style={{ color: "#8b9eb0" }}>WEEKLY HOURS</span>
+                <div className="flex items-center justify-between text-[10px] font-mono tracking-widest mb-1">
+                  <span style={{ color: "var(--cr-fgMuted)" }}>WEEKLY HOURS</span>
                   <span style={{ color: active.color }}>{active.weeklyHoursTarget}h</span>
                 </div>
                 <input type="range" min={1} max={30} value={weekOverride[active.id] ?? active.weeklyHoursTarget}
@@ -948,21 +948,21 @@ export default function RoadmapsSection() {
                       }}>
                       <button onClick={() => setOpenPhaseId(isOpen ? null : ph.id)}
                         className="w-full flex items-center gap-3 p-4 text-left hover:bg-white/5 transition">
-                        <div className="w-8 h-8 rounded-lg flex items-center justify-center text-sm emperor-title font-black"
+                        <div className="w-8 h-8 rounded-lg flex items-center justify-center text-sm font-mono font-black"
                           style={{ background: `${active.color}25`, color: active.color, border: `1px solid ${active.color}60` }}>
                           {pi + 1}
                         </div>
                         <div className="flex-1 min-w-0">
-                          <h4 className="emperor-title font-black tracking-wide text-sm md:text-base"
-                            style={{ color: isDark ? "#f3e9d2" : "#1a0f0a" }}>{ph.title}</h4>
+                          <h4 className="font-mono font-bold tracking-wide text-sm md:text-base font-mono"
+                            style={{ color: "var(--cr-fg)" }}>{ph.title}</h4>
                           {ph.description && (
-                            <p className="text-[11px] serif-body italic" style={{ color: isDark ? "#8b9eb0" : "#6b513d" }}>
+                            <p className="text-[11px] font-mono italic" style={{ color: "var(--cr-fgMuted)" }}>
                               {ph.description}
                             </p>
                           )}
                         </div>
                         <div className="text-right shrink-0">
-                          <div className="text-[10px] emperor-title" style={{ color: active.color }}>{phaseProg.pct}%</div>
+                          <div className="text-[10px] font-mono" style={{ color: active.color, fontVariantNumeric: "tabular-nums" }}>{phaseProg.pct}%</div>
                           <div className="text-[10px]" style={{ color: isDark ? "#6b7280" : "#8b7355" }}>
                             {phaseProg.done}/{phaseProg.total} · {phaseProg.hoursTotal}h
                           </div>
@@ -1026,8 +1026,8 @@ export default function RoadmapsSection() {
                 className="absolute top-4 right-4 p-2 rounded-lg hover:bg-white/10 text-gray-400">
                 <X size={18}/>
               </button>
-              <h3 className="imperial-name text-2xl font-black" style={{ color: "#67e8f9" }}>Forge a Roadmap</h3>
-              <p className="text-sm serif-body italic mt-1" style={{ color: "#a8b8c8" }}>
+              <h3 className="font-mono text-xl md:text-2xl font-black tracking-tight" style={{ color: "var(--cr-accent)" }}>Forge a Roadmap</h3>
+              <p className="text-sm font-mono italic mt-1" style={{ color: "var(--cr-fgMuted)" }}>
                 Choose a template — fully populated with phases, milestones, resources & projects — or start from scratch.
               </p>
               <div className="k-blade my-4" style={{ opacity: 0.5 }} />
@@ -1043,11 +1043,11 @@ export default function RoadmapsSection() {
                         <div className="text-3xl w-12 h-12 rounded-xl flex items-center justify-center"
                           style={{ background: `${tpl.color}25`, border: `1px solid ${tpl.color}70` }}>{tpl.icon}</div>
                         <div className="flex-1">
-                          <div className="emperor-title font-black" style={{ color: "#f3e9d2" }}>{tpl.name}</div>
-                          <div className="text-[11px] serif-body italic" style={{ color: "#8b9eb0" }}>{tpl.description}</div>
+                          <div className="font-mono font-black" style={{ color: "var(--cr-fg)" }}>{tpl.name}</div>
+                          <div className="text-[11px] font-mono italic" style={{ color: "var(--cr-fgMuted)" }}>{tpl.description}</div>
                         </div>
                       </div>
-                      <div className="mt-3 flex items-center gap-2 text-[10px] emperor-title" style={{ color: tpl.color }}>
+                      <div className="mt-3 flex items-center gap-2 text-[10px] font-mono" style={{ color: tpl.color }}>
                         <Flame size={10}/> {tpl.phases.length} phases · {ms} milestones
                       </div>
                     </button>
