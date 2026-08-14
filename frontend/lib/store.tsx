@@ -37,6 +37,12 @@ import { SPACES } from "./types";
 import { evaluateBadges, epley1RM, readinessScore as computeReadiness } from "./workoutAnalytics";
 import { DEFAULT_EXERCISES } from "./exerciseLibrary";
 import { TEMPLATE_LIST, cloneTemplate } from "./careerRoadmaps";
+import type {
+  ForgeState, ForgeProject, ProjectTask, ScratchNote, DecisionEntry,
+  SwotRow, ProConItem, ScenarioEntry, FiveWhy, LessonEntry, Retrospective,
+  ParkingLotItem, PomodoroSession, Persona, DecisionMatrixRow, Idea,
+  Fishbone, SixHats, Scamper, Sprint, WeeklyReview,
+} from "./forgeTypes";
 
 // Generate ids for runtime-created entities.
 const uid = () => Math.random().toString(36).slice(2, 10) + Date.now().toString(36);
@@ -153,6 +159,187 @@ const SEED_CAREER: CareerState = (() => {
     linkedin: "",
   };
 })();
+
+// ---------------- Forge / Projects OS seed ----------------
+const EMPTY_PROJECT_DEFAULTS = {
+  budgetBenefit: {},
+  stakeholders: [],
+  milestones: [],
+  premortem: [],
+  risks: [],
+  issues: [],
+  qualityChecks: [],
+  qualityMetrics: [],
+  comms: [],
+  changeRequests: [],
+  resources: [],
+  weeklyReports: [],
+  fileLinks: [],
+  links: [],
+  tags: [],
+  velocityPoints: [],
+  timeline: [],
+  regulatoryChecks: [],
+  scopeHistory: [],
+  goNoGos: [],
+  satisfactionLog: [],
+  sponsorLog: [],
+  costBenefit: { oneTimeCost: 0, ongoingCost: 0, projectedBenefit: 0 },
+};
+const EMPTY_TASK_DEFAULTS = {
+  comments: [],
+  checkpoints: [],
+  tags: [],
+  subtaskIds: [],
+  pomodoros: 0,
+  energy: 3 as const,
+  focus: 3 as const,
+  effort: 3 as 1|2|3|4|5,
+  impact: 3 as 1|2|3|4|5,
+  importance: 5,
+  urgency: 5,
+};
+function upgradeProject(p: any): any {
+  return { ...EMPTY_PROJECT_DEFAULTS, ...p,
+    stakeholders: p.stakeholders ?? [],
+    milestones: p.milestones ?? [],
+    premortem: p.premortem ?? [],
+    risks: p.risks ?? [],
+    issues: p.issues ?? [],
+    qualityChecks: (p.qualityChecks ?? []).map((q:any)=>({category:"standards",...q})),
+    comms: (p.comms ?? []).map((c:any)=>({type:"update",...c})),
+    links: p.links ?? [],
+    tags: p.tags ?? [],
+    velocityPoints: p.velocityPoints ?? [],
+    budget: { currency: "$", actual: 0, ...(p.budget ?? {}) },
+  };
+}
+function upgradeTask(t: any): any {
+  return { ...EMPTY_TASK_DEFAULTS, ...t };
+}
+
+const SEED_FORGE: ForgeState = (() => {
+  const today = new Date().toISOString().slice(0,10);
+  const pid = "p-forge-01";
+  return {
+    projects: [
+      upgradeProject({
+        id: pid,
+        codename: "IRON-01",
+        title: "Forge OS",
+        brief: "Ship the Forge projects workspace — a heavy-industrial OS for all in-flight builds, with cross-links back to Career skills and Portfolio.",
+        why: "Because every builder needs an anvil. A place to plan, strike metal, and ship — not just dream.",
+        successMetrics: "All 4 core sections live (Foundry, Quarry, Smelter, Archive). Rich demo seeds 7 projects.",
+        rejectionCriteria: "No commits for 14 days and no active tasks → melt it down in the Archive.",
+        status: "on-track",
+        priority: 9,
+        energyDemand: 8,
+        complexity: 7,
+        color: "#f59e0b",
+        icon: "⚒️",
+        createdAt: today,
+        startedAt: today,
+        archived: false,
+        checkinFreq: "daily",
+        budget: { estimated: 0, actual: 0, currency: "$" },
+        stakeholders: [],
+        milestones: [
+          { id: uid(), title: "Foundry shell & theme", date: today, done: true, doneAt: today, notes: "Dual theme locked." },
+          { id: uid(), title: "Project cards + drilldown", date: today, done: true },
+          { id: uid(), title: "Task Kanban + quarry", date: today, done: true },
+          { id: uid(), title: "Smelter brainstorms & retro", date: today, done: true },
+          { id: uid(), title: "Analytics (velocity/burndown)", date: today, done: false },
+        ],
+        premortem: [
+          { id: uid(), failure: "Scope creeps into 189 features, never ships", mitigation: "Iterate; ship in waves", likelihood: "med" },
+        ],
+        risks: [
+          { id: uid(), description: "Career/Forge cross-links feel bolted on", probability: "med", impact: "med", mitigation: "Surface skill-bump bridges natively", contingency: "Ship without cross-links, add in v1.1", status: "open" },
+        ],
+        issues: [],
+        qualityChecks: [
+          { id: uid(), label: "tsc --noEmit clean", category:"standards", done: true },
+          { id: uid(), label: "Dual themes verified", category:"review", done: true },
+          { id: uid(), label: "No imperial/katana/cyan bleed", category:"standards", done: true },
+        ],
+        comms: [],
+        scope: "Full Forge OS.",
+        tags: ["kaizen", "productivity"],
+        links: [],
+        velocityPoints: [8, 12, 15],
+      }),
+    ],
+    tasks: [],
+    scratch: [],
+    decisions: [],
+    swot: [],
+    proscons: [],
+    scenarios: [],
+    fiveWhys: [],
+    lessons: [],
+    retors: [],
+    parking: [],
+    pomodoros: [],
+    personas: [],
+    decisionMatrix: [],
+    ideas: [],
+    fishbones: [],
+    sixHats: [],
+    scamper: [],
+    sprints: [],
+    reviews: [],
+    streak: { lastActive: "", current: 0, longest: 0, history: [] },
+    mindmaps: [], canvases: [], voiceNotes: [],
+    bmc: [], vpc: [], lean: [], porter: [], pestel: [],
+    userStories: [], eventStorms: [], journeyMaps: [], blueprints: [], wireframes: [],
+    buyAFeature: [], paired: [], affinity: [],
+    customStatuses: [], auditLog: [],
+    settings: {
+      workStartHour: 9,
+      workEndHour: 18,
+      defaultEnergyPeak: "morning",
+      forgeName: "THE FORGE",
+      sprintLengthDays: 14,
+    },
+  };
+})();
+
+function migrateForge(raw: any): ForgeState {
+  if (!raw || typeof raw !== "object") return SEED_FORGE;
+  return { ...SEED_FORGE, ...raw,
+    projects: (raw.projects ?? SEED_FORGE.projects).map(upgradeProject),
+    tasks: (raw.tasks ?? []).map(upgradeTask),
+    scratch: raw.scratch ?? [],
+    decisions: raw.decisions ?? [],
+    swot: raw.swot ?? [],
+    proscons: raw.proscons ?? [],
+    scenarios: raw.scenarios ?? [],
+    fiveWhys: raw.fiveWhys ?? [],
+    lessons: raw.lessons ?? [],
+    retors: raw.retors ?? [],
+    parking: raw.parking ?? [],
+    pomodoros: raw.pomodoros ?? [],
+    personas: raw.personas ?? [],
+    decisionMatrix: raw.decisionMatrix ?? [],
+    ideas: raw.ideas ?? [],
+    fishbones: raw.fishbones ?? [],
+    sixHats: raw.sixHats ?? [],
+    scamper: raw.scamper ?? [],
+    sprints: raw.sprints ?? [],
+    reviews: raw.reviews ?? [],
+    streak: raw.streak ?? SEED_FORGE.streak,
+    mindmaps: raw.mindmaps ?? [],
+    canvases: raw.canvases ?? [],
+    voiceNotes: raw.voiceNotes ?? [],
+    bmc: raw.bmc ?? [], vpc: raw.vpc ?? [], lean: raw.lean ?? [],
+    porter: raw.porter ?? [], pestel: raw.pestel ?? [],
+    userStories: raw.userStories ?? [], eventStorms: raw.eventStorms ?? [],
+    journeyMaps: raw.journeyMaps ?? [], blueprints: raw.blueprints ?? [], wireframes: raw.wireframes ?? [],
+    buyAFeature: raw.buyAFeature ?? [], paired: raw.paired ?? [], affinity: raw.affinity ?? [],
+    customStatuses: raw.customStatuses ?? [], auditLog: raw.auditLog ?? [],
+    settings: { ...SEED_FORGE.settings, ...(raw.settings ?? {}) },
+  };
+}
 
 // ---------------- Workout seed ----------------
 const SEED_WORKOUT: WorkoutState = (() => {
@@ -398,6 +585,11 @@ interface StoreState {
   deleteNote: (id: string) => void; togglePinNote: (id: string) => void;
   // career
   career: CareerState;
+  // forge (projects OS)
+  forge: ForgeState;
+  updateForge: (updater: (f: ForgeState) => Partial<ForgeState> | ForgeState) => void;
+  seedForgeDemo: () => void;
+  logForgeAction: (action: string, target?: string, detail?: string) => void;
   addTrack: (name: string, color: string) => void;
   updateTrack: (id: string, patch: Partial<CareerTrack>) => void; deleteTrack: (id: string) => void;
   addConcept: (trackId: string, title: string) => void;
@@ -631,6 +823,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
   const [notes, setNotes]     = useLocalState<Note[]>("kaizen.notes", seedNotes);
   const [career, setCareer]   = useLocalState<CareerState>("kaizen.career", SEED_CAREER, migrateCareer);
   const [workout, setWorkout] = useLocalState<WorkoutState>("kaizen.workout", SEED_WORKOUT, migrateWorkout);
+  const [forge, setForge]     = useLocalState<ForgeState>("kaizen.forge", SEED_FORGE, migrateForge);
 
   useEffect(() => {
     ["prod.tasks","prod.notes","prod.projects","prod.habits"].forEach((k) => localStorage.removeItem(k));
@@ -717,6 +910,43 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
       const patch = updater(c);
       return { ...c, ...patch };
     }), [setCareer]);
+
+  const _applyStreak = (next: ForgeState): ForgeState => {
+    // If today has any done tasks completed today, mark active day & bump streak.
+    const today = todayIso();
+    const doneToday = next.tasks.some(t => t.status === "done" && t.completedAt === today);
+    if (!doneToday) return next;
+    if (next.streak.lastActive === today) return next; // already counted
+    const hist = new Set(next.streak.history);
+    hist.add(today);
+    // Determine continuity: was yesterday (or lastActive day-1) the previous active day?
+    const yesterday = new Date(Date.now() - DAY).toISOString().slice(0,10);
+    const wasYesterday = next.streak.lastActive === yesterday;
+    const current = wasYesterday ? next.streak.current + 1 : 1;
+    const longest = Math.max(next.streak.longest, current);
+    return { ...next, streak: { lastActive: today, current, longest, history: Array.from(hist).sort().slice(-365) } };
+  };
+
+  const updateForge = useCallback<StoreState["updateForge"]>((updater) =>
+    setForge((f) => {
+      const patch = updater(f);
+      const merged: ForgeState = { ...f, ...patch };
+      return _applyStreak(merged);
+    }), [setForge]);
+
+  const seedForgeDemo = useCallback<StoreState["seedForgeDemo"]>(() => {
+    import("./forgeDemo").then(({ buildForgeDemo }) => setForge(buildForgeDemo()));
+  }, [setForge]);
+
+  const logForgeAction = useCallback<StoreState["logForgeAction"]>((action, target, detail) => {
+    setForge(f => ({
+      ...f,
+      auditLog: [
+        { id: uid(), ts: Date.now(), action, target, detail },
+        ...f.auditLog,
+      ].slice(0, 500),
+    }));
+  }, [setForge]);
 
   const addRoadmapFromTemplate = useCallback<StoreState["addRoadmapFromTemplate"]>((templateId, name) => {
     setCareer((c) => {
@@ -1306,6 +1536,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     updateCareer, addRoadmapFromTemplate, toggleMilestoneDone, updateMilestone,
     toggleLabItem, toggleResourceComplete, toggleProjectComplete, setQuizAnswer, logMilestoneHours,
     archiveRoadmap, deleteRoadmap, seedCareerDemo,
+    forge, updateForge, seedForgeDemo, logForgeAction,
     workout, addExercise, updateExercise, deleteExercise,
     logPR, deletePR, addSkill, deleteSkill, addProgression, toggleProgressionDone, updateProgression, deleteProgression,
     addRoutine, updateRoutine, deleteRoutine, addBlock, updateBlock, deleteBlock, reorderBlocks,
