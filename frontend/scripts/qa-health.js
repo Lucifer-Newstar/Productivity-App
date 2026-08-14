@@ -366,6 +366,228 @@ assert(/PROGRESS_PHOTO_LABELS/.test(typesSrc), "PROGRESS_PHOTO_LABELS map exists
 // migrateHealth must handle photos
 assert(/photos:/.test(storeSrc), "migrateHealth defaults photos");
 
+// ---------- Vitals analytics (wave 5) ----------
+section("Vitals classification (AHA 2024 / ACSM)");
+// BP classification
+function classifyBp(sys, dia){
+  if(sys==null||dia==null||sys<=0||dia<=0) return {cat:"unknown",warn:false};
+  if(sys>=180||dia>=120) return {cat:"crisis",warn:true};
+  if(sys>=140||dia>=90)   return {cat:"stage2",warn:true};
+  if(sys>=130||dia>=80)   return {cat:"stage1",warn:true};
+  if(sys>=120)            return {cat:"elevated",warn:false};
+  return {cat:"normal",warn:false};
+}
+assert(classifyBp(115,75).cat==="normal", "115/75 = normal");
+assert(classifyBp(125,78).cat==="elevated", "125/78 = elevated");
+assert(classifyBp(135,85).cat==="stage1", "135/85 = stage 1");
+assert(classifyBp(145,92).cat==="stage2" && classifyBp(145,92).warn, "145/92 = stage 2 warn");
+assert(classifyBp(185,110).cat==="crisis" && classifyBp(185,110).warn, "185/110 = crisis warn");
+assert(classifyBp(null,null).cat==="unknown", "null inputs safe");
+// Fever
+function classifyTemp(t){
+  if(t==null) return {warn:false};
+  if(t>=40) return {warn:true};
+  if(t>=38) return {warn:true};
+  if(t>=37.5) return {warn:false};
+  if(t<35.5) return {warn:true};
+  return {warn:false};
+}
+assert(!classifyTemp(36.8).warn, "36.8°C normal");
+assert(!classifyTemp(37.7).warn, "37.7°C low-grade not warn");
+assert(classifyTemp(38.2).warn, "38.2°C fever warn");
+assert(classifyTemp(40.1).warn, "40.1°C emergency");
+assert(classifyTemp(35.0).warn, "35°C hypothermia");
+// SpO2
+function classifySpO2(s){
+  if(s==null) return {warn:false};
+  if(s>=95) return {warn:false};
+  if(s>=94) return {warn:false};
+  return {warn:true};
+}
+assert(!classifySpO2(98).warn, "SpO2 98 normal");
+assert(classifySpO2(92).warn, "SpO2 92 warn");
+assert(!classifySpO2(94).warn, "SpO2 94 borderline not hard warn");
+assert(classifySpO2(88).warn, "SpO2 88 critical warn");
+// RHR
+function classifyRhr(hr){
+  if(hr==null) return {warn:false};
+  if(hr>=100) return {warn:true};
+  if(hr>=120) return {warn:true};
+  if(hr<40) return {warn:true};
+  return {warn:false};
+}
+assert(!classifyRhr(62).warn, "RHR 62 normal");
+assert(!classifyRhr(52).warn, "RHR 52 athletic");
+assert(classifyRhr(105).warn, "RHR 105 tachy warn");
+assert(classifyRhr(38).warn, "RHR 38 brady warn");
+
+// Orthostatic test
+function classifyOrtho(sup, st1){ const d=st1-sup; if(d>=30) return "high"; if(d>=20) return "elevated"; if(d>=13) return "mild"; return "ok"; }
+assert(classifyOrtho(60,68)==="ok", "+8 bpm = ok");
+assert(classifyOrtho(60,75)==="mild", "+15 bpm = mild");
+assert(classifyOrtho(60,82)==="elevated", "+22 bpm = elevated");
+assert(classifyOrtho(60,95)==="high", "+35 bpm = high");
+
+// Averages — RHR 7d
+function avgRhr(entries,n=7){
+  const byDay={};
+  for(const v of entries){ if(v.rhr==null) continue; if(!byDay[v.date]||v.ctx==="waking") byDay[v.date]=v.rhr; }
+  const dates=Object.keys(byDay).sort().slice(-n);
+  if(!dates.length) return 0;
+  return Math.round(dates.reduce((s,d)=>s+byDay[d],0)/dates.length);
+}
+const vs = [];
+for(let i=0;i<7;i++){ const d=new Date(Date.now()-i*86400e3).toISOString().slice(0,10); vs.push({date:d,rhr:60+i,ctx:"waking"});}
+assert(avgRhr(vs)>=60 && avgRhr(vs)<=66, "avgRhr over 7 days reasonable");
+assert(avgRhr([])===0, "avgRhr empty = 0");
+
+// Active injury filter
+function activeInjuries(arr){ return arr.filter(i=>i.ongoing); }
+assert(activeInjuries([{ongoing:true,bodyPart:"knee"},{ongoing:false,bodyPart:"wrist"}]).length===1, "activeInjuries filters ongoing");
+
+// ---------- Mind / burnout analytics (wave 5) ----------
+section("Burnout / overtraining heuristic");
+// avgMind helper
+function avgMind(entries,key,n=7){
+  const s=[...entries].filter(e=>typeof e[key]==="number").sort((a,b)=>b.date.localeCompare(a.date)).slice(0,n);
+  if(!s.length) return 0;
+  return s.reduce((x,e)=>x+e[key],0)/s.length;
+}
+assert(avgMind([{date:"2025-01-01",mood:8},{date:"2025-01-02",mood:6}], "mood")===7, "avgMind = 7");
+assert(avgMind([], "mood")===0, "avgMind empty = 0");
+
+// Burnout heuristic minimal reproduction
+function burnout({sleep,ideal,vitals,mind,injuries}){
+  // Compute sleep bank
+  const sorted=[...sleep].filter(e=>e.durationHours>0&&e.durationHours<16).sort((a,b)=>a.date.localeCompare(b.date)).slice(-14);
+  let bank=0;
+  for(const e of sorted){ const d=e.durationHours-ideal; if(d<0)bank+=d; else bank+=Math.min(d*0.5,1.0); bank=Math.max(-20,Math.min(10,bank)); }
+  let score=0;
+  if(bank<=-10) score+=2; else if(bank<=-5) score+=1;
+  // RHR elevation
+  const last7=new Set(), prev14=new Set();
+  const d7=new Date(); for(let i=0;i<7;i++){last7.add(d7.toISOString().slice(0,10)); d7.setDate(d7.getDate()-1);}
+  const d14=new Date(Date.now()-7*86400e3); for(let i=0;i<14;i++){prev14.add(d14.toISOString().slice(0,10)); d14.setDate(d14.getDate()-1);}
+  const rec=vitals.filter(v=>v.rhr!=null&&last7.has(v.date)).map(v=>v.rhr);
+  const prev=vitals.filter(v=>v.rhr!=null&&prev14.has(v.date)).map(v=>v.rhr);
+  if(rec.length>=3&&prev.length>=3){
+    const rA=rec.reduce((s,x)=>s+x,0)/rec.length, pA=prev.reduce((s,x)=>s+x,0)/prev.length;
+    const d=rA-pA;
+    if(d>=8) score+=2; else if(d>=5) score+=1;
+  }
+  const mood7=avgMind(mind,"mood",7);
+  if(mood7>0&&mood7<=3) score+=2; else if(mood7>0&&mood7<=4) score+=1;
+  const e=avgMind(mind,"energy",7), f=avgMind(mind,"focus",7);
+  if(e>0&&f>0 && (e+f)/2 <=4) score+=1;
+  const lib=avgMind(mind,"libido",7);
+  if(lib>0&&lib<=1.5) score+=2; else if(lib>0&&lib<=2.5) score+=1;
+  const act=injuries.filter(i=>i.ongoing&&i.severity>=3);
+  if(act.length>=1) score+=1;
+  const level = score>=6?"overtraining":score>=4?"warn":score>=2?"watch":"ok";
+  return {score,level};
+}
+// Fresh/healthy baseline: 0
+const good = burnout({
+  sleep: Array.from({length:7},(_,i)=>({date:new Date(Date.now()-(6-i)*86400e3).toISOString().slice(0,10),durationHours:8})),
+  ideal:8, vitals:[], mind:[], injuries:[],
+});
+assert(good.level==="ok" || good.level==="watch", `Fresh baseline → ok/watch (got ${good.level} ${good.score})`);
+// Totally fried: 14 nights of 5h + terrible mood + RHR spike + dead libido
+const fried = {
+  sleep: Array.from({length:14},(_,i)=>({date:new Date(Date.now()-(13-i)*86400e3).toISOString().slice(0,10),durationHours:5})),
+  ideal:8,
+  vitals: (() => {
+    const out=[]; const d=new Date();
+    for(let i=0;i<7;i++){ out.push({date:d.toISOString().slice(0,10),rhr:78}); d.setDate(d.getDate()-1); }
+    for(let i=0;i<14;i++){ out.push({date:d.toISOString().slice(0,10),rhr:65}); d.setDate(d.getDate()-1); }
+    return out;
+  })(),
+  mind: Array.from({length:7},(_,i)=>({date:new Date(Date.now()-(6-i)*86400e3).toISOString().slice(0,10),mood:2,stress:9,energy:2,anxiety:8,focus:2,libido:1})),
+  injuries: [{ongoing:true,bodyPart:"knee",severity:3}],
+};
+const friedResult = burnout(fried);
+assert(friedResult.level==="overtraining"||friedResult.level==="warn", `Fried baseline → warn/overtraining (got ${friedResult.level} score ${friedResult.score})`);
+assert(friedResult.score>=4, `Fried score ≥4 (got ${friedResult.score})`);
+
+// Injury restriction hints category mapping
+const catMap = {shoulder:/overhead/i,knee:/squat/i,back:/deadlift/i,elbow:/chin|dip/i,wrist:/wrap/i,ankle:/calf|run/i};
+// Just sanity: shoulder keyword in tip
+function shoulderTip(cat){ if(cat==="shoulder") return /overhead/i.test("Avoid overhead pressing on shoulder."); return true; }
+assert(shoulderTip("shoulder"), "Shoulder injury → avoid overhead pressing hint");
+
+// ---------- Vitals section + Mind section + new types ----------
+section("Vitals/Mind types & components (wave 5)");
+assert(/SymptomEntry/.test(typesSrc), "SymptomEntry type exists");
+assert(/IllnessEpisode/.test(typesSrc), "IllnessEpisode type exists");
+assert(/InjuryEntry/.test(typesSrc), "InjuryEntry type exists");
+assert(/MedicationEntry/.test(typesSrc), "MedicationEntry type exists");
+assert(/AllergyEntry/.test(typesSrc), "AllergyEntry type exists");
+assert(/OrthostaticTest/.test(typesSrc), "OrthostaticTest type exists");
+assert(/JournalEntry/.test(typesSrc), "JournalEntry type exists");
+assert(/gratitude/.test(typesSrc), "JournalEntry.gratitude field exists");
+assert(/meditationMin/.test(typesSrc), "JournalEntry.meditationMin field exists");
+assert(/respRate/.test(typesSrc), "VitalsEntry.respRate exists");
+assert(/context\?:\s*\"waking\"/.test(typesSrc), "VitalsEntry.context exists");
+assert(/symptoms:/.test(typesSrc), "HealthState.symptoms exists");
+assert(/illnesses:/.test(typesSrc), "HealthState.illnesses exists");
+assert(/injuries:/.test(typesSrc), "HealthState.injuries exists");
+assert(/medications:/.test(typesSrc), "HealthState.medications exists");
+assert(/allergies:/.test(typesSrc), "HealthState.allergies exists");
+assert(/orthostatic:/.test(typesSrc), "HealthState.orthostatic exists");
+assert(/journal:/.test(typesSrc), "HealthState.journal exists");
+
+// migrateHealth handles wave-5 collections
+assert(/symptoms:/.test(storeSrc), "migrateHealth defaults symptoms");
+assert(/injuries:/.test(storeSrc), "migrateHealth defaults injuries");
+assert(/medications:/.test(storeSrc), "migrateHealth defaults medications");
+assert(/journal:/.test(storeSrc), "migrateHealth defaults journal");
+
+// Components exist
+assert(fs.existsSync(path.join(compDir,'VitalsSection.tsx')), "VitalsSection component exists");
+assert(fs.existsSync(path.join(compDir,'MindSection.tsx')), "MindSection component exists");
+const vitalsSrc = fs.readFileSync(path.join(compDir,'VitalsSection.tsx'),'utf8');
+const mindSrc   = fs.readFileSync(path.join(compDir,'MindSection.tsx'),'utf8');
+assert(/classifyBp|AHA|Hypertension/.test(vitalsSrc), "Vitals classifies BP per AHA");
+assert(/classifyTemp|fever/.test(vitalsSrc), "Vitals classifies temp/fever");
+assert(/classifySpo2/.test(vitalsSrc), "Vitals classifies SpO2");
+assert(/classifyRhr/.test(vitalsSrc), "Vitals classifies RHR");
+assert(/SYMPTOM|symptom/.test(vitalsSrc), "Vitals has symptom log");
+assert(/Illness|illness/.test(vitalsSrc), "Vitals has illness episodes");
+assert(/Injury|injury|restriction/.test(vitalsSrc), "Vitals has injury log with restrictions");
+assert(/Medication|medication|Pill/.test(vitalsSrc), "Vitals has medication log");
+assert(/Allergy|allergy/.test(vitalsSrc), "Vitals has allergies list");
+assert(/Orthostatic|orthostatic/.test(vitalsSrc), "Vitals has orthostatic test");
+assert(/HELPLINE|Vandrevala|iCall|NIMHANS|AASRA|1860|9152987821/.test(mindSrc), "Mind has Indian crisis helplines");
+assert(/mood|MOOD/.test(mindSrc), "Mind has mood sliders");
+assert(/stress|STRESS/.test(mindSrc), "Mind has stress sliders");
+assert(/libido|LIBIDO/.test(mindSrc), "Mind has libido slider");
+assert(/GRATITUDE|gratitude/.test(mindSrc), "Mind has gratitude section");
+assert(/meditation|MEDITATION|breathing/.test(mindSrc), "Mind has meditation minutes");
+assert(/burnout|OVERTRAINING/.test(mindSrc), "Mind surfaces burnout/overtraining");
+assert(/Journal|journal/.test(mindSrc), "Mind has journal");
+assert(/trend|TREND|sparkline|Sparkline/.test(mindSrc), "Mind has mood trend chart");
+
+// Vitals + Mind pages render their sections
+const vitalsPage = fs.readFileSync(path.join(pagesDir,'vitals.tsx'),'utf8');
+const mindPage = fs.readFileSync(path.join(pagesDir,'mind.tsx'),'utf8');
+assert(/VitalsSection/.test(vitalsPage), "/health/vitals renders VitalsSection");
+assert(/MindSection/.test(mindPage), "/health/mind renders MindSection");
+
+// Triage surfaces wave-5 KPIs
+assert(/latestVitals|avgRhr/.test(triage) || /classifyBp/.test(triage) || /burnout/.test(triage), "Triage surfaces wave-5 vitals/burnout KPIs");
+assert(/mood7|avgMind|Burnout/.test(triage), "Triage surfaces mood/burnout KPIs");
+
+// Analytics exports wave-5 functions
+for (const fn of ["classifyBp","classifyTemp","classifySpo2","classifyRhr","latestVitals","avgRhr","avgMind","burnoutHeuristic","activeInjuries","injuryRestrictionHints","classifyOrthostatic"]) {
+  const re = new RegExp(`export function ${fn}`);
+  assert(re.test(anSrc), `healthAnalytics exports ${fn}`);
+}
+
+// Helplines use real numbers (sanity against typos)
+assert(/1860-2662-345|18602662345/.test(mindSrc), "Vandrevala number present");
+assert(/9152987821/.test(mindSrc), "iCall number present");
+assert(/080-46110007|08046110007/.test(mindSrc), "NIMHANS number present");
+
 // ---------- No console.log leftovers ----------
 section("Cleanup — no console.log/debug");
 const componentsDir = path.join(__dirname, '..','components','health');

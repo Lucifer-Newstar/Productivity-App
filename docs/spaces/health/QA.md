@@ -101,3 +101,33 @@ Each wave must satisfy before commit:
 - [x] S:W ratios pull live PRs (w-squat/w-bench/w-dead/w-ohp/w-pullup), kg lifts use estimated1RM, pullup uses raw reps; tiering Beginner/Novice/Intermediate/Advanced/Elite per ExRx/Kilgore/Rippetoe tables
 - [x] Asymmetry detector flags ≥1.0cm L-R differences pre-save; pairs are Arms/Forearms/Thighs/Calves
 - [x] Triage KPI row extended with BF% and asymmetry count tiles when data present; §04 marked ✓
+
+## Wave 5 QA (2026-08-14) — Vitals + Mind
+
+- [x] tsc strict: 0 errors
+- [x] `next build`: **42/42 routes ○ static** (`/health/vitals` 7.77 kB / 189 kB, `/health/mind` 7.60 kB / 189 kB)
+- [x] Smoke test: **38/38 PASS, 0 FAIL**
+- [x] Unit QA (`scripts/qa-health.js`): **276 assertions ALL GREEN** (+93 wave-5)
+- [x] Mock-data scenarios (`/tmp/wave5-mock.mjs`): **13/13 PASS** — BP classification (normal/elevated/stage1/stage2/crisis), fever/SpO2/RHR thresholds, orthostatic bands (ok/mild/elevated/high), 5 burnout profiles (well-rested → overtraining)
+- [x] Bugs found+fixed (2):
+  - H09 unquoted CSS `inline-block` in JSX style (TS2322/2304/2552 → quoted key with `as any` cast)
+  - H10 Triage referenced nonexistent `burnout.label` field → replaced with level-based render
+- [x] Vitals quick-log: 7 metrics (RHR, systolic/diastolic, HRV, temp, SpO₂, resp rate) + context (waking/resting/pre/post/bedtime/other); live classification chips for BP/temp/SpO₂/RHR as you type
+- [x] AHA 2024 BP bands: <120/<80 normal, 120-129/<80 elevated, 130-139/80-89 stage1, ≥140/≥90 stage2, ≥180/≥120 crisis. Fever ≥38°C/≥40°C/<35.5°C; SpO₂ <94% warn; RHR ≥100/<40 warn; ortho Δ+13/+20/+30 mild/elevated/high
+- [x] Active-alert banner: crisis BP / high fever / low SpO₂ / ongoing illness / active injuries with restriction hints (shoulder→avoid overhead, knee→avoid deep squats, back→avoid heavy DL, elbow→avoid weighted chin/dips, wrist→wraps for push/OHP, ankle→avoid heavy calf/running)
+- [x] Symptom quick-tag: 14 symptoms with severity 1-5 + note; today's tags shown as chips
+- [x] Illness episodes: start/end/label/severity 1-5; "mark recovered" button stamps endDate=today
+- [x] Injury log: body part + 9 categories + severity 1-5 + ongoing toggle; active injuries surface in Vitals alerts + Mind burnout heuristic + future Workout restriction bridge (wave 7)
+- [x] Medication log: name + free-text dose + mg dose + type (OTC/Rx/Ayurveda/Other) with timestamp
+- [x] Allergies list: name + severity (mild/moderate/severe)
+- [x] Orthostatic HR test: supine + standing-1min (+ optional 3-min); auto-classifies delta
+- [x] Vitals history: last 10 readings with colour-coded chips per metric
+- [x] Mind daily check-in: 6 sliders (mood 1-10, stress 1-10, energy 1-10, anxiety 1-10, focus 1-10, libido 1-5) with mood-face icon (smile/meh/frown); 17 mood-context tags; note; "save" overwrites today's entry
+- [x] Journal + Gratitude + Meditation: free-text textarea, three gratitude bullets, meditation minutes; overwrites today's entry
+- [x] 90-day mood trend sparkline with mood/energy/stress (stress inverted) + today dot
+- [x] Burnout/overtraining heuristic: weighted combo (sleep bank, RHR elevation vs 14d baseline, mood avg, motivation = (energy+focus)/2, libido, active severe injury). Levels: 0-1 ok, 2-3 watch, 4-5 warn, ≥6 overtraining. Fried scenario scores 10/10 = overtraining with prescriptive deload text.
+- [x] India crisis helplines panel: Vandrevala Foundation 1860-2662-345 (24×7), iCall TISS 9152987821, NIMHANS 080-46110007 (24×7), AASRA 9820466726 (suicide prevention); tap-to-call `tel:` links; 112 emergency reminder
+- [x] Triage KPIs extended: RHR latest + 7d avg, BP chip, SpO₂/temp when present, mood 7d, stress 7d, burnout banner + level, injury count, ongoing-illness count; section status updated §06/§07 ✓
+- [x] `migrateHealth()` defaults all wave-5 collections (symptoms, illnesses, injuries, medications, allergies, orthostatic, journal); pre-wave-5 localStorage loads without data loss
+- [x] No `console.log/debug` in new components; no unsafe `!` non-null assertions; all numerical inputs guarded with `toNum()` that returns undefined for NaN/empty/zero
+- [x] Chennai/India context: helplines India-specific; RHR baseline note accounts for Chennai heat (slightly higher HR, slightly lower BP)

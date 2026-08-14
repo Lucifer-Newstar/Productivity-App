@@ -9,7 +9,9 @@ import HealthPage from "../../components/health/HealthPage";
 import { useStore } from "../../lib/store";
 import { bmrMifflin, tdee, waterGoalMl, proteinTargetG, bmi, formatMl, formatKcal,
   computeSleepBank, avgSleepHours, formatHours, recoveryScore,
-  supplementAdherence, computeDeficiencyBadges, currentBfPct, lbmKg, detectAsymmetries, latestMeasurement } from "../../lib/healthAnalytics";
+  supplementAdherence, computeDeficiencyBadges, currentBfPct, lbmKg, detectAsymmetries, latestMeasurement,
+  classifyBp, classifyRhr, classifyTemp, classifySpo2, latestVitals, avgRhr, avgMind,
+  burnoutHeuristic, activeInjuries } from "../../lib/healthAnalytics";
 
 export default function TriagePage() {
   const { health, workout } = useStore();
@@ -41,6 +43,22 @@ export default function TriagePage() {
   const asym = lastM ? detectAsymmetries(lastM) : [];
   const lbm = bfPct > 0 ? Math.round(lbmKg(weightKg, bfPct)*10)/10 : 0;
 
+  // Wave 5 KPIs
+  const lastV = latestVitals(health.vitals);
+  const rhr7 = avgRhr(health.vitals, 7);
+  const mood7 = avgMind(health.mind, "mood", 7);
+  const stress7 = avgMind(health.mind, "stress", 7);
+  const bpCat = classifyBp(lastV?.systolic, lastV?.diastolic);
+  const rhrCat = classifyRhr(lastV?.restingHr);
+  const tmpCat = classifyTemp(lastV?.tempC);
+  const spoCat = classifySpo2(lastV?.spo2);
+  const inj = activeInjuries(health.injuries);
+  const ongoingIll = health.illnesses.filter(i => !i.endDate);
+  const burnout = burnoutHeuristic({
+    sleepEntries: health.sleep, idealHours: health.profile.idealSleepHours,
+    vitals: health.vitals, mind: health.mind, injuries: health.injuries,
+  });
+
   const today = new Date().toLocaleDateString("en-IN", { weekday: "long", day: "numeric", month: "long", year: "numeric", timeZone: "Asia/Kolkata" });
 
   return (
@@ -56,10 +74,13 @@ export default function TriagePage() {
             Good day, commander.
           </h2>
           <p className="hlth-subtle" style={{ fontSize: 13, margin: 0 }}>
-            {today}. Wave 4 online — Navy BF%, tape measurements, S:W ratios, progress photos.
-            Recovery score: <b style={{color: recovery>=80?"#10b981":recovery>=60?"#f59e0b":"#ef4444"}}>{recovery}/100</b>
+            {today}. Wave 5 online — HR/BP/temp/SpO₂, symptom & injury log, burnout detection,
+            journal & gratitude, Indian crisis helplines.
+            Recovery <b style={{color: recovery>=80?"#10b981":recovery>=60?"#f59e0b":"#ef4444"}}>{recovery}/100</b>
             {bfPct > 0 && <> · BF <b style={{color:bfPct>20?"#ef4444":bfPct>12?"#f59e0b":"#10b981"}}>{bfPct.toFixed(1)}%</b></>}
-            {asym.length>0 && <> · <b style={{color:"#ef4444"}}>{asym.length} asymmetry flag(s)</b></>}.
+            {mood7>0 && <> · Mood <b style={{color:mood7>=6?"#10b981":mood7>=4?"#f59e0b":"#ef4444"}}>{mood7.toFixed(1)}/10</b></>}
+            {burnout.level!=="ok" && <> · <b style={{color:burnout.color}}>{burnout.signals.length>0?"WATCH":burnout.level.toUpperCase()}</b></>}
+            {inj.length>0 && <> · <b style={{color:"#ef4444"}}>{inj.length} active injury</b></>}.
             Profile tuned for a 20yo lifter in Chennai; adjust in <strong style={{ color: "var(--hlth-fg)" }}>§08 Lab</strong>.
           </p>
         </div>
@@ -79,6 +100,18 @@ export default function TriagePage() {
              color={deficiencyCount?"#ef4444":"#10b981"}/>
         {bfPct > 0 && <Kpi label="Body fat" value={bfPct.toFixed(1)} unit="%" hint={`Navy · ${lbm}kg LBM`} color={bfPct>20?"#ef4444":bfPct>12?"#f59e0b":"#10b981"}/>}
         {asym.length>0 && <Kpi label="Asymmetry" value={asym.length.toString()} unit="" hint={asym.map(a=>`${a.site} ${a.diff}cm`).join(", ")} color="#ef4444"/>}
+        <Kpi label="RHR" value={lastV?.restingHr ? String(lastV.restingHr) : "—"} unit="bpm"
+             hint={lastV ? rhrCat.label : "no reading"} color={rhrCat.color}/>
+        {rhr7>0 && <Kpi label="RHR 7d" value={String(rhr7)} unit="bpm" hint="avg" color="#60a5fa"/>}
+        <Kpi label="BP" value={lastV?.systolic ? `${lastV.systolic}/${lastV.diastolic}` : "—"} unit=""
+             hint={bpCat.label} color={bpCat.color}/>
+        {lastV?.spo2 && <Kpi label="SpO₂" value={`${lastV.spo2}`} unit="%" hint={spoCat.label} color={spoCat.color}/>}
+        {lastV?.tempC && <Kpi label="Temp" value={lastV.tempC.toFixed(1)} unit="°C" hint={tmpCat.label} color={tmpCat.color}/>}
+        {mood7>0 && <Kpi label="Mood 7d" value={mood7.toFixed(1)} unit="/10" hint="avg" color={mood7>=6?"#10b981":mood7>=4?"#f59e0b":"#ef4444"}/>}
+        {stress7>0 && <Kpi label="Stress 7d" value={stress7.toFixed(1)} unit="/10" hint="avg" color={stress7<=4?"#10b981":stress7<=6?"#f59e0b":"#ef4444"}/>}
+        <Kpi label="Burnout" value={burnout.level.toUpperCase()} unit="" hint={`score ${burnout.score}/10`} color={burnout.color}/>
+        {inj.length>0 && <Kpi label="Injuries" value={inj.length.toString()} unit="" hint={inj.map(i=>i.bodyPart).slice(0,2).join(", ")} color="#ef4444"/>}
+        {ongoingIll.length>0 && <Kpi label="Illness" value={ongoingIll.length.toString()} unit="" hint={ongoingIll.map(i=>i.label).join(", ")} color="#f59e0b"/>}
 
         <div className="hlth-card" style={{ gridColumn: "1 / -1" }}>
           <div className="hlth-card-h">// Section status</div>
@@ -90,8 +123,8 @@ export default function TriagePage() {
               ["03", "Somnium",    "Wave 3 ✓ sleep bank/rhythm"],
               ["04", "Soma",       "Wave 4 ✓ Navy BF, tape, S:W, photos"],
               ["05", "Apothecary", "Wave 3 ✓ supps/badges/sun"],
-              ["06", "Vitals",     "Wave 5 (HR, BP, HRV)"],
-              ["07", "Mind",       "Wave 5 (mood, stress)"],
+              ["06", "Vitals",     "Wave 5 ✓ HR/BP/temp/SpO₂/symptoms/injuries/meds/orthostatic"],
+              ["07", "Mind",       "Wave 5 ✓ mood/stress/energy/journal/gratitude/burnout/helplines"],
               ["08", "Lab",        "Wave 1 ✓ — profile + sync toggles"],
               ["09", "Reports",    "Wave 6"],
             ].map(([code, label, status]) => (

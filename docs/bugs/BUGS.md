@@ -202,3 +202,32 @@ After fixing BUG-001..005 the following were audited and passed:
 - **Lifter BMI caveat** fires automatically on overweight+ categories.
 - **Asymmetry flag** in live form shows red warning with offending site(s) + diff in cm before save.
 - **Progress photos** capped at 200 entries; webcam preview mirrored via CSS `scaleX(-1)`; EXIF orientation deferred to v1.2.
+
+
+---
+
+## BUG-H09 — Unquoted CSS property `inline-block` in MindSection (caught at tsc)
+- **Found:** 2026-08-14 (Wave 5 build)
+- **Severity:** Build-breaking (TS2322/TS2304/TS2552)
+- **Root cause:** JSX inline-style `style={{display:inline-block,...}}` used the bare identifier `inline-block` which JSX parsed as `inline minus block`, producing "Cannot find name 'inline' / 'block'" errors and assigning a number to the CSS `display` field.
+- **Fix:** Quoted as `"inline-block"` with `as any` cast to satisfy React's CSSProperties `Display` union.
+- **Files:** `components/health/MindSection.tsx`.
+
+## BUG-H10 — Triage referenced `burnout.label` (field didn't exist)
+- **Found:** 2026-08-14 (Wave 5 build)
+- **Severity:** Build-breaking (TS2339)
+- **Root cause:** Initially wrote `<b>{burnout.label}</b>` but BurnoutResult has `level/score/color/signals`, no `label`.
+- **Fix:** Simplified to show `"WATCH"`/warning state using `burnout.level.toUpperCase()` signal text.
+- **Files:** `pages/health/index.tsx`.
+
+### Wave 5 QA verification (Vitals + Mind)
+- **TypeScript** clean (`tsc --noEmit`).
+- **42/42 routes ○ static**; `/health/vitals` 7.77 kB / 189 kB First Load JS; `/health/mind` 7.6 kB / 189 kB.
+- **38/38 smoke PASS.**
+- **276 unit assertions** in `scripts/qa-health.js` (added 93 wave-5 tests covering AHA 2024 BP categories, fever/SpO2/RHR thresholds, orthostatic test bands, avgRhr, burnout heuristic (fresh/fried/deload/exam-week profiles), active injury filtering, shoulder restriction hint, new types (SymptomEntry/IllnessEpisode/InjuryEntry/MedicationEntry/AllergyEntry/OrthostaticTest/JournalEntry with gratitude+meditationMin), new collections on HealthState + migrateHealth defaults, presence of VitalsSection/MindSection and their feature chips (BP classification, fever flag, symptoms, illness/injury/meds/allergies/orthostatic, crisis helplines with correct numbers — Vandrevala 1860-2662-345, iCall 9152987821, NIMHANS 080-46110007, AASRA 9820466726), mood sliders for all 6 axes, gratitude, meditation, burnout banner, journal, trend chart), and triage wave-5 KPIs.
+- **13 mock-data scenarios** in `/tmp/wave5-mock.mjs` covering healthy baseline, Chennai summer dehydration (orthostatic +22 = elevated), pre-workout stim (135/85 = stage 1 expected per AHA), viral fever (HR+temp warnings), hypertensive crisis (≥180/120), hypoxia SpO₂ 91, athlete RHR 42, pathological brady 36, plus 5 burnout profiles (well-rested → overtraining). All pass.
+- **No console.log/debug** in `VitalsSection.tsx` / `MindSection.tsx`.
+- **AHA 2024 BP bands:** Normal <120/<80; Elevated 120-129/<80; Stage 1 130-139/80-89; Stage 2 ≥140/≥90; Crisis ≥180/≥120. Fever ≥38°C warn, ≥40°C emergency, <35.5°C hypothermia. SpO₂ <94% warn. RHR ≥100 or <40 warn. Orthostatic +13 mild, +20 elevated, +30 high.
+- **Burnout heuristic** (weights: sleep debt ≥10h=2 / ≥5h=1, RHR Δ≥8=2 / ≥5=1, mood ≤3=2 / ≤4=1, (energy+focus)/2 ≤4=1, libido ≤1.5=2 / ≤2.5=1, active severity≥3 injury=1) → 0-1 ok, 2-3 watch, 4-5 warn, ≥6 overtraining. Fried 14d@5h + RHR spike + mood 2 + libido 1 + knee injury scores 10/10 = overtraining.
+- **India crisis helplines** panel always visible on Mind page with tap-to-call `tel:` links; includes note that 112 is immediate-emergency number.
+- **Injury restriction hints** category-sensitive: shoulder → avoid overhead, knee → avoid deep squats/heavy leg press, back → avoid heavy deadlifts/rounding, elbow → avoid weighted chin/dips, wrist → avoid push-ups/OHP without wraps, ankle → avoid heavy calf/running.

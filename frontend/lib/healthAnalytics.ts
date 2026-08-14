@@ -14,7 +14,8 @@ import type {
   ActivityLevel, Gender, HealthProfile, HealthState,
   SleepEntry, SleepHygieneTick, SupplementDef, SupplementLog,
   MealEntry, SunlightEntry, DeficiencyBadge, MicronutrientId, DeficiencyLevel,
-  MeasurementEntry,
+  MeasurementEntry, VitalsEntry, MindEntry, InjuryEntry, SymptomEntry,
+  JournalEntry, OrthostaticTest,
 } from "./healthTypes";
 import { INDIAN_DEFICIENCY_CONTEXT } from "./healthTypes";
 
@@ -487,4 +488,231 @@ export function recoveryScore(
 export function shouldDeload(sleepEntries: SleepEntry[], idealHours: number): boolean {
   const bank = computeSleepBank(sleepEntries, idealHours);
   return bank <= -SLEEP_DEBT_STRONG;
+}
+
+// ---------------- Vitals ----------------
+
+/**
+ * AHA 2024 BP categories for adults (systolic/diastolic mmHg).
+ *   Normal:        <120 / <80
+ *   Elevated:      120-129 / <80
+ *   Stage 1 HTN:   130-139 / 80-89
+ *   Stage 2 HTN:   ≥140 / ≥90
+ *   Hypertensive Crisis: ≥180 / ≥120 — seek emergency care
+ */
+export type BpCategory =
+  | "normal" | "elevated" | "stage1" | "stage2" | "crisis" | "unknown";
+
+export function classifyBp(sys?: number, dia?: number): { cat: BpCategory; color: string; label: string; warn: boolean } {
+  if (sys == null || dia == null || sys <= 0 || dia <= 0) {
+    return { cat: "unknown", color: "#64748b", label: "—", warn: false };
+  }
+  if (sys >= 180 || dia >= 120) return { cat: "crisis",   color: "#dc2626", label: "Hypertensive crisis — seek care", warn: true };
+  if (sys >= 140 || dia >= 90)   return { cat: "stage2",   color: "#ef4444", label: "Stage 2 Hypertension",            warn: true };
+  if (sys >= 130 || dia >= 80)   return { cat: "stage1",   color: "#f59e0b", label: "Stage 1 Hypertension",            warn: true };
+  if (sys >= 120)                return { cat: "elevated", color: "#f59e0b", label: "Elevated",                       warn: false };
+  return { cat: "normal", color: "#10b981", label: "Normal", warn: false };
+}
+
+/** Fever flag thresholds (°C, oral/temporal). <36 low, 37.5-38 low-grade, 38+ fever, 39+ high, 40+ emergency. */
+export function classifyTemp(tempC?: number): { label: string; color: string; warn: boolean } {
+  if (tempC == null) return { label: "—", color: "#64748b", warn: false };
+  if (tempC >= 40)   return { label: "≥40°C — emergency",       color: "#dc2626", warn: true };
+  if (tempC >= 39)   return { label: "High fever (≥39°C)",      color: "#ef4444", warn: true };
+  if (tempC >= 38)   return { label: "Fever (≥38°C)",           color: "#f59e0b", warn: true };
+  if (tempC >= 37.5) return { label: "Low-grade fever",         color: "#f59e0b", warn: false };
+  if (tempC < 35.5)  return { label: "Hypothermic (<35.5°C)",   color: "#60a5fa", warn: true };
+  if (tempC < 36)    return { label: "Low",                     color: "#60a5fa", warn: false };
+  return { label: "Normal", color: "#10b981", warn: false };
+}
+
+/** SpO2 classification. ≥95 normal, 94 borderline, <94 seek eval; <90 emergency. */
+export function classifySpo2(spo2?: number): { label: string; color: string; warn: boolean } {
+  if (spo2 == null) return { label: "—", color: "#64748b", warn: false };
+  if (spo2 >= 99)   return { label: "Excellent (≥99%)", color: "#10b981", warn: false };
+  if (spo2 >= 95)   return { label: "Normal (≥95%)",    color: "#10b981", warn: false };
+  if (spo2 >= 94)   return { label: "Borderline (94%)", color: "#f59e0b", warn: false };
+  if (spo2 >= 90)   return { label: "Low (<94%) — check", color: "#f59e0b", warn: true };
+  return { label: "Critical (<90%) — seek emergency", color: "#dc2626", warn: true };
+}
+
+/** Resting HR classification (bpm, adult male). ~60-70 fit, <50 athletic normal, >100 tachy. */
+export function classifyRhr(hr?: number): { label: string; color: string; warn: boolean } {
+  if (hr == null) return { label: "—", color: "#64748b", warn: false };
+  if (hr >= 120) return { label: "Very high (≥120)", color: "#dc2626", warn: true };
+  if (hr >= 100) return { label: "Tachycardic (≥100)", color: "#ef4444", warn: true };
+  if (hr >= 85)  return { label: "Elevated (≥85)",  color: "#f59e0b", warn: false };
+  if (hr >= 60)  return { label: "Normal (60-84)",  color: "#10b981", warn: false };
+  if (hr >= 50)  return { label: "Athletic (50-59)", color: "#10b981", warn: false };
+  if (hr >= 40)  return { label: "Bradycardic (40-49)", color: "#60a5fa", warn: false };
+  return { label: "Very low (<40) — check", color: "#ef4444", warn: true };
+}
+
+/** Latest vitals entry by date+time. */
+export function latestVitals(entries: VitalsEntry[]): VitalsEntry | undefined {
+  if (!entries.length) return undefined;
+  return [...entries].sort((a,b) => (b.date + "T" + (b.time||"00:00")).localeCompare(a.date + "T" + (a.time||"00:00")))[0];
+}
+
+/** Average RHR over last N days (one reading per day — the first "waking" or earliest). */
+export function avgRhr(entries: VitalsEntry[], lastN = 7): number {
+  const byDay: Record<string, number> = {};
+  for (const v of entries) {
+    if (v.restingHr == null) continue;
+    if (!byDay[v.date] || v.context === "waking") byDay[v.date] = v.restingHr;
+  }
+  const dates = Object.keys(byDay).sort().slice(-lastN);
+  if (dates.length === 0) return 0;
+  return Math.round(dates.reduce((s,d)=>s+byDay[d],0)/dates.length);
+}
+
+// ---------------- Mind / burnout ----------------
+
+/** Average of a mind-metric over last N days (0 if none). */
+export function avgMind(entries: MindEntry[], key: keyof MindEntry, lastN = 7): number {
+  const sorted = [...entries].filter(e => typeof e[key] === "number").sort((a,b)=>b.date.localeCompare(a.date)).slice(0,lastN);
+  if (sorted.length === 0) return 0;
+  return sorted.reduce((s,e)=>s + (e[key] as number), 0) / sorted.length;
+}
+
+/** Today's mind entry if it exists. */
+export function todayMind(entries: MindEntry[]): MindEntry | undefined {
+  const today = new Date().toISOString().slice(0,10);
+  return entries.find(e => e.date === today);
+}
+
+/**
+ * Burnout / overtraining heuristic — evidence-based combo for young lifters.
+ * Triggers a yellow/red flag when MULTIPLE of these align over the last 7-14d:
+ *  - Sleep bank ≤ -10h (red) / ≤ -5h (yellow contributor)
+ *  - RHR elevated ≥5 bpm above 14d baseline (yellow) / ≥8 bpm (red)
+ *  - Mood avg ≤4/10 (yellow) / ≤3/10 (red)
+ *  - Motivation approximated by energy+focus avg ≤4
+ *  - Libido ≤2/5 (yellow) / ≤1 (red)
+ *  - Any active injury with severity ≥3 (yellow)
+ * Scoring: 1 point per yellow signal, 2 per red; score ≥3 = warn, ≥5 = overtraining/deload.
+ */
+export interface BurnoutResult {
+  score: number;       // 0-10
+  level: "ok" | "watch" | "warn" | "overtraining";
+  color: string;
+  signals: string[];
+}
+export function burnoutHeuristic(args: {
+  sleepEntries: SleepEntry[]; idealHours: number;
+  vitals: VitalsEntry[];
+  mind: MindEntry[];
+  injuries: InjuryEntry[];
+}): BurnoutResult {
+  const { sleepEntries, idealHours, vitals, mind, injuries } = args;
+  const signals: { text: string; weight: 1|2 }[] = [];
+
+  // Sleep
+  const bank = computeSleepBank(sleepEntries, idealHours);
+  if (bank <= -SLEEP_DEBT_STRONG) signals.push({ text: `Sleep bank ${bank.toFixed(1)}h (debt ≥10h)`, weight: 2 });
+  else if (bank <= -SLEEP_DEBT_WARN) signals.push({ text: `Sleep bank ${bank.toFixed(1)}h (debt ≥5h)`, weight: 1 });
+
+  // RHR elevation — compare last 7d avg vs prior 14d avg
+  const last7 = [...vitals].filter(v => v.restingHr != null).sort((a,b)=>b.date.localeCompare(a.date));
+  const last7Days = new Set<string>();
+  { const d = new Date(); for (let i=0;i<7;i++){ last7Days.add(d.toISOString().slice(0,10)); d.setDate(d.getDate()-1); } }
+  const prev14Days = new Set<string>();
+  { const d = new Date(); d.setDate(d.getDate()-7); for (let i=0;i<14;i++){ prev14Days.add(d.toISOString().slice(0,10)); d.setDate(d.getDate()-1); } }
+  const recent = last7.filter(v => last7Days.has(v.date)).map(v => v.restingHr!).filter(Boolean);
+  const prev   = last7.filter(v => prev14Days.has(v.date)).map(v => v.restingHr!).filter(Boolean);
+  if (recent.length >= 3 && prev.length >= 3) {
+    const rAvg = recent.reduce((s,x)=>s+x,0)/recent.length;
+    const pAvg = prev.reduce((s,x)=>s+x,0)/prev.length;
+    const delta = rAvg - pAvg;
+    if (delta >= 8) signals.push({ text: `RHR elevated +${Math.round(delta)} bpm`, weight: 2 });
+    else if (delta >= 5) signals.push({ text: `RHR up +${Math.round(delta)} bpm vs baseline`, weight: 1 });
+  }
+
+  // Mood
+  const mood7 = avgMind(mind, "mood", 7);
+  if (mood7 > 0 && mood7 <= 3) signals.push({ text: `Mood avg ${mood7.toFixed(1)}/10 (very low)`, weight: 2 });
+  else if (mood7 > 0 && mood7 <= 4) signals.push({ text: `Mood avg ${mood7.toFixed(1)}/10 (low)`, weight: 1 });
+
+  // Motivation = avg(energy, focus)
+  const energy = avgMind(mind, "energy", 7);
+  const focus  = avgMind(mind, "focus", 7);
+  if (energy > 0 && focus > 0) {
+    const mot = (energy + focus) / 2;
+    if (mot <= 4) signals.push({ text: `Energy+Focus avg ${mot.toFixed(1)}/10 (motivation low)`, weight: 1 });
+  }
+
+  // Libido
+  const libido7 = avgMind(mind, "libido", 7);
+  if (libido7 > 0) {
+    // libido is 1-5; normalise thresholds
+    if (libido7 <= 1.5) signals.push({ text: `Libido suppressed (${libido7.toFixed(1)}/5)`, weight: 2 });
+    else if (libido7 <= 2.5) signals.push({ text: `Libido low (${libido7.toFixed(1)}/5)`, weight: 1 });
+  }
+
+  // Active injury
+  const active = injuries.filter(i => i.ongoing && i.severity >= 3);
+  if (active.length >= 1) signals.push({ text: `${active.length} active injury(ies)`, weight: 1 });
+
+  const score = signals.reduce((n,s) => n + s.weight, 0);
+  const level: BurnoutResult["level"] =
+    score >= 6 ? "overtraining" :
+    score >= 4 ? "warn" :
+    score >= 2 ? "watch" : "ok";
+  const color =
+    level === "overtraining" ? "#dc2626" :
+    level === "warn"         ? "#ef4444" :
+    level === "watch"        ? "#f59e0b" : "#10b981";
+  return { score, level, color, signals: signals.map(s => s.text) };
+}
+
+// ---------------- Mind-journal helpers ----------------
+
+/** Today's journal entry if any. */
+export function todayJournal(entries: JournalEntry[]): JournalEntry | undefined {
+  const today = new Date().toISOString().slice(0,10);
+  return entries.find(e => e.date === today);
+}
+
+// ---------------- Orthostatic test ----------------
+/**
+ * Orthostatic HR test result. Normal = rise ≤10-15 bpm on standing.
+ * Rise ≥20 bpm = possible dysautonomia/fatigue/dehydration flag (used as a recovery signal).
+ * Returns { delta, level }.
+ */
+export function classifyOrthostatic(t: Pick<OrthostaticTest,"hrSupine"|"hrStanding1min">): { delta: number; level: "ok"|"mild"|"elevated"|"high"; color: string } {
+  if (!t.hrSupine || !t.hrStanding1min) return { delta: 0, level: "ok", color: "#64748b" };
+  const delta = t.hrStanding1min - t.hrSupine;
+  if (delta >= 30) return { delta, level: "high",     color: "#dc2626" };
+  if (delta >= 20) return { delta, level: "elevated", color: "#ef4444" };
+  if (delta >= 13) return { delta, level: "mild",     color: "#f59e0b" };
+  return { delta, level: "ok", color: "#10b981" };
+}
+
+// ---------------- Active injury helpers ----------------
+
+/** Any active injury that should surface as workout restriction. */
+export function activeInjuries(injuries: InjuryEntry[]): InjuryEntry[] {
+  return injuries.filter(i => i.ongoing).sort((a,b)=>b.date.localeCompare(a.date));
+}
+
+/** Workout restriction hints based on injury category/severity. */
+export function injuryRestrictionHints(injuries: InjuryEntry[]): string[] {
+  const out: string[] = [];
+  for (const i of injuries) {
+    if (!i.ongoing) continue;
+    const part = i.bodyPart || i.category || "injury";
+    if (i.severity >= 4) out.push(`Avoid loading ${part} — see a physiotherapist.`);
+    else if (i.severity >= 3) {
+      if (i.category === "shoulder") out.push(`Avoid overhead pressing on ${part}.`);
+      else if (i.category === "knee") out.push(`Avoid deep squats / heavy leg press on ${part}.`);
+      else if (i.category === "back") out.push(`Avoid heavy deadlifts / rounding on ${part}.`);
+      else if (i.category === "elbow") out.push(`Avoid weighted chin/dips on ${part}.`);
+      else if (i.category === "wrist") out.push(`Avoid push-ups/OHP without wraps on ${part}.`);
+      else if (i.category === "ankle") out.push(`Avoid heavy calf raises / running on ${part}.`);
+      else out.push(`Modify lifts that aggravate ${part}.`);
+    } else {
+      out.push(`Warm-up and mobilise ${part} before lifting.`);
+    }
+  }
+  return out;
 }

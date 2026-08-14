@@ -25,8 +25,8 @@ but governed: Health owns `nutrition/sleep/body/vitals/mind/biometrics`; Workout
 | 3 | SOMNIUM      | `/health/sleep`             | 🟡     | Sleep log, bank, hygiene checklist, circadian anchors, bed/wake routines, dream, 7d history; naps/procrastination/social-jetlag waves 8 |
 | 4 | SOMA         | `/health/physique`          | 🟡     | Navy BF%, 24-site tape, S:W tiering for 5 lifts, asymmetry flag, webcam/file progress photos, BF% sparkline |
 | 5 | APOTHECARY   | `/health/supplements`       | 🟡     | 13-seed supp stack, streaks, 30d adherence, 🇮🇳 deficiency badges (10 micros, ICMR), sunlight log; bloodwork/drug-interactions waves 5+ |
-| 6 | VITALS       | `/health/vitals`            | ❌     | Heart rate, HRV (manual entry), BP, temp, SpO2, symptoms    |
-| 7 | MIND         | `/health/mind`              | ❌     | Mood, stress, energy, libido, anxiety, journal              |
+| 6 | VITALS       | `/health/vitals`            | ✅     | HR/BP/HRV/temp/SpO2/resp, symptoms, illness, injury, meds, allergies, orthostatic test (Wave 5) |
+| 7 | MIND         | `/health/mind`              | ✅     | Mood/stress/energy/anxiety/focus/libido sliders, journal, gratitude, meditation, burnout, Indian crisis helplines (Wave 5) |
 | 8 | SYNC LAB     | `/health/sync`              | ✅     | Profile editor + 10 Workout bridge toggles                  |
 | 9 | REPORTS      | `/health/reports`           | ❌     | Weekly/Monthly/Annual health reports, CSV export, timeline  |
 

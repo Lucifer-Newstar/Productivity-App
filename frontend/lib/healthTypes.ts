@@ -299,26 +299,117 @@ export interface DeficiencyBadge {
 export interface VitalsEntry {
   id: string;
   date: string;
-  time: string;
+  time: string;       // HH:MM (IST)
+  /** Resting heart rate (bpm), taken seated/waking preferred. */
   restingHr?: number;
+  /** Systolic / diastolic BP (mmHg). */
   systolic?: number;
   diastolic?: number;
+  /** Heart rate variability (ms) from watch/phone; optional. */
   hrvMs?: number;
+  /** Oral / temporal temperature (°C). */
   tempC?: number;
+  /** Peripheral oxygen saturation (%). */
   spo2?: number;
+  /** Respiratory rate (breaths/min); optional. */
+  respRate?: number;
+  /** Context for this reading. */
+  context?: "waking" | "pre_workout" | "post_workout" | "resting" | "bedtime" | "other";
+  note?: string;
+}
+
+/** Tagged symptom — lightweight; used for daily tagging. */
+export type SymptomId =
+  | "headache" | "fever" | "cold_cough" | "sore_throat" | "body_ache"
+  | "nausea" | "dizziness" | "fatigue" | "skin" | "digestive"
+  | "joint_pain" | "cramping" | "allergies" | "other";
+
+export interface SymptomEntry {
+  id: string;
+  date: string;
+  symptom: SymptomId;
+  severity: 1 | 2 | 3 | 4 | 5;   // 1=mild, 5=debilitating
+  note?: string;
+}
+
+/** Illness episode (e.g. viral fever, food poisoning) — aggregates symptoms over dates. */
+export interface IllnessEpisode {
+  id: string;
+  startDate: string;
+  endDate?: string;               // undefined = ongoing
+  label: string;                  // free text e.g. "viral fever", "dengue", "cold"
+  severity: 1 | 2 | 3 | 4 | 5;
+  notes?: string;
+}
+
+/** Injury log — surfaces as workout restriction (bridge to Workout). */
+export interface InjuryEntry {
+  id: string;
+  date: string;
+  bodyPart: string;               // "left shoulder", "lower back", etc.
+  severity: 1 | 2 | 3 | 4 | 5;
+  ongoing: boolean;               // true = currently injured; false = recovered
+  /** Body region category for workout restriction suggestions. */
+  category?: "shoulder" | "elbow" | "wrist" | "back" | "hip" | "knee" | "ankle" | "neck" | "other";
+  notes?: string;
+}
+
+/** Medication / supplement-as-drug entry (paracetamol, antihistamine, antibiotics, etc.). */
+export interface MedicationEntry {
+  id: string;
+  date: string;
+  time?: string;
+  name: string;                   // "paracetamol" / "Azithromycin" / "cetirizine"
+  doseMg?: number;
+  dose?: string;                  // free text for non-mg doses e.g. "1 tab", "5ml"
+  type: "otc" | "rx" | "ayurveda" | "other";
+  notes?: string;
+}
+
+/** Known allergy list (displayed as reference; not daily-tracked). */
+export interface AllergyEntry {
+  id: string;
+  name: string;                   // "peanuts", "sulfa drugs", "dust mites"
+  severity: "mild" | "moderate" | "severe";
+  notes?: string;
+}
+
+/** Orthostatic HR test (lying → standing) — rough autonomic signal. */
+export interface OrthostaticTest {
+  id: string;
+  date: string;
+  time?: string;
+  hrSupine: number;               // bpm lying down after 5 min rest
+  hrStanding1min: number;         // bpm 60s after standing
+  hrStanding3min?: number;        // bpm 3 min after standing
   note?: string;
 }
 
 export interface MindEntry {
   id: string;
   date: string;
-  mood: number;       // 1-10
-  stress: number;     // 1-10
+  mood: number;       // 1-10 (10=amazing)
+  stress: number;     // 1-10 (10=crushing)
   energy: number;     // 1-10
-  anxiety?: number;   // 1-10
+  anxiety?: number;   // 1-10 (10=panic)
   focus?: number;     // 1-10
-  libido?: number;    // 1-5
+  libido?: number;    // 1-5  (overtraining signal; optional)
+  /** Mood context tags. */
+  tags?: string[];
   note?: string;
+}
+
+/** Free-text daily journal entry (one per day; kept separate from MindEntry sliders). */
+export interface JournalEntry {
+  id: string;
+  date: string;
+  /** Free text body. */
+  text: string;
+  /** 3 gratitude bullets (optional but primary in Wave 5 UI). */
+  gratitude?: [string?, string?, string?];
+  /** Meditation minutes logged this day (mindfulness, box breathing, trataka). */
+  meditationMin?: number;
+  tags?: string[];
 }
 
 // ---------------- Root HealthState ----------------
@@ -335,6 +426,14 @@ export interface HealthState {
   supplementLog: SupplementLog[];
   vitals: VitalsEntry[];
   mind: MindEntry[];
+  /** Wave 5 new collections below. */
+  symptoms: SymptomEntry[];
+  illnesses: IllnessEpisode[];
+  injuries: InjuryEntry[];
+  medications: MedicationEntry[];
+  allergies: AllergyEntry[];
+  orthostatic: OrthostaticTest[];
+  journal: JournalEntry[];
   circadian: CircadianEntry[];
   sunlight: SunlightEntry[];
   bedtimeRoutine: BedtimeRoutine;
@@ -452,6 +551,13 @@ export function emptyHealthState(): HealthState {
     supplementLog: [],
     vitals: [],
     mind: [],
+    symptoms: [],
+    illnesses: [],
+    injuries: [],
+    medications: [],
+    allergies: [],
+    orthostatic: [],
+    journal: [],
     circadian: [],
     sunlight: [],
     bedtimeRoutine: JSON.parse(JSON.stringify(DEFAULT_BEDTIME_ROUTINE)),
