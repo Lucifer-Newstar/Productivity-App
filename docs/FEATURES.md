@@ -455,3 +455,9 @@ Global: project comparison, template library, energy/time balance dial, CSV impo
 | Drilldown | Resource summary gauges (avg util %, over-budget count, total) with color thresholds | ✅ |
 | Store | Streak auto-increment in updateForge (yesterday continuity, 365-day history cap) | ✅ |
 | Demo | Seeded sprints S1/S2, 2 weekly reviews, streak history (5 days) | ✅ |
+| Shell v2 | LEFT I-BEAM RAIL (anvil brand, stenciled §numerals, vertical writing-mode sector labels, counter-rotating gears, HEAT plate, layoutId active bar) | ✅ |
+| Shell v2 | Top beam: THE FORGE Bebas Neue wordmark + molten text-shadow, sprint line, 4 stat chips, semicircle SVG temp gauge, UTC clock, STRIKE, theme | ✅ |
+| Shell v2 | Diamond-plate exhaust footer (chevron texture) | ✅ |
+| Shell v2 | Chamfered steel-plate clip-path corners + weld-seam ::before | ✅ |
+| Shell v2 | All 5 project pages set Page.fullScreen = true (edge-to-edge paint, no TopNav) | ✅ |
+| Shell v2 | Typography switched to Bebas Neue for headings (distinct from Career Oswald / Workout Cinzel) | ✅ |
