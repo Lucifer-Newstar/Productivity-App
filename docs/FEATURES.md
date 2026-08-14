@@ -1,8 +1,9 @@
 # Kaizen Feature Status
 
-Last audited against code on `career` branch (session: 2026-08-14). Two independent spaces ship today:
-**Workout** (battle-tested on `main`, imperial Japanese/obsidian theme) and **Career**
-(active on `career`, Night HUD / Blueprint dual themes).
+Last audited against code on `projects` branch (session: 2026-08-14). Three independent spaces ship today:
+**Workout** (battle-tested on `main`, imperial Japanese/obsidian theme), **Career**
+(Night HUD / Blueprint dual themes), and **Forge** (Foundry / Drafting-Room dual themes —
+industrial project/task OS).
 
 Legend:
 
@@ -252,3 +253,151 @@ Routes: `/career` → redirect → `/career/projects` (the hub);
 | Backend CRUD routes | ✅ `/api/career/*` prefixed in Express (untested); frontend offline-first |
 | All routes static-prerendered | ✅ Next `next build` shows ○ for every /career/* route |
 | tsc --noEmit clean | ✅ Zero type errors |
+
+---
+
+# Forge (Projects OS) Feature Status
+
+The `/projects` space ships **4 sectors** under an industrial anvil shell with two
+fully distinct themes that are unique from both Workout's imperial Japanese and Career's
+cyber/blueprint systems:
+
+- **Foundry (dark, default)** — deep iron/charcoal black (`#0f0d0b` → `#080706` → `#000`)
+  radial, riveted steel-plate cards, hazard stripes, molten amber (`#f59e0b`) primary,
+  hot-orange (`#ea580c`), quench-cyan (`#06b6d4`), blood-red (`#ef4444`), steel-grey
+  (`#94a3b8`), pulsing heat rivets, hammer-strike vertical transition (molten line + glow),
+  heavy Oswald condensed headers + JetBrains Mono metrics + Special Elite pencil text
+  (in light mode).
+- **Drafting Room (light)** — yellowed vellum/tracing paper (`#f3ecdd` → `#e8dec4` →
+  `#d9cba9`), graphite (`#1f2937`) structural ink, brass (`#92400e`) rivets/grommets,
+  burnt-orange (`#c2410c`) pencil annotations, fine 20/100-px graphite grid with no
+  animation (paper doesn't move), rubber-stamped APPROVED marks, Special Elite font for
+  pencil comments, Joswald for headers. No parchment/gold/kanji (Workout) and no cream
+  blueprint/cyan (Career) — vellum + brass + pencil is the signature.
+
+The floating `STRIKE` anvil-button opens an inline ActionPanel with 4 sector plates
+(§01–§04) plus a quick-forge input. A vertical molten HammerStrike transitions between
+routes with a radial heat bloom. SPACES[] rebranded projects → **Forge** (⚒️ #f59e0b).
+
+Routes: `/projects` (Foundry, default), `/projects/quarry` (tasks), `/projects/smelter`
+(brainstorms/retro), `/projects/vault` (archive/obits), `/projects/p/[id]` (project
+drilldown). Cross-links back to `/career` via a bridge callout on Foundry.
+
+## 1. Foundry (active projects dashboard) — §01
+
+| # | Feature | Status |
+|---|---|---|
+| 1 | Furnace header with title + "LIGHT FORGE" button | ✅ |
+| 2 | Quick-forge inline form (title/codename/color-swatch/icon) | ✅ 6 colors, 8 icons, strike button, on-success confetti burst + toast |
+| 3 | 3 quick-stat plates (ACTIVE / COLD / SHIPPED) + HOURS + ON TRACK | ✅ 5-stat row w/ rivets |
+| 4 | Anvil.today panel (today-due tasks per project with quick-toggle) | ✅ |
+| 5 | Active heats grid with color heat-stripe + health status chip | ✅ 6 health states (ON TRACK/BLOCKED/OFF TRACK/PAUSED/SHIPPED/DEAD) w/ icons |
+| 6 | Progress bars (milestones %) per project | ✅ Animated on mount |
+| 7 | Next-task preview per project card | ✅ |
+| 8 | Metadata row (priority, energy/complexity, deadline) | ✅ |
+| 9 | Cold Metal section (blocked/off-track/paused) with issue preview | ✅ |
+| 10 | Career bridge callout → /career | ✅ |
+| 11 | STOKE FURNACE demo-seed button (empty-state only) | ✅ Seeds 7 projects + tasks + SWOT via seedForgeDemo() |
+| 12 | Direct drilldown → /projects/p/[id] | ✅ Cards clickable |
+
+## 2. Project drilldown — `/projects/p/[id]`
+
+| # | Feature | Status |
+|---|---|---|
+| 1 | Hero plate w/ large icon, codename, health stamp, action buttons (SHIP / KILL / REHEAT) | ✅ |
+| 2 | Project brief (title, rich brief, why-this-matters manifesto, success metrics, rejection criteria) | ✅ |
+| 3 | Deadline + check-in frequency (daily/weekly/biweekly/monthly) | ✅ |
+| 4 | Priority / Energy / Complexity 1-10 sliders | ✅ |
+| 5 | Heat status 6-state picker | ✅ |
+| 6 | Budget tracker (estimated vs actual + +$50 quick-add, over-budget red) | ✅ |
+| 7 | Scope baseline textarea | ✅ |
+| 8 | Milestones (add/toggle/delete/date/title) | ✅ |
+| 9 | Premortem 5-failure-mode table (failure/mitigation/likelihood) | ✅ Enforces ≤5 rows |
+| 10 | Risk register (description/probability/impact/mitigation/contingency/status) | ✅ |
+| 11 | Issue log (description/impact/priority/status) | ✅ |
+| 12 | Quality checklist (toggle/rename/delete) | ✅ |
+| 13 | Stakeholder crew (name/role/power/interest/stance/notes) | ✅ Crew plate (MVP add/delete) |
+| 14 | Stakeholder comms log (date/person/channel/topic/summary/action-items) | ✅ |
+| 15 | Post-mortem / obituary editor (why-stopped/learned/start-again yes/maybe/no) | ✅ Auto-created when KILL is pressed |
+| 16 | Project archive toggle (archive unarchives via REHEAT) | ✅ Shipped/dead auto-archived |
+| 17 | SHIP button → marks complete + archived + completion date + celebration burst | ✅ |
+| 18 | KILL button → prompts for reason + creates obituary, moves to vault | ✅ |
+| 19 | 3 gauge readouts (progress %, budget spent, tasks done/total) | ✅ Animated |
+
+## 3. Quarry (task kanban) — §02
+
+| # | Feature | Status |
+|---|---|---|
+| 1 | 5-column kanban: TO DO / FORGING / QUENCH / JAMMED / SHIPPED | ✅ |
+| 2 | Inline per-column +ADD BLOCK entry with Enter-save | ✅ |
+| 3 | One-click move buttons (→col label) per card | ✅ |
+| 4 | Toggle-done checkbox → SHIPPED column, reverse-toggle to restore | ✅ Celebration burst + toast on ship |
+| 5 | Per-task priority chip | ✅ |
+| 6 | Project filter dropdown → only that heat's tasks | ✅ |
+| 7 | TODAY filter toggle | ✅ |
+| 8 | Toggle-today button per card | ✅ |
+| 9 | Eisenhower matrix view (auto-buckets by importance/urgency 1-10 sliders) | ✅ |
+| 10 | Effort × Impact scatter-plot SVG (Quick Wins / Big Bets / Fillers / Thankless quadrants, colored circles w/ project icon, dropshadow) | ✅ |
+| 11 | Matrix mode switcher (KANBAN / EISENHOWER / EFFORT) | ✅ |
+| 12 | Subtasks (expandable) | ❌ Planned v1.1 (type supports subtaskIds[]) |
+| 13 | Drag-and-drop between columns | 🟡 Click-to-move buttons work; HTML5 DnD deferred (not fragile across scrollers) |
+| 14 | Task energy/focus ratings | ✅ Fields on type; surfaces in add/edit when expanded in v1.1 |
+| 15 | Recurring task templates | ❌ |
+| 16 | Archive search | ❌ |
+
+## 4. Smelter (brainstorms & retros) — §03
+
+| # | Feature | Status |
+|---|---|---|
+| 1 | 6-tab system: SCRATCH / DECISIONS / SWOT / 5 WHYS / LESSONS / RETRO | ✅ |
+| 2 | Project-scoping dropdown (all heats or single project) | ✅ |
+| 3 | Scratchpad — free-text notes pinned to a project (or global), pencil-font rendering, sorted newest-first | ✅ Inline add + delete |
+| 4 | Decision log — date/decision/alternatives/why/approvals stamp | ✅ APPROVED rubber-stamp when checkboxed |
+| 5 | SWOT matrix (Strengths/Weaknesses/Opportunities/Threats quadrants) — add/delete entries | ✅ 4 colored quadrants + add inputs |
+| 6 | 5-whys root-cause drill (problem + 5 why slots) | ✅ Add/delete; styled as numbered drill bits |
+| 7 | Lessons ledger — quick-Log entry at top with date stamp, feed of all lessons w/ category color | ✅ well/poorly/improve/general |
+| 8 | Start/Stop/Continue retro template (one per date, 3 columns, append) | ✅ |
+| 9 | Future scenario planner / "what if" generator | ❌ Deferred |
+| 10 | Reverse-brainstorm / worst-idea generator | ❌ |
+| 11 | Porter / PEST / BMC templates | ❌ Could add via future tabs |
+
+## 5. Vault (archive/graveyard) — §04
+
+| # | Feature | Status |
+|---|---|---|
+| 1 | 3-tab filter: SHIPPED / DEAD / COLD (archived non-terminal) | ✅ |
+| 2 | Shipped project cards w/ completion date | ✅ Green |
+| 3 | Dead project cards w/ full obituary (why/learned/start-again) displayed inline | ✅ Blood red + SKULL stamp |
+| 4 | Cold-storage archived projects | ✅ Steel |
+| 5 | REHEAT button to restore to Foundry (clears archived, sets status back to paused) | ✅ |
+| 6 | One-click JSON export of entire Forge state | ✅ EXPORT button, downloads `kaizen-forge-YYYY-MM-DD.json` |
+| 7 | File reference links (`file:///`) | ❌ Field exists on type; UI editor deferred |
+
+## Cross-cutting (Forge)
+
+| Area | Status |
+|---|---|
+| Dual unique themes | ✅ Foundry dark (molten iron/amber/rivets) + Drafting Room light (vellum/brass/graphite/pencil). Entirely distinct from Career's cyan-grid/blueprint and Workout's obsidian/gold/kanji |
+| Typography | ✅ Oswald heavy condensed headers + JetBrains Mono metrics + Special Elite pencil annotations; imperial/emperor/serif classes nuked via .forge-root overrides |
+| Theme toggle | ✅ Reuses global useTheme() (Sun/Moon); footer reads `kaizen.forge // v1.0 — foundry` / `vellum` |
+| LocalStorage persistence | ✅ `kaizen.forge` key, `migrateForge()` defensive seed |
+| Career cross-link | ✅ Bridge plate in Foundry links to /career; portfolio-bridge + skill-alignment calls out in UI (auto-push on SHIP deferred to v1.1) |
+| Section transitions | ✅ HammerStrike: vertical molten amber line slam + radial heat bloom (unique from HudFlash and SectionSlash) |
+| Particles / celebration | ✅ Shared career:burst event used for amber sparks on forge, green confetti on task/project ship, pink for seed |
+| Rubber-stamp animations | ✅ `.forge-stamp` keyframe: scale 1.8→1 rotate -12°→-8° for APPROVED/DEAD/SHIPPED tags |
+| Rivet corner markers (four-dot) on every steel-plate | ✅ Reusable class `.riv-tl/tr/bl/br` positioned absolute negative-offset |
+| Keyboard shortcuts | ❌ v1.0 relies on button clicks; G?/hotkeys to come |
+| Career-skill alignment check | 🟡 Callout links to /career; auto-skill-bump on project SHIP deferred |
+| Portfolio builder bridge on SHIP | 🟡 Auto-offer to push shipped project to career.portfolio deferred |
+| Gantt / timeline viz | ❌ |
+| Stakeholder satisfaction tracking over time | ❌ Single scalar at present |
+| Backend CRUD `/api/forge/*` | ❌ Frontend offline-first only |
+| All routes static-prerendered | ✅ Next build shows ○ for `/projects`, `/projects/quarry`, `/projects/smelter`, `/projects/vault`, `/projects/p/[id]` |
+| tsc --noEmit clean | ✅ Zero type errors |
+
+## Career ↔ Forge bridge roadmap
+
+- [ ] "Push to Portfolio" on SHIP: auto-creates a PortfolioProject in career state with title, summary, skills used, and completion date
+- [ ] Skill gap alert: when a forged project references a skill with proficiency <4, surface a "level this first" nudge linking to Roadmaps
+- [ ] Stakeholder ↔ NetworkContact sync (picker to link a stakeholder to a career.contacts entry)
+- [ ] Side-hustle ↔ project cross-pollination (revenue/hours roll-up from Forge)

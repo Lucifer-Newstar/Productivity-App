@@ -51,10 +51,10 @@ export interface Space {
 }
 
 export const SPACES: Space[] = [
-  { id: "projects",      name: "Projects",      color: "#8b5cf6", emoji: "📁" },
-  { id: "workout",       name: "Workout",       color: "#ec4899", emoji: "💪" },
+  { id: "projects",      name: "Forge",         color: "#f59e0b", emoji: "⚒️" },
+  { id: "workout",       name: "Workout",       color: "#b91c1c", emoji: "💪" },
   { id: "career",        name: "Career",        color: "#06b6d4", emoji: "💼" },
-  { id: "entertainment", name: "Entertainment", color: "#f59e0b", emoji: "🎮" },
+  { id: "entertainment", name: "Entertainment", color: "#a78bfa", emoji: "🎮" },
   { id: "health",        name: "Health",        color: "#a3e635", emoji: "❤️" },
 ];
 

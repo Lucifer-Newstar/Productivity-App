@@ -37,6 +37,11 @@ import { SPACES } from "./types";
 import { evaluateBadges, epley1RM, readinessScore as computeReadiness } from "./workoutAnalytics";
 import { DEFAULT_EXERCISES } from "./exerciseLibrary";
 import { TEMPLATE_LIST, cloneTemplate } from "./careerRoadmaps";
+import type {
+  ForgeState, ForgeProject, ProjectTask, ScratchNote, DecisionEntry,
+  SwotRow, ProConItem, ScenarioEntry, FiveWhy, LessonEntry, Retrospective,
+  ParkingLotItem, PomodoroSession,
+} from "./forgeTypes";
 
 // Generate ids for runtime-created entities.
 const uid = () => Math.random().toString(36).slice(2, 10) + Date.now().toString(36);
@@ -153,6 +158,96 @@ const SEED_CAREER: CareerState = (() => {
     linkedin: "",
   };
 })();
+
+// ---------------- Forge / Projects OS seed ----------------
+const SEED_FORGE: ForgeState = (() => {
+  const today = new Date().toISOString().slice(0,10);
+  const pid = "p-forge-01";
+  return {
+    projects: [
+      {
+        id: pid,
+        codename: "IRON-01",
+        title: "Forge OS",
+        brief: "Ship the Forge projects workspace — a heavy-industrial OS for all in-flight builds, with cross-links back to Career skills and Portfolio.",
+        why: "Because every builder needs an anvil. A place to plan, strike metal, and ship — not just dream.",
+        successMetrics: "All 4 core sections live (Foundry, Quarry, Smelter, Archive). v1 demo seeds with 3 active projects.",
+        rejectionCriteria: "No commits for 14 days and no active tasks → melt it down in the Archive.",
+        status: "on-track",
+        priority: 9,
+        energyDemand: 8,
+        complexity: 7,
+        color: "#f59e0b",
+        icon: "⚒️",
+        createdAt: today,
+        startedAt: today,
+        archived: false,
+        checkinFreq: "daily",
+        budget: { estimated: 0, actual: 0, currency: "$" },
+        stakeholders: [],
+        milestones: [
+          { id: uid(), title: "Foundry shell & theme", date: today, done: true, doneAt: today, notes: "Dual theme locked." },
+          { id: uid(), title: "Project cards + drilldown", date: today, done: false },
+          { id: uid(), title: "Task Kanban", date: today, done: false },
+          { id: uid(), title: "Smelter / Retrospective", date: today, done: false },
+        ],
+        premortem: [
+          { id: uid(), failure: "Scope creeps into 189 features, never ships", mitigation: "Lock v1 to core cards/tasks/scratchpad/retrospective only", likelihood: "med" },
+        ],
+        risks: [
+          { id: uid(), description: "Career/Forge cross-links feel bolted on", probability: "med", impact: "med", mitigation: "Surface skill-bump bridges natively in project drilldown", contingency: "Ship without cross-links, add in v1.1", status: "open" },
+        ],
+        issues: [],
+        qualityChecks: [
+          { id: uid(), label: "tsc --noEmit clean", done: true },
+          { id: uid(), label: "Blueprint + Foundry themes both work", done: false },
+          { id: uid(), label: "No imperial/katana/cyan bleed", done: false },
+        ],
+        comms: [],
+        scope: "v1 of the Forge OS.",
+        tags: ["kaizen", "productivity"],
+        links: [],
+        velocityPoints: [],
+      },
+    ],
+    tasks: [],
+    scratch: [],
+    decisions: [],
+    swot: [],
+    proscons: [],
+    scenarios: [],
+    fiveWhys: [],
+    lessons: [],
+    retors: [],
+    parking: [],
+    pomodoros: [],
+    settings: {
+      workStartHour: 9,
+      workEndHour: 18,
+      defaultEnergyPeak: "morning",
+      forgeName: "THE FORGE",
+    },
+  };
+})();
+
+function migrateForge(raw: any): ForgeState {
+  if (!raw || typeof raw !== "object") return SEED_FORGE;
+  return { ...SEED_FORGE, ...raw,
+    projects: raw.projects ?? SEED_FORGE.projects,
+    tasks: raw.tasks ?? [],
+    scratch: raw.scratch ?? [],
+    decisions: raw.decisions ?? [],
+    swot: raw.swot ?? [],
+    proscons: raw.proscons ?? [],
+    scenarios: raw.scenarios ?? [],
+    fiveWhys: raw.fiveWhys ?? [],
+    lessons: raw.lessons ?? [],
+    retors: raw.retors ?? [],
+    parking: raw.parking ?? [],
+    pomodoros: raw.pomodoros ?? [],
+    settings: { ...SEED_FORGE.settings, ...(raw.settings ?? {}) },
+  };
+}
 
 // ---------------- Workout seed ----------------
 const SEED_WORKOUT: WorkoutState = (() => {
@@ -398,6 +493,10 @@ interface StoreState {
   deleteNote: (id: string) => void; togglePinNote: (id: string) => void;
   // career
   career: CareerState;
+  // forge (projects OS)
+  forge: ForgeState;
+  updateForge: (updater: (f: ForgeState) => Partial<ForgeState> | ForgeState) => void;
+  seedForgeDemo: () => void;
   addTrack: (name: string, color: string) => void;
   updateTrack: (id: string, patch: Partial<CareerTrack>) => void; deleteTrack: (id: string) => void;
   addConcept: (trackId: string, title: string) => void;
@@ -631,6 +730,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
   const [notes, setNotes]     = useLocalState<Note[]>("kaizen.notes", seedNotes);
   const [career, setCareer]   = useLocalState<CareerState>("kaizen.career", SEED_CAREER, migrateCareer);
   const [workout, setWorkout] = useLocalState<WorkoutState>("kaizen.workout", SEED_WORKOUT, migrateWorkout);
+  const [forge, setForge]     = useLocalState<ForgeState>("kaizen.forge", SEED_FORGE, migrateForge);
 
   useEffect(() => {
     ["prod.tasks","prod.notes","prod.projects","prod.habits"].forEach((k) => localStorage.removeItem(k));
@@ -717,6 +817,16 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
       const patch = updater(c);
       return { ...c, ...patch };
     }), [setCareer]);
+
+  const updateForge = useCallback<StoreState["updateForge"]>((updater) =>
+    setForge((f) => {
+      const patch = updater(f);
+      return { ...f, ...patch };
+    }), [setForge]);
+
+  const seedForgeDemo = useCallback<StoreState["seedForgeDemo"]>(() => {
+    import("./forgeDemo").then(({ buildForgeDemo }) => setForge(buildForgeDemo()));
+  }, [setForge]);
 
   const addRoadmapFromTemplate = useCallback<StoreState["addRoadmapFromTemplate"]>((templateId, name) => {
     setCareer((c) => {
@@ -1306,6 +1416,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     updateCareer, addRoadmapFromTemplate, toggleMilestoneDone, updateMilestone,
     toggleLabItem, toggleResourceComplete, toggleProjectComplete, setQuizAnswer, logMilestoneHours,
     archiveRoadmap, deleteRoadmap, seedCareerDemo,
+    forge, updateForge, seedForgeDemo,
     workout, addExercise, updateExercise, deleteExercise,
     logPR, deletePR, addSkill, deleteSkill, addProgression, toggleProgressionDone, updateProgression, deleteProgression,
     addRoutine, updateRoutine, deleteRoutine, addBlock, updateBlock, deleteBlock, reorderBlocks,

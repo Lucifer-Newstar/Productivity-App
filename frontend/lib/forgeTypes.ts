@@ -1,0 +1,273 @@
+/**
+ * Forge / Projects OS data model.
+ *
+ * Industrial foundry (dark) / drafting-room vellum (light) themed space.
+ * Cross-links to Career (skills, portfolio, network).
+ */
+
+export type ProjectHealth = "on-track" | "blocked" | "off-track" | "done" | "dead" | "paused";
+export type CheckinFreq = "daily" | "weekly" | "biweekly" | "monthly";
+export type TaskPriority = "P0" | "P1" | "P2" | "P3";
+export type TaskStatus = "todo" | "doing" | "review" | "blocked" | "done";
+export type TaskEnergy = 1 | 2 | 3 | 4 | 5;
+export type RiskProb = "low" | "med" | "high";
+export type RiskImpact = "low" | "med" | "high";
+export type StakeholderPower = "low" | "med" | "high";
+export type StakeholderInterest = "low" | "med" | "high";
+export type StakeholderStance = "ally" | "neutral" | "opponent" | "champion" | "decision-maker" | "influencer";
+
+export interface ProjectStakeholder {
+  id: string;
+  name: string;
+  role?: string;
+  contactId?: string; // link to career network
+  power: StakeholderPower;
+  interest: StakeholderInterest;
+  stance: StakeholderStance;
+  satisfaction?: number; // 1-10
+  notes?: string;
+}
+
+export interface ProjectMilestone {
+  id: string;
+  title: string;
+  date?: string;          // target date ISO
+  done: boolean;
+  doneAt?: string;
+  notes?: string;
+  celebration?: string;
+}
+
+export interface PremortemItem {
+  id: string;
+  failure: string;
+  mitigation: string;
+  likelihood: RiskProb;
+}
+
+export interface RiskItem {
+  id: string;
+  description: string;
+  probability: RiskProb;
+  impact: RiskImpact;
+  mitigation: string;
+  contingency: string;
+  status: "open" | "mitigated" | "occurred";
+}
+
+export interface IssueItem {
+  id: string;
+  description: string;
+  impact: string;
+  priority: "low" | "med" | "high" | "crit";
+  owner?: string;
+  status: "open" | "wip" | "resolved";
+  resolution?: string;
+  createdAt: string;
+}
+
+export interface QualityCheck {
+  id: string;
+  label: string;
+  done: boolean;
+}
+
+export interface CommsLogEntry {
+  id: string;
+  date: string;
+  person: string;
+  channel: string;
+  topic: string;
+  summary: string;
+  actionItems: string;
+  satisfaction?: number;
+}
+
+export interface ProjectTask {
+  id: string;
+  projectId: string;
+  title: string;
+  notes?: string;
+  status: TaskStatus;
+  priority: TaskPriority;
+  dueDate?: string;
+  doneAt?: string;
+  estimateMins?: number;
+  actualMins?: number;
+  pomodoros: number;
+  energy: TaskEnergy;
+  focus: TaskEnergy;
+  difficulty?: number;   // 1-10
+  importance?: number;   // 1-10
+  urgency?: number;      // 1-10
+  effort?: 1|2|3|4|5;
+  impact?: 1|2|3|4|5;
+  tags: string[];
+  context?: string[];    // home/office/errand/online…
+  parentId?: string;     // subtask
+  dependsOn?: string[];
+  subtaskIds: string[];
+  today?: boolean;
+  stuck?: boolean;
+  stuckNote?: string;
+  comments: { id: string; date: string; text: string }[];
+  createdAt: string;
+  completedAt?: string;
+  satisfaction?: number;
+  linkedNoteIds?: string[];
+  recurringDays?: number; // repeat every N days
+}
+
+export interface ScratchNote {
+  id: string;
+  projectId?: string;
+  text: string;
+  pinned?: boolean;
+  createdAt: number;
+}
+
+export interface DecisionEntry {
+  id: string;
+  projectId?: string;
+  date: string;
+  decision: string;
+  alternatives: string;
+  why: string;
+  approvals?: string;
+}
+
+export interface SwotRow {
+  id: string;
+  projectId?: string;
+  quadrant: "S" | "W" | "O" | "T";
+  text: string;
+}
+
+export interface ProConItem {
+  id: string;
+  projectId?: string;
+  side: "pro" | "con";
+  text: string;
+  weight: number;
+}
+
+export interface ScenarioEntry {
+  id: string;
+  projectId: string;
+  title: string;
+  trigger: string;
+  response: string;
+}
+
+export interface FiveWhy {
+  id: string;
+  projectId: string;
+  problem: string;
+  whys: string[]; // 5
+}
+
+export interface LessonEntry {
+  id: string;
+  projectId?: string;
+  date: string;
+  category: "well" | "poorly" | "improve" | "general";
+  text: string;
+  tags: string[];
+}
+
+export interface Retrospective {
+  id: string;
+  projectId?: string;
+  date: string;
+  start: string[];
+  stop: string[];
+  continue: string[];
+}
+
+export interface ProjectBudget {
+  estimated?: number;
+  actual: number;
+  currency: string;
+}
+
+export interface Obituary {
+  whyStopped: string;
+  learned: string;
+  startAgain: "yes" | "no" | "maybe";
+  date?: string;
+}
+
+export interface ForgeProject {
+  id: string;
+  codename: string;       // shown in header (codename feel)
+  title: string;
+  brief: string;
+  why: string;            // manifesto
+  successMetrics: string;
+  rejectionCriteria: string;
+  status: ProjectHealth;
+  priority: number;       // 1-10
+  energyDemand: number;   // 1-10
+  complexity: number;     // 1-10
+  color: string;          // forge accent
+  icon: string;           // emoji
+  createdAt: string;
+  deadline?: string;
+  startedAt?: string;
+  completedAt?: string;
+  archived: boolean;
+  checkinFreq: CheckinFreq;
+  budget: ProjectBudget;
+  stakeholders: ProjectStakeholder[];
+  milestones: ProjectMilestone[];
+  premortem: PremortemItem[];
+  risks: RiskItem[];
+  issues: IssueItem[];
+  qualityChecks: QualityCheck[];
+  comms: CommsLogEntry[];
+  skillTagIds?: string[];    // link to career skills
+  portfolioLinkId?: string;  // link to portfolio project on completion
+  obituary?: Obituary;
+  links: { label: string; url: string }[];
+  scope: string;
+  tags: string[];
+  template?: string;
+  velocityPoints: number[];  // weekly velocity
+}
+
+export interface ParkingLotItem {
+  id: string;
+  text: string;
+  projectId?: string;
+  createdAt: string;
+}
+
+export interface PomodoroSession {
+  id: string;
+  taskId: string;
+  projectId?: string;
+  startedAt: number;
+  durationMin: number;
+  completed: boolean;
+}
+
+export interface ForgeState {
+  projects: ForgeProject[];
+  tasks: ProjectTask[];
+  scratch: ScratchNote[];
+  decisions: DecisionEntry[];
+  swot: SwotRow[];
+  proscons: ProConItem[];
+  scenarios: ScenarioEntry[];
+  fiveWhys: FiveWhy[];
+  lessons: LessonEntry[];
+  retors: Retrospective[];
+  parking: ParkingLotItem[];
+  pomodoros: PomodoroSession[];
+  settings: {
+    workStartHour: number;
+    workEndHour: number;
+    defaultEnergyPeak: "morning" | "afternoon" | "evening";
+    forgeName: string;
+  };
+}
