@@ -14,9 +14,9 @@ import { useStore } from "../../lib/store";
 
 export default function Posts({ activeTrackId }: { activeTrackId: string | "all" }) {
   const { career, setLinkedin } = useStore();
-  const [liValue, setLiValue] = useState(career.linkedin);
-  useEffect(() => { setLiValue(career.linkedin); }, [career.linkedin]);
-  const saveLi = () => setLinkedin(liValue);
+  const [liValue, setLiValue] = useState(career.linkedin ?? "");
+  useEffect(() => { setLiValue(career.linkedin ?? ""); }, [career.linkedin]);
+  const saveLi = () => setLinkedin(liValue ?? "");
 
   return (
     <div className="grid md:grid-cols-3 gap-4">

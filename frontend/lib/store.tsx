@@ -30,10 +30,13 @@ import React, { createContext, useContext, useEffect, useRef, useState, useCallb
   CardioLog, Program, WorkoutGoal, CustomMetric, CustomMetricEntry,
   ChallengeEntry, MotivationBoardItem, RestDayEntry, CrowdLevel,
   KanbanCard, KanbanColumn, KanbanCardType,
+  CareerRoadmap, CareerSkill, CareerCourse, NetworkContact, JobApplication,
+  CompanyDossier, PortfolioProject, WorkDayEntry, TimelineEvent,
 } from "./types";
 import { SPACES } from "./types";
 import { evaluateBadges, epley1RM, readinessScore as computeReadiness } from "./workoutAnalytics";
 import { DEFAULT_EXERCISES } from "./exerciseLibrary";
+import { TEMPLATE_LIST, cloneTemplate } from "./careerRoadmaps";
 
 // Generate ids for runtime-created entities.
 const uid = () => Math.random().toString(36).slice(2, 10) + Date.now().toString(36);
@@ -64,55 +67,89 @@ const seedNotes: Note[] = [
 ];
 
 const SEED_CAREER: CareerState = (() => {
+  // Legacy tracks — kept for backwards compatibility with old components.
   const devops = "c-devops", sre = "c-sre";
   const c = (title: string, subs: string[]): CareerConcept => ({
     id: uid(), title, subConcepts: subs.map((t) => ({ id: uid(), title: t, done: false })),
   });
+  const legacyTracks: CareerTrack[] = [
+    { id: devops, name: "DevOps", color: "#06b6d4",
+      concepts: [
+        { id: uid(), title: "Linux Fundamentals", subConcepts: [
+          { id: uid(), title: "File system & permissions", done: true },
+          { id: uid(), title: "Shell scripting (bash)", done: true },
+          { id: uid(), title: "Process management & signals", done: false },
+          { id: uid(), title: "Networking basics (TCP/UDP, DNS, HTTP)", done: false },
+        ]},
+        { id: uid(), title: "Containers (Docker)", subConcepts: [
+          { id: uid(), title: "Images, layers, Dockerfile", done: true },
+          { id: uid(), title: "Volumes & networking", done: true },
+          { id: uid(), title: "Docker Compose for local dev", done: false },
+        ]},
+        c("Kubernetes (CKA)", ["Pods, deployments, services","ConfigMaps, Secrets, volumes","Helm charts"]),
+        c("Infrastructure as Code (Terraform)", ["HCL basics, providers, state","Modules & workspaces"]),
+      ],
+      notes: [
+        { id: uid(), title: "Useful commands", content: "kubectl get pods -A\nkubectl logs -f <pod>\nterraform plan -out=plan", updatedAt: A - 2 * DAY },
+      ],
+      resumeBullets: [
+        { id: uid(), text: "Designed multi-env CI/CD pipelines reducing deploy time by 60%" },
+        { id: uid(), text: "Containerized 12 microservices with Docker and Kubernetes" },
+      ],
+    },
+    { id: sre, name: "SRE", color: "#8b5cf6",
+      concepts: [
+        c("Monitoring & Observability", ["Prometheus metrics","Grafana dashboards","Alertmanager & routing","Distributed tracing (Jaeger)"]),
+        c("SLO / SLI / Error Budgets", ["Define SLIs per service","Set SLO targets & burn rates","Error budget policies"]),
+        c("Incident Response", ["On-call rotations","Blameless postmortems","Retros & action items"]),
+      ],
+      notes: [{ id: uid(), title: "SRE reading list", content: "- Site Reliability Engineering book\n- Google SRE Workbook", updatedAt: A - 3 * DAY }],
+      resumeBullets: [{ id: uid(), text: "Improved MTTR by 40% through better alert routing and on-call docs" }],
+    },
+  ];
+
+  // Seed the 5 pre-built roadmap templates. cloneTemplate re-ids everything so
+  // milestones don't collide between roadmaps.
+  const seededRoadmaps: CareerRoadmap[] = TEMPLATE_LIST.map((tpl) => cloneTemplate(tpl.template!)!);
+
   return {
-    tracks: [
-      { id: devops, name: "DevOps", color: "#06b6d4",
-        concepts: [
-          { id: uid(), title: "Linux Fundamentals", subConcepts: [
-            { id: uid(), title: "File system & permissions", done: true },
-            { id: uid(), title: "Shell scripting (bash)", done: true },
-            { id: uid(), title: "Process management & signals", done: false },
-            { id: uid(), title: "Networking basics (TCP/UDP, DNS, HTTP)", done: false },
-          ]},
-          { id: uid(), title: "Containers (Docker)", subConcepts: [
-            { id: uid(), title: "Images, layers, Dockerfile", done: true },
-            { id: uid(), title: "Volumes & networking", done: true },
-            { id: uid(), title: "Docker Compose for local dev", done: false },
-          ]},
-          c("Kubernetes (CKA)", ["Pods, deployments, services","ConfigMaps, Secrets, volumes","Helm charts"]),
-          c("Infrastructure as Code (Terraform)", ["HCL basics, providers, state","Modules & workspaces"]),
-        ],
-        notes: [
-          { id: uid(), title: "Useful commands", content: "kubectl get pods -A\nkubectl logs -f <pod>\nterraform plan -out=plan", updatedAt: A - 2 * DAY },
-        ],
-        resumeBullets: [
-          { id: uid(), text: "Designed multi-env CI/CD pipelines reducing deploy time by 60%" },
-          { id: uid(), text: "Containerized 12 microservices with Docker and Kubernetes" },
-        ],
-      },
-      { id: sre, name: "SRE", color: "#8b5cf6",
-        concepts: [
-          c("Monitoring & Observability", ["Prometheus metrics","Grafana dashboards","Alertmanager & routing","Distributed tracing (Jaeger)"]),
-          c("SLO / SLI / Error Budgets", ["Define SLIs per service","Set SLO targets & burn rates","Error budget policies"]),
-          c("Incident Response", ["On-call rotations","Blameless postmortems","Retros & action items"]),
-        ],
-        notes: [{ id: uid(), title: "SRE reading list", content: "- Site Reliability Engineering book\n- Google SRE Workbook", updatedAt: A - 3 * DAY }],
-        resumeBullets: [{ id: uid(), text: "Improved MTTR by 40% through better alert routing and on-call docs" }],
-      },
+    roadmaps: seededRoadmaps,
+    skills: [],
+    courses: [],
+    contacts: [],
+    applications: [],
+    companies: [],
+    questions: [],
+    achievements: [
+      { id: uid(), title: "Completed Docker course", date: new Date(A - 30 * DAY).toISOString().slice(0,10), category: "technical", icon: "🐳" },
+      { id: uid(), title: "Won internal hackathon",  date: new Date(A - 60 * DAY).toISOString().slice(0,10), category: "leadership", icon: "🏆" },
     ],
+    projects: [],
+    resumes: [],
+    bullets: [
+      { id: uid(), text: "Designed multi-env CI/CD pipelines reducing deploy time by 60%" },
+      { id: uid(), text: "Containerized 12 microservices with Docker and Kubernetes" },
+      { id: uid(), text: "Improved MTTR by 40% through better alert routing and on-call docs" },
+    ],
+    testimonials: [],
+    days: [],
+    meetings: [],
+    timeline: [],
+    satisfaction: [],
+    burnoutChecks: [],
+    sabbaticals: [],
+    sideHustles: [],
+    ip: [],
+    speaking: [],
+    visionBoard: [],
+    // Legacy
+    tracks: legacyTracks,
     goals: [
       { id: uid(), title: "Land a summer 2026 internship", done: false, deadline: "2026-06-01", trackId: devops },
       { id: uid(), title: "Earn CKA certification",       done: false, deadline: "2025-12-31", trackId: devops },
       { id: uid(), title: "Post 12 LinkedIn articles",    done: false },
     ],
-    achievements: [
-      { id: uid(), title: "Completed Docker course", date: new Date(A - 30 * DAY).toISOString().slice(0,10), icon: "🐳", trackId: devops },
-      { id: uid(), title: "Won internal hackathon",  date: new Date(A - 60 * DAY).toISOString().slice(0,10), icon: "🏆" },
-    ],
+    notes: [],
     linkedin: "",
   };
 })();
@@ -381,6 +418,20 @@ interface StoreState {
   deleteGoal: (id: string) => void;
   addAchievement: (a: Omit<CareerAchievement, "id">) => void; deleteAchievement: (id: string) => void;
   setLinkedin: (v: string) => void;
+  // Generic mutator for new career domain (roadmaps/skills/courses/etc). Accepts
+  // an updater that returns a patch to the CareerState (or the whole new state).
+  updateCareer: (updater: (c: CareerState) => Partial<CareerState> | CareerState) => void;
+  addRoadmapFromTemplate: (templateId: "devops"|"networking"|"linux"|"mlops"|"cloud"|"custom", name?: string) => void;
+  toggleMilestoneDone: (roadmapId: string, phaseId: string, milestoneId: string) => void;
+  updateMilestone: (roadmapId: string, phaseId: string, milestoneId: string, patch: Record<string, any>) => void;
+  toggleLabItem: (roadmapId: string, phaseId: string, milestoneId: string, labId: string) => void;
+  toggleResourceComplete: (roadmapId: string, phaseId: string, milestoneId: string, resId: string) => void;
+  toggleProjectComplete: (roadmapId: string, phaseId: string, milestoneId: string, prjId: string) => void;
+  setQuizAnswer: (roadmapId: string, phaseId: string, milestoneId: string, quizId: string, answer: "yes"|"partial"|"no") => void;
+  logMilestoneHours: (roadmapId: string, phaseId: string, milestoneId: string, hours: number) => void;
+  archiveRoadmap: (roadmapId: string) => void;
+  deleteRoadmap: (roadmapId: string) => void;
+  seedCareerDemo: () => void;
   // workout library
   workout: WorkoutState;
   addExercise: (e: Omit<WorkoutExercise, "id" | "createdAt">) => void;
@@ -471,13 +522,59 @@ function useLocalState<T>(key: string, seed: T, migrate?: (raw: any) => T): [T, 
 }
 
 const migrateCareer = (raw: any): CareerState => {
+  // Normalize legacy tracks (concepts/subConcepts).
   const tracks = (raw.tracks ?? []).map((t: any) => {
     if (Array.isArray(t.concepts)) return t;
     const ms: any[] = Array.isArray(t.milestones) ? t.milestones : [];
     return { ...t, concepts: ms.map((m: any) => ({ id: m.id ?? uid(), title: m.title ?? "Untitled",
       subConcepts: m.description ? [{ id: uid(), title: m.description, done: !!m.done }] : [] })) };
   });
-  return { ...raw, tracks };
+
+  // Roadmaps: if none exist, seed all 5 templates from scratch.
+  const roadmaps: CareerRoadmap[] = Array.isArray(raw.roadmaps) && raw.roadmaps.length
+    ? raw.roadmaps
+    : TEMPLATE_LIST.map((tpl) => cloneTemplate(tpl.template!)!);
+
+  // Normalize achievements (new shape uses category; old shape only had trackId/icon).
+  const achievements = (raw.achievements ?? []).map((a: any) => ({
+    category: "other", ...a,
+  }));
+
+  // Extract bullets from legacy tracks' resumeBullets into the new top-level bullets[]
+  const existingBullets = Array.isArray(raw.bullets) ? raw.bullets : [];
+  const legacyBullets = tracks.flatMap((t: any) => t.resumeBullets ?? []);
+  const seenBulletIds = new Set(existingBullets.map((b: any) => b.id));
+  const bullets = [...existingBullets, ...legacyBullets.filter((b: any) => !seenBulletIds.has(b.id))];
+
+  return {
+    roadmaps,
+    skills: raw.skills ?? [],
+    courses: raw.courses ?? [],
+    contacts: raw.contacts ?? [],
+    applications: raw.applications ?? [],
+    companies: raw.companies ?? [],
+    questions: raw.questions ?? [],
+    achievements,
+    projects: raw.projects ?? [],
+    resumes: raw.resumes ?? [],
+    bullets,
+    testimonials: raw.testimonials ?? [],
+    days: raw.days ?? [],
+    meetings: raw.meetings ?? [],
+    timeline: raw.timeline ?? [],
+    satisfaction: raw.satisfaction ?? [],
+    burnoutChecks: raw.burnoutChecks ?? [],
+    sabbaticals: raw.sabbaticals ?? [],
+    retirement: raw.retirement,
+    sideHustles: raw.sideHustles ?? [],
+    ip: raw.ip ?? [],
+    speaking: raw.speaking ?? [],
+    visionBoard: raw.visionBoard ?? [],
+    tracks,
+    goals: raw.goals ?? [],
+    notes: raw.notes ?? [],
+    linkedin: raw.linkedin ?? "",
+  };
 };
 
 const migrateWorkout = (raw: any): WorkoutState => ({
@@ -601,10 +698,137 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
   const deleteGoal = useCallback((id: string) =>
     setCareer((c) => ({ ...c, goals: c.goals.filter((g) => g.id !== id) })), [setCareer]);
   const addAchievement = useCallback((a: Omit<CareerAchievement, "id">) =>
-    setCareer((c) => ({ ...c, achievements: [{ ...a, id: uid() }, ...c.achievements] })), [setCareer]);
+    setCareer((c) => ({ ...c, achievements: [{
+      id: uid(),
+      title: a.title,
+      date: a.date ?? new Date().toISOString().slice(0,10),
+      category: "other" as const,
+      description: a.description,
+      icon: a.icon,
+      trackId: a.trackId,
+    }, ...c.achievements] })), [setCareer]);
   const deleteAchievement = useCallback((id: string) =>
     setCareer((c) => ({ ...c, achievements: c.achievements.filter((a) => a.id !== id) })), [setCareer]);
   const setLinkedin = useCallback((v: string) => setCareer((c) => ({ ...c, linkedin: v })), [setCareer]);
+
+  // ---- New career domain ----
+  const updateCareer = useCallback<StoreState["updateCareer"]>((updater) =>
+    setCareer((c) => {
+      const patch = updater(c);
+      return { ...c, ...patch };
+    }), [setCareer]);
+
+  const addRoadmapFromTemplate = useCallback<StoreState["addRoadmapFromTemplate"]>((templateId, name) => {
+    setCareer((c) => {
+      let rm: CareerRoadmap;
+      if (templateId === "custom") {
+        rm = {
+          id: uid(), name: name ?? "Custom Roadmap", icon: "🗺️", color: "#06b6d4", template: "custom",
+          description: "Your custom roadmap — add phases and milestones.",
+          weeklyHoursTarget: 5, priority: 7, status: "active",
+          startLevel: 1, targetLevel: 8, startedAt: Date.now(),
+          phases: [{ id: uid(), title: "Phase I · Foundations", milestones: [] }],
+        };
+      } else {
+        const cloned = cloneTemplate(templateId);
+        if (!cloned) return c;
+        if (name) cloned.name = name;
+        rm = cloned;
+      }
+      return { ...c, roadmaps: [...c.roadmaps, rm] };
+    });
+  }, [setCareer]);
+
+  const _mapRoadmap = (c: CareerState, rmId: string, fn: (r: CareerRoadmap) => CareerRoadmap): CareerState =>
+    ({ ...c, roadmaps: c.roadmaps.map((r) => r.id === rmId ? fn(r) : r) });
+
+  const toggleMilestoneDone = useCallback<StoreState["toggleMilestoneDone"]>((rmId, phId, msId) => {
+    setCareer((c) => _mapRoadmap(c, rmId, (r) => ({
+      ...r,
+      phases: r.phases.map((ph) => ph.id !== phId ? ph : {
+        ...ph,
+        milestones: ph.milestones.map((ms) => ms.id !== msId ? ms : {
+          ...ms,
+          done: !ms.done,
+          completedAt: !ms.done ? Date.now() : undefined,
+          hoursActual: !ms.done ? (ms.hoursActual || ms.hoursEstimate) : ms.hoursActual,
+        }),
+      }),
+    })));
+  }, [setCareer]);
+
+  const updateMilestone = useCallback<StoreState["updateMilestone"]>((rmId, phId, msId, patch) => {
+    setCareer((c) => _mapRoadmap(c, rmId, (r) => ({
+      ...r,
+      phases: r.phases.map((ph) => ph.id !== phId ? ph : {
+        ...ph,
+        milestones: ph.milestones.map((ms) => ms.id !== msId ? ms : { ...ms, ...patch }),
+      }),
+    })));
+  }, [setCareer]);
+
+  const archiveRoadmap = useCallback<StoreState["archiveRoadmap"]>((rmId) => {
+    setCareer((c) => _mapRoadmap(c, rmId, (r) => ({ ...r, status: r.status === "archived" ? "active" : "archived" })));
+  }, [setCareer]);
+
+  const deleteRoadmap = useCallback<StoreState["deleteRoadmap"]>((rmId) => {
+    setCareer((c) => ({ ...c, roadmaps: c.roadmaps.filter((r) => r.id !== rmId) }));
+  }, [setCareer]);
+
+  // seedCareerDemo: populate every career module with rich mock data (QA/demo).
+  const seedCareerDemo = useCallback(() => {
+    import("./careerDemo").then(({ buildCareerDemo }) => {
+      const demo = buildCareerDemo();
+      // Reseed templates
+      const { TEMPLATE_LIST, cloneTemplate } = require("./careerRoadmaps");
+      demo.roadmaps = TEMPLATE_LIST.map((t: any) => cloneTemplate(t.template));
+      setCareer(demo as any);
+    });
+  }, [setCareer]);
+
+  // Helpers for drilling into milestones
+  const _mapMilestone = (
+    rmId: string, phId: string, msId: string,
+    fn: (m: any) => any,
+  ) => (c: CareerState) => _mapRoadmap(c, rmId, (r) => ({
+    ...r,
+    phases: r.phases.map((ph) => ph.id !== phId ? ph : {
+      ...ph,
+      milestones: ph.milestones.map((ms) => ms.id !== msId ? ms : fn(ms)),
+    }),
+  }));
+
+  const toggleLabItem = useCallback<StoreState["toggleLabItem"]>((rmId, phId, msId, labId) => {
+    setCareer((c) => _mapMilestone(rmId, phId, msId, (ms) => ({
+      ...ms, labChecklist: ms.labChecklist.map((l: any) => l.id === labId ? { ...l, done: !l.done } : l),
+    }))(c));
+  }, [setCareer]);
+
+  const toggleResourceComplete = useCallback<StoreState["toggleResourceComplete"]>((rmId, phId, msId, resId) => {
+    setCareer((c) => _mapMilestone(rmId, phId, msId, (ms) => ({
+      ...ms, resources: ms.resources.map((r: any) => r.id === resId ? { ...r, completed: !r.completed } : r),
+    }))(c));
+  }, [setCareer]);
+
+  const toggleProjectComplete = useCallback<StoreState["toggleProjectComplete"]>((rmId, phId, msId, prjId) => {
+    setCareer((c) => _mapMilestone(rmId, phId, msId, (ms) => ({
+      ...ms, projects: ms.projects.map((p: any) => p.id === prjId ? { ...p, completed: !p.completed } : p),
+    }))(c));
+  }, [setCareer]);
+
+  const setQuizAnswer = useCallback<StoreState["setQuizAnswer"]>((rmId, phId, msId, qzId, answer) => {
+    setCareer((c) => _mapMilestone(rmId, phId, msId, (ms) => ({
+      ...ms,
+      quiz: ms.quiz.length ? ms.quiz.map((q: any) => q.id === qzId ? { ...q, selfRating: answer } : q)
+        : [{ id: qzId, question: "Do you understand this milestone?", selfRating: answer }],
+    }))(c));
+  }, [setCareer]);
+
+  const logMilestoneHours = useCallback<StoreState["logMilestoneHours"]>((rmId, phId, msId, hours) => {
+    setCareer((c) => _mapMilestone(rmId, phId, msId, (ms) => ({
+      ...ms, hoursActual: Math.max(0, (ms.hoursActual || 0) + hours),
+    }))(c));
+  }, [setCareer]);
 
   // ---- Workout: exercises ----
   const addExercise = useCallback<StoreState["addExercise"]>((e) =>
@@ -1079,6 +1303,9 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     addCareerNote, updateCareerNote, deleteCareerNote, addResumeBullet, updateResumeBullet, deleteResumeBullet,
     addGoal, toggleGoal, updateGoal, deleteGoal,
     addAchievement, deleteAchievement, setLinkedin,
+    updateCareer, addRoadmapFromTemplate, toggleMilestoneDone, updateMilestone,
+    toggleLabItem, toggleResourceComplete, toggleProjectComplete, setQuizAnswer, logMilestoneHours,
+    archiveRoadmap, deleteRoadmap, seedCareerDemo,
     workout, addExercise, updateExercise, deleteExercise,
     logPR, deletePR, addSkill, deleteSkill, addProgression, toggleProgressionDone, updateProgression, deleteProgression,
     addRoutine, updateRoutine, deleteRoutine, addBlock, updateBlock, deleteBlock, reorderBlocks,

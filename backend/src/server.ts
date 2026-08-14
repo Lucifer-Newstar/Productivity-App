@@ -1,15 +1,17 @@
 /**
- * Kaizen Workout — REST API (Express, in-memory store).
+ * Kaizen — REST API (Express, in-memory store).
  *
  * Runs on port 4000 (set via PORT env). Mirrors the frontend TypeScript
- * domain model from frontend/lib/types.ts. All routes are JSON.
+ * domain model from frontend/lib/types.ts + frontend/lib/careerTypes.ts.
+ * Covers both Workout and Career domains. All routes are JSON.
  *
  * This is intentionally minimal — no database, no auth, no validation
  * library. It is designed to let the frontend sync data to a server during
  * local development and to serve as a reference for a future production
  * implementation (Postgres/Prisma, JWT auth, etc.).
  *
- * See docs/API.md for the full route reference.
+ * See docs/API.md for the full route reference; see docs/CAREER.md for the
+ * career data model.
  */
 
 import express, { Request, Response, NextFunction } from "express";
@@ -49,6 +51,32 @@ const db: Record<string, Record<string, Row>> = {
   journal: {},
   board: {},
   restDays: {},
+  // Career domain
+  roadmaps: {},
+  careerSkills: {},
+  courses: {},
+  contacts: {},
+  applications: {},
+  companies: {},
+  questions: {},
+  careerAchievements: {},
+  projects: {},
+  resumes: {},
+  bullets: {},
+  testimonials: {},
+  days: {},
+  meetings: {},
+  timeline: {},
+  satisfaction: {},
+  burnoutChecks: {},
+  sabbaticals: {},
+  sideHustles: {},
+  ip: {},
+  speaking: {},
+  visionBoard: {},
+  tracks: {},
+  careerGoals: {},
+  careerNotes: {},
 };
 const uid = () => Math.random().toString(36).slice(2, 10) + Date.now().toString(36);
 const today = () => new Date().toISOString().slice(0, 10);
@@ -251,6 +279,32 @@ const CRUD: [string, string][] = [
   ["journal", "/journal"],
   ["board", "/board"],
   ["restDays", "/rest-days"],
+  // Career CRUD
+  ["roadmaps",          "/career/roadmaps"],
+  ["careerSkills",      "/career/skills"],
+  ["courses",           "/career/courses"],
+  ["contacts",          "/career/contacts"],
+  ["applications",      "/career/applications"],
+  ["companies",         "/career/companies"],
+  ["questions",         "/career/questions"],
+  ["careerAchievements","/career/achievements"],
+  ["projects",          "/career/projects"],
+  ["resumes",           "/career/resumes"],
+  ["bullets",           "/career/bullets"],
+  ["testimonials",      "/career/testimonials"],
+  ["days",              "/career/days"],
+  ["meetings",          "/career/meetings"],
+  ["timeline",          "/career/timeline"],
+  ["satisfaction",      "/career/satisfaction"],
+  ["burnoutChecks",     "/career/burnout"],
+  ["sabbaticals",       "/career/sabbaticals"],
+  ["sideHustles",       "/career/side-hustles"],
+  ["ip",                "/career/ip"],
+  ["speaking",          "/career/speaking"],
+  ["visionBoard",       "/career/vision-board"],
+  ["tracks",            "/career/tracks"],
+  ["careerGoals",       "/career/goals"],
+  ["careerNotes",       "/career/notes"],
 ];
 for (const [table, path] of CRUD) {
   const full = `/api${path}`;
