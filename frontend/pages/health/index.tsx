@@ -126,7 +126,7 @@ export default function TriagePage() {
               ["06", "Vitals",     "Wave 5 ✓ HR/BP/temp/SpO₂/symptoms/injuries/meds/orthostatic"],
               ["07", "Mind",       "Wave 5 ✓ mood/stress/energy/journal/gratitude/burnout/helplines"],
               ["08", "Lab",        "Wave 1 ✓ — profile + sync toggles"],
-              ["09", "Reports",    "Wave 6"],
+              ["09", "Reports",    "Wave 6+7 ✓ heatmap/streaks/bridge/CSV+JSON"],
             ].map(([code, label, status]) => (
               <div key={code} className="hlth-card" style={{ padding: 12 }}>
                 <div style={{ display: "flex", alignItems: "baseline", gap: 8 }}>

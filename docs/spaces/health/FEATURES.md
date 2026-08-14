@@ -469,9 +469,9 @@ incremental commit to the `health` branch, merge to `main` only after user appro
 | 1 (shell) | types, store slice, HealthShell, 10 FULLSCREEN routes, EkgFlash, HealthHotkeys, Triage live-KPIs, Lab profile editor | ✅ | `c8f0b10` |
 | 2 (core food+water) | meals timeline, macros donut, 90-dish Indian food lib, repeat-yesterday, 8-glass hydration, dynamic water goal | ✅ | `8090f10` |
 | 3 (sleep+supps) | sleep log, sleep bank, routines, supp log, 🇮🇳 deficiency badges, sunlight log | ✅ | `dbbbb14` |
-| 4 (physique core) | Navy BF%, tape measurements, photo capture | ❌ |
-| 5 (vitals+mind) | HR/BP, symptom log, mood/stress, burnout flag | ❌ |
-| 6 (reports) | timeline, weekly/monthly reports, CSV/JSON export | ❌ |
-| 7 (workout bridge deep) | TDEE reverse-eng, pre/post-wo cards, S:W ratios, recovery score, sync toggle wiring | ❌ |
+| 4 (physique core) | Navy BF%, tape measurements, photo capture | ✅ | `cdbae4f` |
+| 5 (vitals+mind) | HR/BP, symptom log, mood/stress, burnout flag, India crisis helplines | ✅ | `58cff67` |
+| 6 (reports) | 90d heatmap, weekly/monthly roll-ups, 7 habit streaks, timeline, CSV + full JSON export | ✅ | (wave 6+7) |
+| 7 (workout bridge deep) | TDEE reverse-eng (Wishnofsky 7700), pre-WO advisory card on Workout overview, training status 7 buckets, sleep recovery projection, post-WO macro needs | ✅ | (wave 6+7) |
 | 8 (v1.1 niceties) | restaurant mode, recipes, meal planner, meal prep, advanced micros, bloodwork | ❌ |
 | 9 (QA+polish) | bug sweep, tsc/build/smoke gates, CLINIC light pass, a11y, pre-merge QA → main | ❌ |

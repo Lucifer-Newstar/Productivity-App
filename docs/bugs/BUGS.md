@@ -231,3 +231,19 @@ After fixing BUG-001..005 the following were audited and passed:
 - **Burnout heuristic** (weights: sleep debt ≥10h=2 / ≥5h=1, RHR Δ≥8=2 / ≥5=1, mood ≤3=2 / ≤4=1, (energy+focus)/2 ≤4=1, libido ≤1.5=2 / ≤2.5=1, active severity≥3 injury=1) → 0-1 ok, 2-3 watch, 4-5 warn, ≥6 overtraining. Fried 14d@5h + RHR spike + mood 2 + libido 1 + knee injury scores 10/10 = overtraining.
 - **India crisis helplines** panel always visible on Mind page with tap-to-call `tel:` links; includes note that 112 is immediate-emergency number.
 - **Injury restriction hints** category-sensitive: shoulder → avoid overhead, knee → avoid deep squats/heavy leg press, back → avoid heavy deadlifts/rounding, elbow → avoid weighted chin/dips, wrist → avoid push-ups/OHP without wraps, ankle → avoid heavy calf/running.
+
+---
+
+## BUG-H11 — QA script `const bad` redeclared (wave 7 test block collided with wave 3 `bad=[]` short-sleep fixture)
+- **Found:** 2026-08-14 (Wave 7 tsc/QA run pre-commit)
+- **Severity:** QA-blocking (SyntaxError at script load — no tests could run)
+- **Root cause:** Wave 3 test block declared `const bad=[]` as a 7-night short-sleep array (line 178). Wave 7 inline `pwa()` test block reused the identifier `const bad = pwa({...})` and `const clear = pwa({...})` at lines 671/673 — `const` redeclaration in the same script scope threw `SyntaxError: Identifier 'bad' has already been declared` on `node scripts/qa-health.js`.
+- **Fix:** Renamed wave 7 fixtures to `pwaClear` and `pwaBad`.
+- **Files:** `frontend/scripts/qa-health.js`.
+
+## BUG-H12 — Unused lucide icon imports left after wave 7 edits (cosmetic)
+- **Found:** 2026-08-14 (code review pass)
+- **Severity:** Cosmetic (build ignores via `ignoreDuringBuilds`, no runtime impact)
+- **Root cause:** During wave 7 bridge wiring, `Droplet/Moon/Activity` were imported in `OverviewContent.tsx` and `TrendingUp/TrendingDown/classifyTemp` in `ReportsSection.tsx` for planned mini-stats that got moved inline. They were never referenced.
+- **Fix:** Removed unused icon/function imports from both files.
+- **Files:** `frontend/components/workout/OverviewContent.tsx`, `frontend/components/health/ReportsSection.tsx`.

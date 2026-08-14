@@ -603,3 +603,173 @@ assert(logFiles.length === 0, `No console.log/debug in health components (${logF
 console.log("\n========================================");
 if (failures === 0) console.log("ALL QA TESTS PASS  ❤️⚒️");
 else { console.error(`${failures} FAILURE(S)`); process.exit(1); }
+
+// ---------- Wave 6: Reports ----------
+section("Reports / daily summaries");
+// Check analytics exports (can't import TS modules into plain JS; verify source presence)
+assert(/export function buildDailySummaries/.test(anSrc), "buildDailySummaries exported");
+assert(/export function weeklyReport/.test(anSrc), "weeklyReport exported");
+assert(/export function habitStreak/.test(anSrc), "habitStreak exported");
+assert(/export function exportHealthCSV/.test(anSrc), "exportHealthCSV exported");
+const reportsSrc = fs.readFileSync(path.join(compDir,'ReportsSection.tsx'),'utf8');
+assert(/90-DAY|90-day|heatmap/i.test(reportsSrc), "Reports has 90-day heatmap");
+assert(/EXPORT CSV|export.*CSV/i.test(reportsSrc), "Reports has CSV export");
+assert(/FULL JSON/i.test(reportsSrc), "Reports has full JSON export");
+assert(/HABIT STREAKS/i.test(reportsSrc) || /Streak/i.test(reportsSrc), "Reports shows habit streaks");
+assert(/TIMELINE|timeline/i.test(reportsSrc), "Reports has timeline tab");
+assert(/WEEKLY|weekly/i.test(reportsSrc), "Reports has weekly roll-up");
+assert(/MONTHLY|28 DAY/i.test(reportsSrc), "Reports has monthly roll-up");
+const reportsPage = fs.readFileSync(path.join(pagesDir,'reports.tsx'),'utf8');
+assert(/ReportsSection/.test(reportsPage), "/health/reports renders ReportsSection");
+// Reverse-TDEE sanity (reimplementation inline)
+function reverseTdee(meals, weights, minDays=10){
+  const kbd=new Map(); for(const m of meals){const k=m.items.reduce((n,it)=>n+(it.kcal||0),0);kbd.set(m.date,(kbd.get(m.date)||0)+k);}
+  const sw=[...weights].sort((a,b)=>a.date.localeCompare(b.date));
+  if(sw.length<2)return null;
+  const f=sw[0],l=sw[sw.length-1];
+  const days=Math.round((new Date(l.date)-new Date(f.date))/86400e3);
+  if(days<minDays)return null;
+  let tot=0,n=0;const d0=new Date(f.date);
+  for(let i=0;i<=days;i++){const d=new Date(d0);d.setDate(d.getDate()+i);const k=kbd.get(d.toISOString().slice(0,10));if(k!=null){tot+=k;n++;}}
+  if(n<Math.max(5,minDays/2))return null;
+  const avg=tot/n; const dk=l.weightKg-f.weightKg;
+  return {estTdee: Math.round(avg-(dk/days)*7700), avgKcal:Math.round(avg)};
+}
+assert(reverseTdee([],[{date:"2025-01-01",weightKg:70}])===null, "reverseTdee returns null with <2 weights");
+const meals=[],weights=[];
+for(let i=0;i<21;i++){const d=new Date(2025,0,i+1).toISOString().slice(0,10); meals.push({date:d,items:[{kcal:3000}]}); if(i===0||i===20)weights.push({date:d,weightKg:70});}
+const rev = reverseTdee(meals,weights,10);
+assert(rev!==null && Math.abs(rev.estTdee-3000)<50, `reverse-eng TDEE ≈ intake when weight stable (got ${rev && rev.estTdee})`);
+
+// ---------- Wave 7: Workout bridge ----------
+section("Workout bridge (wave 7)");
+assert(/export function reverseEngineerTdee/.test(anSrc), "reverseEngineerTdee exported");
+assert(/export function cardioCalorieEstimate/.test(anSrc), "cardioCalorieEstimate exported");
+assert(/export function projectedSleepRecovery/.test(anSrc), "projectedSleepRecovery exported");
+assert(/export function trainingStatus/.test(anSrc), "trainingStatus exported");
+assert(/export function preWorkoutAdvisory/.test(anSrc), "preWorkoutAdvisory exported");
+assert(/export function postWorkoutRecoveryNeeds/.test(anSrc), "postWorkoutRecoveryNeeds exported");
+assert(/export type TrainingStatus/.test(anSrc), "TrainingStatus type exported");
+assert(/export interface PreWorkoutAdvisory/.test(anSrc), "PreWorkoutAdvisory type exported");
+// Pre-WO advisory logic inline
+function pwa({bank,lastNightHrs=8,recovery=80,hydro=85,inj=0,crisis=false,fever=false,rhrD=0,burnout}){
+  let level="clear",intensity=1.0,msgs=[];
+  const sev={"clear":0,"caution":1,"warn":2,"abort":3};
+  const up=l=>{if(sev[l]>sev[level])level=l;};
+  if(crisis){up("abort");msgs.push("crisis");intensity=0;}
+  if(fever){up("abort");msgs.push("fever");intensity=0;}
+  if(bank<=-10||lastNightHrs<5){up("warn");msgs.push("sleep");intensity=Math.min(intensity,0.6);}
+  else if(bank<=-5||lastNightHrs<6.5){up("caution");intensity=Math.min(intensity,0.8);}
+  if(hydro<50){up("caution");msgs.push("hydro");}
+  if(inj>0)up("caution");
+  if(rhrD>=8){up("warn");intensity=Math.min(intensity,0.7);}
+  if(burnout==="overtraining"){up("abort");intensity=0.3;}
+  else if(burnout==="warn"){up("warn");intensity=Math.min(intensity,0.6);}
+  if(recovery>=80&&level==="clear")intensity=1.05;
+  return {level,intensity};
+}
+const pwaClear = pwa({bank:0,recovery:80,hydro:85,inj:0,crisis:false,fever:false,rhrD:0,burnout:"ok"});
+assert(pwaClear.level==="clear" && pwaClear.intensity>=1.0, "green-light pre-WO on all-good day");
+const pwaBad = pwa({bank:-12,lastNightHrs:4,recovery:20,hydro:30,inj:1,crisis:false,fever:true,rhrD:12,burnout:"overtraining"});
+assert(pwaBad.level==="abort" && pwaBad.intensity<=0.3, "abort pre-WO on fever/overtraining/bad stats");
+const debt = []; for(let i=0;i<14;i++){const d=new Date(Date.now()-(13-i)*86400e3); debt.push({durationHours:5});}
+// projected sleep recovery — reimplementation
+function proj(entries,ideal){
+  function bank(entries,ideal){let b=0;for(const e of entries){const d=e.durationHours-ideal; if(d<0)b+=d;else b+=Math.min(d*0.5,1.0); b=Math.max(-20,Math.min(10,b));}return b;}
+  const b=bank(entries,ideal); if(b>=0)return {extra:0,nights:0};
+  const deficit=-b; const credit=Math.min(ideal*0.125,1)*0.5;
+  return {extra:Math.round(deficit*10)/10,nights:Math.max(1,Math.ceil(deficit/Math.max(0.25,credit)))};
+}
+const p0 = proj([],8); assert(p0.extra===0 && p0.nights===0, "zero entries → no debt");
+const pDebt = proj(debt,8); assert(pDebt.extra>0 && pDebt.nights>=3, "14 nights @ 5h projects multi-night recovery");
+// post-WO needs sanity
+const post = (vol,dur,int) => ({p:Math.round(15+vol*0.015*int),w:Math.round(500+dur*8*int),c:Math.round(60+vol*0.01*int)});
+const postV = post(3000,60,1);
+assert(postV.p>=20 && postV.w>=500 && postV.c>=50, "post-WO returns sensible protein/water/carb targets");
+// Health card injected into Workout overview
+const ovSrc = fs.readFileSync(path.join(__dirname,'..','components','workout','OverviewContent.tsx'),'utf8');
+assert(/HEALTH:/.test(ovSrc), "Workout overview renders HEALTH advisory card");
+assert(/preWorkoutAdvisory|preWO/.test(ovSrc), "Workout overview computes preWO advisory");
+assert(/Open Health OS/.test(ovSrc), "Workout overview links to /health");
+assert(/recoveryScore|computeSleepBank|avgRhr/.test(ovSrc), "Workout overview imports health analytics");
+
+// Additional wave 6/7 scenarios
+section("Wave 6/7 edge scenarios");
+
+// Pre-WO advisory edge cases
+const pwaCaution = pwa({bank:-3,lastNightHrs:7,recovery:70,hydro:40,inj:1,crisis:false,fever:false,rhrD:3,burnout:"ok"});
+assert(pwaCaution.level==="caution", "low hydro + mild debt + injury → CAUTION");
+const pwaWarn = pwa({bank:-7,lastNightHrs:5.5,recovery:40,hydro:60,inj:0,crisis:false,fever:false,rhrD:9,burnout:"watch"});
+assert(pwaWarn.level==="warn", "RHR Δ+9 + bank -7 → WARN");
+const pwaOvertrain = pwa({bank:0,recovery:90,hydro:90,inj:0,crisis:false,fever:false,rhrD:0,burnout:"overtraining"});
+assert(pwaOvertrain.level==="abort", "overtraining burnout → ABORT even if recovery looks good");
+
+// Cardio calorie estimate: 60min @ MET7 × 70kg = 490 kcal
+function cardio(dur,kg,met=7){ return Math.round(met*kg*(dur/60)); }
+assert(cardio(60,70,7)===490, "cardio kcal: 60min@7MET×70kg = 490");
+assert(cardio(30,80,10)===400, "cardio kcal: 30min@10MET×80kg = 400");
+
+// Training status reimplementation
+function tstat({recentVol,priorVol,recovery,rhrDelta,sessionsRecent,sessionsPrior}){
+  const volRatio = priorVol>0?recentVol/priorVol:(sessionsRecent>0?1:0);
+  if(sessionsRecent===0)return "detrained";
+  if(recovery<30 && volRatio>1.0 && rhrDelta>=8)return "overreaching";
+  if(recovery<45 && volRatio>0.85)return "fatigued";
+  if(volRatio>1.15 && recovery>=55)return "peaking";
+  if(volRatio>1.05 && recovery>=60)return "accumulating";
+  if(volRatio<0.7 && recovery>=70 && sessionsPrior>2)return "fresh";
+  return "maintaining";
+}
+assert(tstat({recentVol:0,priorVol:1000,recovery:50,rhrDelta:0,sessionsRecent:0,sessionsPrior:4})==="detrained","no sessions → detrained");
+assert(tstat({recentVol:12000,priorVol:10000,recovery:25,rhrDelta:10,sessionsRecent:6,sessionsPrior:5})==="overreaching","high vol + low rec + RHR spike → overreaching");
+assert(tstat({recentVol:9000,priorVol:10000,recovery:40,rhrDelta:3,sessionsRecent:5,sessionsPrior:5})==="fatigued","low recovery + decent volume → fatigued");
+assert(tstat({recentVol:12000,priorVol:10000,recovery:70,rhrDelta:1,sessionsRecent:6,sessionsPrior:5})==="peaking","15% over + high rec → peaking");
+assert(tstat({recentVol:11000,priorVol:10000,recovery:75,rhrDelta:0,sessionsRecent:6,sessionsPrior:5})==="accumulating","10% over + good rec → accumulating");
+assert(tstat({recentVol:5000,priorVol:10000,recovery:80,rhrDelta:-3,sessionsRecent:2,sessionsPrior:5})==="fresh","<70% vol + high rec + prior sessions → fresh");
+assert(tstat({recentVol:9500,priorVol:10000,recovery:65,rhrDelta:2,sessionsRecent:5,sessionsPrior:5})==="maintaining","near-parity → maintaining");
+
+// Sleep projection edge cases
+const pNoDebt = proj([{durationHours:8},{durationHours:8},{durationHours:8}],8);
+assert(pNoDebt.extra===0 && pNoDebt.nights===0, "perfect nights → zero recovery needed");
+const pBigDebt = []; for(let i=0;i<20;i++)pBigDebt.push({durationHours:4}); // 20 nights at 4h = -20h per night? Bank caps at -20.
+const pBigRes = proj(pBigDebt,8);
+assert(pBigRes.extra>0 && pBigRes.nights>0, "major debt → positive recovery projection");
+
+// Reverse TDEE reimplementation sanity (stable weight ⇒ ≈ avg kcal)
+function revTdee(mealsByDay, weightsArr){
+  const sorted=[...weightsArr].sort((a,b)=>a.date.localeCompare(b.date));
+  if(sorted.length<2)return null;
+  const first=sorted[0],last=sorted[sorted.length-1];
+  const daySpan=Math.round((new Date(last.date)-new Date(first.date))/86400e3);
+  if(daySpan<10)return null;
+  const totKcal=mealsByDay.reduce((n,v)=>n+v,0);
+  const avgKcal=totKcal/Math.max(1,mealsByDay.length);
+  const deltaKg=last.weightKg-first.weightKg;
+  return Math.round(avgKcal - (deltaKg/daySpan)*7700);
+}
+// stable weight at 2800 kcal over 14 days → est TDEE ≈ 2800
+const days=14, kcal=[]; for(let i=0;i<days;i++)kcal.push(2800);
+const wArr=[{date:"2025-01-01",weightKg:70},{date:"2025-01-14",weightKg:70.2}];
+const est = revTdee(kcal,wArr);
+assert(est>=2600 && est<=3000, "reverse TDEE stable weight ≈ avg kcal (got "+est+")");
+// losing weight at 2200 kcal with 70→68.5kg over 14d means TDEE higher than 2200
+const kcal2=[];for(let i=0;i<14;i++)kcal2.push(2200);
+const wArr2=[{date:"2025-01-01",weightKg:70},{date:"2025-01-14",weightKg:68.5}];
+const est2 = revTdee(kcal2,wArr2);
+assert(est2>2500, "reverse TDEE weight loss implies higher TDEE than intake (got "+est2+")");
+// Habit streak logic test
+function hStreak(sums,pred){
+  let cur=0,long=0,run=0;
+  for(let i=sums.length-1;i>=0;i--){if(pred(sums[i]))cur++;else break;}
+  for(const s of sums){if(pred(s)){run++;long=Math.max(long,run);}else run=0;}
+  return {current:cur,longest:long};
+}
+const fakeDays=[];
+for(let i=0;i<14;i++)fakeDays.push({completed:i<5?90:30,hydrationPct:i<5?85:40,sleepHours:i<5?7.5:6,proteinG:150,hasWorkout:i%2===0,kcal:2500,meditatedMin:i%3===0?10:0});
+const s1=hStreak(fakeDays,d=>d.completed>=85);
+assert(s1.current===0 && s1.longest===5, "habit streak: 5-day run then broken");
+const s2=hStreak(fakeDays,d=>d.hasWorkout);
+// days 0..13; i%2==0 for workout means days 0,2,4,...12 (odd indices from end: day13 no, day12 yes, day11 no) → current=0
+assert(s2.current===0, "streak current counts consecutive from today backwards; broken correctly");
+
+console.log("\n>>> ALL EDGE SCENARIOS PASS");

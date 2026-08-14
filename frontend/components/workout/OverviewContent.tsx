@@ -7,11 +7,17 @@
 
 import { useMemo, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Dumbbell, Play, Download, Zap, Flame, Award, Sparkles, AlertCircle, History, Database } from "lucide-react";
+import { Dumbbell, Play, Download, Zap, Flame, Award, Sparkles, AlertCircle, History, Database, Heart } from "lucide-react";
 import { useRouter } from "next/router";
 import MuscleHeatmap from "./MuscleHeatmap";
 import { useStore } from "../../lib/store";
 import { intensityMultiplier, weeklyMuscleVolume, suggestNextWorkout, recommendedAccessories } from "../../lib/workoutAnalytics";
+import {
+  waterGoalMl, proteinTargetG, tdee as tdeeFn,
+  recoveryScore, computeSleepBank, avgRhr, activeInjuries, injuryRestrictionHints,
+  burnoutHeuristic, classifyBp, preWorkoutAdvisory,
+  projectedSleepRecovery, trainingStatus,
+} from "../../lib/healthAnalytics";
 import type { MuscleGroup } from "../../lib/types";
 
 const BADGE_META: Record<string, { icon: string; label: string; color: string }> = {
@@ -33,8 +39,49 @@ const BADGE_META: Record<string, { icon: string; label: string; color: string }>
 };
 
 export default function OverviewContent() {
-  const { workout, tasks, logReadiness, exportWorkoutCSV, startSession, getExerciseForBlock, seedDemoData } = useStore();
+  const { workout, tasks, logReadiness, exportWorkoutCSV, startSession, getExerciseForBlock, seedDemoData, health } = useStore();
   const router = useRouter();
+
+  // --- Health → Workout bridge (wave 7) ---
+  const bw = useMemo(() => {
+    const sorted = [...workout.bodyweight].sort((a,b)=>b.date.localeCompare(a.date));
+    return sorted[0]?.weightKg ?? 70;
+  }, [workout.bodyweight]);
+  const todayIso = new Date().toISOString().slice(0,10);
+  const bank = useMemo(() => computeSleepBank(health.sleep, health.profile.idealSleepHours), [health.sleep, health.profile.idealSleepHours]);
+  const lastNight = useMemo(() => [...health.sleep].sort((a,b)=>b.date.localeCompare(a.date))[0], [health.sleep]);
+  const todayWater = health.water.filter(w=>w.date===todayIso).reduce((n,w)=>n+w.ml,0);
+  const waterGoal = waterGoalMl(bw, health.profile.climateMult);
+  const waterPct = Math.round(Math.min(100, (todayWater/Math.max(1,waterGoal))*100));
+  const rec = recoveryScore(health.sleep, health.profile.idealSleepHours, waterPct);
+  const rhrBaseline = avgRhr(health.vitals, 21);
+  const rhr7 = avgRhr(health.vitals, 7);
+  const rhrDelta = rhrBaseline>0 && rhr7>0 ? rhr7 - rhrBaseline : 0;
+  const injuries = activeInjuries(health.injuries);
+  const todayV = health.vitals.filter(v=>v.date===todayIso).sort((a,b)=>(b.time||"").localeCompare(a.time||""))[0];
+  const bpCrisis = todayV ? classifyBp(todayV.systolic, todayV.diastolic).cat === "crisis" : false;
+  const fever = !!todayV?.tempC && todayV.tempC >= 38;
+  const burnout = burnoutHeuristic({sleepEntries:health.sleep,idealHours:health.profile.idealSleepHours,vitals:health.vitals,mind:health.mind,injuries:health.injuries});
+  const preWO = preWorkoutAdvisory({
+    sleepBank: bank, lastNightHrs: lastNight?.durationHours ?? 0, recovery: Math.round(rec*100),
+    hydrationPct: waterPct, activeInjuries: injuries.length, bpCrisis, fever, rhrDelta,
+    burnoutLevel: burnout.level,
+  });
+  const sleepProj = projectedSleepRecovery(health.sleep, health.profile.idealSleepHours);
+  const volPast = (days:number, offset:number) => {
+    const start = new Date(); start.setDate(start.getDate() - offset - days);
+    const end = new Date(); end.setDate(end.getDate() - offset);
+    const set = new Set<string>();
+    for (let i=0;i<days;i++){ const d=new Date(start); d.setDate(start.getDate()+i); set.add(d.toISOString().slice(0,10)); }
+    return workout.sessions.filter(s => s.endedAt && set.has(s.date)).reduce((n,s)=>n+(s.totalVolumeKg??0),0);
+  };
+  const recentSess = workout.sessions.filter(s=>{ const d=new Date(s.date); const n=new Date(); n.setDate(n.getDate()-14); return s.endedAt && d>=n; }).length;
+  const priorSess = workout.sessions.filter(s=>{ const d=new Date(s.date); const lo=new Date(); lo.setDate(lo.getDate()-42); const hi=new Date(); hi.setDate(hi.getDate()-14); return s.endedAt && d>=lo && d<hi; }).length;
+  const tStatus = trainingStatus({
+    recentVol: volPast(14,0), priorVol: volPast(28,14),
+    recovery: Math.round(rec*100), rhrDelta, sessionsRecent: recentSess, sessionsPrior: priorSess,
+  });
+  const restr = injuryRestrictionHints(health.injuries);
 
   const stats = useMemo(() => {
     const prCount = workout.prs.length;
@@ -46,7 +93,6 @@ export default function OverviewContent() {
     return { prCount, exerciseCount, thisWeek, totalVolume, completedCount: completed.length };
   }, [workout, tasks]);
 
-  const todayIso = new Date().toISOString().slice(0, 10);
   const todaysRoutine = workout.routines.find((r) => r.dayOfWeek === new Date().getDay());
   const todayReadiness = workout.readiness.find((r) => r.date === todayIso);
 
@@ -169,6 +215,8 @@ export default function OverviewContent() {
         onStartRoutine={todaysRoutine ? () => { startSession(todaysRoutine.name, todaysRoutine.id, todayReadiness?.score); } : null}
         onSeedDemo={() => seedDemoData()}
         todaysRoutineName={todaysRoutine?.name ?? null}
+        healthAdvisory={{ preWO, rec, bank, waterPct, tStatus, injuries, restr }}
+        onGoToHealth={() => router.push("/health")}
       />
     </div>
   );
@@ -183,7 +231,9 @@ function Stat({ label, value, color }: { label: string; value: string | number; 
   );
 }
 
-function OverviewBody({ volume, readiness, onLogReadiness, badges, streak, longestStreak, freezes, nextWorkout, onGoToSchedule, onGoToLibrary, onStartRoutine, onSeedDemo, todaysRoutineName }: any) {
+function OverviewBody({ volume, readiness, onLogReadiness, badges, streak, longestStreak, freezes, nextWorkout, onGoToSchedule, onGoToLibrary, onStartRoutine, onSeedDemo, todaysRoutineName, healthAdvisory, onGoToHealth }: any) {
+  const { preWO, rec, bank, waterPct, tStatus, injuries, restr } = healthAdvisory || {};
+  void restr;
   const [selectedMuscle, setSelectedMuscle] = useState<MuscleGroup | null>(null);
   const [soreness, setSoreness] = useState(5);
   const [sleep, setSleep] = useState(7);
@@ -285,6 +335,31 @@ function OverviewBody({ volume, readiness, onLogReadiness, badges, streak, longe
       </div>
 
       <div className="space-y-6">
+        {/* Health advisory (Health→Workout bridge) */}
+        {preWO && (
+          <motion.div initial={{ opacity:0, y:8 }} animate={{ opacity:1, y:0 }}
+            className="card relative overflow-hidden"
+            style={{ borderColor: `${preWO.color}40`, background: `linear-gradient(135deg, ${preWO.color}14, transparent)` }}>
+            <div className="flex items-center gap-2 mb-2">
+              <Heart size={16} style={{ color: preWO.color }}/>
+              <h3 className="font-semibold text-sm" style={{ color: preWO.color }}>HEALTH: {preWO.title}</h3>
+            </div>
+            <div className="text-xs text-gray-300 space-y-1 mb-2">
+              {preWO.messages.slice(0, 3).map((m: string, i: number) => <div key={i}>• {m}</div>)}
+            </div>
+            <div className="grid grid-cols-3 gap-1.5 text-center text-[9px] font-mono">
+              <div className="rounded bg-white/5 p-1.5"><div className="text-gray-500">RECOVERY</div><div style={{color: rec>=0.7?"#a3e635":rec>=0.5?"#f59e0b":"#ef4444"}}>{Math.round(rec*100)}</div></div>
+              <div className="rounded bg-white/5 p-1.5"><div className="text-gray-500">SLEEP</div><div style={{color: bank<=-5?"#ef4444":bank<0?"#f59e0b":"#a3e635"}}>{bank>=0?"+":""}{bank.toFixed(1)}h</div></div>
+              <div className="rounded bg-white/5 p-1.5"><div className="text-gray-500">HYDRO</div><div style={{color:waterPct>=70?"#a3e635":waterPct>=50?"#f59e0b":"#ef4444"}}>{waterPct}%</div></div>
+            </div>
+            <div className="mt-2 text-[10px] text-center" style={{color: tStatus.color}}>● {tStatus.label}</div>
+            {injuries.length>0 && restr.length>0 && (
+              <div className="mt-2 text-[9px] text-amber-300/80 font-mono">→ {restr[0]}</div>
+            )}
+            <button onClick={onGoToHealth} className="mt-2 w-full rounded-md py-1 text-[10px] text-violet-300 hover:text-violet-200 border border-violet-500/20 bg-violet-500/10">Open Health OS →</button>
+          </motion.div>
+        )}
+
         {/* Next workout suggestion */}
         <div className="card border-violet-500/30 relative overflow-hidden">
           <div className="absolute -top-20 -right-20 w-40 h-40 rounded-full bg-violet-500/20 blur-3xl pointer-events-none" />

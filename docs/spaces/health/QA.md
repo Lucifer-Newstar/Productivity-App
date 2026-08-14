@@ -131,3 +131,42 @@ Each wave must satisfy before commit:
 - [x] `migrateHealth()` defaults all wave-5 collections (symptoms, illnesses, injuries, medications, allergies, orthostatic, journal); pre-wave-5 localStorage loads without data loss
 - [x] No `console.log/debug` in new components; no unsafe `!` non-null assertions; all numerical inputs guarded with `toNum()` that returns undefined for NaN/empty/zero
 - [x] Chennai/India context: helplines India-specific; RHR baseline note accounts for Chennai heat (slightly higher HR, slightly lower BP)
+
+---
+
+## Wave 6 (Reports) + Wave 7 (Workout bridge) — 2026-08-14
+- [x] TypeScript clean (`tsc --noEmit`).
+- [x] **42/42 routes ○ static** (all health 10 + workout 13 + career 10 + forge 5 + app 2 + entertainment).
+- [x] **38/38 smoke PASS.**
+- [x] **325 unit assertions** all green in `scripts/qa-health.js`.
+- [x] Bugs logged this wave:
+  - H11 QA script `const bad` redeclaration between wave 3 fixture and wave 7 inline test → renamed wave 7 fixtures to `pwaClear`/`pwaBad`.
+  - H12 Unused icon/function imports in `OverviewContent.tsx` (Droplet/Moon/Activity) and `ReportsSection.tsx` (TrendingUp/TrendingDown/classifyTemp) → removed.
+- [x] **ReportsSection (`/health/reports`)**
+  - 4 tabs: overview / streaks / timeline / bridge
+  - 90-day (14-week aligned to Monday) GitHub-style completion heatmap (7 colour bands: no-data slate / <20 red / <40 orange / <60 lime / <80 emerald / ≥80 green; today outlined in cyan)
+  - Weekly (7d) + monthly (28d) aggregate cards with colour-coded metrics: sleep, completion %, kcal, protein, hydration, workout days, volume (k kg), duration (min), mood avg, stress avg, meditation days, streak
+  - 7 habit streak tiles: all-rounder ≥85%, hydration ≥80%, sleep ≥7h, protein ≥90% target, workouts, meditation, meals ≥70% TDEE — showing current + longest
+  - Streak detail table
+  - Timeline: last 40 merged events across sleep/vitals/measurements/mind/symptoms/injuries (ongoing)/workout PRs, sorted newest first, colour-coded side rails
+  - Bridge tab: pre-WO advisory card (title + messages + suggested intensity ×), 6 info cards (reverse-TDEE, training status, sleep recovery projection, burnout, active injuries, today's hydration), bridge contract list
+  - CSV export (21-column daily summaries) + full health JSON export (downloadable via Blob/anchor)
+  - Medical disclaimer footer with Wishnofsky ±20% note
+- [x] **Analytics additions**
+  - `buildDailySummaries(health, workoutSessions, waterGoalFn, proteinFn, tdeeFn, weightKg, lastN=90)`: per-day rollup joining sleep/meals/water/vitals/mind/journal/supplements + workout sessions. Weights per feature: sleep 20 / kcal 12 / protein 13 / hydration 20 / supps 10 / meditation 5 / gratitude 5 / workout 10 / mood 5 (total 100)
+  - `habitStreak(summaries, predicate)`: current streak from today + longest all-time
+  - `weeklyReport(summaries)`: last-7 aggregates
+  - `exportHealthCSV(summaries)`: RFC-4180-ish CSV
+  - `reverseEngineerTdee(meals, weights, minDays=10)`: Wishnofsky 7700 kcal/kg energy balance; returns null with <2 weights or <minDays span or <5 logged days
+  - `cardioCalorieEstimate(min, kg, met=7)`: MET × kg × hours
+  - `projectedSleepRecovery(entries, idealHours)`: extra hours + nights needed (credit 0.5 × min(ideal×0.125, 1h) per night)
+  - `trainingStatus({recentVol, priorVol, recovery, rhrDelta, sessionsRecent, sessionsPrior})`: 7 buckets — detrained/fresh/maintaining/accumulating/peaking/fatigued/overreaching with colours + labels
+  - `preWorkoutAdvisory({sleepBank, lastNightHrs, recovery, hydrationPct, activeInjuries, bpCrisis, fever, rhrDelta, burnoutLevel})`: 4 levels clear/caution/warn/abort with messages + suggested intensity multiplier (fever/BP crisis = 0, overtraining = 0.3, big sleep debt = 0.6, RHR Δ+8 = 0.7, recovery≥80 on clear = 1.05)
+  - `postWorkoutRecoveryNeeds({volumeKg, durationMin, intensity, recovery})`: additive protein/water/sleep/carb targets
+- [x] **Workout ↔ Health bridge** (wave 7)
+  - One-way direction of imports: healthAnalytics may import workoutAnalytics? NO. Health OS reads from workout slice (bodyweight/sessions/PRs); Health advises Workout via props. Workout imports from healthAnalytics. Reverse direction forbidden.
+  - `/workout/overview` renders HEALTH advisory card above "Suggested today": pre-WO title in level colour, up to 3 bullet messages, 3 mini-tiles (RECOVERY 0-100 / SLEEP ±bank h / HYDRO %), training status line, top injury restriction hint if any, "Open Health OS →" button
+  - Data threading: `OverviewContent()` computes bridge values with useMemo where relevant; passes `healthAdvisory` + `onGoToHealth` callback into `OverviewBody` (stateless render fn — no `useStore`/`router` in that scope per project convention)
+  - Edge cases handled: no bodyweight defaults to 70 kg; no sleep → bank 0, lastNightHrs 0; no vitals → rhrDelta 0, no fever/BP crisis; no injuries → no restriction line
+- [x] Triage §09 status updated to "Wave 6+7 ✓ heatmap/streaks/bridge/CSV+JSON"
+- [x] No `console.log/debug` in new code; all number inputs Math.round/Math.max(1,...) guarded to avoid divide-by-zero

@@ -716,3 +716,272 @@ export function injuryRestrictionHints(injuries: InjuryEntry[]): string[] {
   }
   return out;
 }
+
+// ---------------- Reports / wave 6 ----------------
+
+export interface DailyHealthSummary {
+  date: string;
+  hasSleep: boolean;
+  sleepHours: number;
+  sleepScore: number;
+  kcal: number;
+  proteinG: number;
+  waterMl: number;
+  hydrationPct: number;
+  hasWorkout: boolean;
+  workoutVolumeKg: number;
+  workoutMinutes: number;
+  restingHr?: number;
+  systolic?: number;
+  diastolic?: number;
+  mood?: number;
+  stress?: number;
+  energy?: number;
+  meditatedMin: number;
+  gratitudeCount: number;
+  suppsTaken: number;
+  suppsTotal: number;
+  completed: number;
+}
+
+/**
+ * Per-day summary builder: joins sleep/meals/water/vitals/mind/journal with workout
+ * sessions across the last N days, oldest→newest.
+ */
+export function buildDailySummaries(
+  state: Pick<HealthState, "sleep"|"meals"|"water"|"vitals"|"mind"|"journal"|"supplementDefs"|"supplementLog">,
+  workoutSessions: { date: string; endedAt?: number; totalVolumeKg?: number; durationSeconds?: number }[],
+  waterGoalMl: (weightKg: number) => number,
+  proteinGoalG: (weightKg: number) => number,
+  tdee: (weightKg: number) => number,
+  weightKg: number,
+  lastN = 90,
+): DailyHealthSummary[] {
+  const out: DailyHealthSummary[] = [];
+  const sleepByDay = new Map(state.sleep.map(s => [s.date, s]));
+  const mealsByDay = new Map<string, typeof state.meals>();
+  for (const m of state.meals) (mealsByDay.get(m.date) ?? mealsByDay.set(m.date, []).get(m.date)!).push(m);
+  const waterByDay = new Map<string, typeof state.water>();
+  for (const w of state.water) (waterByDay.get(w.date) ?? waterByDay.set(w.date, []).get(w.date)!).push(w);
+  const vitalsByDay = new Map<string, VitalsEntry>();
+  for (const v of state.vitals) {
+    const existing = vitalsByDay.get(v.date);
+    if (!existing || v.context === "waking" || (v.time || "") > (existing.time || "")) vitalsByDay.set(v.date, v);
+  }
+  const mindByDay = new Map(state.mind.map(m => [m.date, m]));
+  const jByDay = new Map(state.journal.map(j => [j.date, j]));
+  const suppsByDay = new Map<string, number>();
+  const todayStr = new Date().toISOString().slice(0,10);
+  const totalSupps = state.supplementDefs.length;
+  for (const l of state.supplementLog) if (l.taken) suppsByDay.set(l.date, (suppsByDay.get(l.date) ?? 0) + 1);
+  const sessionsByDay = new Map<string, any[]>();
+  for (const s of workoutSessions) { if (!s.endedAt) continue; (sessionsByDay.get(s.date) ?? sessionsByDay.set(s.date, []).get(s.date)!).push(s); }
+
+  const wGoal = waterGoalMl(weightKg);
+  const pGoal = proteinGoalG(weightKg);
+  const kGoal = tdee(weightKg);
+
+  for (let i = lastN - 1; i >= 0; i--) {
+    const d = new Date(); d.setDate(d.getDate() - i);
+    const key = d.toISOString().slice(0,10);
+    const sl = sleepByDay.get(key);
+    const meals = mealsByDay.get(key) ?? [];
+    const wArr = waterByDay.get(key) ?? [];
+    const vit = vitalsByDay.get(key);
+    const mnd = mindByDay.get(key);
+    const jrn = jByDay.get(key);
+    const sessions = sessionsByDay.get(key) ?? [];
+    const kcal = meals.flatMap(m => m.items).reduce((n,it)=>n+(it.kcal||0),0);
+    const protein = meals.flatMap(m => m.items).reduce((n,it)=>n+(it.proteinG||0),0);
+    const waterMl = wArr.reduce((n,w)=>n+w.ml,0);
+    const hydrationPct = Math.round(Math.min(100, (waterMl/Math.max(1,wGoal))*100));
+    const kcalFrac = Math.min(1, kcal/Math.max(1,kGoal));
+    const protFrac = Math.min(1, protein/Math.max(1,pGoal));
+    const sleepFrac = sl ? Math.min(1, sl.durationHours/8) : 0;
+    const medFrac = jrn?.meditationMin ? Math.min(1, jrn.meditationMin/10) : 0;
+    const gratCount = jrn?.gratitude ? jrn.gratitude.filter(Boolean).length : 0;
+    const suppCount = suppsByDay.get(key) ?? 0;
+    const suppFrac = totalSupps > 0 ? suppCount/totalSupps : 0;
+    const moodFrac = mnd ? (mnd.mood-1)/9 : 0;
+    const woFrac = sessions.length > 0 ? 1 : 0;
+    const completed = Math.round(
+      sleepFrac*20 + kcalFrac*12 + protFrac*13 + (hydrationPct/100)*20
+      + suppFrac*10 + medFrac*5 + (gratCount>=3?5:gratCount*1.5) + woFrac*10
+      + moodFrac*5
+    );
+    const vol = sessions.reduce((n:number,s:any)=>n+(s.totalVolumeKg??0),0);
+    const dur = sessions.reduce((n:number,s:any)=>n+((s.durationSeconds??0)/60),0);
+    out.push({
+      date: key,
+      hasSleep: !!sl, sleepHours: sl?.durationHours ?? 0,
+      sleepScore: sl ? Math.round((0.6*Math.min(1,sl.durationHours/8)+0.4*(sl.quality??5)/10)*100) : 0,
+      kcal: Math.round(kcal), proteinG: Math.round(protein), waterMl, hydrationPct,
+      hasWorkout: sessions.length>0, workoutVolumeKg: Math.round(vol), workoutMinutes: Math.round(dur),
+      restingHr: vit?.restingHr, systolic: vit?.systolic, diastolic: vit?.diastolic,
+      mood: mnd?.mood, stress: mnd?.stress, energy: mnd?.energy,
+      meditatedMin: jrn?.meditationMin ?? 0,
+      gratitudeCount: gratCount,
+      suppsTaken: suppCount, suppsTotal: totalSupps,
+      completed: Math.max(0, Math.min(100, completed)),
+    });
+    void todayStr;
+  }
+  return out;
+}
+
+/** Habit streak (consecutive days meeting a predicate; walking backwards for current). */
+export function habitStreak(summaries: DailyHealthSummary[], predicate: (s: DailyHealthSummary)=>boolean): { current: number; longest: number } {
+  let current = 0, longest = 0, run = 0;
+  for (let i = summaries.length-1; i >= 0; i--) { if (predicate(summaries[i])) current++; else break; }
+  for (const s of summaries) { if (predicate(s)) { run++; longest = Math.max(longest, run); } else run = 0; }
+  return { current, longest };
+}
+
+/** Weekly aggregates from daily summaries (last 7 days). */
+export function weeklyReport(summaries: DailyHealthSummary[]) {
+  const last7 = summaries.slice(-7);
+  if (last7.length === 0) return null;
+  const avg = (arr: number[]) => arr.length ? arr.reduce((s,x)=>s+x,0)/arr.length : 0;
+  return {
+    days: last7.length,
+    sleep: avg(last7.map(s=>s.sleepHours)),
+    kcal: avg(last7.map(s=>s.kcal)),
+    protein: avg(last7.map(s=>s.proteinG)),
+    water: avg(last7.map(s=>s.hydrationPct)),
+    completion: avg(last7.map(s=>s.completed)),
+    woDays: last7.filter(s=>s.hasWorkout).length,
+    vol: last7.reduce((n,s)=>n+s.workoutVolumeKg,0),
+    mins: last7.reduce((n,s)=>n+s.workoutMinutes,0),
+    moodAvg: avg(last7.filter(s=>s.mood!=null).map(s=>s.mood!)),
+    stressAvg: avg(last7.filter(s=>s.stress!=null).map(s=>s.stress!)),
+    medDays: last7.filter(s=>s.meditatedMin>0).length,
+    streak: habitStreak(summaries, s => s.completed >= 70),
+  };
+}
+
+/** Flat CSV export of daily summaries. */
+export function exportHealthCSV(summaries: DailyHealthSummary[]): string {
+  const header = ["date","sleep_hours","sleep_score","kcal","protein_g","water_ml","hydration_pct","workout","volume_kg","workout_min","rhr","bp_sys","bp_dia","mood","stress","energy","meditation_min","gratitude_count","supps_taken","supps_total","completion_pct"];
+  const rows = [header.join(",")];
+  for (const s of summaries) {
+    rows.push([
+      s.date, s.sleepHours.toFixed(1), s.sleepScore,
+      s.kcal, s.proteinG, s.waterMl, s.hydrationPct,
+      s.hasWorkout?1:0, s.workoutVolumeKg, s.workoutMinutes,
+      s.restingHr??"", s.systolic??"", s.diastolic??"",
+      s.mood??"", s.stress??"", s.energy??"",
+      s.meditatedMin, s.gratitudeCount, s.suppsTaken, s.suppsTotal, s.completed,
+    ].join(","));
+  }
+  return rows.join("\n");
+}
+
+// ---------------- Wave 7: Workout bridge ----------------
+
+/**
+ * Reverse-engineer TDEE from 2+ weeks of calorie+weight data using energy balance:
+ * Δweight_kg/day = (avg_kcal - TDEE) / 7700   (7700 kcal ≈ 1 kg adipose; rough Wishnofsky).
+ */
+export function reverseEngineerTdee(
+  meals: {date:string;items:{kcal?:number}[]}[],
+  weights: {date:string;weightKg:number}[],
+  minDays = 10,
+): { estTdee: number; avgKcal: number; deltaKg: number; days: number } | null {
+  const kcalByDay = new Map<string, number>();
+  for (const m of meals) {
+    const k = m.items.reduce((n,it)=>n+(it.kcal||0),0);
+    kcalByDay.set(m.date, (kcalByDay.get(m.date) ?? 0) + k);
+  }
+  const sortedW = [...weights].sort((a,b)=>a.date.localeCompare(b.date));
+  if (sortedW.length < 2) return null;
+  const first = sortedW[0], last = sortedW[sortedW.length-1];
+  const daySpan = Math.round((new Date(last.date).getTime() - new Date(first.date).getTime())/86400000);
+  if (daySpan < minDays) return null;
+  const d0 = new Date(first.date);
+  let totKcal = 0, kcalDays = 0;
+  for (let i=0;i<=daySpan;i++){ const d=new Date(d0); d.setDate(d.getDate()+i); const k=kcalByDay.get(d.toISOString().slice(0,10)); if(k!=null){totKcal+=k;kcalDays++;} }
+  if (kcalDays < Math.max(5, minDays/2)) return null;
+  const avgKcal = totKcal/kcalDays;
+  const deltaKg = last.weightKg - first.weightKg;
+  const estTdee = Math.round(avgKcal - (deltaKg/daySpan)*7700);
+  return { estTdee, avgKcal: Math.round(avgKcal), deltaKg: Math.round(deltaKg*10)/10, days: daySpan };
+}
+
+/** Rough cardio kcal: MET × kg × hours. */
+export function cardioCalorieEstimate(durationMin: number, weightKg: number, met: number = 7): number {
+  return Math.round(met * weightKg * (durationMin/60));
+}
+
+/** Nights of ideal sleep needed to clear sleep debt (rough projection). */
+export function projectedSleepRecovery(sleepEntries: SleepEntry[], idealHours: number): { extraHoursNeeded: number; nightsAtIdeal: number } {
+  const bank = computeSleepBank(sleepEntries, idealHours);
+  if (bank >= 0) return { extraHoursNeeded: 0, nightsAtIdeal: 0 };
+  const deficit = -bank;
+  const creditPerNight = Math.min(idealHours*0.125, 1.0)*0.5;
+  return { extraHoursNeeded: Math.round(deficit*10)/10, nightsAtIdeal: Math.max(1, Math.ceil(deficit/Math.max(0.25, creditPerNight))) };
+}
+
+export type TrainingStatus = "fresh"|"maintaining"|"accumulating"|"peaking"|"fatigued"|"overreaching"|"detrained";
+
+/** Training status classifier (Craik/ACSM-informed heuristic). */
+export function trainingStatus(args: {
+  recentVol: number; priorVol: number; recovery: number; rhrDelta: number;
+  sessionsRecent: number; sessionsPrior: number;
+}): { status: TrainingStatus; color: string; label: string } {
+  const { recentVol, priorVol, recovery, rhrDelta, sessionsRecent, sessionsPrior } = args;
+  const volRatio = priorVol > 0 ? recentVol/priorVol : (sessionsRecent>0?1:0);
+  if (sessionsRecent === 0) return { status:"detrained", color:"#64748b", label:"Detrained (no recent sessions)" };
+  if (recovery < 30 && volRatio > 1.0 && rhrDelta >= 8) return { status:"overreaching", color:"#dc2626", label:"Functional overreaching — deload" };
+  if (recovery < 45 && volRatio > 0.85) return { status:"fatigued", color:"#ef4444", label:"Fatigued — easy week" };
+  if (volRatio > 1.15 && recovery >= 55) return { status:"peaking", color:"#f59e0b", label:"Peaking — hit a heavy single" };
+  if (volRatio > 1.05 && recovery >= 60) return { status:"accumulating", color:"#10b981", label:"Accumulating — push volume" };
+  if (volRatio < 0.7 && recovery >= 70 && sessionsPrior > 2) return { status:"fresh", color:"#06b6d4", label:"Fresh — ready to load" };
+  return { status:"maintaining", color:"#a78bfa", label:"Maintaining — solid" };
+}
+
+export interface PreWorkoutAdvisory {
+  level: "clear"|"caution"|"warn"|"abort";
+  color: string; title: string; messages: string[]; suggestedIntensity: number;
+}
+function sev(l: PreWorkoutAdvisory["level"]) { return {clear:0,caution:1,warn:2,abort:3}[l]; }
+
+/** Pre-workout advisory card (drives green/yellow/red light on Workout overview). */
+export function preWorkoutAdvisory(args: {
+  sleepBank: number; lastNightHrs: number; recovery: number;
+  hydrationPct: number; activeInjuries: number; bpCrisis: boolean; fever?: boolean;
+  rhrDelta: number; burnoutLevel: "ok"|"watch"|"warn"|"overtraining";
+}): PreWorkoutAdvisory {
+  const { sleepBank, lastNightHrs, recovery, hydrationPct, activeInjuries, bpCrisis, fever, rhrDelta, burnoutLevel } = args;
+  const msgs: string[] = [];
+  let level: PreWorkoutAdvisory["level"] = "clear";
+  let suggestedIntensity = 1.0;
+  const up = (l: PreWorkoutAdvisory["level"]) => { if (sev(l) > sev(level)) level = l; };  if (bpCrisis) { up("abort"); msgs.push("BP in crisis range — skip, seek medical opinion."); suggestedIntensity = 0; }
+  if (fever) { up("abort"); msgs.push("Fever logged — training hits the immune system hard. Rest."); suggestedIntensity = 0; }
+  if (sleepBank <= -10 || lastNightHrs < 5) { up("warn"); msgs.push(`Sleep bank ${sleepBank.toFixed(1)}h, last night ${lastNightHrs.toFixed(1)}h — cut volume 40-50%, no PRs.`); suggestedIntensity = Math.min(suggestedIntensity, 0.6); }
+  else if (sleepBank <= -5 || lastNightHrs < 6.5) { up("caution"); msgs.push(`Sleep bank ${sleepBank.toFixed(1)}h — reduce load ~20%, leave 1-2 RIR.`); suggestedIntensity = Math.min(suggestedIntensity, 0.8); }
+  if (hydrationPct < 50) { up("caution"); msgs.push(`Hydration ${hydrationPct}% — drink 500ml+ with salt before first set.`); }
+  if (activeInjuries > 0) { up("caution"); msgs.push(`${activeInjuries} active injury(ies) — modify aggravating lifts.`); }
+  if (rhrDelta >= 8) { up("warn"); msgs.push(`RHR +${Math.round(rhrDelta)} bpm vs baseline — sympathetic load high.`); suggestedIntensity = Math.min(suggestedIntensity, 0.7); }
+  if (burnoutLevel === "overtraining") { up("abort"); msgs.push("Overtraining flagged — deload week, active recovery only."); suggestedIntensity = 0.3; }
+  else if (burnoutLevel === "warn") { up("warn"); msgs.push("Burnout warning — light session or mobility only."); suggestedIntensity = Math.min(suggestedIntensity, 0.6); }
+  const lv = level as PreWorkoutAdvisory["level"];
+  if (recovery >= 80 && lv === "clear") { msgs.push("Recovery strong — green light to push."); suggestedIntensity = 1.05; }
+  else if (recovery >= 65 && lv === "clear") { msgs.push("Recovery good — normal session."); }
+  else if (lv === "clear") { msgs.push("Recovery sub-par — take warm-ups seriously."); }
+  const color = lv==="abort"?"#dc2626":lv==="warn"?"#ef4444":lv==="caution"?"#f59e0b":"#10b981";
+  const title = lv==="abort"?"STAND DOWN":lv==="warn"?"MODIFY HEAVILY":lv==="caution"?"CAUTION":"GREEN LIGHT";
+  return { level, color, title, messages: msgs, suggestedIntensity };
+}
+
+/** Post-workout recovery macro/sleep projection. */
+export function postWorkoutRecoveryNeeds(args: {
+  volumeKg: number; durationMin: number; intensity: number; recovery: number;
+}): { proteinTargetAddG: number; waterAddMl: number; sleepTargetHrs: number; carbsG: number } {
+  const { volumeKg, durationMin, intensity, recovery } = args;
+  return {
+    proteinTargetAddG: Math.round(15 + volumeKg*0.015*intensity),
+    waterAddMl: Math.round(500 + durationMin*8*intensity),
+    sleepTargetHrs: Math.round((8 + (volumeKg>5000?1:volumeKg>2000?0.5:0) + (recovery<60?0.5:0))*10)/10,
+    carbsG: Math.round(60 + volumeKg*0.01*intensity),
+  };
+}
