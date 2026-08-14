@@ -325,6 +325,40 @@ export default function ProjectDrill() {
               </button>
             </div>
             {project.milestones.filter(m=>m.date).length >= 2 && <GanttMini milestones={project.milestones} color={project.color}/>}
+            {project.milestones.filter(m=>m.date).length >= 2 && (() => {
+              // Critical path = longest chain of dated milestones; float = days ahead/behind.
+              const dated = project.milestones.filter(m=>m.date).sort((a,b)=>a.date!.localeCompare(b.date!));
+              const todayStr = today();
+              const next = dated.find(m=>!m.done && m.date);
+              const lastDone = [...dated].reverse().find(m=>m.done);
+              const total = dated.length;
+              const done = dated.filter(m=>m.done).length;
+              let slip = 0;
+              if (lastDone && dated.indexOf(lastDone)>=0){
+                // compare actual completion vs planned order: if we're at milestone idx k, expected next by dated[k].date
+                const k = dated.indexOf(lastDone);
+                const expectedNext = dated[k+1];
+                if (expectedNext && expectedNext.date && todayStr > expectedNext.date) {
+                  slip = Math.floor((new Date(todayStr).getTime()-new Date(expectedNext.date).getTime())/86400000);
+                }
+              }
+              return (
+                <div className="grid grid-cols-3 gap-2 mt-3">
+                  <div className="p-2 rounded-sm text-center" style={{background:"var(--fr-card2)",border:"1px solid var(--fr-borderSoft)"}}>
+                    <div className="mono text-[8px] tracking-widest" style={{color:"var(--fr-fgMuted)"}}>MILESTONES</div>
+                    <div className="font-black text-lg">{done}/{total}</div>
+                  </div>
+                  <div className="p-2 rounded-sm text-center" style={{background:next?"var(--fr-card2)":"rgba(34,197,94,0.08)",border:`1px solid ${next?"var(--fr-borderSoft)":"var(--fr-green)"}`}}>
+                    <div className="mono text-[8px] tracking-widest" style={{color:"var(--fr-fgMuted)"}}>NEXT DUE</div>
+                    <div className="font-black text-sm truncate" style={{color:next?"var(--fr-fg)":"var(--fr-green)"}}>{next?`${next.title||"—"} · ${next.date}`:"ALL CLEAR"}</div>
+                  </div>
+                  <div className="p-2 rounded-sm text-center" style={{background:slip>0?"rgba(239,68,68,0.1)":"var(--fr-card2)",border:`1px solid ${slip>0?"rgba(239,68,68,0.5)":"var(--fr-borderSoft)"}`}}>
+                    <div className="mono text-[8px] tracking-widest" style={{color:"var(--fr-fgMuted)"}}>SLIP</div>
+                    <div className="font-black text-lg" style={{color:slip>0?"var(--fr-red)":"var(--fr-green)"}}>{slip>0?`+${slip}d`:"ON TIME"}</div>
+                  </div>
+                </div>
+              );
+            })()}
           </SectionPlate>
 
           <SectionPlate icon={<AlertTriangle size={14}/>} title="PREMORTEM (5 FAILURES)" color="#ef4444" className="md:col-span-2">
