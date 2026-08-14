@@ -458,3 +458,20 @@ Phased implementation waves (planned):
 
 *This doc is the source of truth for Health v1.0 scope. Each wave ships as an
 incremental commit to the `health` branch, merge to `main` only after user approval.*
+
+---
+
+## Build status
+
+| Wave | Name | Status | Commit |
+|---|---|---|---|
+| 0 (docs) | Spec, research, arch/algorithms/data-model docs | ✅ | `9ac7369`, `de125c5` |
+| 1 (shell) | types, store slice, HealthShell, 10 FULLSCREEN routes, EkgFlash, HealthHotkeys, Triage live-KPIs, Lab profile editor | ✅ | `c8f0b10` |
+| 2 (core food+water) | meals timeline, macros sliders, 80-dish Indian food lib, repeat-yesterday, 8-glass hydration, dynamic water goal | ❌ next |
+| 3 (sleep+supps) | sleep log, sleep bank, routines, supp log, 🇮🇳 deficiency badges | ❌ |
+| 4 (physique core) | Navy BF%, tape measurements, photo capture | ❌ |
+| 5 (vitals+mind) | HR/BP, symptom log, mood/stress, burnout flag | ❌ |
+| 6 (reports) | timeline, weekly/monthly reports, CSV/JSON export | ❌ |
+| 7 (workout bridge deep) | TDEE reverse-eng, pre/post-wo cards, S:W ratios, recovery score, sync toggle wiring | ❌ |
+| 8 (v1.1 niceties) | restaurant mode, recipes, meal planner, meal prep, advanced micros, bloodwork | ❌ |
+| 9 (QA+polish) | bug sweep, tsc/build/smoke gates, CLINIC light pass, a11y, pre-merge QA → main | ❌ |
