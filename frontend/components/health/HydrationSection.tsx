@@ -14,7 +14,7 @@
 import { useMemo, useState, useEffect } from "react";
 import { Droplets, Coffee, Plus, Undo2, AlertTriangle, CheckCircle2, GlassWater } from "lucide-react";
 import { useStore } from "../../lib/store";
-import { waterGoalMl, formatMl } from "../../lib/healthAnalytics";
+import { waterGoalMl, formatMl, sipSuggestion } from "../../lib/healthAnalytics";
 import type { WaterEntry } from "../../lib/healthTypes";
 
 type Bev = "water" | "coconut" | "coffee" | "tea" | "juice" | "soda" | "sports" | "milk" | "lassi" | "ors" | "alcohol" | "other";
@@ -149,6 +149,9 @@ export default function HydrationSection() {
   const lateCaffeine = now.getHours() >= 16 && caffeineMg > 0;
   const overCaffeine = caffeineMg > 350;
 
+  // Wave 8A — hourly sip suggestion (linear pace 7:00→23:00)
+  const sip = sipSuggestion(totalMl, goal, now.getHours() + now.getMinutes() / 60);
+
   return (
     <div style={{display:"flex", flexDirection:"column", gap:18}}>
       {/* Summary */}
@@ -170,6 +173,11 @@ export default function HydrationSection() {
         <div style={{height:8, background:"var(--hlth-card2)", borderRadius:4, overflow:"hidden", marginTop:14}}>
           <div style={{height:"100%", width:`${pct}%`, background:"linear-gradient(90deg, #3b82f6, #06b6d4)", transition:"width 0.4s", boxShadow:"0 0 12px rgba(59,130,246,0.5)"}}/>
         </div>
+        {sip && (
+          <div style={{display:"flex", alignItems:"center", gap:8, marginTop:10, padding:"8px 10px", borderRadius:6, background:"rgba(59,130,246,0.1)", border:"1px solid rgba(59,130,246,0.3)", color:"#60a5fa", fontFamily:"var(--hlth-font-mono)", fontSize:11}}>
+            <GlassWater size={14}/> Sip pace: drink ~{sip.ml}ml by {sip.byHour > 12 ? `${sip.byHour-12}pm` : `${sip.byHour}am`} to stay on track.
+          </div>
+        )}
         {lateCaffeine && (
           <div style={{display:"flex", alignItems:"center", gap:8, marginTop:10, padding:"8px 10px", borderRadius:6, background:"rgba(245,158,11,0.1)", border:"1px solid rgba(245,158,11,0.3)", color:"#f59e0b", fontFamily:"var(--hlth-font-mono)", fontSize:11}}>
             <AlertTriangle size={14}/> Caffeine after 4pm may disturb sleep tonight.

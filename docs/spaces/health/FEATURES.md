@@ -69,12 +69,12 @@ library saved from history, common South Indian meals pre-seeded.
 | 02 | Per-meal: food name, kcal, meal time, photo attach (local, dataURL)                     | ❌     | |
 | 03 | "Repeat yesterday" button — copies previous day's meals &amp; kcal in one tap             | ❌     | |
 | 04 | "Repeat last week same day" button                                                      | ❌     | |
-| 05 | Custom Food Library — 20 most-frequent meals auto-tracked, pinable                      | ❌     | Pick from dropdown to pre-fill kcal+macros |
+| 05 | Custom Food Library — 20 most-frequent meals auto-tracked, pinable                      | ✅     | Pick from dropdown to pre-fill kcal+macros |
 | 06 | 🇮🇳 **Indian Food Database** — 80+ pre-seeded common dishes (idli, dosa, sambar rice, biryani, parotta, chappathi, kurma, pongal, poori, curd rice, lemon rice, rasam rice, chaat, chai/filter coffee, lassi, sweets, chicken 65, mutton curry, egg curry, fish curry, thali sets, etc.) with rough kcal+macros per serving | ❌ | 🌏 Chennai / TN essentials pre-seeded |
 | 07 | **Restaurant Mode** — save meals from specific Chennai eateries (Saravana Bhavan, Murugan Idli, local messes, Domino's, KFC) with rough kcal 🌏 | ❌ | Next visit auto-fills |
-| 08 | **Macro rough sliders** — 3 sliders (Carbs/Protein/Fats g) that auto-total to logged kcal. Drag one, the others readjust proportionally to kcal target | ❌ | Core "no food scale" UX |
-| 09 | Macro pie/donut chart — actual vs target                                                | ❌     | |
-| 10 | Macro target presets: Balanced (40/30/30), Cut (30/40/30), Bulk (50/30/20), Keto (10/25/65), Custom | ❌     | |
+| 08 | **Macro rough sliders** — 3 sliders (Carbs/Protein/Fats g) that auto-total to logged kcal. Drag one, the others readjust proportionally to kcal target | ✅ | Core "no food scale" UX |
+| 09 | Macro pie/donut chart — actual vs target                                                | ✅     | |
+| 10 | Macro target presets: Balanced (40/30/30), Cut (30/40/30), Bulk (50/30/20), Keto (10/25/65), Custom | ✅     | |
 | 11 | Fiber target &amp; tracker (g) against goal (default 30g/day, ICMR)                       | ❌     | |
 | 12 | Added sugar tracker (g) against WHO goal (&lt;25g/day)                                    | ❌     | |
 | 13 | Sodium tracker (mg) against 2300 mg cap; warn &gt; 1500 mg with Chennai sweating note    | ❌     | 🌏 Electrolyte loss in sweat → need Na intake |
@@ -90,14 +90,14 @@ library saved from history, common South Indian meals pre-seeded.
 | 23 | Antioxidant tracker — berries/dark chocolate/green tea/turmeric/dark greens quick-log   | ❌     | 🌏 Turmeric = Indian dietary staple, track for awareness |
 | 24 | Probiotic tracker — curd/yogurt, lassi, kefir, sauerkraut, kanji, pickles                | ❌     | 🌏 Curd rice / thayir sadam staple |
 | 25 | Prebiotic tracker — onion, garlic, raw banana, leek, asparagus, oats, bananas            | ❌     | |
-| 26 | **Intermittent Fasting timer/clock** — visual 24h ring with eating window colored green, fasting blue. Set start/end hours (default 12:00–20:00 = 16:8). Shows countdown to next meal or window close | ❌ | TRE 16/8 evidence-supported as fat-loss w/ muscle retention for trained young males (Moro 2016) |
-| 27 | Fasting window presets: 16:8, 18:6, 14:10, OMAD 23:1, Custom                            | ❌     | |
-| 28 | Fast-streak counter (consecutive days meeting window)                                   | ❌     | |
+| 26 | **Intermittent Fasting timer/clock** — visual 24h ring with eating window colored green, fasting blue. Set start/end hours (default 12:00–20:00 = 16:8). Shows countdown to next meal or window close | ✅ | TRE 16/8 evidence-supported as fat-loss w/ muscle retention for trained young males (Moro 2016) |
+| 27 | Fasting window presets: 16:8, 18:6, 14:10, OMAD 23:1, Custom                            | ✅     | |
+| 28 | Fast-streak counter (consecutive days meeting window)                                   | ✅     | |
 | 29 | **Sugar Spike Estimator** — per meal log Carb Quality (Simple / Complex / Mixed) + Protein/Fat pairing (none/some/high) → Low/Med/High spike risk score | ❌ | Uses glycemic-load heuristic, not medical grade |
 | 30 | Glycemic awareness nudge: "Complex carb + protein = lower spike"                        | ❌     | |
-| 31 | Social meal flag (ate with others checkbox) — mood/social correlation                   | ❌     | |
-| 32 | Cheat meal flag + reason tag (celebratory / stress / craving / social)                  | ❌     | |
-| 33 | Cheat-day guilt-reset button ("No guilt. Log it. Move on.")                              | ❌     | Psychology-first |
+| 31 | Social meal flag (ate with others checkbox) — mood/social correlation                   | ✅     | |
+| 32 | Cheat meal flag + reason tag (celebratory / stress / craving / social)                  | ✅     | |
+| 33 | Cheat-day guilt-reset button ("No guilt. Log it. Move on.")                              | ✅     | Psychology-first |
 | 34 | **Recipe storage** — name, ingredients list, portions, prep time, kcal/macros/serving   | ❌     | Pick recipe from library → pre-fills meal entry |
 | 35 | Recipe Nutrition Analyzer — paste ingredients+quantities → totals per serving (uses built-in food DB) | ❌ | |
 | 36 | **Meal Prep Planner** — weekly view to plan meals, check off when prepped, prep-day template (Sunday common for students/workers) | ❌ | |
@@ -108,7 +108,7 @@ library saved from history, common South Indian meals pre-seeded.
 | 41 | Pre-workout meal flag + post-workout meal flag; auto-assigns post-workout window (1-2h post) | ❌  | Workout sync |
 | 42 | Pre-workout meal effectiveness tracker — logs perceived workout energy (1-10) correlating with pre-wo macros | ❌ | Workout sync |
 | 43 | Post-workout meal timing tracker — did protein hit within 2h window                      | ❌     | Evidence: full-day protein dominates over "anabolic window" for trained lifters; tracker kept as awareness not prescription |
-| 44 | Food photography attachment — local file storage (dataURL/IndexedDB); one-tap per meal   | ❌     | Offline-first |
+| 44 | Food photography attachment — local file storage (dataURL/IndexedDB); one-tap per meal   | ✅     | Offline-first |
 | 45 | Photo timestamp + meal-tag; gallery view                                                | ❌     | |
 | 46 | Calorie/Macro "weekly average" view (smoothes out day-to-day noise)                     | ❌     | |
 | 47 | Macro timing overlay — shows macros distribution across day vs workout time              | ❌     | Workout sync |
@@ -129,7 +129,7 @@ for Chennai region, but user-configurable.
 | 01 | 8-glass visual grid (click to fill blue, reset at midnight Chennai-time IST)            | ❌     | Default 250ml per glass; customize size |
 | 02 | Water intake total (ml) with customizable daily goal (default computed: weight-based)   | ❌     | 35ml × weight kg baseline; +10% Chennai climate multiplier 🌏 |
 | 03 | **Dynamic hydration target** — weight (kg) × 35ml + workout + climate multiplier        | ❌     | Algorithm: base 35ml/kg; +500ml per 30min cardio/resistance; +300ml if temp &gt;32°C; +200ml if humidity &gt;70% |
-| 04 | Hourly sip suggestion card ("Drink ~250ml by 3pm" based on gap from last log)           | ❌     | |
+| 04 | Hourly sip suggestion card ("Drink ~250ml by 3pm" based on gap from last log)           | ✅     | |
 | 05 | Beverage types logged separately: Water / Coconut water / Coffee / Tea / Juice / Soda / Sports drink / Milk / Lassi / Other 🌏 | ❌     | Hydration coefficients (coffee ~0.85 net, alcohol negative, etc.) |
 | 06 | Net hydration tally (water − diuretic-adjusted)                                         | ❌     | |
 | 07 | **Electrolyte toggle** per drink (did it contain electrolytes? coconut water = yes, ORS = yes, sports drink = yes) | ❌ | Critical for Chennai lifting |

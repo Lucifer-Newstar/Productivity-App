@@ -9,14 +9,26 @@
  *  - Daily totals: kcal, protein/carbs/fat
  *  - Repeat yesterday button
  *  - Macro pie/donut visualisation (SVG)
+ *
+ * Wave 8A additions:
+ *  - Macro rough sliders (C/P/F % always sum 100) + presets (Balanced/Cut/Bulk/Keto)
+ *  - Actual-vs-target gram bars driven by the kcal budget
+ *  - Intermittent-fasting ring clock (FastingClock) + fast streak
+ *  - Frequent-foods library (auto top-20 + pin, one-tap re-log)
+ *  - Social / cheat meal flags with reason tag + guilt-reset
+ *  - Meal time field (feeds fast streak) + meal photo attach (dataURL)
  */
 
-import { useMemo, useState } from "react";
-import { Repeat, Plus, Trash2, Search, Utensils, Coffee, Moon, Sun, Cookie } from "lucide-react";
+import { useMemo, useRef, useState } from "react";
+import { Repeat, Plus, Trash2, Search, Utensils, Coffee, Moon, Sun, Cookie, Users, Pizza, Camera, X, Pin, Star } from "lucide-react";
 import { useStore } from "../../lib/store";
 import { FOOD_DB, searchFoods, type FoodEntry } from "../../lib/healthFoodDb";
-import { formatKcal, tdee } from "../../lib/healthAnalytics";
+import {
+  formatKcal, tdee, rebalanceMacros, macroGramTargets, frequentFoods,
+} from "../../lib/healthAnalytics";
+import { MACRO_PRESETS, type MacroPresetId } from "../../lib/healthTypes";
 import type { MealEntry, MealItem } from "../../lib/healthTypes";
+import FastingClock from "./FastingClock";
 
 type Slot = "breakfast" | "lunch" | "dinner" | "snack";
 const SLOTS: { id: Slot; label: string; icon: React.ReactNode; color: string }[] = [
@@ -81,6 +93,125 @@ function MacroDonut({ carbs, protein, fat, kcal }: { carbs: number; protein: num
             <span style={{minWidth:62, color:"var(--hlth-fg)"}}>{s.label}</span>
             <span style={{color:"var(--hlth-muted)"}}>{Math.round(s.value)}g</span>
           </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/** Wave 8A — macro rough sliders (always sum 100%) + preset chips + target bars. */
+function MacroSliders({ totals, targetKcal }: { totals: { kcal: number; carbsG: number; proteinG: number; fatG: number }; targetKcal: number }) {
+  const { health, updateHealth } = useStore();
+  const p = health.profile;
+  const pct = { c: p.macroCarbsPct ?? 40, p: p.macroProteinPct ?? 30, f: p.macroFatPct ?? 30 };
+  const grams = macroGramTargets(targetKcal, pct.c, pct.p, pct.f);
+  const preset = p.macroPreset ?? "balanced";
+
+  const write = (next: { c: number; p: number; f: number }, presetId: MacroPresetId) => {
+    updateHealth(() => ({
+      profile: { ...p, macroPreset: presetId, macroCarbsPct: next.c, macroProteinPct: next.p, macroFatPct: next.f },
+    }));
+  };
+  const onSlide = (axis: "c" | "p" | "f", v: number) => write(rebalanceMacros(pct, axis, v), "custom");
+  const onPreset = (id: Exclude<MacroPresetId, "custom">) => {
+    const m = MACRO_PRESETS[id];
+    write({ c: m.c, p: m.p, f: m.f }, id);
+  };
+
+  const rows: { axis: "c" | "p" | "f"; label: string; color: string; actual: number; target: number }[] = [
+    { axis: "c", label: "Carbs",   color: "#f59e0b", actual: totals.carbsG,   target: grams.carbsG },
+    { axis: "p", label: "Protein", color: "#10b981", actual: totals.proteinG, target: grams.proteinG },
+    { axis: "f", label: "Fat",     color: "#ef4444", actual: totals.fatG,     target: grams.fatG },
+  ];
+
+  return (
+    <div className="hlth-card" style={{ padding: "14px 16px" }}>
+      <div className="hlth-card-h">MACRO TARGETS · rough sliders — always 100%</div>
+      <div style={{ display: "flex", gap: 6, flexWrap: "wrap", margin: "8px 0 12px" }}>
+        {(Object.keys(MACRO_PRESETS) as Exclude<MacroPresetId, "custom">[]).map(id => (
+          <button key={id} className="hlth-btn hlth-btn-ghost" onClick={() => onPreset(id)}
+            style={{
+              padding: "5px 10px", fontSize: 10,
+              ...(preset === id ? { borderColor: "var(--hlth-accent)", color: "var(--hlth-accent-glow)", background: "rgba(163,230,53,0.08)" } : {}),
+            }}>
+            {MACRO_PRESETS[id].label} {MACRO_PRESETS[id].c}/{MACRO_PRESETS[id].p}/{MACRO_PRESETS[id].f}
+          </button>
+        ))}
+        {preset === "custom" && (
+          <span style={{ alignSelf: "center", fontFamily: "var(--hlth-font-mono)", fontSize: 10, color: "var(--hlth-accent-glow)", letterSpacing: "0.1em" }}>
+            CUSTOM {pct.c}/{pct.p}/{pct.f}
+          </span>
+        )}
+      </div>
+      <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+        {rows.map(r => {
+          const fillPct = r.target > 0 ? Math.min(100, Math.round(r.actual / r.target * 100)) : 0;
+          const over = r.target > 0 && r.actual > r.target * 1.1;
+          return (
+            <div key={r.axis}>
+              <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                <span style={{ minWidth: 58, fontFamily: "var(--hlth-font-mono)", fontSize: 11, color: r.color, fontWeight: 700 }}>{r.label}</span>
+                <input type="range" min={0} max={100} value={pct[r.axis]}
+                  onChange={e => onSlide(r.axis, +e.target.value)}
+                  style={{ flex: 1, accentColor: r.color }} />
+                <span style={{ minWidth: 38, textAlign: "right", fontFamily: "var(--hlth-font-mono)", fontSize: 12, color: "var(--hlth-fg)", fontWeight: 700 }}>{pct[r.axis]}%</span>
+              </div>
+              <div style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 3 }}>
+                <span style={{ minWidth: 58 }} />
+                <div style={{ flex: 1, height: 5, borderRadius: 3, background: "rgba(148,163,184,0.15)", overflow: "hidden" }}>
+                  <div style={{ width: `${fillPct}%`, height: "100%", background: r.color, opacity: 0.8, transition: "width 0.3s" }} />
+                </div>
+                <span style={{ minWidth: 110, textAlign: "right", fontFamily: "var(--hlth-font-mono)", fontSize: 10, color: over ? "#ef4444" : "var(--hlth-muted)" }}>
+                  {Math.round(r.actual)}g / {r.target}g{over ? " ▲" : ""}
+                </span>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+      <div className="hlth-subtle" style={{ fontSize: 9, letterSpacing: "0.1em", marginTop: 10, opacity: 0.7 }}>
+        gram targets derive from {formatKcal(targetKcal)} kcal budget · 4/4/9 kcal per g
+      </div>
+    </div>
+  );
+}
+
+/** Wave 8A — frequent foods library: auto top-20 + pinnable, one-tap re-log. */
+function FrequentFoodsStrip({ onLog }: { onLog: (name: string, kcal: number, c: number, p: number, f: number) => void }) {
+  const { health, updateHealth } = useStore();
+  const foods = useMemo(
+    () => frequentFoods(health.meals, health.pinnedFoods ?? [], 20),
+    [health.meals, health.pinnedFoods],
+  );
+  if (foods.length === 0) return null;
+  const togglePin = (name: string) => {
+    updateHealth(h => {
+      const cur = h.pinnedFoods ?? [];
+      const has = cur.some(x => x.toLowerCase() === name.toLowerCase());
+      return { pinnedFoods: has ? cur.filter(x => x.toLowerCase() !== name.toLowerCase()) : [...cur, name] };
+    });
+  };
+  return (
+    <div className="hlth-card" style={{ padding: "14px 16px" }}>
+      <div className="hlth-card-h" style={{ display: "flex", alignItems: "center", gap: 6 }}>
+        <Star size={12} /> YOUR TOP FOODS · tap to log to snacks · pin favourites
+      </div>
+      <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginTop: 8 }}>
+        {foods.map(f => (
+          <span key={f.name} style={{
+            display: "inline-flex", alignItems: "center", gap: 6,
+            background: "var(--hlth-card2)", border: `1px solid ${f.pinned ? "var(--hlth-accent)" : "var(--hlth-border-soft)"}`,
+            borderRadius: 999, padding: "4px 6px 4px 10px", fontSize: 11,
+          }}>
+            <button onClick={() => onLog(f.name, f.kcal, f.carbsG, f.proteinG, f.fatG)}
+              style={{ background: "transparent", border: "none", color: "var(--hlth-fg)", cursor: "pointer", fontWeight: 600, fontSize: 11, padding: 0, fontFamily: "inherit" }}>
+              {f.name} <span style={{ fontFamily: "var(--hlth-font-mono)", fontSize: 9, color: "var(--hlth-accent-glow)" }}>{f.kcal}kc·×{f.count}</span>
+            </button>
+            <button onClick={() => togglePin(f.name)} title={f.pinned ? "Unpin" : "Pin"}
+              style={{ background: "transparent", border: "none", cursor: "pointer", padding: 2, color: f.pinned ? "var(--hlth-accent-glow)" : "var(--hlth-muted)", display: "inline-flex" }}>
+              <Pin size={10} style={f.pinned ? { fill: "currentColor" } : undefined} />
+            </button>
+          </span>
         ))}
       </div>
     </div>
@@ -234,8 +365,11 @@ export default function FuelSection() {
   const persist = (nextSlots: Record<Slot, MealEntry>) => {
     updateHealth(h => {
       const otherDays = h.meals.filter(m => m.date !== today);
-      const todaysWithItems = Object.values(nextSlots).filter(m => m.items.length > 0);
-      return { meals: [...otherDays, ...todaysWithItems] };
+      // Keep slots that have items OR wave-8A metadata (time/flags/photo).
+      const todaysWithData = Object.values(nextSlots).filter(
+        m => m.items.length > 0 || m.time || m.social || m.cheat || m.photoDataUrl,
+      );
+      return { meals: [...otherDays, ...todaysWithData] };
     });
   };
 
@@ -266,6 +400,25 @@ export default function FuelSection() {
     const next = { ...todaysMeals };
     next[slot] = { ...next[slot], items: next[slot].items.filter(i => i.id !== itemId) };
     persist(next);
+  };
+
+  // Wave 8A — meal-level metadata (time, social, cheat + reason, photo).
+  const patchMeal = (slot: Slot, patch: Partial<MealEntry>) => {
+    const next = { ...todaysMeals };
+    next[slot] = { ...next[slot], ...patch };
+    persist(next);
+  };
+
+  const attachPhoto = (slot: Slot, file: File) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      if (typeof reader.result === "string") patchMeal(slot, { photoDataUrl: reader.result });
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const logFrequent = (name: string, kcal: number, c: number, p: number, f: number) => {
+    addManualToSlot("snack", name, kcal, c, p, f);
   };
 
   const repeatYesterday = () => {
@@ -318,6 +471,15 @@ export default function FuelSection() {
         </div>
       </div>
 
+      {/* Wave 8A — fasting ring clock + macro sliders */}
+      <div style={{display:"grid", gridTemplateColumns:"repeat(auto-fit, minmax(340px, 1fr))", gap:14}}>
+        <FastingClock/>
+        <MacroSliders totals={totals} targetKcal={targetKcal}/>
+      </div>
+
+      {/* Wave 8A — frequent foods library */}
+      <FrequentFoodsStrip onLog={logFrequent}/>
+
       {/* Meal slots */}
       <div style={{display:"flex", flexDirection:"column", gap:14}}>
         {SLOTS.map(s => {
@@ -358,6 +520,65 @@ export default function FuelSection() {
                     onCancel={()=>setManualFor(null)}/>
                 </div>
               )}
+
+              {/* Wave 8A — meal meta row: time · social · cheat(+reason) · photo */}
+              <div style={{
+                display:"flex", alignItems:"center", gap:10, flexWrap:"wrap", marginBottom:8,
+                fontFamily:"var(--hlth-font-mono)", fontSize:10, color:"var(--hlth-muted)", letterSpacing:"0.06em",
+              }}>
+                <label style={{display:"inline-flex", alignItems:"center", gap:5}}>
+                  TIME
+                  <input type="time" value={meal.time ?? ""}
+                    onChange={e=>patchMeal(s.id, { time: e.target.value || undefined })}
+                    style={{background:"var(--hlth-card2)", color:"var(--hlth-fg)", border:"1px solid var(--hlth-border-soft)", borderRadius:4, padding:"3px 6px", fontFamily:"var(--hlth-font-mono)", fontSize:10}}/>
+                </label>
+                <label style={{display:"inline-flex", alignItems:"center", gap:4, cursor:"pointer", color: meal.social ? "#60a5fa" : "var(--hlth-muted)"}}>
+                  <input type="checkbox" checked={!!meal.social}
+                    onChange={e=>patchMeal(s.id, { social: e.target.checked || undefined })}
+                    style={{accentColor:"#60a5fa"}}/>
+                  <Users size={10}/> SOCIAL
+                </label>
+                <label style={{display:"inline-flex", alignItems:"center", gap:4, cursor:"pointer", color: meal.cheat ? "#f59e0b" : "var(--hlth-muted)"}}>
+                  <input type="checkbox" checked={!!meal.cheat}
+                    onChange={e=>patchMeal(s.id, { cheat: e.target.checked || undefined, cheatReason: e.target.checked ? meal.cheatReason : undefined })}
+                    style={{accentColor:"#f59e0b"}}/>
+                  <Pizza size={10}/> CHEAT
+                </label>
+                {meal.cheat && (
+                  <>
+                    <select value={meal.cheatReason ?? ""}
+                      onChange={e=>patchMeal(s.id, { cheatReason: (e.target.value || undefined) as MealEntry["cheatReason"] })}
+                      style={{background:"var(--hlth-card2)", color:"var(--hlth-fg)", border:"1px solid var(--hlth-border-soft)", borderRadius:4, padding:"3px 6px", fontFamily:"var(--hlth-font-mono)", fontSize:10}}>
+                      <option value="">why?</option>
+                      <option value="celebratory">celebratory</option>
+                      <option value="stress">stress</option>
+                      <option value="craving">craving</option>
+                      <option value="social">social</option>
+                    </select>
+                    <button className="hlth-btn hlth-btn-ghost" style={{padding:"3px 8px", fontSize:9}}
+                      onClick={()=>patchMeal(s.id, { cheat: undefined, cheatReason: undefined })}
+                      title="No guilt. Log it. Move on.">
+                      NO GUILT · RESET
+                    </button>
+                  </>
+                )}
+                <label style={{display:"inline-flex", alignItems:"center", gap:4, cursor:"pointer"}}>
+                  <Camera size={10}/> {meal.photoDataUrl ? "RETAKE" : "PHOTO"}
+                  <input type="file" accept="image/*" capture="environment" style={{display:"none"}}
+                    onChange={e=>{ const f = e.target.files?.[0]; if (f) attachPhoto(s.id, f); e.currentTarget.value=""; }}/>
+                </label>
+                {meal.photoDataUrl && (
+                  <span style={{position:"relative", display:"inline-flex"}}>
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={meal.photoDataUrl} alt={`${s.label} photo`}
+                      style={{width:34, height:34, objectFit:"cover", borderRadius:6, border:"1px solid var(--hlth-border-soft)"}}/>
+                    <button onClick={()=>patchMeal(s.id, { photoDataUrl: undefined })}
+                      style={{position:"absolute", top:-6, right:-6, background:"var(--hlth-card)", border:"1px solid var(--hlth-border-soft)", borderRadius:"50%", width:14, height:14, display:"inline-flex", alignItems:"center", justifyContent:"center", cursor:"pointer", color:"var(--hlth-muted)", padding:0}}>
+                      <X size={8}/>
+                    </button>
+                  </span>
+                )}
+              </div>
 
               {meal.items.length === 0 ? (
                 <div style={{padding:"16px 10px", textAlign:"center", fontFamily:"var(--hlth-font-mono)", fontSize:11, color:"var(--hlth-muted)", letterSpacing:"0.1em", border:"1px dashed var(--hlth-border-soft)", borderRadius:8}}>

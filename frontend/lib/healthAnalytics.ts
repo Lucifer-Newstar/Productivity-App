@@ -985,3 +985,158 @@ export function postWorkoutRecoveryNeeds(args: {
     carbsG: Math.round(60 + volumeKg*0.01*intensity),
   };
 }
+
+// ---------------- Wave 8A — FUEL core UX ----------------
+
+/** Fasting window state at a given time (hours since midnight, fractional). */
+export interface FastingWindowState {
+  inWindow: boolean;
+  /** Hours until the window opens (if fasting) or closes (if eating). */
+  hoursToNext: number;
+  /** Label of the next transition ("opens" | "closes"). */
+  next: "opens" | "closes";
+  /** Window length in hours (eating side). */
+  eatingHours: number;
+  fastingHours: number;
+}
+
+/**
+ * Fasting/eating-window state. Handles windows that cross midnight
+ * (e.g. start 20, end 4). `nowHours` = current time as fractional hours.
+ */
+export function fastingWindowState(startHour: number, endHour: number, nowHours: number): FastingWindowState {
+  const norm = (h: number) => ((h % 24) + 24) % 24;
+  const s = norm(startHour), e = norm(endHour), n = norm(nowHours);
+  const eatingHours = norm(e - s) || 24;
+  const fastingHours = 24 - eatingHours;
+  const inWindow = s <= e ? (n >= s && n < e) : (n >= s || n < e);
+  const until = (target: number) => norm(target - n) || 24;
+  return inWindow
+    ? { inWindow, hoursToNext: until(e), next: "closes", eatingHours, fastingHours }
+    : { inWindow, hoursToNext: until(s), next: "opens", eatingHours, fastingHours };
+}
+
+/**
+ * Fast-streak: consecutive days (ending yesterday or today) where every meal
+ * with a time fell inside the eating window. Days with no timed meals count
+ * as compliant only if they have at least one meal logged.
+ */
+export function fastStreak(meals: MealEntry[], startHour: number, endHour: number, todayIso: string): number {
+  const byDate = new Map<string, MealEntry[]>();
+  for (const m of meals) {
+    if (!byDate.has(m.date)) byDate.set(m.date, []);
+    byDate.get(m.date)!.push(m);
+  }
+  const dayCompliant = (date: string): boolean | null => {
+    const dm = byDate.get(date);
+    if (!dm || dm.length === 0) return null; // no data — breaks streak walk
+    for (const meal of dm) {
+      if (!meal.time) continue;
+      const [hh, mm] = meal.time.split(":").map(Number);
+      const t = (hh ?? 0) + (mm ?? 0) / 60;
+      const st = fastingWindowState(startHour, endHour, t);
+      if (!st.inWindow) return false;
+    }
+    return true;
+  };
+  let streak = 0;
+  const d = new Date(todayIso + "T00:00:00");
+  // Today may still be in progress: count it if compliant, else start from yesterday.
+  for (let i = 0; i < 365; i++) {
+    const iso = new Date(d.getTime() - i * 86_400_000).toISOString().slice(0, 10);
+    const c = dayCompliant(iso);
+    if (c === true) streak++;
+    else if (c === false) break;
+    else if (i === 0) continue; // today unlogged — look back
+    else break;
+  }
+  return streak;
+}
+
+/** Macro percent triple that always sums to 100. Adjust one axis, others scale. */
+export function rebalanceMacros(
+  current: { c: number; p: number; f: number },
+  changed: "c" | "p" | "f",
+  newValue: number,
+): { c: number; p: number; f: number } {
+  const v = Math.max(0, Math.min(100, Math.round(newValue)));
+  const keys: ("c" | "p" | "f")[] = ["c", "p", "f"];
+  const others = keys.filter(k => k !== changed);
+  const rest = 100 - v;
+  const oldRest = others.reduce((n, k) => n + current[k], 0);
+  const out = { ...current, [changed]: v } as { c: number; p: number; f: number };
+  if (oldRest <= 0) {
+    // Split remainder evenly when the other two were both zero.
+    out[others[0]] = Math.floor(rest / 2);
+    out[others[1]] = rest - out[others[0]];
+  } else {
+    out[others[0]] = Math.round(rest * current[others[0]] / oldRest);
+    out[others[1]] = rest - out[others[0]];
+  }
+  return out;
+}
+
+/** Convert macro percents of a kcal budget into gram targets (4/4/9 kcal per g). */
+export function macroGramTargets(kcal: number, cPct: number, pPct: number, fPct: number): { carbsG: number; proteinG: number; fatG: number } {
+  return {
+    carbsG: Math.round((kcal * cPct / 100) / 4),
+    proteinG: Math.round((kcal * pPct / 100) / 4),
+    fatG: Math.round((kcal * fPct / 100) / 9),
+  };
+}
+
+/**
+ * Frequent-foods library: top-N item names by log count across all meals,
+ * with their most recent kcal/macros for one-tap re-log. Pinned names float
+ * to the top regardless of count.
+ */
+export interface FrequentFood {
+  name: string;
+  count: number;
+  kcal: number;
+  carbsG: number;
+  proteinG: number;
+  fatG: number;
+  pinned: boolean;
+}
+export function frequentFoods(meals: MealEntry[], pinned: string[] = [], topN = 20): FrequentFood[] {
+  const stats = new Map<string, { count: number; kcal: number; c: number; p: number; f: number; last: string }>();
+  for (const m of meals) {
+    for (const it of m.items) {
+      // Strip serving multipliers ("idli ×2" → "idli") so variants aggregate.
+      const key = it.name.replace(/\s*×[\d.]+\s*$/, "").trim();
+      if (!key) continue;
+      const prev = stats.get(key);
+      if (!prev) {
+        stats.set(key, { count: 1, kcal: it.kcal, c: it.carbsG ?? 0, p: it.proteinG ?? 0, f: it.fatG ?? 0, last: m.date });
+      } else {
+        prev.count++;
+        if (m.date >= prev.last) { prev.kcal = it.kcal; prev.c = it.carbsG ?? 0; prev.p = it.proteinG ?? 0; prev.f = it.fatG ?? 0; prev.last = m.date; }
+      }
+    }
+  }
+  const pinnedSet = new Set(pinned.map(p => p.toLowerCase()));
+  const rows: FrequentFood[] = Array.from(stats.entries()).map(([name, s]) => ({
+    name, count: s.count, kcal: s.kcal, carbsG: s.c, proteinG: s.p, fatG: s.f,
+    pinned: pinnedSet.has(name.toLowerCase()),
+  }));
+  rows.sort((a, b) => (Number(b.pinned) - Number(a.pinned)) || (b.count - a.count) || a.name.localeCompare(b.name));
+  return rows.slice(0, topN);
+}
+
+/**
+ * Hourly sip suggestion — how much to drink by the top of the next hour to
+ * stay on a linear pace toward the daily goal. Assumes a 7:00→23:00 drinking
+ * day (16h). Returns null before 7:00 or once the goal is met.
+ */
+export function sipSuggestion(loggedMl: number, goalMl: number, nowHours: number): { ml: number; byHour: number } | null {
+  if (goalMl <= 0 || loggedMl >= goalMl) return null;
+  const DAY_START = 7, DAY_END = 23;
+  if (nowHours < DAY_START) return null;
+  const h = Math.min(nowHours, DAY_END);
+  const nextHour = Math.min(Math.floor(h) + 1, DAY_END);
+  const targetByNextHour = goalMl * (nextHour - DAY_START) / (DAY_END - DAY_START);
+  const ml = Math.max(0, Math.round((targetByNextHour - loggedMl) / 50) * 50);
+  if (ml === 0) return null;
+  return { ml: Math.min(ml, 750), byHour: nextHour };
+}

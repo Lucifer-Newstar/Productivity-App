@@ -773,3 +773,146 @@ const s2=hStreak(fakeDays,d=>d.hasWorkout);
 assert(s2.current===0, "streak current counts consecutive from today backwards; broken correctly");
 
 console.log("\n>>> ALL EDGE SCENARIOS PASS");
+
+// ═══════════════════ WAVE 8A — FUEL core UX ═══════════════════
+section("Wave 8A — fasting window state");
+function fwState(startHour, endHour, nowHours) {
+  const norm = h => ((h % 24) + 24) % 24;
+  const s = norm(startHour), e = norm(endHour), n = norm(nowHours);
+  const eatingHours = norm(e - s) || 24;
+  const fastingHours = 24 - eatingHours;
+  const inWindow = s <= e ? (n >= s && n < e) : (n >= s || n < e);
+  const until = t => norm(t - n) || 24;
+  return inWindow
+    ? { inWindow, hoursToNext: until(e), next: "closes", eatingHours, fastingHours }
+    : { inWindow, hoursToNext: until(s), next: "opens", eatingHours, fastingHours };
+}
+let st = fwState(12, 20, 14);
+assert(st.inWindow && st.next === "closes" && Math.abs(st.hoursToNext - 6) < 1e-9, "16:8 at 2pm → eating, closes in 6h");
+st = fwState(12, 20, 8);
+assert(!st.inWindow && st.next === "opens" && Math.abs(st.hoursToNext - 4) < 1e-9, "16:8 at 8am → fasting, opens in 4h");
+st = fwState(12, 20, 22);
+assert(!st.inWindow && Math.abs(st.hoursToNext - 14) < 1e-9, "16:8 at 10pm → fasting, opens in 14h");
+st = fwState(20, 4, 22);
+assert(st.inWindow && st.eatingHours === 8, "cross-midnight window 20→04: 10pm inside, 8h window");
+st = fwState(20, 4, 10);
+assert(!st.inWindow && Math.abs(st.hoursToNext - 10) < 1e-9, "cross-midnight at 10am → fasting, opens in 10h");
+st = fwState(13, 14, 13.5);
+assert(st.inWindow && st.eatingHours === 1 && st.fastingHours === 23, "OMAD 13→14: inside, 23h fast");
+
+section("Wave 8A — macro rebalance (always sums 100)");
+function rebalance(cur, changed, val) {
+  const v = Math.max(0, Math.min(100, Math.round(val)));
+  const keys = ["c","p","f"], others = keys.filter(k => k !== changed);
+  const rest = 100 - v;
+  const oldRest = others.reduce((n,k)=>n+cur[k],0);
+  const out = { ...cur, [changed]: v };
+  if (oldRest <= 0) { out[others[0]] = Math.floor(rest/2); out[others[1]] = rest - out[others[0]]; }
+  else { out[others[0]] = Math.round(rest * cur[others[0]] / oldRest); out[others[1]] = rest - out[others[0]]; }
+  return out;
+}
+let m8 = rebalance({c:40,p:30,f:30}, "c", 50);
+assert(m8.c+m8.p+m8.f === 100, "drag carbs 40→50: sums to 100 (" + JSON.stringify(m8) + ")");
+assert(m8.p === 25 && m8.f === 25, "others scale proportionally (30/30 → 25/25)");
+m8 = rebalance({c:40,p:30,f:30}, "p", 60);
+assert(m8.c+m8.p+m8.f === 100 && m8.p === 60, "drag protein to 60 keeps sum 100");
+m8 = rebalance({c:100,p:0,f:0}, "c", 40);
+assert(m8.c+m8.p+m8.f === 100 && m8.p+m8.f === 60, "zero-others edge: remainder split evenly");
+m8 = rebalance({c:40,p:30,f:30}, "f", 0);
+assert(m8.c+m8.p+m8.f === 100 && m8.f === 0, "slider to 0 valid");
+m8 = rebalance({c:40,p:30,f:30}, "c", 100);
+assert(m8.c === 100 && m8.p === 0 && m8.f === 0, "slider to 100 zeroes others");
+
+section("Wave 8A — macro gram targets (4/4/9)");
+function gramTargets(kcal,c,p,f){ return { carbsG: Math.round((kcal*c/100)/4), proteinG: Math.round((kcal*p/100)/4), fatG: Math.round((kcal*f/100)/9) }; }
+const gt = gramTargets(2600, 40, 30, 30);
+assert(gt.carbsG === 260 && gt.proteinG === 195 && gt.fatG === 87, "2600kcal balanced → 260C/195P/87F g");
+const gk = gramTargets(2000, 10, 25, 65);
+assert(gk.carbsG === 50 && gk.proteinG === 125 && gk.fatG === 144, "2000kcal keto → 50C/125P/144F g");
+
+section("Wave 8A — frequent foods");
+function freqFoods(meals, pinned = [], topN = 20) {
+  const stats = new Map();
+  for (const mm of meals) for (const it of mm.items) {
+    const key = it.name.replace(/\s*×[\d.]+\s*$/, "").trim();
+    if (!key) continue;
+    const prev = stats.get(key);
+    if (!prev) stats.set(key, { count: 1, kcal: it.kcal, last: mm.date });
+    else { prev.count++; if (mm.date >= prev.last) { prev.kcal = it.kcal; prev.last = mm.date; } }
+  }
+  const pin = new Set(pinned.map(x=>x.toLowerCase()));
+  const rows = Array.from(stats.entries()).map(([name,s])=>({name,count:s.count,kcal:s.kcal,pinned:pin.has(name.toLowerCase())}));
+  rows.sort((a,b)=>(Number(b.pinned)-Number(a.pinned))||(b.count-a.count)||a.name.localeCompare(b.name));
+  return rows.slice(0,topN);
+}
+const mealsFx = [
+  { date:"2025-01-01", items:[{name:"idli ×2", kcal:120},{name:"dosa", kcal:180}] },
+  { date:"2025-01-02", items:[{name:"idli ×4", kcal:240},{name:"curd rice", kcal:300}] },
+  { date:"2025-01-03", items:[{name:"idli", kcal:60}] },
+];
+let ff = freqFoods(mealsFx);
+assert(ff[0].name === "idli" && ff[0].count === 3, "serving multipliers aggregate (idli ×2/×4/plain → 3 logs)");
+assert(ff[0].kcal === 60, "most recent kcal wins for re-log");
+ff = freqFoods(mealsFx, ["curd rice"]);
+assert(ff[0].name === "curd rice" && ff[0].pinned, "pinned food floats to top over higher count");
+
+section("Wave 8A — sip suggestion");
+function sip(logged, goal, nowH) {
+  if (goal <= 0 || logged >= goal) return null;
+  const S = 7, E = 23;
+  if (nowH < S) return null;
+  const h = Math.min(nowH, E);
+  const nx = Math.min(Math.floor(h) + 1, E);
+  const target = goal * (nx - S) / (E - S);
+  const ml = Math.max(0, Math.round((target - logged) / 50) * 50);
+  if (ml === 0) return null;
+  return { ml: Math.min(ml, 750), byHour: nx };
+}
+let sp = sip(0, 2700, 12);
+assert(sp && sp.byHour === 13 && sp.ml > 0, "noon, nothing logged → catch-up suggestion by 1pm");
+assert(sip(2700, 2700, 15) === null, "goal met → no nudge");
+assert(sip(500, 2700, 5) === null, "before 7am → no nudge");
+sp = sip(0, 8000, 22.5);
+assert(sp && sp.ml === 750, "huge gap capped at 750ml per suggestion");
+sp = sip(1400, 2700, 14.5);
+assert(sp === null || sp.ml <= 300, "on-pace logger gets small or no nudge");
+
+section("Wave 8A — fast streak");
+function fStreakQA(meals, s, e, todayIso) {
+  const byDate = new Map();
+  for (const mm of meals) { if (!byDate.has(mm.date)) byDate.set(mm.date, []); byDate.get(mm.date).push(mm); }
+  const dayOk = date => {
+    const dm = byDate.get(date);
+    if (!dm || dm.length === 0) return null;
+    for (const meal of dm) {
+      if (!meal.time) continue;
+      const [hh, mmn] = meal.time.split(":").map(Number);
+      const t = (hh??0) + (mmn??0)/60;
+      if (!fwState(s, e, t).inWindow) return false;
+    }
+    return true;
+  };
+  let streak = 0;
+  const d = new Date(todayIso + "T00:00:00");
+  for (let i = 0; i < 365; i++) {
+    const iso = new Date(d.getTime() - i*86400000).toISOString().slice(0,10);
+    const c = dayOk(iso);
+    if (c === true) streak++;
+    else if (c === false) break;
+    else if (i === 0) continue;
+    else break;
+  }
+  return streak;
+}
+const fsMeals = [
+  { date:"2025-06-01", time:"13:00", items:[{name:"x",kcal:1}] },
+  { date:"2025-06-02", time:"12:30", items:[{name:"x",kcal:1}] },
+  { date:"2025-06-03", time:"19:00", items:[{name:"x",kcal:1}] },
+];
+assert(fStreakQA(fsMeals, 12, 20, "2025-06-03") === 3, "3 compliant days → streak 3");
+const fsMeals2 = [...fsMeals, { date:"2025-06-04", time:"22:00", items:[{name:"late",kcal:1}] }];
+assert(fStreakQA(fsMeals2, 12, 20, "2025-06-04") === 0, "late meal today breaks streak to 0");
+assert(fStreakQA(fsMeals, 12, 20, "2025-06-04") === 3, "today unlogged → yesterday's streak survives");
+
+if (failures === 0) console.log("\n>>> WAVE 8A TESTS PASS");
+else { console.error(`\n${failures} FAILURE(S) (incl. wave 8A)`); process.exit(1); }

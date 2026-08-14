@@ -54,9 +54,34 @@ export interface HealthProfile {
   /** Eating window start/end (hours, 24h) for intermittent fasting visualiser. */
   eatingWindowStart: number; // default 12 (noon)
   eatingWindowEnd: number;   // default 20 (8pm) = 16:8
+  /** Fasting preset id driving the window (wave 8A). */
+  fastingPreset?: FastingPresetId; // default "16:8"
+  /** Macro target preset + custom percents (must sum to 100) (wave 8A). */
+  macroPreset?: MacroPresetId;     // default "balanced"
+  macroCarbsPct?: number;          // default 40
+  macroProteinPct?: number;        // default 30
+  macroFatPct?: number;            // default 30
   /** Optional PIN hash (dream journal + bloodwork lock). Stored locally only. */
   pinHash?: string;
 }
+
+// ---------------- Fasting & macro presets (wave 8A) ----------------
+
+export type FastingPresetId = "16:8" | "18:6" | "14:10" | "omad" | "custom";
+export const FASTING_PRESETS: Record<Exclude<FastingPresetId, "custom">, { label: string; start: number; end: number }> = {
+  "16:8":  { label: "16:8",   start: 12, end: 20 },
+  "18:6":  { label: "18:6",   start: 13, end: 19 },
+  "14:10": { label: "14:10",  start: 11, end: 21 },
+  "omad":  { label: "OMAD",   start: 13, end: 14 },
+};
+
+export type MacroPresetId = "balanced" | "cutting" | "bulking" | "keto" | "custom";
+export const MACRO_PRESETS: Record<Exclude<MacroPresetId, "custom">, { label: string; c: number; p: number; f: number }> = {
+  balanced: { label: "Balanced", c: 40, p: 30, f: 30 },
+  cutting:  { label: "Cut",      c: 30, p: 40, f: 30 },
+  bulking:  { label: "Bulk",     c: 50, p: 30, f: 20 },
+  keto:     { label: "Keto",     c: 10, p: 25, f: 65 },
+};
 
 // ---------------- Daily composite score ----------------
 
@@ -111,6 +136,8 @@ export interface MealEntry {
   cheatReason?: "celebratory" | "stress" | "craving" | "social";
   preWorkout?: boolean;
   postWorkout?: boolean;
+  /** Meal photo as dataURL (wave 8A, offline-first). */
+  photoDataUrl?: string;
 }
 export interface MealItem {
   id: string;
@@ -441,6 +468,8 @@ export interface HealthState {
   settings: HealthSettings;
   /** Wave-1 daily score computed at read time, persisted here for history charts. */
   lastScoreDate?: string;
+  /** Wave 8A: pinned food names for the frequent-foods library. */
+  pinnedFoods?: string[];
 }
 
 // ---------------- Helpers ----------------
@@ -459,6 +488,11 @@ export const DEFAULT_PROFILE: HealthProfile = {
   idealSleepHours: 8,
   eatingWindowStart: 12,
   eatingWindowEnd: 20,
+  fastingPreset: "16:8",
+  macroPreset: "balanced",
+  macroCarbsPct: 40,
+  macroProteinPct: 30,
+  macroFatPct: 30,
 };
 
 export const DEFAULT_SETTINGS: HealthSettings = {
@@ -563,6 +597,7 @@ export function emptyHealthState(): HealthState {
     bedtimeRoutine: JSON.parse(JSON.stringify(DEFAULT_BEDTIME_ROUTINE)),
     wakeRoutine: JSON.parse(JSON.stringify(DEFAULT_WAKE_ROUTINE)),
     settings: { ...DEFAULT_SETTINGS },
+    pinnedFoods: [],
   };
 }
 
