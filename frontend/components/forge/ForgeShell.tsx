@@ -27,7 +27,7 @@ import Link from "next/link";
 import { useRouter } from "next/router";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  Hammer, Flame, Pickaxe, Archive, LayoutDashboard, Sun, Moon, Bell, Anvil, Gauge,
+  Hammer, Flame, Pickaxe, Archive, LayoutDashboard, Sun, Moon, Bell, Anvil, Gauge, Settings,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -65,6 +65,7 @@ interface Props {
   actionButton?: React.ReactNode;
   actionPanel?: React.ReactNode;
   children: React.ReactNode;
+  rightExtras?: React.ReactNode;
 }
 
 function Rivet({ color }: { color: string }) {
@@ -150,12 +151,22 @@ function Gear({ size=22, color="#f59e0b", speed=20, reverse=false }:{size?:numbe
   );
 }
 
-export default function ForgeShell({ section, actionButton, actionPanel, children }: Props) {
+export default function ForgeShell({ section, actionButton, actionPanel, children, rightExtras }: Props) {
   const router = useRouter();
   const { theme, toggle } = useTheme();
-  const { forge } = useStore();
+  const { forge, updateForge } = useStore();
   const light = theme === "light";
   const active = FORGE_NAV.find(n => n.id === section) ?? FORGE_NAV[0];
+  const [settingsOpen, setSettingsOpen] = useState(false);
+  const [sName, setSName] = useState(forge.settings.forgeName);
+  const [sLen, setSLen] = useState(forge.settings.sprintLengthDays);
+  const [sStart, setSStart] = useState(forge.settings.workStartHour);
+  const [sEnd, setSEnd] = useState(forge.settings.workEndHour);
+  const saveSettings = () => {
+    updateForge(f => ({ settings: { ...f.settings, forgeName:sName, sprintLengthDays:Number(sLen)||14, workStartHour:Number(sStart)||9, workEndHour:Number(sEnd)||18 } }));
+    setSettingsOpen(false);
+    window.dispatchEvent(new CustomEvent("career:toast",{detail:{title:"SETTINGS SAVED",sub:"forge calibrated",color:"#22c55e",icon:"check"}}));
+  };
 
   const activeCount = forge.projects.filter(p => !p.archived && p.status !== "dead" && p.status !== "done").length;
   const blockedCount = forge.projects.filter(p => p.status === "blocked" || p.status === "off-track").length;
@@ -529,6 +540,13 @@ export default function ForgeShell({ section, actionButton, actionPanel, childre
               style={{color:T.fgMuted}}>
               {light ? <Moon size={14}/> : <Sun size={14}/>}
             </button>
+            <button aria-label="Settings" onClick={()=>setSettingsOpen(v=>!v)}
+              title="Forge settings"
+              className="p-2 rounded-sm transition hover:bg-black/5 hidden sm:inline-flex"
+              style={{color:settingsOpen?T.accent1:T.fgMuted}}>
+              <Settings size={14}/>
+            </button>
+            {rightExtras}
 
             <div className="relative px-2 py-1 rounded-sm steel-plate text-[10px] tracking-widest hidden sm:flex items-center gap-1"
               style={{color:T.seal, background:T.sealBg, borderColor:T.seal}}>
@@ -576,6 +594,62 @@ export default function ForgeShell({ section, actionButton, actionPanel, childre
             )}
           </AnimatePresence>
         </main>
+
+        {/* Settings modal */}
+        <AnimatePresence>
+          {settingsOpen && (
+            <motion.div initial={{opacity:0}} animate={{opacity:1}} exit={{opacity:0}}
+              className="fixed inset-0 z-[60] flex items-center justify-center p-4"
+              style={{background:"rgba(0,0,0,0.7)"}} onClick={()=>setSettingsOpen(false)}>
+              <motion.div initial={{scale:0.95,y:8}} animate={{scale:1,y:0}} exit={{scale:0.95,y:8}}
+                onClick={e=>e.stopPropagation()}
+                className="relative w-full max-w-md steel-plate p-6"
+                style={{background:"var(--fr-card)",borderColor:"var(--fr-amber)",color:"var(--fr-fg)"}}>
+                <span className="riv-tl"/><span className="riv-tr"/><span className="riv-bl"/><span className="riv-br"/>
+                <div className="flex items-start justify-between mb-4">
+                  <h2 className="text-2xl font-black tracking-widest" style={{color:"var(--fr-amber)"}}>⚙ FORGE SETTINGS</h2>
+                  <button onClick={()=>setSettingsOpen(false)} className="mono text-[10px] tracking-widest px-2 py-1 rounded-sm" style={{color:"var(--fr-fgMuted)"}}>ESC</button>
+                </div>
+                <div className="space-y-3">
+                  <div>
+                    <label className="mono text-[10px] tracking-widest block mb-1" style={{color:"var(--fr-fgMuted)"}}>FORGE NAME</label>
+                    <input value={sName} onChange={e=>setSName(e.target.value)}
+                      className="w-full px-3 py-2 rounded-sm outline-none mono text-sm"
+                      style={{background:"var(--fr-card2)",border:"1px solid var(--fr-border)",color:"var(--fr-fg)"}}/>
+                  </div>
+                  <div className="grid grid-cols-3 gap-2">
+                    <div>
+                      <label className="mono text-[10px] tracking-widest block mb-1" style={{color:"var(--fr-fgMuted)"}}>SPRINT (DAYS)</label>
+                      <input type="number" min={3} max={60} value={sLen} onChange={e=>setSLen(Number(e.target.value))}
+                        className="w-full px-2 py-2 rounded-sm outline-none mono text-sm"
+                        style={{background:"var(--fr-card2)",border:"1px solid var(--fr-border)",color:"var(--fr-fg)"}}/>
+                    </div>
+                    <div>
+                      <label className="mono text-[10px] tracking-widest block mb-1" style={{color:"var(--fr-fgMuted)"}}>WORK START</label>
+                      <input type="number" min={0} max={23} value={sStart} onChange={e=>setSStart(Number(e.target.value))}
+                        className="w-full px-2 py-2 rounded-sm outline-none mono text-sm"
+                        style={{background:"var(--fr-card2)",border:"1px solid var(--fr-border)",color:"var(--fr-fg)"}}/>
+                    </div>
+                    <div>
+                      <label className="mono text-[10px] tracking-widest block mb-1" style={{color:"var(--fr-fgMuted)"}}>WORK END</label>
+                      <input type="number" min={0} max={23} value={sEnd} onChange={e=>setSEnd(Number(e.target.value))}
+                        className="w-full px-2 py-2 rounded-sm outline-none mono text-sm"
+                        style={{background:"var(--fr-card2)",border:"1px solid var(--fr-border)",color:"var(--fr-fg)"}}/>
+                    </div>
+                  </div>
+                </div>
+                <div className="flex justify-end gap-2 mt-5">
+                  <button onClick={()=>setSettingsOpen(false)} className="mono text-[10px] tracking-widest px-3 py-2" style={{color:"var(--fr-fgMuted)"}}>CANCEL</button>
+                  <button onClick={saveSettings}
+                    className="mono text-[10px] font-black tracking-widest px-4 py-2 rounded-sm flex items-center gap-1"
+                    style={{background:"var(--fr-amber)",color:"#000"}}>
+                    <Hammer size={12}/> CALIBRATE
+                  </button>
+                </div>
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         {/* Diamond-plate footer exhaust */}
         <footer className="relative h-8 shrink-0 flex items-center gap-3 px-3 md:px-6 z-20"
