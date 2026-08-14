@@ -6,9 +6,18 @@ _Last run: 2026-08-14 against commit on `main` (post wave 11 + BUG-001 fix)._
 
 ```bash
 cd frontend
-npx tsc --noEmit   # ✅ zero errors
+npx tsc --noEmit   # ✅ zero errors (post BUG-001..005 fixes)
 npx next build     # ✅ 33/33 static (○); projects/* routes all ○
 ```
+
+| Bug | Summary |
+|---|---|
+| BUG-001 | Custom kanban columns broke shipped semantics (stats/streaks/recurrence/burndown/line-through) — promoted `isDoneStatus()` + `effectiveCols()` to forgeUtils, threaded customStatuses everywhere, shipped to last col id |
+| BUG-003 | Settings modal showed stale values on re-open — added re-sync `useEffect` |
+| BUG-004 | Column delete mishandled shipped-column tasks — correctly remaps to new final col, clears `completedAt` when un-shipping |
+| BUG-005 | Kanban/swimlane/TaskPanel grids hardcoded `grid-cols-5` — switched to `repeat(auto-fit, minmax(240px,1fr))` |
+
+See [`../../bugs/BUGS.md`](../../bugs/BUGS.md) for full root-cause notes.
 
 Route sizes:
 

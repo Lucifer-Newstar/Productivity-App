@@ -991,7 +991,7 @@ function TaskPanel({project}:{project:ForgeProject}) {
   const isDone = (s:any) => isTaskDone(s, forge.customStatuses);
   const move = (id:string,status:any) => updateForge(f=>({tasks:f.tasks.map(t=>t.id===id?{...t,status,completedAt:isTaskDone(status, f.customStatuses)?today():undefined}:t)}));
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-3">
+    <div className="grid gap-3" style={{gridTemplateColumns:"repeat(auto-fit, minmax(220px, 1fr))"}}>
       {cols.map(col=>(
         <div key={col.id} className="rounded-sm steel-plate p-3 relative" style={{borderColor:`${col.color}55`}}>
           <span className="riv-tl"/><span className="riv-tr"/><span className="riv-bl"/><span className="riv-br"/>

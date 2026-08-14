@@ -50,3 +50,57 @@ Each entry captures a bug found during QA sweeps, the root cause, the fix, and t
 - Drag-to-reposition in Mindmap / Free Canvas (click-to-place only, UI note says "v1.2").
 - Drag-reorder of custom columns and full dnd on Kanban (HTML5 native today).
 - Storyboard canvas.
+
+---
+
+## BUG-003 — Settings modal showed stale values when re-opened
+- **Found:** 2026-08-14 (QA deep-dive)
+- **Severity:** Medium (stale UI; could overwrite changed settings)
+- **Affected:** `/projects/*` (ForgeShell settings ⚙ modal)
+- **Symptom:** Local draft state (`sName/sLen/sStart/sEnd`) was initialised from `forge.settings` only in `useState` initialisers (first render). After opening the modal, editing, cancelling, then re-opening, the modal still showed the cancelled value.
+- **Fix:** Added a `useEffect([settingsOpen, forge.settings])` that re-syncs local drafts from live `forge.settings` whenever the modal opens.
+- **Files:** `components/forge/ForgeShell.tsx`.
+
+## BUG-004 — Delete-column (COL manager) mishandled shipped-column deletion
+- **Found:** 2026-08-14 (QA deep-dive)
+- **Severity:** Medium (stale completion timestamps on un-shipped tasks; tasks lost their "done" state incorrectly)
+- **Affected:** `/projects/quarry` column manager
+- **Symptom:** Deleting the last (SHIPPED) column moved its tasks to `"done"` without ensuring `completedAt`; deleting a non-shipped column moved tasks to `"todo"` without clearing `completedAt`.
+- **Fix:** Rewrote `removeColumn(id)` to: (1) if deleting the shipped column, remap tasks to the **new** final column (post-delete) and ensure `completedAt` is set; (2) for non-shipped deleted columns, move tasks to `"todo"` and clear `completedAt`.
+- **Files:** `components/forge/sections/QuarrySection.tsx`.
+
+## BUG-005 — Kanban/swimlane/ProjectDrill grids hardcoded `grid-cols-5`, broke with ≠5 custom columns
+- **Found:** 2026-08-14 (QA deep-dive)
+- **Severity:** Medium (layout breakage if user added/removed custom columns)
+- **Affected:** `/projects/quarry` kanban + swimlanes, `/projects/p/[id]` task mini-kanban
+- **Symptom:** Tailwind `grid-cols-5` forced exactly 5 equal columns; users with 3 or 7 custom columns got overflow/wrapping/squashed cards.
+- **Fix:** Replaced hardcoded `grid-cols-5` / `lg:grid-cols-5` with responsive `grid-template-columns: repeat(auto-fit, minmax(240px, 1fr))` (wraps naturally for any column count). Swimlanes uses `repeat(N, minmax(0,1fr))` where N = `COLS.length`.
+- **Files:** `components/forge/sections/QuarrySection.tsx`, `components/forge/sections/ProjectDrill.tsx`.
+
+---
+
+## v1.0 QA deep-dive follow-up (2026-08-14)
+
+After fixing BUG-001..005 the following were audited and passed:
+
+- **29/29 routes HTTP 200** on production `next start`, zero error-boundary markers.
+- **TypeScript** clean (`tsc --noEmit`).
+- **33/33 routes ○ static** in `next build`; shared CSS still 14.7 kB; Smelter First Load JS 211 kB.
+- **No broken relative imports** across `components/`+`lib/`+`pages/` (automated resolver walk).
+- **No `console.log/debug` leftovers** in production code.
+- **Hotkeys** correctly ignore typing in `input/textarea/select/contenteditable`.
+- **Ember audio** cleans up `AudioContext` + buffer source + gain on toggle-off/unmount.
+- **Voice notes** revoke Blob URLs on delete; stop mic tracks on stop; unmount effect calls `stop()`.
+- **CSV parser** handles RFC-4180 quoted fields with commas and `""` escapes.
+- **Settings modal** re-syncs from live store on open.
+- **Custom columns** correctly drive shipped status, grid layout, delete-remap, stat counts, streaks, recurrence, SprintBurndown, Foundry chips, ProjectDrill task panel, and Smelter backlog.
+- **Health & Entertainment placeholders** render SpaceTasks correctly through shared TopNav (no crash, 200 OK).
+
+### Deferred / v1.2 (not regressions)
+- Full CPM float calculation (slip gauge exists).
+- Project comparison view, effort variance report.
+- Auto-Eisenhower filing on create.
+- Stakeholder ↔ `NetworkContact` picker UI.
+- Drag-to-reposition in Mindmap/Free Canvas; drag-reorder of custom columns; true dnd on Kanban (native HTML5 today).
+- Storyboard canvas.
+- Health + Entertainment full-bleed theme builds (currently SpaceTasks placeholders).

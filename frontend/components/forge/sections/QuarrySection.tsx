@@ -95,11 +95,19 @@ export default function QuarrySection() {
     setNewColLabel("");
   };
   const removeColumn = (id:string) => {
-    // Move all tasks with that column's status to "todo"
-    const replacement = statusForColumn(id) === "done" ? "done" : "todo";
+    // If the column being deleted is the final (shipped) column, tasks in it
+    // stay shipped (move to the new final column); otherwise they fall back to
+    // "todo" with completedAt cleared. (BUG-004)
+    const isShipped = COLS.length && COLS[COLS.length-1].id === id;
+    const nextCols = (forge.customStatuses||[]).filter(c=>c.id!==id);
+    const newShippedId = (nextCols.length >= 2 ? nextCols[nextCols.length-1].id : "done") as TaskStatus;
     updateForge(f => ({
-      customStatuses: (f.customStatuses||[]).filter(c=>c.id!==id),
-      tasks: f.tasks.map(t => (t.status as any)===id ? { ...t, status: replacement } : t),
+      customStatuses: nextCols,
+      tasks: f.tasks.map(t => {
+        if ((t.status as any) !== id) return t;
+        if (isShipped) return { ...t, status: newShippedId, completedAt: t.completedAt ?? today() };
+        return { ...t, status: "todo" as TaskStatus, completedAt: undefined };
+      }),
     }));
   };
   const renameColumn = (id:string,label:string) => {
@@ -369,7 +377,7 @@ export default function QuarrySection() {
                   <h4 className="text-lg font-black tracking-wide" style={{color:p.color}}>{p.codename} · {p.title}</h4>
                   <span className="ml-auto mono text-[10px] tracking-widest" style={{color:"var(--fr-fgMuted)"}}>{pTasks.length} blocks</span>
                 </div>
-                <div className="grid grid-cols-5 gap-2">
+                <div className="grid gap-2" style={{gridTemplateColumns:`repeat(${COLS.length}, minmax(0,1fr))`}}>
                   {COLS.map(col => {
                     const colTasks = pTasks.filter(t=>t.status===col.id);
                     return (
@@ -395,7 +403,7 @@ export default function QuarrySection() {
       )}
 
       {matrixMode === "kanban" && (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-3">
+        <div className="grid gap-3" style={{gridTemplateColumns:"repeat(auto-fit, minmax(240px, 1fr))"}}>
           {COLS.map(col => {
             const tasks = visibleTasks.filter(t => t.status === col.id && !t.parentId);
             return (

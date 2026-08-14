@@ -163,6 +163,15 @@ export default function ForgeShell({ section, actionButton, actionPanel, childre
   const [sLen, setSLen] = useState(forge.settings.sprintLengthDays);
   const [sStart, setSStart] = useState(forge.settings.workStartHour);
   const [sEnd, setSEnd] = useState(forge.settings.workEndHour);
+  // Re-sync local draft state when settings modal is opened so stale values
+  // from a previous cancel don't survive into a new open (BUG-003).
+  useEffect(() => {
+    if (!settingsOpen) return;
+    setSName(forge.settings.forgeName);
+    setSLen(forge.settings.sprintLengthDays);
+    setSStart(forge.settings.workStartHour);
+    setSEnd(forge.settings.workEndHour);
+  }, [settingsOpen, forge.settings]);
   // Ember soundscape (WebAudio brown-noise + crackle) — generated offline, no assets.
   const [embers, setEmbers] = useState(false);
   const audioCtxRef = useRef<AudioContext | null>(null);
