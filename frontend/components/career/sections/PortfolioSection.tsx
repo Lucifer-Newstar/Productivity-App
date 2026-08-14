@@ -75,6 +75,7 @@ export default function PortfolioSection() {
   const [copiedId, setCopiedId] = useState<string|null>(null);
   const [testDraft, setTestDraft] = useState<Partial<Testimonial>>({ from:"", role:"", quote:"" });
   const [atsKeywords, setAtsKeywords] = useState("");
+  const [resumeName, setResumeName] = useState("");
   const [aDraft, setADraft] = useState<Partial<Achievement>>({ title:"", category:"technical", date:today(), icon:"🏆" });
   const [pDraft, setPDraft] = useState<Partial<PortfolioProject>>({ title:"", role:"", summary:"", technologies:[], private:false });
   const [techInput, setTechInput] = useState("");
@@ -147,6 +148,24 @@ export default function PortfolioSection() {
     const miss = kws.filter(k => !blob.includes(k));
     return { score: Math.round((hits.length/kws.length)*100), hits: hits.length, total: kws.length, miss };
   }, [atsKeywords, career.bullets, career.achievements, career.projects]);
+
+  const saveResumeVersion = () => {
+    const name = resumeName.trim() || `Resume v${career.resumes.length+1}`;
+    updateCareer(s => ({ resumes: [{ id: uid(), name, bullets: s.bullets.map(b => ({...b})), sentAt: Date.now(), atsKeywords: atsKeywords.split(",").map(x=>x.trim()).filter(Boolean), tailoredChecklist: [] }, ...s.resumes] }));
+    setResumeName("");
+  };
+  const loadResumeVersion = (id: string) => {
+    const v = career.resumes.find(r=>r.id===id); if (!v) return;
+    if (!confirm(`Load "${v.name}"? This will replace current bullets with the snapshot.`)) return;
+    updateCareer(() => ({ bullets: v.bullets.map(b => ({...b})) }));
+  };
+  const delResumeVersion = (id: string) => updateCareer(s => ({ resumes: s.resumes.filter(r=>r.id!==id) }));
+  const copyVersion = (id: string) => {
+    const v = career.resumes.find(r=>r.id===id); if (!v) return;
+    const text = v.bullets.map(b => "• " + b.text).join("\n");
+    navigator.clipboard?.writeText(text).catch(()=>{});
+    setCopiedId(id); setTimeout(()=>setCopiedId(null),1200);
+  };
 
   const addTech = (id: string | null) => {
     if (!techInput.trim()) return;
@@ -533,6 +552,40 @@ export default function PortfolioSection() {
                 </div>
               </div>
             ))}
+          </div>
+
+          {/* Resume Versions */}
+          <div className="relative rounded-lg p-4 h-fit" style={{ background: CARD2, border: `1px solid ${VIOLET}55` }}>
+            <HudCorner color={VIOLET}/>
+            <h3 className="font-mono text-[11px] tracking-[0.25em] mb-2 flex items-center gap-2" style={{ color: VIOLET }}>
+              <Star size={13}/> RESUME::VERSIONS
+            </h3>
+            <div className="flex gap-1 mb-2">
+              <input value={resumeName} onChange={e=>setResumeName(e.target.value)} placeholder="Name (e.g. SWE v3)"
+                className="flex-1 text-[10px] font-mono px-2 py-1 rounded outline-none" style={inputStyle}/>
+              <button onClick={saveResumeVersion} disabled={career.bullets.length===0}
+                className="text-[9px] tracking-widest font-bold px-2 rounded transition hover:brightness-125 disabled:opacity-40"
+                style={{background:VIOLET,color:"#000"}}>[SNAP]</button>
+            </div>
+            {career.resumes.length === 0 ? (
+              <p className="text-[10px] font-mono italic" style={{color:MUTED}}>No snapshots. Save per role.</p>
+            ) : (
+              <div className="space-y-1 max-h-40 overflow-y-auto pr-1">
+                {career.resumes.map(v => (
+                  <div key={v.id} className="rounded p-1.5 flex items-center gap-1" style={{background:CARD,border:`1px solid ${BORDER_SOFT}`}}>
+                    <div className="flex-1 min-w-0">
+                      <div className="text-[10px] font-mono font-bold truncate" style={{color:FG}}>{v.name}</div>
+                      <div className="text-[9px] font-mono" style={{color:MUTED}}>{v.bullets.length}b · {v.sentAt?new Date(v.sentAt).toLocaleDateString():"-"}</div>
+                    </div>
+                    <button onClick={()=>copyVersion(v.id)} className="text-[9px] font-mono px-1 py-0.5 rounded" title="Copy"
+                      style={{color:copiedId===v.id?GREEN:YELLOW}}>{copiedId===v.id?"✓":"C"}</button>
+                    <button onClick={()=>loadResumeVersion(v.id)} className="text-[9px] font-mono px-1 py-0.5 rounded" title="Load"
+                      style={{color:VIOLET}}>L</button>
+                    <button onClick={()=>delResumeVersion(v.id)} className="text-[9px] font-mono px-1 py-0.5 rounded" title="Delete" style={{color:RED}}>×</button>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
 
           {/* ATS PANEL */}

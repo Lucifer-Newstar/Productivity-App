@@ -673,7 +673,11 @@ export default function RoadmapsSection() {
   };
   const dismissBump = (id: string) => setBumpQueue(q => q.filter(x => x.id !== id));
 
-  const visible = career.roadmaps.filter((r) => r.status !== "archived");
+  const visible = career.roadmaps.filter((r) => r.status !== "archived")
+    .slice().sort((a,b) => (b.priority||5) - (a.priority||5) || (b.startedAt||0) - (a.startedAt||0));
+  const bumpPriority = (id: string, delta: number) => {
+    updateCareer(s => ({ roadmaps: s.roadmaps.map(r => r.id===id ? { ...r, priority: Math.max(1,Math.min(10,(r.priority||5)+delta)) } : r) }));
+  };
   const archived = career.roadmaps.filter((r) => r.status === "archived");
   const active = career.roadmaps.find((r) => r.id === openId) ?? null;
 
@@ -818,7 +822,12 @@ export default function RoadmapsSection() {
               }}>
                   {prog.pct===100 ? "COMPLETE" : r.status.toUpperCase()}
                 </span>
-                <div className="flex items-center gap-1 opacity-60 hover:opacity-100 transition">
+                <div className="flex items-center gap-0.5 opacity-70 hover:opacity-100 transition">
+                  <button onClick={(e) => { e.stopPropagation(); bumpPriority(r.id, -1); }}
+                    title="Lower priority" className="p-1 rounded text-[9px] font-bold hover:bg-white/10" style={{color:"var(--cr-fgMuted)"}}>−</button>
+                  <button onClick={(e) => { e.stopPropagation(); bumpPriority(r.id, +1); }}
+                    title="Raise priority" className="p-1 rounded text-[9px] font-bold hover:bg-white/10" style={{color:"var(--cr-yellow,#facc15)"}}>+</button>
+                  <span className="w-px h-4 mx-1" style={{background:"var(--cr-borderSoft)"}}/>
                   <button onClick={(e) => { e.stopPropagation(); archiveRoadmap(r.id); }}
                     title="Archive" className="p-1.5 rounded-lg hover:bg-white/10"><Archive size={12}/></button>
                   <button onClick={(e) => { e.stopPropagation(); if (confirm(`Delete "${r.name}"?`)) deleteRoadmap(r.id); }}
