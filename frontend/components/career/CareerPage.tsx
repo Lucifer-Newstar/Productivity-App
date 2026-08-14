@@ -15,6 +15,7 @@ import { useRouter } from "next/router";
 import CareerShell, { type CareerSectionId } from "./CareerShell";
 import CommandNav from "./CommandNav";
 import CommandCard from "./CommandCard";
+import CareerFx, { BootScreen } from "./CareerFx";
 import { AnimatePresence, motion } from "framer-motion";
 
 interface Props {
@@ -100,7 +101,8 @@ export default function CareerPage({ section, children }: Props) {
   }
 
   return (
-    <>
+    <CareerFx>
+      <BootScreen />
       <CareerShell
         section={section}
         commandButton={
@@ -116,7 +118,7 @@ export default function CareerPage({ section, children }: Props) {
       <AnimatePresence>
         {slashing && !cardOpen && <HudFlash />}
       </AnimatePresence>
-    </>
+    </CareerFx>
   );
 }
 

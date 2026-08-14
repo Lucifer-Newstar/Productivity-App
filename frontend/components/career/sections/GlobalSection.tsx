@@ -210,7 +210,28 @@ export default function GlobalSection() {
                   <div className="text-[10px] tracking-[0.25em] font-bold" style={{color:"#f472b6"}}>// QA.demo_tools</div>
                   <p className="text-[11px] font-mono mt-0.5" style={{color:"var(--cr-fgMuted)"}}>Populate every module with rich mock data.</p>
                 </div>
-                <button onClick={()=>{ if(confirm("Replace all career data with demo dataset?")) seedCareerDemo(); }}
+                <button onClick={()=>{
+                  if(confirm("Replace all career data with demo dataset?")) {
+                    seedCareerDemo();
+                    // Triple-burst celebration + compiled-ok stamp
+                    window.setTimeout(() => {
+                      ["#22d3ee","#a78bfa","#34d399","#f472b6","#facc15"].forEach((c, i) => {
+                        window.setTimeout(() => window.dispatchEvent(new CustomEvent("career:burst", {
+                          detail: { color: c, count: 22 },
+                        })), i * 120);
+                      });
+                      window.dispatchEvent(new CustomEvent("career:toast", {
+                        detail: {
+                          title: "COMPILED OK",
+                          sub: "all 9 sectors populated",
+                          color: "#34d399",
+                          icon: "check",
+                          timeout: 3200,
+                        },
+                      }));
+                    }, 200);
+                  }
+                }}
                   className="text-[10px] tracking-widest font-bold px-3 py-1.5 rounded-sm"
                   style={{background:"#f472b6",color:"#000"}}>[ SEED DEMO ]</button>
               </div>

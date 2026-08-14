@@ -24,6 +24,7 @@ import { useStore } from "../../../lib/store";
 import { TEMPLATE_LIST, cloneTemplate } from "../../../lib/careerRoadmaps";
 import type { CareerRoadmap, CareerMilestone, CareerSkill } from "../../../lib/careerTypes";
 import { useTheme } from "../../../lib/theme";
+import { useCareerFx } from "../CareerFx";
 
 const uid = () => Math.random().toString(36).slice(2, 10) + Date.now().toString(36);
 
@@ -334,7 +335,10 @@ function MilestoneRow({
                   <ul className="space-y-0.5">
                     {ms.resources.map((r) => (
                       <li key={r.id} className="flex items-start gap-2">
-                        <button onClick={()=>onToggleResource(r.id)}
+                        <button onClick={()=>{
+                          if (!r.completed) window.dispatchEvent(new CustomEvent("career:burst",{detail:{color:"#67e8f9",count:10}}));
+                          onToggleResource(r.id);
+                        }}
                           className={`w-4 h-4 mt-0.5 rounded shrink-0 flex items-center justify-center`}
                           style={{
                             background: r.completed ? "#67e8f9" : "transparent",
@@ -360,7 +364,10 @@ function MilestoneRow({
                   <ul className="space-y-0.5">
                     {ms.projects.map((p) => (
                       <li key={p.id} className="flex items-start gap-2">
-                        <button onClick={()=>onToggleProject(p.id)}
+                        <button onClick={()=>{
+                          if (!p.completed) window.dispatchEvent(new CustomEvent("career:burst",{detail:{color:"#facc15",count:10}}));
+                          onToggleProject(p.id);
+                        }}
                           className="w-4 h-4 mt-0.5 rounded shrink-0 flex items-center justify-center"
                           style={{
                             background: p.completed ? "var(--cr-yellow,#facc15)" : "transparent",
@@ -384,7 +391,10 @@ function MilestoneRow({
                   <ul className="space-y-0.5">
                     {ms.labChecklist.map((l) => (
                       <li key={l.id} className="flex items-start gap-2">
-                        <button onClick={()=>onToggleLab(l.id)}
+                        <button onClick={()=>{
+                          if (!l.done) window.dispatchEvent(new CustomEvent("career:burst",{detail:{color:"#ec4899",count:8}}));
+                          onToggleLab(l.id);
+                        }}
                           className="w-4 h-4 mt-0.5 rounded shrink-0 flex items-center justify-center"
                           style={{
                             background: l.done ? "#ec4899" : "transparent",
@@ -587,6 +597,19 @@ export default function RoadmapsSection() {
     };
     updateCareer(s => ({ roadmaps: [roadmap, ...s.roadmaps] }));
     setWizOpen(false); setOpenId(id);
+    // New track forged — toast + tiny burst
+    window.dispatchEvent(new CustomEvent("career:toast", {
+      detail: {
+        title: "TRACK FORGED",
+        sub: roadmap.name,
+        color: roadmap.color,
+        icon: "zap",
+        timeout: 2800,
+      },
+    }));
+    window.setTimeout(() => window.dispatchEvent(new CustomEvent("career:burst", {
+      detail: { color: roadmap.color, count: 28 },
+    })), 200);
   };
 
   // Fire celebration the moment a roadmap hits 100% (once per roadmap).
@@ -983,7 +1006,22 @@ export default function RoadmapsSection() {
                                       ms={ms} index={mi} color={active.color} locked={locked} allById={msMap}
                                       onToggle={() => {
                                         if (locked) return;
+                                        const wasDone = ms.done;
                                         toggleMilestoneDone(active.id, ph.id, ms.id);
+                                        if (!wasDone) {
+                                          // fire celebration burst + toast
+                                          window.dispatchEvent(new CustomEvent("career:burst", {
+                                            detail: { color: active.color, count: 32 },
+                                          }));
+                                          window.dispatchEvent(new CustomEvent("career:toast", {
+                                            detail: {
+                                              title: "MILESTONE COMPLETE",
+                                              sub: ms.title.length > 46 ? ms.title.slice(0, 46) + "…" : ms.title,
+                                              color: active.color,
+                                              icon: "zap",
+                                            },
+                                          }));
+                                        }
                                       }}
                                       onLogHours={(h) => logMilestoneHours(active.id, ph.id, ms.id, h)}
                                       onQuiz={(qid, a) => {

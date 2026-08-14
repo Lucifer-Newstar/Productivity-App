@@ -30,6 +30,7 @@ import type { LucideIcon } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useTheme } from "../../lib/theme";
 import { useStore } from "../../lib/store";
+import { KeyboardArmed } from "./CareerFx";
 
 export type CareerSectionId =
   | "roadmaps" | "skills" | "certs" | "network" | "jobs"
@@ -531,6 +532,8 @@ export default function CareerShell({ section, commandButton, commandCard, child
         <span style={{color:T.dotOnline}}>●</span> <span>SYSTEM::ONLINE</span>
         <span className="hidden sm:inline">|</span>
         <span className="hidden sm:inline">SECTOR::{active.code}</span>
+        <span className="hidden md:inline">|</span>
+        <span className="hidden md:inline"><KeyboardArmed/></span>
         <span className="flex-1"/>
         <span>kaizen.career // v2.0 — {light ? "blueprint" : "night"}</span>
       </footer>
