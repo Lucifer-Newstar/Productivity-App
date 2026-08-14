@@ -101,6 +101,26 @@ export default function QuarrySection() {
     patchTask(id, { pomodoros:(forge.tasks.find(t=>t.id===id)?.pomodoros||0)+1, actualMins:(forge.tasks.find(t=>t.id===id)?.actualMins||0)+25 });
     window.dispatchEvent(new CustomEvent("career:toast",{detail:{title:"POMODORO LOGGED",sub:"+25m on the anvil",color:"#f59e0b",icon:"zap"}}));
   };
+  const spawnRecurrence = (t: ProjectTask) => {
+    if (!t.recurrence) return;
+    const days = t.recurrence.freq==="daily"?1:t.recurrence.freq==="weekly"?7:t.recurrence.freq==="biweekly"?14:30;
+    const next = new Date(); next.setDate(next.getDate()+days*t.recurrence.interval);
+    const dueIso = next.toISOString().slice(0,10);
+    const copy: ProjectTask = {
+      ...t,
+      id: uid(),
+      status: "todo",
+      completedAt: undefined,
+      doneAt: undefined,
+      dueDate: dueIso,
+      pomodoros: 0, actualMins: 0,
+      subtaskIds: [], comments: [],
+      createdAt: today(),
+      today: false, stuck: false, satisfaction: undefined,
+      clonedFrom: t.id,
+    };
+    updateForge(f => ({ tasks: [...f.tasks, copy] }));
+  };
   const toggleTask = (id: string) => {
     const t = forge.tasks.find(x=>x.id===id); if(!t) return;
     const movingToDone = t.status!=="done";
@@ -109,6 +129,7 @@ export default function QuarrySection() {
       completedAt: movingToDone ? today() : undefined,
     });
     if (movingToDone) {
+      if (t.recurrence) spawnRecurrence(t);
       window.dispatchEvent(new CustomEvent("career:burst",{detail:{color:"#22c55e",count:22}}));
       window.dispatchEvent(new CustomEvent("career:toast",{detail:{title:"SHIPPED",sub:t.title.slice(0,50),color:"#22c55e",icon:"check"}}));
     }
@@ -117,6 +138,7 @@ export default function QuarrySection() {
     const t = forge.tasks.find(x=>x.id===id); if(!t) return;
     patchTask(id, { status, completedAt: status==="done"?today():undefined });
     if (status==="done") {
+      if (t.recurrence) spawnRecurrence(t);
       window.dispatchEvent(new CustomEvent("career:burst",{detail:{color:"#22c55e",count:22}}));
       window.dispatchEvent(new CustomEvent("career:toast",{detail:{title:"SHIPPED",sub:t.title.slice(0,50),color:"#22c55e",icon:"check"}}));
     }
@@ -558,6 +580,41 @@ function TaskEditor({task,onPatch,onAddSub,subs,onToggleSub,projectColor}:{
         <div className="mono text-[8px] tracking-widest mb-1" style={{color:"var(--fr-fgMuted)"}}>URGENCY: {task.urgency||5}/10</div>
         <input type="range" min={1} max={10} value={task.urgency||5} onChange={e=>onPatch({urgency:Number(e.target.value)})} className="w-full" style={{accentColor:projectColor}}/>
       </div>
+      <div className="grid grid-cols-2 gap-2">
+        <Slider label="DIFFICULTY" value={task.difficulty||5} max={10} onChange={v=>onPatch({difficulty:v})} color="#ec4899"/>
+        <div>
+          <div className="mono text-[8px] tracking-widest mb-1" style={{color:"var(--fr-fgMuted)"}}>REPEAT</div>
+          <select value={task.recurrence?`${task.recurrence.freq}:${task.recurrence.interval}`:"none"}
+            onChange={e=>{
+              const v=e.target.value;
+              if(v==="none") return onPatch({recurrence:undefined});
+              const [freq,interval]=v.split(":");
+              onPatch({recurrence:{freq:freq as any,interval:Number(interval)}});
+            }}
+            className="w-full mono text-[10px] px-1 py-0.5 rounded-sm outline-none"
+            style={{background:"var(--fr-card2)",border:"1px solid var(--fr-borderSoft)",color:"var(--fr-fg)"}}>
+            <option value="none">one-off</option>
+            <option value="daily:1">daily</option>
+            <option value="weekly:1">weekly</option>
+            <option value="biweekly:1">biweekly</option>
+            <option value="monthly:1">monthly</option>
+          </select>
+        </div>
+      </div>
+      {task.status==="done" && (
+        <div>
+          <div className="mono text-[8px] tracking-widest mb-1" style={{color:"var(--fr-green)"}}>✓ HOW'D IT GO?</div>
+          <div className="flex gap-1">
+            {[1,2,3,4,5].map(n=>(
+              <button key={n} onClick={()=>onPatch({satisfaction:n})}
+                className="flex-1 py-1 rounded-sm text-sm"
+                style={{background:(task.satisfaction||0)>=n?"var(--fr-green)":"var(--fr-card2)",
+                        border:"1px solid var(--fr-borderSoft)",
+                        color:(task.satisfaction||0)>=n?"#000":"var(--fr-fgMuted)"}}>{["😫","😕","😐","🙂","🔥"][n-1]}</button>
+            ))}
+          </div>
+        </div>
+      )}
       <div>
         <div className="mono text-[8px] tracking-widest mb-1" style={{color:"var(--fr-fgMuted)"}}>TAGS</div>
         <div className="flex flex-wrap gap-1 mb-1">
