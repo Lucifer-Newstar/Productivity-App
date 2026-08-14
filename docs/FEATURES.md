@@ -461,3 +461,70 @@ Global: project comparison, template library, energy/time balance dial, CSV impo
 | Shell v2 | Chamfered steel-plate clip-path corners + weld-seam ::before | ✅ |
 | Shell v2 | All 5 project pages set Page.fullScreen = true (edge-to-edge paint, no TopNav) | ✅ |
 | Shell v2 | Typography switched to Bebas Neue for headings (distinct from Career Oswald / Workout Cinzel) | ✅ |
+
+## Wave 8 (subtasks / burndown / skill-bump)
+
+| Area | Feature | Status |
+|---|---|---|
+| Quarry | Subtask indent rendering in kanban (parent card shows +n subtasks, expander drills inline) | ✅ |
+| Quarry | Task recurrence UI (daily/weekly/biweekly/monthly select in TaskEditor) | ✅ |
+| Quarry | spawnRecurrence() clones task with offset due date on SHIP | ✅ |
+| Quarry | Satisfaction picker (1–5) + Difficulty slider (1–10) per task | ✅ |
+| Smelter | Sprint burndown SVG (actual line vs ideal dashed red, remaining count) | ✅ |
+| Drilldown | Skill-bump on SHIP: fuzzy tag-match → career skills +0.5 prof (cap 10), adds growth point, links projectId | ✅ |
+| Shell | Settings ⚙ modal: forgeName / sprintLengthDays / workStartHour / workEndHour | ✅ |
+
+## Wave 9 (swimlanes / recurrence / difficulty)
+
+| Area | Feature | Status |
+|---|---|---|
+| Quarry | Swimlanes mode (rows per project × columns per status) | ✅ |
+| Foundry | Resource gauges (people / budget / equipment / software) with util % bars | ✅ |
+| Drilldown | Critical-path slip gauge (per-task late-day delta; CPM float calc still stubbed) | ✅ |
+| Store | logForgeAction(action, target?, detail?) helper exposed on StoreState; capped at 500 entries | ✅ |
+
+## Wave 10 (canvas launch / custom cols / heatmaps / CSV / ember audio)
+
+| Area | Feature | Status |
+|---|---|---|
+| Smelter | 16 new canvas tabs registered in TABS array (BMC/VPC/Lean/Porter/PESTEL/Stories/Affinity/BuyAFeature/Paired + 7 scaffolded) | ✅ |
+| Canvases | Canvases.tsx module introduced (~203 lines) with BMCTab, VPCTab, LeanTab, PorterTab, PestelTab, StoriesTab, AffinityTab, BuyAFeatureTab, PairedTab working | ✅ |
+| Quarry | COLUMNS manager (add/rename/remove/reset), COLUMN_COLORS palette, isDoneStatus() = last col id | ✅ |
+| Quarry | moveTask/toggleTask/batchOp/addTasksFromBatch all accept string status ids | ✅ |
+| Foundry | ResourceHeatmap (projects × people/budget/equipment/software % util, over-budget red) | ✅ |
+| Foundry | SkillGapAlerts panel (fuzzy tag→career skills <4/10, untracked-tag warning) | ✅ |
+| Vault | Project CSV export (projectsToCSV) + import (csvToProjects), PROJ↓/PROJ↑ buttons | ✅ |
+| Shell | Ember soundscape 🔊 toggle (WebAudio brown-noise + random crackle pops; no assets) | ✅ |
+| Shell | --fr-violet:#818cf8; --fr-pink:#f472b6 CSS tokens added | ✅ |
+| Demo | forgeDemo updated with new collection defaults + 3 seed auditLog entries | ✅ |
+
+## Wave 11 (remaining 7 canvases + docblock sweep)
+
+| Area | Feature | Status |
+|---|---|---|
+| Canvases | JourneyTab: 5 default stages (AWARE/CONSIDER/DECIDE/USE/RETAIN), per-stage actions/thoughts/pains/opps, 1–10 satisfaction slider, SVG polyline curve | ✅ |
+| Canvases | BlueprintTab: 5 swimlanes (CUSTOMER/ONSTAGE/BACKSTAGE/SUPPORT/EVIDENCE) with inline +add | ✅ |
+| Canvases | EventStormTab: 4 sticky kinds (event amber/command cyan/aggregate violet/policy green) on 3 dashed swimlanes, staggered auto-place, removable | ✅ |
+| Canvases | MindmapTab: radial tree (root violet, larger), + per node adds child at +180px/+36px, inline rename, recursive delete, dashed SVG connectors, 40px grid | ✅ |
+| Canvases | CanvasTab (free): tool picker (sticky/box/dot/note) × 4 colors, click-to-place on 24px grid, hover-✕ delete, sticky rotation+shadow | ✅ |
+| Canvases | WireframeTab: per-screen cards with sketch nav/hero/CTA/button placeholders + Figma notes, +SCREEN | ✅ |
+| Canvases | VoiceTab: MediaRecorder getUserMedia, mm:ss+timer+pulsing dot, Blob URLs on window.__forgeVoice, <audio controls>, transcript textarea, delete revokes URL | ✅ |
+| Codebase | Docblock/comment pass across all Forge files (forgeTypes, forgeUtils, pages/projects/*, ActionNav, ForgeShell, Foundry/Quarry/Smelter/Vault/Drill/Canvases/Demo/Store) | ✅ |
+| Build | tsc --noEmit clean; next build 33/33 routes ○ static; shared CSS ~14.7 kB; Smelter First Load JS ~26.3 kB | ✅ |
+
+## Forge v1.0 status (post wave 11)
+
+Forge is feature-complete against the committed v1 scope (waves 1–11):
+- 5 routes (Foundry / Quarry / Smelter / Vault / ProjectDrill), all FULLSCREEN, all static
+- 4 Quarry modes (KANBAN / SWIMLANES / EISENHOWER / EFFORT) + runtime custom columns
+- 31 Smelter tabs (15 core + 16 canvases)
+- Full offline-first state: 40+ collections in ForgeState with migrateForge + buildForgeDemo
+- Audit log (capped 500), daily streak tracking, skill-bump into Career, project CSV I/O,
+  cross-project resource heatmap, skill-gap alerts, ember soundscape, settings modal,
+  ⌘K hotkeys, STRIKE sparks, HammerStrike transitions, Foundry/Drafting dual themes
+- Detailed docs: docs/forge/README.md + docs/forge/CANVASES.md + docs/forge/HOTKEYS.md
+
+Known v1.2+ backlog (intentional deferral): storyboard canvas, full CPM float calc,
+project comparison view, effort variance report, auto-Eisenhower filing, stakeholder↔
+NetworkContact picker, drag-to-reposition in Mindmap/Canvas, drag-reorder of custom
+columns, HTML5-dnd polish on Kanban cards.

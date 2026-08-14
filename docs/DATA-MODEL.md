@@ -76,3 +76,82 @@ sub-divides these (e.g. serratus, brachioradialis, soleus). See
 Everything is serialised to `localStorage["kaizen.workout"]` by the
 hydration-safe `useLocalState` hook. The backend exposes an equivalent
 in-memory representation plus a `/api/sync` endpoint for future cloud sync.
+
+---
+
+## Forge (Project/PM OS)
+
+Forge state lives under `forge: ForgeState` in `frontend/lib/forgeTypes.ts`
+(separated from the legacy `types.ts` because the PM model grew well beyond
+simple todos). It is hydrated through `migrateForge` (store.tsx) and
+seeded with a vivid dataset by `buildForgeDemo` (forgeDemo.ts).
+
+```
+ForgeState
+ ├── projects:          Project[]             # codename / title / brief / why / color / icon / deadline / budget
+ ├── tasks:             ForgeTask[]           # status, priority, effort, difficulty, satisfaction, recurrence, parentId, projectId, tags
+ ├── scratch:           Scratch[]             # quick free-text buckets
+ ├── decisions:         Decision[]            # decider / options / recommendation / madeAt
+ ├── swot:              Swot[]                # SWOT grids
+ ├── proscons:          ProsCons[]            # weighted pros/cons
+ ├── scenarios:         Scenario[]            # best/base/worst cases
+ ├── fiveWhys:          FiveWhy[]             # root-cause chains
+ ├── lessons:           Lesson[]              # lessons learned log
+ ├── retors:            Retor[]               # retrospect entries
+ ├── parking:           ParkingItem[]         # parking-lot ideas
+ ├── pomodoros:         Pomodoro[]            # focus-session log
+ ├── personas:          Persona[]             # user/customer personas
+ ├── decisionMatrix:    DecisionMatrix[]      # weighted-option matrices
+ ├── ideas:             Idea[]                # idea backlog
+ ├── fishbones:         Fishbone[]            # Ishikawa diagrams
+ ├── sixHats:           SixHats[]             # de Bono hats
+ ├── scamper:           Scamper[]             # SCAMPER substitutions/combine/adapt/etc.
+ ├── sprints:           Sprint[]              # sprint/iteration cadence + burndown
+ ├── reviews:           Review[]              # weekly reviews & action items
+ ├── mindmaps:          Mindmap[]             # radial trees (root + nodes[])
+ ├── canvases:          IdeaCanvas[]          # free grid canvas (sticky/box/dot/note)
+ ├── voiceNotes:        VoiceNote[]           # voice memo metadata (Blob stored in-memory only)
+ ├── bmc:               Record<Bmc>           # Business Model Canvases keyed by projectId|"global"
+ ├── vpc:               Record<Vpc>           # Value Prop Canvases
+ ├── lean:              Record<LeanCanvas>    # Lean Canvases
+ ├── porter:            Record<PorterFive>    # Porter Five Forces
+ ├── pestel:            Record<Pestel>        # PESTEL analyses
+ ├── userStories:       UserStory[]
+ ├── eventStorms:       EventStorm[]
+ ├── journeyMaps:       JourneyMap[]
+ ├── blueprints:        ServiceBlueprint[]
+ ├── wireframes:        Wireframe[]
+ ├── buyAFeature:       BuyAFeature[]
+ ├── paired:            PairedCompare[]
+ ├── affinity:          AffinityGroup[]
+ ├── customStatuses:    StatusColumn[]        # runtime-editable kanban columns (id/name/color)
+ ├── auditLog:          AuditEntry[]          # logForgeAction entries, capped at 500
+ ├── streak:            StreakState           # current/longest/daily history (capped 365)
+ └── settings:          ForgeSettings         # forgeName / sprintLengthDays / workStartHour / workEndHour
+```
+
+### IDs & keys
+
+- `project.id` — `proj_${nanoid()}`.
+- `task.id` — `task_${nanoid()}`; `parentId` points to another task for subtasks;
+  `projectId` is nullable (backlog tasks).
+- Canvas records are keyed by `projectId | "global"` so one canvas can live per
+  project and there is one "global" canvas for cross-project thinking.
+- `customStatuses` ids are free-form strings (runtime editable) — never hardcode
+  `"done"`; use `isDoneStatus(id)` which treats the **last** column as shipped.
+
+### Persistence
+
+Same Zustand + localStorage root (`"kaizen.root"`) as the rest of the app —
+Forge is fully offline-first; `/api/forge/*` backend routes exist but are not
+wired from the frontend. Voice-note audio Blobs are session-only (stored on
+`window.__forgeVoice[id]` as object URLs, revoked on delete) because Blob URLs
+cannot survive page reload.
+
+## Career
+
+Career state is split out into `frontend/lib/careerTypes.ts` with a parallel
+set of collections (skills, jobs, roadmap, certs, portfolio, network, daily
+log, etc.). The legacy `types.ts` still re-exports the shapes it used to own
+via `Legacy*` aliases for back-compat — see `docs/CAREER.md` for the full
+breakdown.
