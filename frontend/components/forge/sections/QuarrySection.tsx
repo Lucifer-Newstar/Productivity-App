@@ -17,7 +17,7 @@ import {
   Pickaxe, Plus, CheckCircle2, AlertTriangle, X, Timer,
   Zap, Target, Flame, Calendar, TrendingUp, Coffee,
   ChevronDown, ChevronRight, MessageSquare, AlertOctagon, ListChecks,
-  Clock, Pencil,
+  Clock, Pencil, Copy,
 } from "lucide-react";
 import { useStore } from "../../../lib/store";
 import type { ProjectTask, TaskStatus } from "../../../lib/forgeTypes";
@@ -44,6 +44,7 @@ export default function QuarrySection() {
   const { forge, updateForge } = useStore();
   const [filter, setFilter] = useState<string>("all");
   const [todayOnly, setTodayOnly] = useState(false);
+  const [nextOnly, setNextOnly] = useState(false);
   const [matrixMode, setMatrixMode] = useState<"kanban"|"eisenhower"|"effort">("kanban");
   const [adding, setAdding] = useState<{col:TaskStatus, open:boolean}>({col:"todo",open:false});
   const [batchText, setBatchText] = useState("");
@@ -57,8 +58,9 @@ export default function QuarrySection() {
     let ts = forge.tasks;
     if (filter !== "all") ts = ts.filter(t => t.projectId === filter);
     if (todayOnly) ts = ts.filter(t => t.today);
+    if (nextOnly) ts = ts.filter(t => t.nextAction);
     return ts;
-  }, [forge.tasks, filter, todayOnly]);
+  }, [forge.tasks, filter, todayOnly, nextOnly]);
 
   const projectById = useMemo(() => Object.fromEntries(forge.projects.map(p=>[p.id,p])), [forge.projects]);
 
@@ -103,6 +105,14 @@ export default function QuarrySection() {
     }
   };
   const delTask = (id: string) => updateForge(f=>({tasks:f.tasks.filter(t=>t.id!==id)}));
+  const cloneTask = (id: string) => {
+    const src = forge.tasks.find(t=>t.id===id); if (!src) return;
+    const copy: ProjectTask = { ...src, id: uid(), title: src.title + " (copy)",
+      createdAt: today(), completedAt: undefined, doneAt: undefined, pomodoros: 0,
+      subtaskIds: [], comments: [], clonedFrom: id, today: false, stuck: false };
+    updateForge(f=>({tasks:[copy,...f.tasks]}));
+    window.dispatchEvent(new CustomEvent("career:toast",{detail:{title:"CLONED",sub:copy.title.slice(0,40),color:"#06b6d4",icon:"copy",timeout:2200}}));
+  };
   const toggleToday = (id: string) => {
     const t = forge.tasks.find(x=>x.id===id); if(!t)return;
     patchTask(id,{today:!t.today});
@@ -160,6 +170,11 @@ export default function QuarrySection() {
           style={{background:todayOnly?"var(--fr-cyan)":"transparent",color:todayOnly?"#000":"var(--fr-fgMuted)",border:`1px solid ${todayOnly?"var(--fr-cyan)":"var(--fr-borderSoft)"}`}}>
           <Calendar size={10}/> TODAY
         </button>
+        <button onClick={()=>{setNextOnly(v=>!v);setTodayOnly(false);}}
+          className="mono text-[10px] tracking-widest font-bold px-3 py-1.5 rounded-sm flex items-center gap-1"
+          style={{background:nextOnly?"var(--fr-amber)":"transparent",color:nextOnly?"#000":"var(--fr-fgMuted)",border:`1px solid ${nextOnly?"var(--fr-amber)":"var(--fr-borderSoft)"}`}}>
+          ▶ NEXT
+        </button>
         <div className="flex-1"/>
         <div className="mono text-[10px] tracking-widest" style={{color:"var(--fr-fgMuted)"}}>
           {visibleTasks.length} BLOCKS · {visibleTasks.filter(t=>t.status==="done").length} SHIPPED
@@ -211,6 +226,12 @@ export default function QuarrySection() {
                                   {isOpen ? <ChevronDown size={10}/> : <ChevronRight size={10}/>}
                                 </button>
                               </div>
+                              {t.nextAction && (
+                                <div className="mt-1 inline-flex items-center gap-1 mono text-[8px] tracking-widest px-1 py-0.5 rounded-sm"
+                                  style={{background:"rgba(245,158,11,0.15)",color:"var(--fr-amber)",border:"1px solid rgba(245,158,11,0.4)"}}>
+                                  ▶ NEXT
+                                </div>
+                              )}
                               <div className="flex items-center gap-1.5 mt-1.5 mono text-[8px] tracking-widest flex-wrap">
                                 <span style={{color:t.priority==="P0"?"#ef4444":t.priority==="P1"?"#f59e0b":"var(--fr-fgMuted)"}}>●{t.priority}</span>
                                 {t.energy && t.focus && <>
@@ -281,6 +302,9 @@ export default function QuarrySection() {
                               style={{color:t.stuck?"#ef4444":"var(--fr-fgMuted)",border:`1px solid ${t.stuck?"#ef4444":"var(--fr-borderSoft)"}`}}>
                               {t.stuck?"UN-JAM":"JAM"}
                             </button>
+                            <button onClick={()=>cloneTask(t.id)} title="Clone"
+                              className="mono text-[7px] font-bold tracking-widest px-1 py-0.5 rounded-sm"
+                              style={{color:"#a78bfa"}}><Copy size={8} className="inline -mt-0.5"/></button>
                             <button onClick={()=>delTask(t.id)}
                               className="ml-auto mono text-[7px] font-bold tracking-widest px-1 py-0.5 rounded-sm"
                               style={{color:"var(--fr-red)"}}>✕</button>
@@ -456,6 +480,40 @@ function TaskEditor({task,onPatch,onAddSub,subs,onToggleSub,projectColor}:{
           placeholder="What's blocking? Any notes?"
           className="w-full bg-transparent outline-none pencil text-[11px] p-1 rounded-sm resize-none"
           style={{border:"1px solid var(--fr-borderSoft)",color:"var(--fr-fg)"}}/>
+      </div>
+      <DependsEditor task={task}/>
+      <div className="flex items-center gap-2">
+        <button onClick={()=>onPatch({nextAction:!(task.nextAction)})}
+          className="flex-1 mono text-[8px] font-bold tracking-widest px-2 py-1 rounded-sm"
+          style={{background:task.nextAction?"var(--fr-amber)":"transparent",color:task.nextAction?"#000":"var(--fr-fgMuted)",border:`1px solid ${task.nextAction?"var(--fr-amber)":"var(--fr-borderSoft)"}`}}>
+          ▶ NEXT ACTION
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function DependsEditor({task}:{task:ProjectTask}){
+  // Uses setDep in closure via parent; but we don't have direct access to forge/updateForge here.
+  // Accept via context: useStore() locally.
+  const { forge, updateForge } = useStore();
+  const others = forge.tasks.filter(x=>x.projectId===task.projectId && x.id!==task.id && !x.parentId);
+  const sel = (task.dependsOn||[]).slice();
+  const toggle = (id:string) => {
+    const next = sel.includes(id) ? sel.filter(x=>x!==id) : [...sel,id];
+    updateForge(f => ({ tasks: f.tasks.map(t => t.id===task.id ? { ...t, dependsOn: next } : t) }));
+  };
+  return (
+    <div>
+      <div className="mono text-[8px] tracking-widest mb-1" style={{color:"var(--fr-fgMuted)"}}>DEPENDS ON ({sel.length})</div>
+      <div className="max-h-20 overflow-auto space-y-0.5">
+        {others.slice(0,12).map(o=>(
+          <label key={o.id} className="flex items-center gap-1 mono text-[9px]">
+            <input type="checkbox" checked={sel.includes(o.id)} onChange={()=>toggle(o.id)}/>
+            <span className={o.status==="done"?"line-through opacity-50":""}>{o.title.slice(0,36)}</span>
+          </label>
+        ))}
+        {others.length===0 && <div className="mono text-[9px] italic" style={{color:"var(--fr-fgDim)"}}>no other blocks yet</div>}
       </div>
     </div>
   );

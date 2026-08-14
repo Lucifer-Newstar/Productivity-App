@@ -12,7 +12,7 @@ import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Flame, Hammer, Plus, AlertTriangle, CheckCircle2, XCircle, CircleDot,
-  Clock, Zap, Skull, Archive, TrendingUp, Target, Activity, BarChart3,
+  Clock, Zap, Skull, Archive, TrendingUp, Target, Activity, BarChart3, X,
 } from "lucide-react";
 import { useStore } from "../../../lib/store";
 import { useTheme } from "../../../lib/theme";
@@ -317,6 +317,31 @@ export default function FoundrySection() {
           <span className="mono text-[10px] tracking-widest opacity-0 group-hover:opacity-100 transition" style={{color:"#06b6d4"}}>→</span>
         </div>
       </Link>
+
+      {/* Parking lot */}
+      {forge.parking.length > 0 && (
+        <div className="rounded-sm steel-plate p-4 relative" style={{borderColor:"#94a3b855"}}>
+          <span className="riv-tl"/><span className="riv-tr"/><span className="riv-bl"/><span className="riv-br"/>
+          <div className="flex items-center gap-2 mb-2">
+            <Archive size={13} style={{color:"#94a3b8"}}/>
+            <h3 className="mono text-[11px] font-black tracking-[0.25em]" style={{color:"#94a3b8"}}>PARKING LOT · {forge.parking.length}</h3>
+          </div>
+          <div className="grid md:grid-cols-2 gap-1">
+            {forge.parking.slice(0,8).map(pi=>{
+              const proj = pi.projectId ? forge.projects.find(p=>p.id===pi.projectId) : null;
+              return (
+                <div key={pi.id} className="flex items-start gap-2 p-1.5 rounded-sm text-xs"
+                  style={{background:"var(--fr-card2)",border:"1px solid var(--fr-borderSoft)"}}>
+                  <span style={{color:proj?.color||"var(--fr-fgDim)"}}>{proj?.icon||"•"}</span>
+                  <span className="flex-1 pencil italic" style={{color:"var(--fr-fgMuted)"}}>{pi.text}</span>
+                  <button onClick={()=>updateForge(f=>({parking:f.parking.filter(x=>x.id!==pi.id)}))}
+                    className="opacity-50 hover:opacity-100" style={{color:"var(--fr-red)"}}><X size={10}/></button>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
 
       {/* Cold stock */}
       {cold.length > 0 && (

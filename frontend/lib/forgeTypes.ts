@@ -176,6 +176,8 @@ export interface ProjectTask {
   recurringDays?: number; // repeat every N days
   assignee?: string;
   recurrence?: { freq: "daily"|"weekly"|"biweekly"|"monthly"; interval: number };
+  nextAction?: boolean;
+  clonedFrom?: string;
 }
 
 export interface TimelineEvent {
