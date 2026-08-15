@@ -68,6 +68,7 @@ Base URL: `http://localhost:4000/api`
 | journal             | `/journal`                  |
 | board               | `/board`                    |
 | restDays            | `/rest-days`                |
+| kanban              | `/kanban`                   |
 
 ### Sessions (special routes)
 
@@ -180,6 +181,19 @@ Generic CRUD under `/forge/*` — mirrors `ForgeState` collections
 | streak        | `/forge/streak`   |
 | settings      | `/forge/settings` |
 
+### Workout singletons (GET / PUT)
+
+| Singleton | Path                | Mirrors |
+|-----------|---------------------|---------|
+| settings  | `/workout/settings` | `WorkoutState.settings` (units, phase, plate inventory…) |
+| meta      | `/workout/meta`     | scalars: `activeSessionId`, `lastWorkoutDate`, `currentStreak`, `longestStreak` |
+
+### Career singletons (GET / PUT)
+
+| Singleton | Path           | Mirrors |
+|-----------|----------------|---------|
+| meta      | `/career/meta` | `CareerState.retirement` plan + `linkedin` url |
+
 ### Forge analytics
 
 | Method | Path                       | Description                                  |
@@ -231,6 +245,7 @@ Generic CRUD under `/health/*` — mirrors `HealthState` collections
 | settings       | `/health/settings`         |
 | bedtimeRoutine | `/health/bedtime-routine`  |
 | wakeRoutine    | `/health/wake-routine`     |
+| meta           | `/health/meta`             | (`measurementGoals`, `measureFrequency`, `phaseOverride`, `pinnedFoods`, `lastScoreDate`) |
 
 ### Health analytics
 
@@ -244,6 +259,9 @@ Server-side mirrors of `frontend/lib/healthAnalytics.ts`
 | GET | `/health/analytics/water-goal`    | `weight[, climateMult=1.1, workoutMl=0]` | `{ goalMl }` |
 | GET | `/health/analytics/navy-bf`       | `waist, neck, height[, gender, hip]` | `{ bfPct }` (US Navy method; `hip` required for female) |
 | GET | `/health/analytics/sleep-bank`    | `[ideal=8]` | `{ bankHours, nights, ideal }` over stored last-14 sleep rows |
+| GET | `/health/analytics/fasting-window` | `start, end[, now]` | `{ inWindow, hoursToNext, next, eatingHours, fastingHours }` (wave 8A, cross-midnight safe) |
+| GET | `/health/analytics/spike-risk`    | `carbQuality, pairing[, carbsG]` | `{ level, score }` (wave 8B heuristic H34) |
+| GET | `/health/analytics/body-comp`     | — | `{ phase, weightChangeKg, waistChangeCm }` over stored 28d bodyweight+measurements (wave 8E, H37) |
 | GET | `/health/analytics/daily-summary` | `[date=today]` | `{ kcal, proteinG, carbsG, fatG, waterMl, caffeineMg, sleepH, suppsTaken, mealCount }` |
 
 ### Health export

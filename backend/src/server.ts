@@ -59,6 +59,7 @@ const db: Record<string, Record<string, Row>> = {
   journal: {},
   board: {},
   restDays: {},
+  kanban: {},
   // Career domain
   roadmaps: {},
   careerSkills: {},
@@ -158,12 +159,16 @@ const db: Record<string, Record<string, Row>> = {
 
 // Singleton documents (single JSON object, GET/PUT semantics).
 const singletons: Record<string, Row | null> = {
-  forgeStreak: null,     // ForgeState.streak
-  forgeSettings: null,   // ForgeState.settings
-  healthProfile: null,   // HealthState.profile
-  healthSettings: null,  // HealthState.settings
-  bedtimeRoutine: null,  // HealthState.bedtimeRoutine
-  wakeRoutine: null,     // HealthState.wakeRoutine
+  forgeStreak: null,       // ForgeState.streak
+  forgeSettings: null,     // ForgeState.settings
+  healthProfile: null,     // HealthState.profile
+  healthSettings: null,    // HealthState.settings
+  bedtimeRoutine: null,    // HealthState.bedtimeRoutine
+  wakeRoutine: null,       // HealthState.wakeRoutine
+  healthMeta: null,        // HealthState scalar/object meta: measurementGoals, measureFrequency, phaseOverride, pinnedFoods, lastScoreDate
+  workoutSettings: null,   // WorkoutState.settings (units, phase, plates, etc.)
+  workoutMeta: null,       // WorkoutState scalars: activeSessionId, lastWorkoutDate, currentStreak, longestStreak
+  careerMeta: null,        // CareerState scalars/objects: retirement plan, linkedin url
 };
 
 const uid = () => Math.random().toString(36).slice(2, 10) + Date.now().toString(36);
@@ -433,6 +438,49 @@ app.get("/api/health/analytics/sleep-bank", (req, res) => {
   res.json({ bankHours: +bank.toFixed(1), nights: entries.length, ideal });
 });
 
+// GET /api/health/analytics/fasting-window?start=12&end=20[&now=14.5] — wave 8A mirror
+app.get("/api/health/analytics/fasting-window", (req, res) => {
+  const norm = (h: number) => ((h % 24) + 24) % 24;
+  const s = norm(Number(req.query.start ?? 12)), e = norm(Number(req.query.end ?? 20));
+  const d = new Date();
+  const n = norm(req.query.now != null ? Number(req.query.now) : d.getHours() + d.getMinutes() / 60);
+  const eatingHours = norm(e - s) || 24;
+  const inWindow = s <= e ? (n >= s && n < e) : (n >= s || n < e);
+  const until = (t: number) => norm(t - n) || 24;
+  res.json(inWindow
+    ? { inWindow, hoursToNext: +until(e).toFixed(2), next: "closes", eatingHours, fastingHours: 24 - eatingHours }
+    : { inWindow, hoursToNext: +until(s).toFixed(2), next: "opens", eatingHours, fastingHours: 24 - eatingHours });
+});
+
+// GET /api/health/analytics/spike-risk?carbQuality=simple&pairing=none[&carbsG=90] — wave 8B mirror
+app.get("/api/health/analytics/spike-risk", (req, res) => {
+  const cq = String(req.query.carbQuality ?? "mixed");
+  const pr = String(req.query.pairing ?? "some");
+  const carbs = Number(req.query.carbsG ?? 0);
+  let score = (cq === "simple" ? 2 : cq === "mixed" ? 1 : 0) + (pr === "none" ? 2 : pr === "some" ? 1 : 0);
+  if (carbs >= 80) score += 1;
+  if (carbs > 0 && carbs < 20) score -= 1;
+  const level = score >= 4 ? "high" : score >= 2 ? "medium" : "low";
+  res.json({ level, score });
+});
+
+// GET /api/health/analytics/body-comp — wave 8E mirror over stored bodyweight + healthMeasurements (28d window)
+app.get("/api/health/analytics/body-comp", (_req, res) => {
+  const cutoff = new Date(Date.now() - 28 * 86_400_000).toISOString().slice(0, 10);
+  const w = (Object.values(db.bodyweight) as any[]).filter(x => x.date >= cutoff).sort((a, b) => a.date.localeCompare(b.date));
+  const m = (Object.values(db.healthMeasurements) as any[]).filter(x => !x.pump && x.waistCm != null && x.date >= cutoff).sort((a, b) => a.date.localeCompare(b.date));
+  const weightChangeKg = w.length >= 2 ? Math.round((w[w.length - 1].weightKg - w[0].weightKg) * 10) / 10 : 0;
+  const waistChangeCm = m.length >= 2 ? Math.round((m[m.length - 1].waistCm - m[0].waistCm) * 10) / 10 : 0;
+  let phase = "unknown";
+  if (w.length >= 2) {
+    if (Math.abs(weightChangeKg) <= 1 && waistChangeCm <= -0.5) phase = "recomp";
+    else if (weightChangeKg > 1) phase = "bulk";
+    else if (weightChangeKg < -1) phase = "cut";
+    else phase = "maintenance";
+  }
+  res.json({ phase, weightChangeKg, waistChangeCm, windowDays: 28 });
+});
+
 // GET /api/health/analytics/daily-summary?date=YYYY-MM-DD — kcal/protein/water/sleep/supps for one day
 app.get("/api/health/analytics/daily-summary", (req, res) => {
   const date = String(req.query.date ?? today());
@@ -529,6 +577,7 @@ const CRUD: [string, string][] = [
   ["journal", "/journal"],
   ["board", "/board"],
   ["restDays", "/rest-days"],
+  ["kanban", "/kanban"],
   // Career
   ["roadmaps",          "/career/roadmaps"],
   ["careerSkills",      "/career/skills"],
@@ -636,12 +685,16 @@ for (const [table, path] of CRUD) {
 
 // ---------------- Singleton routes ----------------
 const SINGLETONS: [string, string][] = [
-  ["forgeStreak",    "/forge/streak"],
-  ["forgeSettings",  "/forge/settings"],
-  ["healthProfile",  "/health/profile"],
-  ["healthSettings", "/health/settings"],
-  ["bedtimeRoutine", "/health/bedtime-routine"],
-  ["wakeRoutine",    "/health/wake-routine"],
+  ["forgeStreak",     "/forge/streak"],
+  ["forgeSettings",   "/forge/settings"],
+  ["healthProfile",   "/health/profile"],
+  ["healthSettings",  "/health/settings"],
+  ["bedtimeRoutine",  "/health/bedtime-routine"],
+  ["wakeRoutine",     "/health/wake-routine"],
+  ["healthMeta",      "/health/meta"],
+  ["workoutSettings", "/workout/settings"],
+  ["workoutMeta",     "/workout/meta"],
+  ["careerMeta",      "/career/meta"],
 ];
 for (const [key, path] of SINGLETONS) {
   const full = `/api${path}`;
