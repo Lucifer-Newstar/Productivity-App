@@ -7,6 +7,8 @@ Kaizen's state is split across typed modules:
 - `frontend/lib/careerTypes.ts` — Career data model (9 sectors).
 - `frontend/lib/forgeTypes.ts` — Projects space data model (40+ collections in
   ForgeState).
+- `frontend/lib/healthTypes.ts` — Health space data model (nutrition, hydration,
+  sleep, physique, supplements, vitals, mind, settings). See below.
 - Workout types live in `types.ts` for legacy reasons and are being incrementally
   split out.
 
@@ -150,6 +152,19 @@ ForgeState
 - `customStatuses` ids are free-form strings (runtime editable) — never hardcode
   `"done"`; use `isDoneStatus(id)` which treats the **last** column as shipped.
 
+### MeasurementEntry fields (v1 wave 4)
+- Required: `date`, optional weightKg (snapshotted from Workout at log-time)
+- Navy inputs: `neckCm`, `waistCm`, `hipCm` (female), optional `heightCm` override
+- Circumference sites (all cm, L/R bilateral for limbs): shoulders, chest relaxed, chest flexed, L/R arm, L/R forearm, L/R thigh, L/R calf, wrist, ankle
+- `navyBfPct` cached at save-time so historical values don't shift if constants change
+- `note` free-text
+
+### ProgressPhoto fields
+- `dataUrl` (image/jpeg base64; 480px wide JPEG 0.75 quality from webcam, arbitrary resolution from upload)
+- `tags[]` — 9 preset: front/side/back × relaxed/flexed, progress, pump, other
+- Weight + BF% stamped at save-time for before/after comparison
+- Storage budget: capped at 200 entries (dataURLs ~30KB each @ 480px ≈ 6MB worst-case); IndexedDB migration deferred to v1.2
+
 ### Persistence
 
 Same Zustand + localStorage root (`"kaizen.root"`) as the rest of the app —
@@ -165,3 +180,144 @@ set of collections (skills, jobs, roadmap, certs, portfolio, network, daily
 log, etc.). The legacy `types.ts` still re-exports the shapes it used to own
 via `Legacy*` aliases for back-compat — see `docs/CAREER.md` for the full
 breakdown.
+
+---
+
+## Health (VITAL-SIGN OS) — shipped state (Waves 1-3)
+
+Health state lives under `health: HealthState` in `frontend/lib/healthTypes.ts`.
+Hydrated through `migrateHealth` (idempotent); seeded with profile defaults for
+a 20yo male lifter in Chennai (175cm, moderate activity, maintain, climate×1.1,
+8h ideal sleep, 12-20 IF window). Persisted at localStorage key `kaizen.health`.
+
+```
+HealthState (as of Wave 9 — v1.1 feature-complete)
+ ├── profile:            HealthProfile      # gender/age/height/targets/activity/goal/city/climateMult/units/idealSleep/eatingWindow
+ ├── scores:             DailyScore[]       # wave 6 — cached 0-100 composite
+ ├── meals:              MealEntry[]        # Breakfast/Lunch/Dinner/Snack (Wave 2 ✓)
+ │    └── items:         MealItem[]         # name+kcal+C/P/F (linked to 90-dish Indian food DB or manual)
+ ├── water:              WaterEntry[]       # ml + beverage + electrolytes + caffeineMg (Wave 2 ✓)
+ ├── sleep:              SleepEntry[]       # bed/wake ISO / durationH / quality 1-10 / latencyMin / wakeUps / dream? / hygiene? / note?
+ ├── nutrients:          DailyNutrientEntry[] # Wave 8B — per-day fiber/sugar/sodium/chol/sat/trans/omega-3 + 6-axis radar + vit/mineral/functional-food quick-logs
+ ├── recipes:            Recipe[]           # Wave 8C — ingredients[] + portions → auto per-serving nutrition
+ ├── mealPlan:           PlannedMeal[]      # Wave 8C — 7-dow × 4-slot cells; prepped? flag for meal-prep
+ ├── restaurantMeals:    RestaurantMeal[]   # Wave 8C — per-eatery saved orders 🌏 (timesUsed/lastUsed)
+ ├── naps:               NapEntry[]         # Wave 8D — durationMin + power/long kind
+ ├── urineChecks:        UrineCheck[]       # Wave 8D — 1-8 color scale self-checks
+ ├── workoutCheckins:    WorkoutCheckin[]   # Wave 8G — energyPre/motivation/energyPost/quality 1-10 + soreAreas[]
+ ├── healthGoals:        HealthGoalItem[]   # Wave 8G — metric/target/deadline/done
+ ├── competitions:       CompetitionEntry[] # Wave 8G — meets: date/class/weighIn/result
+ ├── habitBreaks:        HabitBreakEntry[]  # Wave 8G — no-guilt reset log
+ ├── measurements:       MeasurementEntry[] # Wave 4 (multi-site tape) + pump? flag (Wave 8E, excluded from baselines)
+ ├── measurementGoals:   MeasurementGoals   # Wave 8E — target cm per body part
+ ├── measureFrequency:   MeasureFrequency   # Wave 8E — weekly|biweekly|monthly cadence
+ ├── phaseOverride:      PhysiquePhase|null # Wave 8E — manual bulk/cut/maint/recomp override
+ ├── pinnedFoods:        string[]           # Wave 8A — pinned names in frequent-foods library
+ ├── supplementDefs:     SupplementDef[]    # 13 seeded + user customs (whey/creatine/multivit/D3/B12/omega3/Mg/Zn/Ca/ashwa/pre/eaa/probiotic)
+ ├── supplementLog:      SupplementLog[]    # per-day per-suppId taken? + time + dose
+ ├── vitals:             VitalsEntry[]      # Wave 5 (HR/BP/HRV/temp/SpO2)
+ ├── mind:               MindEntry[]        # Wave 5 (mood/stress/energy/anxiety/focus/libido + journal)
+ ├── circadian:          CircadianEntry[]   # per-date firstSunlight/firstMeal/lastMeal/caffeineCutoff/screenOff (HH:MM)
+ ├── sunlight:           SunlightEntry[]    # id/date/minutes/timeOfDay(morning|midday|afternoon|evening)
+ ├── bedtimeRoutine:     BedtimeRoutine     # windowStart/End + steps[] (ordered checklist)
+ ├── wakeRoutine:        WakeRoutine        # windowStart/End + steps[] (ordered checklist)
+ └── settings:           HealthSettings     # nudges/sound/quietHours/alcoholOptIn + 10 Workout bridge toggles
+```
+
+**Wave 8 profile additions:** `fastingPreset` (16:8/18:6/14:10/omad/custom),
+`macroPreset` + `macroCarbsPct/ProteinPct/FatPct` (always sum 100),
+`pinHash` (FNV-1a — dream-journal honesty-lock, wave 8D).
+**Wave 8 MealEntry additions:** `photoDataUrl`, `carbQuality`/`pairing`
+(sugar-spike estimator), `preWorkout`/`postWorkout` flags (effectiveness
+tracking). **SleepEntry additions:** `dreamTags[]`, `procrastinated` +
+`procrastinationReason`.
+
+### Key entity notes (Waves 1-3)
+
+- **MealItem** has optional food-link; manual quick-adds are free-text. 90-dish
+  seed DB in `healthFoodDb.ts` (South/ North/ street/ sweets/ drinks/ gym/ fruit).
+- **WaterEntry.beverage** drives hydration coefficient & caffeine tally (EFSA
+  400mg/day cap, post-4pm warning, coconut water default electrolyte beverage).
+- **SleepEntry.date** is the wake-day (YYYY-MM-DD IST). One entry per wake day;
+  re-logging overwrites. Hygiene is a 10-boolean tick map (see H10b).
+- **SupplementDef.seed merge:** migrateHealth unions pre-wave-3 defs with
+  `SEED_SUPPLEMENT_DEFS` keyed by id so new seeds appear without wiping customs.
+- **CircadianEntry** is sparse (only filled-in fields persisted; empty entries
+  are pruned so the array doesn't grow unboundedly).
+- **BedtimeRoutine/WakeRoutine** each carry an ordered `steps[]` of
+  `{id, label, doneToday}`. Done flags are day-scoped and reset when the day
+  rolls over (no cron — "today" is implicit via the current date on render).
+- **Bodyweight is NOT duplicated** — Health reads `workout.bodyweight[]` via
+  selector as source of truth. `measurements[]` is for tape-only data.
+- **PIN protection** for dream journal is deferred (dreams stored plaintext
+  locally; PIN lock comes in a later wave).
+- **IDs** are random via the shared `uid()` helper (36-rad chars).
+
+### Deferred (Wave 4+):
+
+- Recipes, restaurants, meal planner, meal prep (Wave 8 v1.1 niceties).
+- Progress photos, Navy BF%, weight-class charts (Wave 4 Soma).
+- HR/BP/HRV/temp/SpO2, symptoms/illness/injury/meds (Wave 5 Vitals).
+- Mood/stress/energy/anxiety/focus/libido sliders, free journal, crisis
+  helplines (Vandrevala 1860-2662-345 / iCall 9152987821 / NIMHANS) (Wave 5 Mind).
+- Timeline, weekly/monthly/annual reports, CSV/JSON export, streaks (Wave 6 Reports).
+- Full workout bridge (reverse TDEE, pre/post-wo cards, S:W from PRs, recovery
+  wired into Workout deload detector) (Wave 7).
+- Restaurant mode, recipe analyzer, IF clock visualizer, sugar-spike estimator,
+  bloodwork pinning to override deficiency estimates (Wave 8).
+
+### Workout bridge (directional)
+
+Health **reads** from Workout: bodyweight, sessions, cardioLogs, PRs, readiness,
+routine muscle focus, caffeine/hydration fields on sessions.
+Health **advises** Workout via: hydration warning %, sleep-debt flags, recovery
+score, injury restrictions, deload suggestions, TDEE-derived calorie target.
+Health never mutates Workout collections directly. See ALGORITHMS.md for the
+full contract table.
+
+### MeasurementEntry fields (v1 wave 4)
+- Required: `date`, optional weightKg (snapshotted from Workout at log-time)
+- Navy inputs: `neckCm`, `waistCm`, `hipCm` (female), optional `heightCm` override
+- Circumference sites (all cm, L/R bilateral for limbs): shoulders, chest relaxed, chest flexed, L/R arm, L/R forearm, L/R thigh, L/R calf, wrist, ankle
+- `navyBfPct` cached at save-time so historical values don't shift if constants change
+- `note` free-text
+
+### ProgressPhoto fields
+- `dataUrl` (image/jpeg base64; 480px wide JPEG 0.75 quality from webcam, arbitrary resolution from upload)
+- `tags[]` — 9 preset: front/side/back × relaxed/flexed, progress, pump, other
+- Weight + BF% stamped at save-time for before/after comparison
+- Storage budget: capped at 200 entries (dataURLs ~30KB each @ 480px ≈ 6MB worst-case); IndexedDB migration deferred to v1.2
+
+### Persistence
+
+Same Zustand + localStorage root (`"kaizen.health"`) — health is fully
+offline-first. No backend calls in v1.
+
+### Workout bridge (directional)
+
+Health **reads** from Workout: bodyweight, sessions, cardioLogs, PRs, readiness,
+routine muscle focus, caffeine/hydration fields on sessions.
+Health **advises** Workout via: hydration warning %, sleep-debt flags, recovery
+score, injury restrictions, deload suggestions, TDEE-derived calorie target.
+Health never mutates Workout collections directly. See ALGORITHMS.md for the
+full contract table.
+
+### MeasurementEntry fields (v1 wave 4)
+- Required: `date`, optional weightKg (snapshotted from Workout at log-time)
+- Navy inputs: `neckCm`, `waistCm`, `hipCm` (female), optional `heightCm` override
+- Circumference sites (all cm, L/R bilateral for limbs): shoulders, chest relaxed, chest flexed, L/R arm, L/R forearm, L/R thigh, L/R calf, wrist, ankle
+- `navyBfPct` cached at save-time so historical values don't shift if constants change
+- `note` free-text
+
+### ProgressPhoto fields
+- `dataUrl` (image/jpeg base64; 480px wide JPEG 0.75 quality from webcam, arbitrary resolution from upload)
+- `tags[]` — 9 preset: front/side/back × relaxed/flexed, progress, pump, other
+- Weight + BF% stamped at save-time for before/after comparison
+- Storage budget: capped at 200 entries (dataURLs ~30KB each @ 480px ≈ 6MB worst-case); IndexedDB migration deferred to v1.2
+
+### Persistence
+
+Same Zustand + localStorage root (`"kaizen.root"`) — health is fully
+offline-first. Voice Blob URL session-only pattern is reused for meal/photo
+preview URLs where applicable. `/api/health/*` backend routes are a future
+drop-in, not wired in v1.0.

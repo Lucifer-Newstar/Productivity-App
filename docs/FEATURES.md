@@ -1,10 +1,12 @@
 # Kaizen Feature Status
 
-Last audited against code on `main` (session: 2026-08-14, v1.0 pass). Three fully-built spaces ship today:
-**Workout** (imperial Japanese/obsidian, battle-tested), **Career** (Night HUD /
-Blueprint dual themes), and **Projects** (Foundry / Drafting-Room dual themes — branded
-"Forge" in the UI; full project/task OS with 16 strategy canvases). Health and
-Entertainment are placeholders (SpaceTasks) pending full-bleed builds.
+Last audited against code on `main` (session: 2026-08-14, v1.0 pass, health `health` branch opened).
+Three spaces fully ship today: **Workout** (imperial Japanese/obsidian, battle-tested),
+**Career** (Night HUD / Blueprint dual themes), and **Projects** (Foundry / Drafting-Room dual themes
+— branded "Forge" in the UI; full project/task OS with 16 strategy canvases).
+**Health** is in active construction on branch `health` (257-feature spec approved, 9-wave plan,
+deep Workout bridge documented). **Entertainment** is still a placeholder (SpaceTasks) pending a
+full-bleed cinema/neon redesign.
 
 Per-space deep dives: [`spaces/workout`](spaces/workout/README.md) ·
 [`spaces/career`](spaces/career/README.md) ·
@@ -535,3 +537,40 @@ Known v1.2+ backlog (intentional deferral): storyboard canvas, full CPM float ca
 project comparison view, effort variance report, auto-Eisenhower filing, stakeholder↔
 NetworkContact picker, drag-to-reposition in Mindmap/Canvas, drag-reorder of custom
 columns, HTML5-dnd polish on Kanban cards.
+
+---
+
+# Health (VITAL-SIGN) Feature Status
+
+The `/health` space is being built on branch `health` as a full-bleed medical/vitals OS
+codename **VITAL-SIGN** with a CLINIC light variant. It covers non-exercise wellness
+data across 10 sections (TRIAGE, FUEL, HYDRATION, SOMNIUM, SOMA, APOTHECARY,
+VITALS, MIND, SYNC LAB, REPORTS) — 257 features total — and connects bidirectionally
+to Workout through a governed bridge contract.
+
+- Full per-feature checklist: [`spaces/health/FEATURES.md`](spaces/health/FEATURES.md)
+- Architecture + theme: [`spaces/health/README.md`](spaces/health/README.md)
+- Algorithms (BMR/TDEE/Navy BF%/dynamic hydration/sleep bank/recovery/bridge): [`ALGORITHMS.md`](ALGORITHMS.md)
+- QA gates + per-wave checklist: [`spaces/health/QA.md`](spaces/health/QA.md)
+
+Profile defaults are tuned to a 20yo male lifter in Chennai, TN, India: ICMR RDA
+micronutrient targets with elevated emphasis on Vitamin D/B12/iron/zinc/calcium/omega-3
+(per ICMR/NIN urban-India deficiency data), Chennai +10% climate multiplier for
+hydration, 80+ pre-seeded Indian dishes (idli/dosa/sambar/parotta/biryani/chicken 65/thali/filter coffee/chai/etc.),
+coconut water as a default electrolyte beverage, Fitzpatrick Type IV-V skin note for
+Vit D synthesis, IST midnight reset, and Indian crisis helplines in the Mind section.
+
+## Current implementation status (wave 0 — docs + branch)
+
+| Area | Status |
+|---|---|
+| Feature spec (257 features / 10 sections / 9 waves) | ✅ |
+| Algorithms (14 + bridge contract) | ✅ documented |
+| Architecture docs | ✅ updated |
+| Data model (HealthState shape) | ✅ documented (types file not yet created) |
+| Per-space README + QA | ✅ |
+| `health` git branch created | ✅ |
+| Code (shell/components/types/store/routes) | ❌ Wave 1 pending |
+| tsc / build / smoke | ❌ N/A until code ships |
+
+Merge to `main` will happen after explicit user approval post-wave-9 QA.

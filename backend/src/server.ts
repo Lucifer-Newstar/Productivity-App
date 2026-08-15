@@ -1,17 +1,21 @@
 /**
  * Kaizen — REST API (Express, in-memory store).
  *
- * Runs on port 4000 (set via PORT env). Mirrors the frontend TypeScript
- * domain model from frontend/lib/types.ts + frontend/lib/careerTypes.ts.
- * Covers both Workout and Career domains. All routes are JSON.
+ * Runs on port 4000 (set via PORT env). Mirrors the FULL frontend TypeScript
+ * domain model across every space:
  *
- * This is intentionally minimal — no database, no auth, no validation
- * library. It is designed to let the frontend sync data to a server during
- * local development and to serve as a reference for a future production
- * implementation (Postgres/Prisma, JWT auth, etc.).
+ *   - Core    → tasks, notes                     (frontend/lib/types.ts)
+ *   - Workout → 25 collections                   (frontend/lib/types.ts)
+ *   - Career  → 25 collections                   (frontend/lib/careerTypes.ts)
+ *   - Forge   → 37 collections + 2 singletons    (frontend/lib/forgeTypes.ts)
+ *   - Health  → 20 collections + 4 singletons    (frontend/lib/healthTypes.ts)
  *
- * See docs/API.md for the full route reference; see docs/CAREER.md for the
- * career data model.
+ * All routes are JSON. This is intentionally minimal — no database, no auth,
+ * no validation library. It lets the offline-first frontend push/pull its
+ * whole state (`/api/sync`) during local development and serves as the
+ * reference for a future production implementation (Postgres/Prisma, JWT).
+ *
+ * See docs/API.md for the full route reference.
  */
 
 import express, { Request, Response, NextFunction } from "express";
@@ -19,12 +23,16 @@ import cors from "cors";
 
 const app = express();
 app.use(cors({ origin: ["http://localhost:3000", "http://127.0.0.1:3000"] }));
-app.use(express.json({ limit: "2mb" }));
+app.use(express.json({ limit: "8mb" })); // photos are dataURLs — allow room
 
 // ---------------- In-memory store ----------------
-// Simple collection of records keyed by id, with typed helpers.
+// Collections of records keyed by id.
 type Row = Record<string, any>;
 const db: Record<string, Record<string, Row>> = {
+  // Core (home dashboard)
+  tasks: {},
+  notes: {},
+  // Workout domain
   exercises: {},
   prs: {},
   skills: {},
@@ -51,6 +59,7 @@ const db: Record<string, Record<string, Row>> = {
   journal: {},
   board: {},
   restDays: {},
+  kanban: {},
   // Career domain
   roadmaps: {},
   careerSkills: {},
@@ -77,11 +86,95 @@ const db: Record<string, Record<string, Row>> = {
   tracks: {},
   careerGoals: {},
   careerNotes: {},
+  // Forge (Projects space) domain
+  forgeProjects: {},
+  forgeTasks: {},
+  forgeScratch: {},
+  forgeDecisions: {},
+  forgeSwot: {},
+  forgeProsCons: {},
+  forgeScenarios: {},
+  forgeFiveWhys: {},
+  forgeLessons: {},
+  forgeRetros: {},
+  forgeParking: {},
+  forgePomodoros: {},
+  forgePersonas: {},
+  forgeDecisionMatrix: {},
+  forgeIdeas: {},
+  forgeFishbones: {},
+  forgeSixHats: {},
+  forgeScamper: {},
+  forgeSprints: {},
+  forgeReviews: {},
+  forgeMindmaps: {},
+  forgeCanvases: {},
+  forgeVoiceNotes: {},
+  forgeBmc: {},
+  forgeVpc: {},
+  forgeLean: {},
+  forgePorter: {},
+  forgePestel: {},
+  forgeUserStories: {},
+  forgeEventStorms: {},
+  forgeJourneyMaps: {},
+  forgeBlueprints: {},
+  forgeWireframes: {},
+  forgeBuyAFeature: {},
+  forgePaired: {},
+  forgeAffinity: {},
+  forgeCustomStatuses: {},
+  forgeAuditLog: {},
+  // Health (VITAL-SIGN) domain
+  healthScores: {},
+  healthMeals: {},
+  healthNutrients: {},
+  healthRecipes: {},
+  healthMealPlan: {},
+  healthRestaurantMeals: {},
+  healthWater: {},
+  healthSleep: {},
+  healthNaps: {},
+  healthUrineChecks: {},
+  healthWorkoutCheckins: {},
+  healthGoals: {},
+  healthCompetitions: {},
+  healthHabitBreaks: {},
+  healthMeasurements: {},
+  healthPhotos: {},
+  healthSupplementDefs: {},
+  healthSupplementLog: {},
+  healthVitals: {},
+  healthMind: {},
+  healthSymptoms: {},
+  healthIllnesses: {},
+  healthInjuries: {},
+  healthMedications: {},
+  healthAllergies: {},
+  healthOrthostatic: {},
+  healthJournal: {},
+  healthCircadian: {},
+  healthSunlight: {},
 };
+
+// Singleton documents (single JSON object, GET/PUT semantics).
+const singletons: Record<string, Row | null> = {
+  forgeStreak: null,       // ForgeState.streak
+  forgeSettings: null,     // ForgeState.settings
+  healthProfile: null,     // HealthState.profile
+  healthSettings: null,    // HealthState.settings
+  bedtimeRoutine: null,    // HealthState.bedtimeRoutine
+  wakeRoutine: null,       // HealthState.wakeRoutine
+  healthMeta: null,        // HealthState scalar/object meta: measurementGoals, measureFrequency, phaseOverride, pinnedFoods, lastScoreDate
+  workoutSettings: null,   // WorkoutState.settings (units, phase, plates, etc.)
+  workoutMeta: null,       // WorkoutState scalars: activeSessionId, lastWorkoutDate, currentStreak, longestStreak
+  careerMeta: null,        // CareerState scalars/objects: retirement plan, linkedin url
+};
+
 const uid = () => Math.random().toString(36).slice(2, 10) + Date.now().toString(36);
 const today = () => new Date().toISOString().slice(0, 10);
 
-// ---------------- Helpers ----------------
+// ---------------- Generic handlers ----------------
 const list = (table: string) => (_req: Request, res: Response) => res.json(Object.values(db[table]));
 const get = (table: string) => (req: Request, res: Response) => {
   const r = db[table][req.params.id];
@@ -89,15 +182,15 @@ const get = (table: string) => (req: Request, res: Response) => {
   return res.json(r);
 };
 const create = (table: string) => (req: Request, res: Response) => {
-  const id = uid();
-  const row = { id, ...req.body, createdAt: Date.now() };
+  const id = req.body?.id ?? uid();
+  const row = { ...req.body, id, createdAt: req.body?.createdAt ?? Date.now() };
   db[table][id] = row;
   return res.status(201).json(row);
 };
 const patch = (table: string) => (req: Request, res: Response) => {
   const r = db[table][req.params.id];
   if (!r) return res.status(404).json({ error: "not found" });
-  db[table][req.params.id] = { ...r, ...req.body };
+  db[table][req.params.id] = { ...r, ...req.body, id: r.id };
   return res.json(db[table][req.params.id]);
 };
 const del = (table: string) => (req: Request, res: Response) => {
@@ -106,7 +199,17 @@ const del = (table: string) => (req: Request, res: Response) => {
   return res.status(204).end();
 };
 
-// ---------------- Session-specific routes ----------------
+// Singleton GET / PUT
+const getSingleton = (key: string) => (_req: Request, res: Response) => {
+  if (singletons[key] == null) return res.status(404).json({ error: "not set" });
+  res.json(singletons[key]);
+};
+const putSingleton = (key: string) => (req: Request, res: Response) => {
+  singletons[key] = { ...(singletons[key] ?? {}), ...(req.body ?? {}) };
+  res.json(singletons[key]);
+};
+
+// ---------------- Session-specific routes (Workout) ----------------
 
 // Start a new session
 app.post("/api/sessions", (req, res) => {
@@ -139,18 +242,25 @@ app.patch("/api/sessions/:id/finish", (req, res) => {
   res.json(s);
 });
 
-// Sync (entire state push / pull)
-app.get("/api/sync", (_req, res) => res.json(db));
+// ---------------- Sync (entire state push / pull) ----------------
+app.get("/api/sync", (_req, res) => res.json({ tables: db, singletons }));
 app.post("/api/sync", (req, res) => {
   const incoming = req.body ?? {};
+  const tables = incoming.tables ?? incoming; // accept both wrapped and legacy flat shape
   for (const table of Object.keys(db)) {
-    if (incoming[table] && typeof incoming[table] === "object") {
-      // Merge keyed by id
+    const t = tables[table];
+    if (t && typeof t === "object") {
       const asObj: Record<string, Row> = {};
-      for (const row of Object.values(incoming[table]) as Row[]) {
+      const rows: Row[] = Array.isArray(t) ? t : (Object.values(t) as Row[]);
+      for (const row of rows) {
         if (row && row.id) asObj[row.id] = row;
       }
       db[table] = asObj;
+    }
+  }
+  if (incoming.singletons && typeof incoming.singletons === "object") {
+    for (const key of Object.keys(singletons)) {
+      if (incoming.singletons[key] != null) singletons[key] = incoming.singletons[key];
     }
   }
   res.json({ ok: true });
@@ -173,7 +283,6 @@ app.get("/api/export/csv", (_req, res) => {
   const exById = db.exercises as Record<string, any>;
   for (const s of Object.values(db.sessions) as any[]) {
     if (!s.endedAt) continue;
-    // resolve exercise from routine block, fall back to adHocBlocks
     const routine = s.routineId ? (db.routines[s.routineId] as any) : null;
     const adHoc = (s.adHocBlocks ?? []) as any[];
     const blockMap = new Map<string, any>();
@@ -196,7 +305,7 @@ app.get("/api/export/csv", (_req, res) => {
   res.send(csv);
 });
 
-// ---------------- Analytics (same algorithms as frontend, simplified) ----------------
+// ---------------- Workout analytics (mirror of frontend algorithms) ----------------
 
 // Epley 1RM
 const epley = (w: number, r: number) => r <= 1 ? w : w * (1 + r / 30);
@@ -252,8 +361,197 @@ app.get("/api/analytics/streak", (_req, res) => {
   res.json({ current, longest: current /* simplified */ });
 });
 
+// ---------------- Health analytics (mirror of frontend/lib/healthAnalytics.ts) ----------------
+// Pure formulas re-implemented server-side. Docs: docs/ALGORITHMS.md §H1-H23.
+
+const bmrMifflin = (weightKg: number, heightCm: number, ageYears: number, gender = "male") =>
+  10 * weightKg + 6.25 * heightCm - 5 * ageYears + (gender === "male" ? 5 : -161);
+const bmrKatch = (lbmKg: number) => 370 + 21.6 * lbmKg;
+const ACTIVITY_MULT: Record<string, number> = {
+  sedentary: 1.2, light: 1.375, moderate: 1.55, active: 1.725, veryActive: 1.9,
+};
+const log10 = (x: number) => Math.log(x) / Math.LN10;
+const navyBF_m = (waistCm: number, neckCm: number, heightCm: number) =>
+  495 / (1.0324 - 0.19077 * log10(waistCm - neckCm) + 0.15456 * log10(heightCm)) - 450;
+const navyBF_f = (waistCm: number, neckCm: number, hipCm: number, heightCm: number) =>
+  495 / (1.29579 - 0.35004 * log10(waistCm + hipCm - neckCm) + 0.22100 * log10(heightCm)) - 450;
+
+// GET /api/health/analytics/bmr?weight=70&height=175&age=20&gender=male[&bf=15]
+app.get("/api/health/analytics/bmr", (req, res) => {
+  const weight = Number(req.query.weight), height = Number(req.query.height), age = Number(req.query.age);
+  const gender = String(req.query.gender ?? "male");
+  const bf = req.query.bf != null ? Number(req.query.bf) : null;
+  if (!weight || !height || !age) return res.status(400).json({ error: "weight, height, age required" });
+  const mifflin = bmrMifflin(weight, height, age, gender);
+  const katch = bf != null && bf > 0 && bf < 60 ? bmrKatch(weight * (1 - bf / 100)) : null;
+  res.json({ mifflin: Math.round(mifflin), katch: katch != null ? Math.round(katch) : null });
+});
+
+// GET /api/health/analytics/tdee?weight=70&height=175&age=20&activity=moderate[&gender=male]
+app.get("/api/health/analytics/tdee", (req, res) => {
+  const weight = Number(req.query.weight), height = Number(req.query.height), age = Number(req.query.age);
+  const activity = String(req.query.activity ?? "moderate");
+  const gender = String(req.query.gender ?? "male");
+  if (!weight || !height || !age) return res.status(400).json({ error: "weight, height, age required" });
+  const mult = ACTIVITY_MULT[activity] ?? 1.55;
+  res.json({ tdee: Math.round(bmrMifflin(weight, height, age, gender) * mult), activityMult: mult });
+});
+
+// GET /api/health/analytics/water-goal?weight=70[&climateMult=1.1][&workoutMl=500]
+app.get("/api/health/analytics/water-goal", (req, res) => {
+  const weight = Number(req.query.weight);
+  if (!weight) return res.status(400).json({ error: "weight required" });
+  const climateMult = Number(req.query.climateMult ?? 1.1);
+  const workoutMl = Number(req.query.workoutMl ?? 0);
+  res.json({ goalMl: Math.round(weight * 35 * climateMult + workoutMl) });
+});
+
+// GET /api/health/analytics/navy-bf?waist=80&neck=38&height=175[&gender=male][&hip=95]
+app.get("/api/health/analytics/navy-bf", (req, res) => {
+  const waist = Number(req.query.waist), neck = Number(req.query.neck), height = Number(req.query.height);
+  const gender = String(req.query.gender ?? "male");
+  if (!waist || !neck || !height) return res.status(400).json({ error: "waist, neck, height required" });
+  if (gender === "female") {
+    const hip = Number(req.query.hip);
+    if (!hip) return res.status(400).json({ error: "hip required for female" });
+    return res.json({ bfPct: +navyBF_f(waist, neck, hip, height).toFixed(1) });
+  }
+  if (waist - neck <= 0) return res.status(400).json({ error: "waist must exceed neck" });
+  res.json({ bfPct: +navyBF_m(waist, neck, height).toFixed(1) });
+});
+
+// GET /api/health/analytics/sleep-bank?ideal=8 — computed over stored healthSleep rows (last 14)
+app.get("/api/health/analytics/sleep-bank", (req, res) => {
+  const ideal = Number(req.query.ideal ?? 8);
+  const entries = (Object.values(db.healthSleep) as any[])
+    .filter((e) => e.bedIso && e.wakeIso)
+    .sort((a, b) => String(a.date).localeCompare(String(b.date)))
+    .slice(-14);
+  let bank = 0;
+  for (const e of entries) {
+    const h = (new Date(e.wakeIso).getTime() - new Date(e.bedIso).getTime()) / 3_600_000;
+    if (h <= 0 || h > 24) continue;
+    const delta = h - ideal;
+    bank += delta > 0 ? Math.min(delta * 0.5, 1) : delta; // 0.5× credit, cap +1h/night
+  }
+  bank = Math.max(-20, Math.min(10, bank));
+  res.json({ bankHours: +bank.toFixed(1), nights: entries.length, ideal });
+});
+
+// GET /api/health/analytics/fasting-window?start=12&end=20[&now=14.5] — wave 8A mirror
+app.get("/api/health/analytics/fasting-window", (req, res) => {
+  const norm = (h: number) => ((h % 24) + 24) % 24;
+  const s = norm(Number(req.query.start ?? 12)), e = norm(Number(req.query.end ?? 20));
+  const d = new Date();
+  const n = norm(req.query.now != null ? Number(req.query.now) : d.getHours() + d.getMinutes() / 60);
+  const eatingHours = norm(e - s) || 24;
+  const inWindow = s <= e ? (n >= s && n < e) : (n >= s || n < e);
+  const until = (t: number) => norm(t - n) || 24;
+  res.json(inWindow
+    ? { inWindow, hoursToNext: +until(e).toFixed(2), next: "closes", eatingHours, fastingHours: 24 - eatingHours }
+    : { inWindow, hoursToNext: +until(s).toFixed(2), next: "opens", eatingHours, fastingHours: 24 - eatingHours });
+});
+
+// GET /api/health/analytics/spike-risk?carbQuality=simple&pairing=none[&carbsG=90] — wave 8B mirror
+app.get("/api/health/analytics/spike-risk", (req, res) => {
+  const cq = String(req.query.carbQuality ?? "mixed");
+  const pr = String(req.query.pairing ?? "some");
+  const carbs = Number(req.query.carbsG ?? 0);
+  let score = (cq === "simple" ? 2 : cq === "mixed" ? 1 : 0) + (pr === "none" ? 2 : pr === "some" ? 1 : 0);
+  if (carbs >= 80) score += 1;
+  if (carbs > 0 && carbs < 20) score -= 1;
+  const level = score >= 4 ? "high" : score >= 2 ? "medium" : "low";
+  res.json({ level, score });
+});
+
+// GET /api/health/analytics/body-comp — wave 8E mirror over stored bodyweight + healthMeasurements (28d window)
+app.get("/api/health/analytics/body-comp", (_req, res) => {
+  const cutoff = new Date(Date.now() - 28 * 86_400_000).toISOString().slice(0, 10);
+  const w = (Object.values(db.bodyweight) as any[]).filter(x => x.date >= cutoff).sort((a, b) => a.date.localeCompare(b.date));
+  const m = (Object.values(db.healthMeasurements) as any[]).filter(x => !x.pump && x.waistCm != null && x.date >= cutoff).sort((a, b) => a.date.localeCompare(b.date));
+  const weightChangeKg = w.length >= 2 ? Math.round((w[w.length - 1].weightKg - w[0].weightKg) * 10) / 10 : 0;
+  const waistChangeCm = m.length >= 2 ? Math.round((m[m.length - 1].waistCm - m[0].waistCm) * 10) / 10 : 0;
+  let phase = "unknown";
+  if (w.length >= 2) {
+    if (Math.abs(weightChangeKg) <= 1 && waistChangeCm <= -0.5) phase = "recomp";
+    else if (weightChangeKg > 1) phase = "bulk";
+    else if (weightChangeKg < -1) phase = "cut";
+    else phase = "maintenance";
+  }
+  res.json({ phase, weightChangeKg, waistChangeCm, windowDays: 28 });
+});
+
+// GET /api/health/analytics/daily-summary?date=YYYY-MM-DD — kcal/protein/water/sleep/supps for one day
+app.get("/api/health/analytics/daily-summary", (req, res) => {
+  const date = String(req.query.date ?? today());
+  const meals = (Object.values(db.healthMeals) as any[]).filter((m) => m.date === date);
+  let kcal = 0, proteinG = 0, carbsG = 0, fatG = 0;
+  for (const m of meals) for (const it of m.items ?? []) {
+    kcal += it.kcal ?? 0; proteinG += it.proteinG ?? 0; carbsG += it.carbsG ?? 0; fatG += it.fatG ?? 0;
+  }
+  const water = (Object.values(db.healthWater) as any[]).filter((w) => w.date === date);
+  const waterMl = water.reduce((n, w) => n + (w.ml ?? 0), 0);
+  const caffeineMg = water.reduce((n, w) => n + (w.caffeineMg ?? 0), 0);
+  const sleep = (Object.values(db.healthSleep) as any[]).find((s) => s.date === date);
+  const sleepH = sleep?.bedIso && sleep?.wakeIso
+    ? +(((new Date(sleep.wakeIso).getTime() - new Date(sleep.bedIso).getTime()) / 3_600_000).toFixed(1))
+    : null;
+  const suppsTaken = (Object.values(db.healthSupplementLog) as any[]).filter((l) => l.date === date).length;
+  res.json({ date, kcal, proteinG, carbsG, fatG, waterMl, caffeineMg, sleepH, suppsTaken, mealCount: meals.length });
+});
+
+// GET /api/health/export/csv — daily summaries for every date with any health data
+app.get("/api/health/export/csv", (_req, res) => {
+  const dates = new Set<string>();
+  for (const t of ["healthMeals", "healthWater", "healthSleep", "healthSupplementLog", "healthVitals", "healthMind"]) {
+    for (const r of Object.values(db[t]) as any[]) if (r.date) dates.add(r.date);
+  }
+  const rows = [["date","kcal","protein_g","carbs_g","fat_g","water_ml","caffeine_mg","sleep_h","supps_taken","meals"]];
+  for (const date of [...dates].sort()) {
+    const meals = (Object.values(db.healthMeals) as any[]).filter((m) => m.date === date);
+    let kcal = 0, p = 0, c = 0, f = 0;
+    for (const m of meals) for (const it of m.items ?? []) {
+      kcal += it.kcal ?? 0; p += it.proteinG ?? 0; c += it.carbsG ?? 0; f += it.fatG ?? 0;
+    }
+    const water = (Object.values(db.healthWater) as any[]).filter((w) => w.date === date);
+    const sleep = (Object.values(db.healthSleep) as any[]).find((s) => s.date === date);
+    const sleepH = sleep?.bedIso && sleep?.wakeIso
+      ? ((new Date(sleep.wakeIso).getTime() - new Date(sleep.bedIso).getTime()) / 3_600_000).toFixed(1) : "";
+    rows.push([date, String(kcal), String(Math.round(p)), String(Math.round(c)), String(Math.round(f)),
+      String(water.reduce((n, w) => n + (w.ml ?? 0), 0)),
+      String(water.reduce((n, w) => n + (w.caffeineMg ?? 0), 0)),
+      sleepH,
+      String((Object.values(db.healthSupplementLog) as any[]).filter((l) => l.date === date).length),
+      String(meals.length)]);
+  }
+  const csv = rows.map((r) => r.map((x) => `"${String(x).replace(/"/g, '""')}"`).join(",")).join("\n");
+  res.setHeader("Content-Type", "text/csv");
+  res.setHeader("Content-Disposition", `attachment; filename="kaizen-health-${today()}.csv"`);
+  res.send(csv);
+});
+
+// ---------------- Forge analytics ----------------
+
+// GET /api/forge/analytics/summary — project/task counts by status
+app.get("/api/forge/analytics/summary", (_req, res) => {
+  const tasks = Object.values(db.forgeTasks) as any[];
+  const byStatus: Record<string, number> = {};
+  for (const t of tasks) byStatus[t.status ?? "unknown"] = (byStatus[t.status ?? "unknown"] ?? 0) + 1;
+  res.json({
+    projects: Object.keys(db.forgeProjects).length,
+    tasks: tasks.length,
+    byStatus,
+    sprints: Object.keys(db.forgeSprints).length,
+    ideas: Object.keys(db.forgeIdeas).length,
+  });
+});
+
 // ---------------- Generic CRUD routes ----------------
 const CRUD: [string, string][] = [
+  // Core
+  ["tasks", "/core/tasks"],
+  ["notes", "/core/notes"],
+  // Workout
   ["exercises", "/exercises"],
   ["prs", "/prs"],
   ["skills", "/skills"],
@@ -279,7 +577,8 @@ const CRUD: [string, string][] = [
   ["journal", "/journal"],
   ["board", "/board"],
   ["restDays", "/rest-days"],
-  // Career CRUD
+  ["kanban", "/kanban"],
+  // Career
   ["roadmaps",          "/career/roadmaps"],
   ["careerSkills",      "/career/skills"],
   ["courses",           "/career/courses"],
@@ -305,6 +604,75 @@ const CRUD: [string, string][] = [
   ["tracks",            "/career/tracks"],
   ["careerGoals",       "/career/goals"],
   ["careerNotes",       "/career/notes"],
+  // Forge (Projects space)
+  ["forgeProjects",       "/forge/projects"],
+  ["forgeTasks",          "/forge/tasks"],
+  ["forgeScratch",        "/forge/scratch"],
+  ["forgeDecisions",      "/forge/decisions"],
+  ["forgeSwot",           "/forge/swot"],
+  ["forgeProsCons",       "/forge/pros-cons"],
+  ["forgeScenarios",      "/forge/scenarios"],
+  ["forgeFiveWhys",       "/forge/five-whys"],
+  ["forgeLessons",        "/forge/lessons"],
+  ["forgeRetros",         "/forge/retros"],
+  ["forgeParking",        "/forge/parking"],
+  ["forgePomodoros",      "/forge/pomodoros"],
+  ["forgePersonas",       "/forge/personas"],
+  ["forgeDecisionMatrix", "/forge/decision-matrix"],
+  ["forgeIdeas",          "/forge/ideas"],
+  ["forgeFishbones",      "/forge/fishbones"],
+  ["forgeSixHats",        "/forge/six-hats"],
+  ["forgeScamper",        "/forge/scamper"],
+  ["forgeSprints",        "/forge/sprints"],
+  ["forgeReviews",        "/forge/reviews"],
+  ["forgeMindmaps",       "/forge/mindmaps"],
+  ["forgeCanvases",       "/forge/canvases"],
+  ["forgeVoiceNotes",     "/forge/voice-notes"],
+  ["forgeBmc",            "/forge/bmc"],
+  ["forgeVpc",            "/forge/vpc"],
+  ["forgeLean",           "/forge/lean"],
+  ["forgePorter",         "/forge/porter"],
+  ["forgePestel",         "/forge/pestel"],
+  ["forgeUserStories",    "/forge/user-stories"],
+  ["forgeEventStorms",    "/forge/event-storms"],
+  ["forgeJourneyMaps",    "/forge/journey-maps"],
+  ["forgeBlueprints",     "/forge/blueprints"],
+  ["forgeWireframes",     "/forge/wireframes"],
+  ["forgeBuyAFeature",    "/forge/buy-a-feature"],
+  ["forgePaired",         "/forge/paired"],
+  ["forgeAffinity",       "/forge/affinity"],
+  ["forgeCustomStatuses", "/forge/custom-statuses"],
+  ["forgeAuditLog",       "/forge/audit-log"],
+  // Health (VITAL-SIGN)
+  ["healthScores",         "/health/scores"],
+  ["healthMeals",          "/health/meals"],
+  ["healthNutrients",      "/health/nutrients"],
+  ["healthRecipes",        "/health/recipes"],
+  ["healthMealPlan",       "/health/meal-plan"],
+  ["healthRestaurantMeals","/health/restaurant-meals"],
+  ["healthWater",          "/health/water"],
+  ["healthSleep",          "/health/sleep"],
+  ["healthNaps",           "/health/naps"],
+  ["healthUrineChecks",    "/health/urine-checks"],
+  ["healthWorkoutCheckins","/health/workout-checkins"],
+  ["healthGoals",          "/health/goals"],
+  ["healthCompetitions",   "/health/competitions"],
+  ["healthHabitBreaks",    "/health/habit-breaks"],
+  ["healthMeasurements",   "/health/measurements"],
+  ["healthPhotos",         "/health/photos"],
+  ["healthSupplementDefs", "/health/supplement-defs"],
+  ["healthSupplementLog",  "/health/supplement-log"],
+  ["healthVitals",         "/health/vitals"],
+  ["healthMind",           "/health/mind"],
+  ["healthSymptoms",       "/health/symptoms"],
+  ["healthIllnesses",      "/health/illnesses"],
+  ["healthInjuries",       "/health/injuries"],
+  ["healthMedications",    "/health/medications"],
+  ["healthAllergies",      "/health/allergies"],
+  ["healthOrthostatic",    "/health/orthostatic"],
+  ["healthJournal",        "/health/journal"],
+  ["healthCircadian",      "/health/circadian"],
+  ["healthSunlight",       "/health/sunlight"],
 ];
 for (const [table, path] of CRUD) {
   const full = `/api${path}`;
@@ -315,11 +683,38 @@ for (const [table, path] of CRUD) {
   app.delete(`${full}/:id`, del(table));
 }
 
+// ---------------- Singleton routes ----------------
+const SINGLETONS: [string, string][] = [
+  ["forgeStreak",     "/forge/streak"],
+  ["forgeSettings",   "/forge/settings"],
+  ["healthProfile",   "/health/profile"],
+  ["healthSettings",  "/health/settings"],
+  ["bedtimeRoutine",  "/health/bedtime-routine"],
+  ["wakeRoutine",     "/health/wake-routine"],
+  ["healthMeta",      "/health/meta"],
+  ["workoutSettings", "/workout/settings"],
+  ["workoutMeta",     "/workout/meta"],
+  ["careerMeta",      "/career/meta"],
+];
+for (const [key, path] of SINGLETONS) {
+  const full = `/api${path}`;
+  app.get(full, getSingleton(key));
+  app.put(full, putSingleton(key));
+}
+
 // Patch/discard/finish session
 app.patch("/api/sessions/:id", patch("sessions"));
 app.delete("/api/sessions/:id", del("sessions"));
+app.get("/api/sessions", list("sessions"));
+app.get("/api/sessions/:id", get("sessions"));
 
-// ---------------- Health ----------------
+// ---------------- Health check ----------------
+app.get("/api/health-check", (_req, res) => res.json({
+  ok: true, time: Date.now(),
+  tables: Object.keys(db).length,
+  singletons: Object.keys(singletons).length,
+}));
+// Legacy alias (pre-Health-space name; kept for compatibility)
 app.get("/api/health", (_req, res) => res.json({ ok: true, time: Date.now() }));
 
 // ---------------- Error handler ----------------

@@ -43,6 +43,10 @@ import type {
   ParkingLotItem, PomodoroSession, Persona, DecisionMatrixRow, Idea,
   Fishbone, SixHats, Scamper, Sprint, WeeklyReview,
 } from "./forgeTypes";
+import type {
+  HealthState, HealthProfile, HealthSettings,
+} from "./healthTypes";
+import { emptyHealthState, DEFAULT_BEDTIME_ROUTINE, DEFAULT_WAKE_ROUTINE, SEED_SUPPLEMENT_DEFS } from "./healthTypes";
 import { isDoneStatus as isTaskDone } from "../components/forge/forgeUtils";
 
 // Generate ids for runtime-created entities.
@@ -342,6 +346,66 @@ function migrateForge(raw: any): ForgeState {
   };
 }
 
+// ---------------- Health seed ----------------
+
+const SEED_HEALTH: HealthState = (() => {
+  const base = emptyHealthState();
+  return base;
+})();
+
+function migrateHealth(raw: any): HealthState {
+  if (!raw || typeof raw !== "object") return SEED_HEALTH;
+  const base = emptyHealthState();
+  // Merge supp defs: keep any user-added defs but ensure seed defs exist by id.
+  const existingDefs = Array.isArray(raw.supplementDefs) ? raw.supplementDefs : [];
+  const mergedDefs = [...SEED_SUPPLEMENT_DEFS];
+  for (const d of existingDefs) {
+    if (!d?.id) continue;
+    if (!mergedDefs.find(x => x.id === d.id)) mergedDefs.push(d);
+  }
+  return {
+    ...base,
+    ...raw,
+    profile: { ...base.profile, ...(raw.profile ?? {}) },
+    settings: { ...base.settings, ...(raw.settings ?? {}) },
+    scores: raw.scores ?? [],
+    meals: raw.meals ?? [],
+    nutrients: raw.nutrients ?? [],
+    recipes: raw.recipes ?? [],
+    mealPlan: raw.mealPlan ?? [],
+    restaurantMeals: raw.restaurantMeals ?? [],
+    water: raw.water ?? [],
+    sleep: raw.sleep ?? [],
+    naps: raw.naps ?? [],
+    urineChecks: raw.urineChecks ?? [],
+    workoutCheckins: raw.workoutCheckins ?? [],
+    healthGoals: raw.healthGoals ?? [],
+    competitions: raw.competitions ?? [],
+    habitBreaks: raw.habitBreaks ?? [],
+    measurements: raw.measurements ?? [],
+    measurementGoals: raw.measurementGoals ?? {},
+    measureFrequency: raw.measureFrequency ?? "biweekly",
+    phaseOverride: raw.phaseOverride ?? null,
+    photos: raw.photos ?? [],
+    supplementDefs: mergedDefs,
+    supplementLog: raw.supplementLog ?? [],
+    vitals: raw.vitals ?? [],
+    mind: raw.mind ?? [],
+    symptoms: raw.symptoms ?? [],
+    illnesses: raw.illnesses ?? [],
+    injuries: raw.injuries ?? [],
+    medications: raw.medications ?? [],
+    allergies: raw.allergies ?? [],
+    orthostatic: raw.orthostatic ?? [],
+    journal: raw.journal ?? [],
+    circadian: raw.circadian ?? [],
+    sunlight: raw.sunlight ?? [],
+    bedtimeRoutine: raw.bedtimeRoutine ?? DEFAULT_BEDTIME_ROUTINE,
+    wakeRoutine: raw.wakeRoutine ?? DEFAULT_WAKE_ROUTINE,
+    pinnedFoods: Array.isArray(raw.pinnedFoods) ? raw.pinnedFoods : [],
+  };
+}
+
 // ---------------- Workout seed ----------------
 const SEED_WORKOUT: WorkoutState = (() => {
   // Exercises come from the curated default library; stamp each with createdAt
@@ -591,6 +655,9 @@ interface StoreState {
   updateForge: (updater: (f: ForgeState) => Partial<ForgeState> | ForgeState) => void;
   seedForgeDemo: () => void;
   logForgeAction: (action: string, target?: string, detail?: string) => void;
+  // health (VITAL-SIGN OS)
+  health: HealthState;
+  updateHealth: (updater: (h: HealthState) => Partial<HealthState> | HealthState) => void;
   addTrack: (name: string, color: string) => void;
   updateTrack: (id: string, patch: Partial<CareerTrack>) => void; deleteTrack: (id: string) => void;
   addConcept: (trackId: string, title: string) => void;
@@ -825,6 +892,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
   const [career, setCareer]   = useLocalState<CareerState>("kaizen.career", SEED_CAREER, migrateCareer);
   const [workout, setWorkout] = useLocalState<WorkoutState>("kaizen.workout", SEED_WORKOUT, migrateWorkout);
   const [forge, setForge]     = useLocalState<ForgeState>("kaizen.forge", SEED_FORGE, migrateForge);
+  const [health, setHealth]   = useLocalState<HealthState>("kaizen.health", SEED_HEALTH, migrateHealth);
 
   useEffect(() => {
     ["prod.tasks","prod.notes","prod.projects","prod.habits"].forEach((k) => localStorage.removeItem(k));
@@ -948,6 +1016,12 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
       ].slice(0, 500),
     }));
   }, [setForge]);
+
+  const updateHealth = useCallback<StoreState["updateHealth"]>((updater) =>
+    setHealth((h) => {
+      const patch = updater(h);
+      return { ...h, ...patch };
+    }), [setHealth]);
 
   const addRoadmapFromTemplate = useCallback<StoreState["addRoadmapFromTemplate"]>((templateId, name) => {
     setCareer((c) => {
@@ -1538,6 +1612,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     toggleLabItem, toggleResourceComplete, toggleProjectComplete, setQuizAnswer, logMilestoneHours,
     archiveRoadmap, deleteRoadmap, seedCareerDemo,
     forge, updateForge, seedForgeDemo, logForgeAction,
+    health, updateHealth,
     workout, addExercise, updateExercise, deleteExercise,
     logPR, deletePR, addSkill, deleteSkill, addProgression, toggleProgressionDone, updateProgression, deleteProgression,
     addRoutine, updateRoutine, deleteRoutine, addBlock, updateBlock, deleteBlock, reorderBlocks,
