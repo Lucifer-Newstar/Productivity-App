@@ -24,11 +24,12 @@ import { Repeat, Plus, Trash2, Search, Utensils, Coffee, Moon, Sun, Cookie, User
 import { useStore } from "../../lib/store";
 import { FOOD_DB, searchFoods, type FoodEntry } from "../../lib/healthFoodDb";
 import {
-  formatKcal, tdee, rebalanceMacros, macroGramTargets, frequentFoods,
+  formatKcal, tdee, rebalanceMacros, macroGramTargets, frequentFoods, sugarSpikeRisk,
 } from "../../lib/healthAnalytics";
 import { MACRO_PRESETS, type MacroPresetId } from "../../lib/healthTypes";
 import type { MealEntry, MealItem } from "../../lib/healthTypes";
 import FastingClock from "./FastingClock";
+import NutrientPanel from "./NutrientPanel";
 
 type Slot = "breakfast" | "lunch" | "dinner" | "snack";
 const SLOTS: { id: Slot; label: string; icon: React.ReactNode; color: string }[] = [
@@ -367,7 +368,7 @@ export default function FuelSection() {
       const otherDays = h.meals.filter(m => m.date !== today);
       // Keep slots that have items OR wave-8A metadata (time/flags/photo).
       const todaysWithData = Object.values(nextSlots).filter(
-        m => m.items.length > 0 || m.time || m.social || m.cheat || m.photoDataUrl,
+        m => m.items.length > 0 || m.time || m.social || m.cheat || m.photoDataUrl || m.carbQuality || m.pairing,
       );
       return { meals: [...otherDays, ...todaysWithData] };
     });
@@ -480,6 +481,9 @@ export default function FuelSection() {
       {/* Wave 8A — frequent foods library */}
       <FrequentFoodsStrip onLog={logFrequent}/>
 
+      {/* Wave 8B — nutrient depth (sub-nutrients, radar, vits/minerals, functional foods) */}
+      <NutrientPanel/>
+
       {/* Meal slots */}
       <div style={{display:"flex", flexDirection:"column", gap:14}}>
         {SLOTS.map(s => {
@@ -562,6 +566,38 @@ export default function FuelSection() {
                     </button>
                   </>
                 )}
+                {/* Wave 8B — sugar-spike estimator */}
+                <select value={meal.carbQuality ?? ""}
+                  onChange={e=>patchMeal(s.id, { carbQuality: (e.target.value || undefined) as MealEntry["carbQuality"] })}
+                  title="Carb quality"
+                  style={{background:"var(--hlth-card2)", color:"var(--hlth-fg)", border:"1px solid var(--hlth-border-soft)", borderRadius:4, padding:"3px 6px", fontFamily:"var(--hlth-font-mono)", fontSize:10}}>
+                  <option value="">carbs?</option>
+                  <option value="simple">simple</option>
+                  <option value="complex">complex</option>
+                  <option value="mixed">mixed</option>
+                </select>
+                <select value={meal.pairing ?? ""}
+                  onChange={e=>patchMeal(s.id, { pairing: (e.target.value || undefined) as MealEntry["pairing"] })}
+                  title="Protein/fat pairing"
+                  style={{background:"var(--hlth-card2)", color:"var(--hlth-fg)", border:"1px solid var(--hlth-border-soft)", borderRadius:4, padding:"3px 6px", fontFamily:"var(--hlth-font-mono)", fontSize:10}}>
+                  <option value="">pairing?</option>
+                  <option value="none">no prot/fat</option>
+                  <option value="some">some</option>
+                  <option value="high">high</option>
+                </select>
+                {(meal.carbQuality || meal.pairing) && (() => {
+                  const slotCarbs = meal.items.reduce((n,i)=>n+(i.carbsG??0),0);
+                  const risk = sugarSpikeRisk(meal.carbQuality, meal.pairing, slotCarbs);
+                  return (
+                    <span title={risk.tip} style={{
+                      display:"inline-flex", alignItems:"center", gap:4, padding:"2px 8px", borderRadius:999,
+                      background:`${risk.color}18`, border:`1px solid ${risk.color}55`, color:risk.color,
+                      fontFamily:"var(--hlth-font-mono)", fontSize:9, fontWeight:700, letterSpacing:"0.08em",
+                    }}>
+                      SPIKE {risk.level.toUpperCase()}
+                    </span>
+                  );
+                })()}
                 <label style={{display:"inline-flex", alignItems:"center", gap:4, cursor:"pointer"}}>
                   <Camera size={10}/> {meal.photoDataUrl ? "RETAKE" : "PHOTO"}
                   <input type="file" accept="image/*" capture="environment" style={{display:"none"}}

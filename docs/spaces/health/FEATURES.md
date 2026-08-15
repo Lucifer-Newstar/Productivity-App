@@ -75,26 +75,26 @@ library saved from history, common South Indian meals pre-seeded.
 | 08 | **Macro rough sliders** — 3 sliders (Carbs/Protein/Fats g) that auto-total to logged kcal. Drag one, the others readjust proportionally to kcal target | ✅ | Core "no food scale" UX |
 | 09 | Macro pie/donut chart — actual vs target                                                | ✅     | |
 | 10 | Macro target presets: Balanced (40/30/30), Cut (30/40/30), Bulk (50/30/20), Keto (10/25/65), Custom | ✅     | |
-| 11 | Fiber target &amp; tracker (g) against goal (default 30g/day, ICMR)                       | ❌     | |
-| 12 | Added sugar tracker (g) against WHO goal (&lt;25g/day)                                    | ❌     | |
-| 13 | Sodium tracker (mg) against 2300 mg cap; warn &gt; 1500 mg with Chennai sweating note    | ❌     | 🌏 Electrolyte loss in sweat → need Na intake |
-| 14 | Cholesterol tracker (mg, cap 300 mg)                                                    | ❌     | |
-| 15 | Saturated fat tracker (g, cap &lt;10% kcal)                                               | ❌     | |
-| 16 | Trans-fat tracker (g, alert on any &gt;0 from package foods)                              | ❌     | |
-| 17 | **Omega-3 (EPA/DHA)** tracker (mg, goal 500+ mg/day) — flags need for fish/fish oil; extra importance for vegetarians 🌏 | ❌ | |
-| 18 | **Micronutrient Awareness** radar (1-10 sliders) — Sodium, Potassium, Magnesium, Iron, Vit C, Omega-3 | ❌ | No food-scale precision; conscious awareness tool |
+| 11 | Fiber target &amp; tracker (g) against goal (default 30g/day, ICMR)                       | ✅     | |
+| 12 | Added sugar tracker (g) against WHO goal (&lt;25g/day)                                    | ✅     | |
+| 13 | Sodium tracker (mg) against 2300 mg cap; warn &gt; 1500 mg with Chennai sweating note    | ✅     | 🌏 Electrolyte loss in sweat → need Na intake |
+| 14 | Cholesterol tracker (mg, cap 300 mg)                                                    | ✅     | |
+| 15 | Saturated fat tracker (g, cap &lt;10% kcal)                                               | ✅     | |
+| 16 | Trans-fat tracker (g, alert on any &gt;0 from package foods)                              | ✅     | |
+| 17 | **Omega-3 (EPA/DHA)** tracker (mg, goal 500+ mg/day) — flags need for fish/fish oil; extra importance for vegetarians 🌏 | ✅ | |
+| 18 | **Micronutrient Awareness** radar (1-10 sliders) — Sodium, Potassium, Magnesium, Iron, Vit C, Omega-3 | ✅ | No food-scale precision; conscious awareness tool |
 | 19 | Expanded micronutrient log (preset quick-add buttons with 🇮🇳 RDA targets): Iron (19mg), Calcium (1000mg), Zinc (12mg), Magnesium (400mg), Potassium (4700mg), Vit D (600IU), Vit B12 (2.4µg), Folate (400µg), Vit A, Vit C, Vit E, Vit K | ❌ | 🌏 Vit D, B12, Iron, Zinc flagged as common IN deficiencies per ICMR/NIN |
-| 20 | Water-soluble vitamins tracker: C, B1, B2, B3, B5, B6, B7, B9, B12                      | ❌     | |
-| 21 | Fat-soluble vitamins tracker: A, D, E, K                                                | ❌     | |
-| 22 | Minerals tracker: Ca, Mg, K, Zn, Fe, Se, Cu, Mn                                         | ❌     | |
-| 23 | Antioxidant tracker — berries/dark chocolate/green tea/turmeric/dark greens quick-log   | ❌     | 🌏 Turmeric = Indian dietary staple, track for awareness |
-| 24 | Probiotic tracker — curd/yogurt, lassi, kefir, sauerkraut, kanji, pickles                | ❌     | 🌏 Curd rice / thayir sadam staple |
-| 25 | Prebiotic tracker — onion, garlic, raw banana, leek, asparagus, oats, bananas            | ❌     | |
+| 20 | Water-soluble vitamins tracker: C, B1, B2, B3, B5, B6, B7, B9, B12                      | ✅     | |
+| 21 | Fat-soluble vitamins tracker: A, D, E, K                                                | ✅     | |
+| 22 | Minerals tracker: Ca, Mg, K, Zn, Fe, Se, Cu, Mn                                         | ✅     | |
+| 23 | Antioxidant tracker — berries/dark chocolate/green tea/turmeric/dark greens quick-log   | ✅     | 🌏 Turmeric = Indian dietary staple, track for awareness |
+| 24 | Probiotic tracker — curd/yogurt, lassi, kefir, sauerkraut, kanji, pickles                | ✅     | 🌏 Curd rice / thayir sadam staple |
+| 25 | Prebiotic tracker — onion, garlic, raw banana, leek, asparagus, oats, bananas            | ✅     | |
 | 26 | **Intermittent Fasting timer/clock** — visual 24h ring with eating window colored green, fasting blue. Set start/end hours (default 12:00–20:00 = 16:8). Shows countdown to next meal or window close | ✅ | TRE 16/8 evidence-supported as fat-loss w/ muscle retention for trained young males (Moro 2016) |
 | 27 | Fasting window presets: 16:8, 18:6, 14:10, OMAD 23:1, Custom                            | ✅     | |
 | 28 | Fast-streak counter (consecutive days meeting window)                                   | ✅     | |
-| 29 | **Sugar Spike Estimator** — per meal log Carb Quality (Simple / Complex / Mixed) + Protein/Fat pairing (none/some/high) → Low/Med/High spike risk score | ❌ | Uses glycemic-load heuristic, not medical grade |
-| 30 | Glycemic awareness nudge: "Complex carb + protein = lower spike"                        | ❌     | |
+| 29 | **Sugar Spike Estimator** — per meal log Carb Quality (Simple / Complex / Mixed) + Protein/Fat pairing (none/some/high) → Low/Med/High spike risk score | ✅ | Uses glycemic-load heuristic, not medical grade |
+| 30 | Glycemic awareness nudge: "Complex carb + protein = lower spike"                        | ✅     | |
 | 31 | Social meal flag (ate with others checkbox) — mood/social correlation                   | ✅     | |
 | 32 | Cheat meal flag + reason tag (celebratory / stress / craving / social)                  | ✅     | |
 | 33 | Cheat-day guilt-reset button ("No guilt. Log it. Move on.")                              | ✅     | Psychology-first |

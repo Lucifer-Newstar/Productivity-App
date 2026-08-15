@@ -1140,3 +1140,65 @@ export function sipSuggestion(loggedMl: number, goalMl: number, nowHours: number
   if (ml === 0) return null;
   return { ml: Math.min(ml, 750), byHour: nextHour };
 }
+
+// ---------------- Wave 8B — FUEL nutrient depth ----------------
+
+import type { DailyNutrientEntry, MealEntry as MealEntry8B } from "./healthTypes";
+
+/** Daily sub-nutrient targets/caps (ICMR/WHO-aligned, male lifter defaults). */
+export const NUTRIENT_TARGETS = {
+  fiberG:        { goal: 30,   kind: "goal" as const, label: "Fiber",      unit: "g",  note: "ICMR 30g/day" },
+  addedSugarG:   { goal: 25,   kind: "cap"  as const, label: "Added sugar",unit: "g",  note: "WHO <25g/day" },
+  sodiumMg:      { goal: 2300, kind: "cap"  as const, label: "Sodium",     unit: "mg", note: "cap 2300mg — sweat losses in Chennai raise needs on training days", warnAt: 1500 },
+  cholesterolMg: { goal: 300,  kind: "cap"  as const, label: "Cholesterol",unit: "mg", note: "cap 300mg" },
+  satFatG:       { goal: 25,   kind: "cap"  as const, label: "Sat fat",    unit: "g",  note: "<10% of ~2300kcal" },
+  transFatG:     { goal: 0,    kind: "zero" as const, label: "Trans fat",  unit: "g",  note: "any amount flagged" },
+  omega3Mg:      { goal: 500,  kind: "goal" as const, label: "Omega-3",    unit: "mg", note: "500mg+ EPA/DHA" },
+};
+export type NutrientKey = keyof typeof NUTRIENT_TARGETS;
+
+export type NutrientStatus = "ok" | "low" | "near" | "over";
+/** Status vs target: goals want >=100%, caps want <100%. */
+export function nutrientStatus(key: NutrientKey, value: number | undefined): { status: NutrientStatus; pct: number } {
+  const t = NUTRIENT_TARGETS[key];
+  const v = value ?? 0;
+  if (t.kind === "zero") return { status: v > 0 ? "over" : "ok", pct: v > 0 ? 100 : 0 };
+  const pct = t.goal > 0 ? Math.round((v / t.goal) * 100) : 0;
+  if (t.kind === "goal") return { status: pct >= 100 ? "ok" : pct >= 60 ? "near" : "low", pct: Math.min(pct, 150) };
+  // cap
+  const warnPct = "warnAt" in t && t.warnAt ? Math.round((t.warnAt / t.goal) * 100) : 80;
+  return { status: pct > 100 ? "over" : pct >= warnPct ? "near" : "ok", pct: Math.min(pct, 150) };
+}
+
+/**
+ * Sugar-spike risk heuristic (H9): carb quality × protein/fat pairing.
+ * Not medical-grade — glycemic-load awareness only.
+ */
+export function sugarSpikeRisk(
+  carbQuality: "simple" | "complex" | "mixed" | undefined,
+  pairing: "none" | "some" | "high" | undefined,
+  carbsG?: number,
+): { level: "low" | "medium" | "high"; color: string; tip: string } {
+  const cq = carbQuality ?? "mixed";
+  const pr = pairing ?? "some";
+  let score = 0;
+  score += cq === "simple" ? 2 : cq === "mixed" ? 1 : 0;
+  score += pr === "none" ? 2 : pr === "some" ? 1 : 0;
+  if ((carbsG ?? 0) >= 80) score += 1;           // big carb bolus
+  if ((carbsG ?? 0) > 0 && (carbsG ?? 0) < 20) score -= 1; // tiny carbs = non-event
+  if (score >= 4) return { level: "high",   color: "#ef4444", tip: "Simple carbs alone — add protein/fat or take a 10-min walk after." };
+  if (score >= 2) return { level: "medium", color: "#f59e0b", tip: "Moderate spike — pairing carbs with protein blunts the curve." };
+  return { level: "low", color: "#10b981", tip: "Complex carb + protein = slow release. Good." };
+}
+
+/** Get (or synthesize) the nutrient row for a date. */
+export function nutrientRowFor(nutrients: DailyNutrientEntry[], date: string): DailyNutrientEntry | undefined {
+  return nutrients.find(n => n.date === date);
+}
+
+/** Sum fibre from logged meal items (food-DB fibreG) for a date — seed for the fiber tracker. */
+export function fiberFromMeals(meals: MealEntry8B[], date: string): number {
+  let g = 0;
+  for (const m of meals) if (m.date === date) for (const it of m.items) g += it.fibreG ?? 0;
+  return Math.round(g);
+}

@@ -138,6 +138,10 @@ export interface MealEntry {
   postWorkout?: boolean;
   /** Meal photo as dataURL (wave 8A, offline-first). */
   photoDataUrl?: string;
+  /** Wave 8B — sugar-spike estimator inputs. */
+  carbQuality?: "simple" | "complex" | "mixed";
+  /** Protein/fat pairing with the carbs (blunts glucose spike). */
+  pairing?: "none" | "some" | "high";
 }
 export interface MealItem {
   id: string;
@@ -147,6 +151,36 @@ export interface MealItem {
   proteinG?: number;
   fatG?: number;
   fibreG?: number;
+}
+
+/**
+ * Wave 8B — per-day nutrient depth tracker (one row per date).
+ * Awareness-first: values are rough self-estimates, not food-scale data.
+ */
+export interface DailyNutrientEntry {
+  id: string;
+  date: string; // YYYY-MM-DD
+  /** Sub-nutrients vs daily targets. */
+  fiberG?: number;        // target 30g (ICMR)
+  addedSugarG?: number;   // WHO cap <25g
+  sodiumMg?: number;      // cap 2300mg (warn >1500 w/ Chennai sweat note)
+  cholesterolMg?: number; // cap 300mg
+  satFatG?: number;       // cap <10% kcal
+  transFatG?: number;     // alert on any >0
+  omega3Mg?: number;      // goal 500mg EPA/DHA
+  /** Micronutrient awareness radar — 6 axes, 1-10 self-rating. */
+  radar?: {
+    sodium?: number; potassium?: number; magnesium?: number;
+    iron?: number; vitC?: number; omega3?: number;
+  };
+  /** Quick-log checklists (counts per day). */
+  waterSolubleVits?: Partial<Record<"C"|"B1"|"B2"|"B3"|"B5"|"B6"|"B7"|"B9"|"B12", boolean>>;
+  fatSolubleVits?: Partial<Record<"A"|"D"|"E"|"K", boolean>>;
+  minerals?: Partial<Record<"Ca"|"Mg"|"K"|"Zn"|"Fe"|"Se"|"Cu"|"Mn", boolean>>;
+  /** Functional-food quick-logs (counts). */
+  antioxidants?: number; // servings of berries/dark choc/green tea/turmeric/greens
+  probiotics?: number;   // curd/lassi/kefir/kanji/pickle servings
+  prebiotics?: number;   // onion/garlic/raw banana/oats servings
 }
 
 export interface WaterEntry {
@@ -445,6 +479,8 @@ export interface HealthState {
   profile: HealthProfile;
   scores: DailyScore[];
   meals: MealEntry[];
+  /** Wave 8B — per-day nutrient depth rows. */
+  nutrients: DailyNutrientEntry[];
   water: WaterEntry[];
   sleep: SleepEntry[];
   measurements: MeasurementEntry[];
@@ -577,6 +613,7 @@ export function emptyHealthState(): HealthState {
     profile: { ...DEFAULT_PROFILE },
     scores: [],
     meals: [],
+    nutrients: [],
     water: [],
     sleep: [],
     measurements: [],

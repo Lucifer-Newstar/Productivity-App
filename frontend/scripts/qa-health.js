@@ -914,5 +914,66 @@ const fsMeals2 = [...fsMeals, { date:"2025-06-04", time:"22:00", items:[{name:"l
 assert(fStreakQA(fsMeals2, 12, 20, "2025-06-04") === 0, "late meal today breaks streak to 0");
 assert(fStreakQA(fsMeals, 12, 20, "2025-06-04") === 3, "today unlogged → yesterday's streak survives");
 
-if (failures === 0) console.log("\n>>> WAVE 8A TESTS PASS");
+
+// ═══════════════════ WAVE 8B — FUEL nutrient depth ═══════════════════
+section("Wave 8B — nutrient status vs targets");
+const TARGETS = {
+  fiberG:{goal:30,kind:"goal"}, addedSugarG:{goal:25,kind:"cap"},
+  sodiumMg:{goal:2300,kind:"cap",warnAt:1500}, cholesterolMg:{goal:300,kind:"cap"},
+  satFatG:{goal:25,kind:"cap"}, transFatG:{goal:0,kind:"zero"}, omega3Mg:{goal:500,kind:"goal"},
+};
+function nStatus(key, value) {
+  const t = TARGETS[key]; const v = value ?? 0;
+  if (t.kind === "zero") return { status: v > 0 ? "over" : "ok", pct: v > 0 ? 100 : 0 };
+  const pct = t.goal > 0 ? Math.round((v / t.goal) * 100) : 0;
+  if (t.kind === "goal") return { status: pct >= 100 ? "ok" : pct >= 60 ? "near" : "low", pct: Math.min(pct, 150) };
+  const warnPct = t.warnAt ? Math.round((t.warnAt / t.goal) * 100) : 80;
+  return { status: pct > 100 ? "over" : pct >= warnPct ? "near" : "ok", pct: Math.min(pct, 150) };
+}
+assert(nStatus("fiberG", 32).status === "ok", "fiber 32g >= 30g goal → ok");
+assert(nStatus("fiberG", 20).status === "near", "fiber 20g = 67% → near");
+assert(nStatus("fiberG", 10).status === "low", "fiber 10g = 33% → low");
+assert(nStatus("addedSugarG", 30).status === "over", "sugar 30g > 25g cap → over");
+assert(nStatus("addedSugarG", 10).status === "ok", "sugar 10g under cap → ok");
+assert(nStatus("sodiumMg", 1800).status === "near", "sodium 1800mg past 1500 warn → near");
+assert(nStatus("sodiumMg", 2500).status === "over", "sodium 2500mg > 2300 cap → over");
+assert(nStatus("transFatG", 0).status === "ok" && nStatus("transFatG", 1).status === "over", "trans fat: zero ok, any over");
+assert(nStatus("omega3Mg", 600).status === "ok", "omega-3 600mg hits 500 goal");
+assert(nStatus("fiberG", undefined).status === "low", "undefined treated as 0");
+
+section("Wave 8B — sugar spike risk");
+function spike(cq, pr, carbs) {
+  cq = cq ?? "mixed"; pr = pr ?? "some";
+  let score = 0;
+  score += cq === "simple" ? 2 : cq === "mixed" ? 1 : 0;
+  score += pr === "none" ? 2 : pr === "some" ? 1 : 0;
+  if ((carbs ?? 0) >= 80) score += 1;
+  if ((carbs ?? 0) > 0 && (carbs ?? 0) < 20) score -= 1;
+  if (score >= 4) return "high";
+  if (score >= 2) return "medium";
+  return "low";
+}
+assert(spike("simple", "none", 100) === "high", "simple carbs, no pairing, 100g → HIGH");
+assert(spike("complex", "high", 60) === "low", "complex + high protein → LOW");
+assert(spike("simple", "high", 50) === "medium", "simple but well-paired → MEDIUM");
+assert(spike("mixed", "some", 50) === "medium", "default mixed/some → MEDIUM");
+assert(spike("complex", "some", 10) === "low", "tiny carb load discounts a point → LOW");
+assert(spike("simple", "none", 15) === "medium", "simple+none but tiny carbs drops HIGH→MEDIUM");
+
+section("Wave 8B — fiber from meals");
+function fiberFrom(meals, date) {
+  let g = 0;
+  for (const m of meals) if (m.date === date) for (const it of m.items) g += it.fibreG ?? 0;
+  return Math.round(g);
+}
+const fMeals = [
+  { date: "2025-06-01", items: [{ name:"idli", kcal:85, fibreG:2 }, { name:"dal", kcal:150, fibreG:6 }] },
+  { date: "2025-06-01", items: [{ name:"salad", kcal:60, fibreG:4.5 }] },
+  { date: "2025-06-02", items: [{ name:"oats", kcal:150, fibreG:8 }] },
+];
+assert(fiberFrom(fMeals, "2025-06-01") === 13, "sums fibre across same-day meals (2+6+4.5 → 13)");
+assert(fiberFrom(fMeals, "2025-06-03") === 0, "no meals → 0g");
+assert(fiberFrom([{date:"2025-06-01",items:[{name:"x",kcal:1}]}], "2025-06-01") === 0, "items without fibreG → 0");
+
+if (failures === 0) console.log("\n>>> WAVE 8A+8B TESTS PASS");
 else { console.error(`\n${failures} FAILURE(S) (incl. wave 8A)`); process.exit(1); }

@@ -127,6 +127,7 @@ const db: Record<string, Record<string, Row>> = {
   // Health (VITAL-SIGN) domain
   healthScores: {},
   healthMeals: {},
+  healthNutrients: {},
   healthWater: {},
   healthSleep: {},
   healthMeasurements: {},
@@ -587,6 +588,7 @@ const CRUD: [string, string][] = [
   // Health (VITAL-SIGN)
   ["healthScores",         "/health/scores"],
   ["healthMeals",          "/health/meals"],
+  ["healthNutrients",      "/health/nutrients"],
   ["healthWater",          "/health/water"],
   ["healthSleep",          "/health/sleep"],
   ["healthMeasurements",   "/health/measurements"],

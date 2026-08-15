@@ -370,6 +370,7 @@ function migrateHealth(raw: any): HealthState {
     settings: { ...base.settings, ...(raw.settings ?? {}) },
     scores: raw.scores ?? [],
     meals: raw.meals ?? [],
+    nutrients: raw.nutrients ?? [],
     water: raw.water ?? [],
     sleep: raw.sleep ?? [],
     measurements: raw.measurements ?? [],
