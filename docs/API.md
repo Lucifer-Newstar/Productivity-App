@@ -201,6 +201,8 @@ Generic CRUD under `/health/*` — mirrors `HealthState` collections
 | healthRestaurantMeals| `/health/restaurant-meals`  |
 | healthWater          | `/health/water`             |
 | healthSleep          | `/health/sleep`             |
+| healthNaps           | `/health/naps`              |
+| healthUrineChecks    | `/health/urine-checks`      |
 | healthMeasurements   | `/health/measurements`      |
 | healthPhotos         | `/health/photos`            |
 | healthSupplementDefs | `/health/supplement-defs`   |

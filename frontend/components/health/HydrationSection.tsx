@@ -14,8 +14,8 @@
 import { useMemo, useState, useEffect } from "react";
 import { Droplets, Coffee, Plus, Undo2, AlertTriangle, CheckCircle2, GlassWater } from "lucide-react";
 import { useStore } from "../../lib/store";
-import { waterGoalMl, formatMl, sipSuggestion } from "../../lib/healthAnalytics";
-import type { WaterEntry } from "../../lib/healthTypes";
+import { waterGoalMl, formatMl, sipSuggestion, urineStatus } from "../../lib/healthAnalytics";
+import type { WaterEntry, UrineCheck } from "../../lib/healthTypes";
 
 type Bev = "water" | "coconut" | "coffee" | "tea" | "juice" | "soda" | "sports" | "milk" | "lassi" | "ors" | "alcohol" | "other";
 
@@ -285,6 +285,60 @@ export default function HydrationSection() {
               );
             })}
           </div>
+        )}
+      </div>
+
+      {/* Wave 8D — urine color self-check (WHO/EFSA-style 1-8 scale) */}
+      <UrineCard/>
+    </div>
+  );
+}
+
+function UrineCard() {
+  const { health, updateHealth } = useStore();
+  const today = new Date().toISOString().slice(0, 10);
+  const todaysChecks = health.urineChecks.filter(u => u.date === today);
+  const last = todaysChecks[todaysChecks.length - 1];
+  // 8-step pale→dark amber scale
+  const SCALE = ["#fdfbe7", "#faf3c0", "#f5e88a", "#eed45e", "#e3b93d", "#cf9628", "#b1731c", "#8f5414"];
+  const logColor = (i: number) => {
+    const entry: UrineCheck = {
+      id: Math.random().toString(36).slice(2, 10) + Date.now().toString(36),
+      date: today,
+      time: new Date().toTimeString().slice(0, 5),
+      color: i + 1,
+    };
+    updateHealth(h => ({ urineChecks: [...h.urineChecks, entry] }));
+  };
+  const st = last ? urineStatus(last.color) : null;
+  return (
+    <div className="hlth-card">
+      <div className="hlth-card-h">// urine color self-check · pale = hydrated</div>
+      <div style={{display:"flex", alignItems:"center", gap:10, flexWrap:"wrap", marginTop:10}}>
+        <div style={{display:"flex", gap:4}}>
+          {SCALE.map((c, i) => (
+            <button key={i} onClick={()=>logColor(i)} title={`Level ${i+1}`}
+              style={{
+                width:34, height:44, borderRadius:6, cursor:"pointer", background:c,
+                border: last?.color === i+1 ? "2px solid var(--hlth-accent)" : "1px solid var(--hlth-border-soft)",
+                display:"flex", alignItems:"flex-end", justifyContent:"center",
+                fontSize:9, fontFamily:"var(--hlth-font-mono)", color:"#00000088", paddingBottom:2,
+              }}>
+              {i+1}
+            </button>
+          ))}
+        </div>
+        {st ? (
+          <div style={{flex:"1 1 180px", fontFamily:"var(--hlth-font-mono)", fontSize:11}}>
+            <span style={{color:st.color, fontWeight:700}}>{st.label}</span>
+            <span style={{color:"var(--hlth-muted)", fontSize:9, display:"block", marginTop:2}}>
+              logged level {last!.color} @ {last!.time}{st.dehydrated ? " · dehydration-risk flag raised" : ""}
+            </span>
+          </div>
+        ) : (
+          <span style={{fontFamily:"var(--hlth-font-mono)", fontSize:10, color:"var(--hlth-muted)"}}>
+            tap the closest shade — 1-3 good · 4-5 drink up · 6+ dehydrated
+          </span>
         )}
       </div>
     </div>

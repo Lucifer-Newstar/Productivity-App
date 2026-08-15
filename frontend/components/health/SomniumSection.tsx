@@ -17,9 +17,10 @@ import { Moon, Sun, Clock, AlertTriangle, Plus, Trash2, CheckCircle2, Sunrise, S
 import { useStore } from "../../lib/store";
 import {
   durationHours, computeSleepBank, sleepScore, hygieneScore,
-  routineAdherence, avgSleepHours, SLEEP_DEBT_WARN, SLEEP_DEBT_STRONG, formatHours,
+  routineAdherence, avgSleepHours, SLEEP_DEBT_WARN, SLEEP_DEBT_STRONG, formatHours, pinHash,
 } from "../../lib/healthAnalytics";
-import type { SleepEntry, SleepHygieneTick, CircadianEntry, RoutineStep } from "../../lib/healthTypes";
+import type { SleepEntry, SleepHygieneTick, CircadianEntry, RoutineStep, DreamTag, ProcrastinationReason } from "../../lib/healthTypes";
+import SleepExtras from "./SleepExtras";
 
 function todayIso() { return new Date().toISOString().slice(0,10); }
 function yesterdayIso() { const d = new Date(Date.now()-86400000); return d.toISOString().slice(0,10); }
@@ -124,6 +125,10 @@ export default function SomniumSection() {
   const [dream, setDream] = useState("");
   const [ticks, setTicks] = useState<SleepHygieneTick>({});
   const [dreamOpen, setDreamOpen] = useState<string|null>(null);
+  // Wave 8D — dream tags + bedtime procrastination
+  const [dreamTags, setDreamTags] = useState<DreamTag[]>([]);
+  const [procrastinated, setProcrastinated] = useState(false);
+  const [procrastReason, setProcrastReason] = useState<ProcrastinationReason | "">("");
 
   const dur = useMemo(() => durationHours(bedTime, wakeTime), [bedTime, wakeTime]);
 
@@ -150,6 +155,9 @@ export default function SomniumSection() {
       durationHours: Math.round(dur*10)/10,
       quality, latencyMin: latency, wakeUps,
       dream: dream.trim() || undefined,
+      dreamTags: dreamTags.length ? dreamTags : undefined,
+      procrastinated: procrastinated || undefined,
+      procrastinationReason: procrastinated && procrastReason ? procrastReason : undefined,
       hygiene: ticks,
     };
     updateHealth(h => {
@@ -158,6 +166,7 @@ export default function SomniumSection() {
     });
     // reset form
     setDream(""); setTicks({}); setQuality(7); setLatency(15); setWakeUps(0);
+    setDreamTags([]); setProcrastinated(false); setProcrastReason("");
     setShowForm(false);
   };
 
@@ -312,6 +321,48 @@ export default function SomniumSection() {
 
             <Field label="Dream journal (optional, stored locally)">
               <textarea value={dream} onChange={e=>setDream(e.target.value)} rows={2} placeholder="Weird dreams? Note them..." style={{...inputStyle, resize:"vertical"}}/>
+              <div style={{display:"flex", gap:6, flexWrap:"wrap", marginTop:6}}>
+                {(["lucid","nightmare","bizarre","prophetic"] as DreamTag[]).map(t => {
+                  const on = dreamTags.includes(t);
+                  const colors: Record<DreamTag,string> = { lucid:"#22d3ee", nightmare:"#ef4444", bizarre:"#a78bfa", prophetic:"#f59e0b" };
+                  return (
+                    <button key={t} type="button"
+                      onClick={()=>setDreamTags(on ? dreamTags.filter(x=>x!==t) : [...dreamTags, t])}
+                      style={{
+                        padding:"3px 10px", borderRadius:999, fontSize:10, cursor:"pointer",
+                        fontFamily:"var(--hlth-font-mono)", letterSpacing:"0.06em",
+                        background: on ? `${colors[t]}22` : "var(--hlth-card2)",
+                        border: `1px solid ${on ? colors[t] : "var(--hlth-border-soft)"}`,
+                        color: on ? colors[t] : "var(--hlth-muted)",
+                      }}>
+                      {t.toUpperCase()}
+                    </button>
+                  );
+                })}
+              </div>
+            </Field>
+
+            {/* Wave 8D — bedtime procrastination logger */}
+            <Field label="Bedtime procrastination — delayed sleep despite being tired?">
+              <div style={{display:"flex", gap:10, alignItems:"center", flexWrap:"wrap"}}>
+                <label style={{display:"inline-flex", alignItems:"center", gap:6, cursor:"pointer", fontFamily:"var(--hlth-font-mono)", fontSize:11, color: procrastinated ? "#f59e0b" : "var(--hlth-muted)"}}>
+                  <input type="checkbox" checked={procrastinated} onChange={e=>setProcrastinated(e.target.checked)} style={{accentColor:"#f59e0b"}}/>
+                  yes, I stalled
+                </label>
+                {procrastinated && (
+                  <select value={procrastReason} onChange={e=>setProcrastReason(e.target.value as ProcrastinationReason | "")}
+                    style={{...inputStyle, width:"auto", padding:"5px 8px"}}>
+                    <option value="">reason?</option>
+                    <option value="scrolling">scrolling</option>
+                    <option value="work">work</option>
+                    <option value="anxiety">anxiety</option>
+                    <option value="gaming">gaming</option>
+                    <option value="social">social</option>
+                    <option value="other">other</option>
+                  </select>
+                )}
+                {procrastinated && <span style={{fontSize:9, color:"var(--hlth-muted)", fontFamily:"var(--hlth-font-mono)"}}>no guilt — pattern awareness only</span>}
+              </div>
             </Field>
 
             <div style={{display:"flex", gap:8}}>
@@ -341,9 +392,19 @@ export default function SomniumSection() {
                 {e.latencyMin != null && <span style={{color:"var(--hlth-muted)"}}>lat {e.latencyMin}m</span>}
                 {e.wakeUps != null && e.wakeUps > 0 && <span style={{color:"#f59e0b"}}>×{e.wakeUps} wakeups</span>}
                 {e.hygiene && <Badge label={`hyg ${hygieneScore(e.hygiene)}/10`} color="#a78bfa"/>}
+                {e.procrastinated && <Badge label={`stalled${e.procrastinationReason ? `·${e.procrastinationReason}` : ""}`} color="#f59e0b"/>}
+                {e.dreamTags?.map(t => <Badge key={t} label={t} color="#22d3ee"/>)}
                 {e.dream && (
-                  <button onClick={()=>setDreamOpen(dreamOpen===e.id?null:e.id)} style={{marginLeft:"auto", background:"transparent", border:"none", color:"#a78bfa", cursor:"pointer", fontSize:10}}>
-                    dream
+                  <button onClick={()=>{
+                    if (dreamOpen === e.id) { setDreamOpen(null); return; }
+                    // Wave 8D — PIN lock check before revealing dream text
+                    if (health.profile.pinHash) {
+                      const pin = window.prompt("Dream journal locked — enter PIN:");
+                      if (!pin || pinHash(pin) !== health.profile.pinHash) { if (pin) window.alert("Wrong PIN."); return; }
+                    }
+                    setDreamOpen(e.id);
+                  }} style={{marginLeft:"auto", background:"transparent", border:"none", color:"#a78bfa", cursor:"pointer", fontSize:10}}>
+                    {health.profile.pinHash ? "🔒 dream" : "dream"}
                   </button>
                 )}
                 <button onClick={()=>deleteEntry(e.id)} style={{marginLeft:e.dream?"0":"auto", background:"transparent", border:"none", color:"var(--hlth-muted)", cursor:"pointer"}}>
@@ -400,6 +461,9 @@ export default function SomniumSection() {
           onAdd={()=>addStep("wakeRoutine")}
           onRemove={(sid)=>removeStep("wakeRoutine", sid)}/>
       </div>
+
+      {/* Wave 8D — statement, consistency, naps, 30/90d graph, PIN lock */}
+      <SleepExtras/>
     </div>
   );
 }

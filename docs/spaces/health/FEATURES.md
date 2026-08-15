@@ -139,7 +139,7 @@ for Chennai region, but user-configurable.
 | 11 | Caffeine tracker — mg per drink, daily total, half-life clock (5.7h half-life)         | ❌     | Pre-seeded: filter coffee ~90mg, chai ~40mg, espresso shot ~70mg, Red Bull ~80mg, pre-workout ~150-300mg |
 | 12 | Caffeine cutoff warning — "Caffeine after 4pm may disturb sleep tonight"                | ❌     | |
 | 13 | Daily caffeine cap warning (400mg = EFSA safe limit; alert at &gt;350mg)                 | ❌     | |
-| 14 | Urine color self-check card (1-8 scale; pale yellow = good, dark = dehydrated)         | ❌     | Evidence-based self-monitor per WHO/EFSA |
+| 14 | Urine color self-check card (1-8 scale; pale yellow = good, dark = dehydrated)         | ✅     | Evidence-based self-monitor per WHO/EFSA |
 | 15 | Hydration history chart (30-day) with workout-day overlay                               | ❌     | Workout sync |
 | 16 | Streak for hitting water goal                                                           | ❌     | |
 | 17 | Gentle local nudges: "You haven't logged water in 4 hours"                              | ❌     | |
@@ -158,29 +158,29 @@ make sleep debt real.
 |----|-----------------------------------------------------------------------------------------|--------|-------|
 | 01 | Bedtime + wake-time fields (datetime-local pickers). Auto-calculates duration; rejects <2h or >14h | ✅     | cross-midnight safe, duration shown live on form |
 | 02 | Sleep quality 1–10 slider                                                               | ✅     | |
-| 03 | **Dream Journal** — plaintext per-night text; PIN lock wave 8                               | ✅     | stored locally; expand/collapse per night |
+| 03 | **Dream Journal** — per-night text + tags (lucid/nightmare/bizarre/prophetic) + PIN lock                               | ✅     | stored locally; expand/collapse per night |
 | 04 | **Sleep Bank** — rolling 14-day, 0.5× credit (cap +1h/night), global caps [−20h, +10h], amber nudge ≥5h, red deload ≥10h | ✅ | Visual bank bar with debt-color gradient; 5h amber, 10h red → recovery composite & deload hint |
-| 05 | Sleep debt repayment plan projection (e.g., +30min/night for 10 nights to clear 5h)     | ❌     | |
-| 06 | Sleep Bank Statement — weekly report (avg hours, total debt/credit, trend)              | ❌     | |
+| 05 | Sleep debt repayment plan projection (e.g., +30min/night for 10 nights to clear 5h)     | ✅     | |
+| 06 | Sleep Bank Statement — weekly report (avg hours, total debt/credit, trend)              | ✅     | |
 | 07 | Sleep latency (minutes to fall asleep) field                                            | ✅     | |
 | 08 | Wake-ups during night count                                                             | ✅     | |
-| 09 | Nap log — duration, time; whether it was power nap vs long nap (affects circadian note) | ❌     | |
+| 09 | Nap log — duration, time; whether it was power nap vs long nap (affects circadian note) | ✅     | |
 | 10 | **Circadian anchors** — first sunlight / first meal / last meal / caffeine cutoff / screen-off | ✅ | time pickers per anchor with contextual tip |
-| 11 | Circadian score — alignment score vs consistent rhythm (ideal range: wake ±30min)       | ❌     | |
-| 12 | **Bedtime Procrastination logger** — when you delayed despite being tired + reason (Scrolling / Work / Anxiety / Gaming / Social / Other) | ❌ | |
+| 11 | Circadian score — alignment score vs consistent rhythm (ideal range: wake ±30min)       | ✅     | |
+| 12 | **Bedtime Procrastination logger** — when you delayed despite being tired + reason (Scrolling / Work / Anxiety / Gaming / Social / Other) | ✅ | |
 | 13 | **Sleep Hygiene Score** — 10-item checklist (no caffeine after 2pm, morning sunlight, trained, no heavy meal <2h bed, no alcohol, screens off 30m, wind-down, dark room, cool 22-26°C, consistent schedule) → score 0–10 | ✅ | Chennai 22-26°C AC note; tips per item |
 | 14 | Bedtime Routine Builder — ordered checklist with add/remove/toggle, adherence %          | ✅     | 6 seed steps (cutoff, phone night shift, Mg+Ashwa, shower, stretch/breath, read) |
 | 15 | Wake-up Routine Builder — ordered checklist with add/remove/toggle, adherence %          | ✅     | 5 seed steps (sunlight, water+salt, creatine, review training, mobility) |
 | 16 | Sleep environment tags: AC / Fan / Open window / Mosquito coil/mat / Humidifier / White noise | ❌ | 🌏 Mosquito concern is Chennai-real; coils release particulate so flagged |
 | 17 | Bedtime mood &amp; anxiety 1–10                                                           | ❌     | |
 | 18 | Readiness contribution — sleep score feeds into Workout readiness                       | ❌     | Workout sync |
-| 19 | Sleep graph (30/90/365 day)                                                             | ❌     | |
+| 19 | Sleep graph (30/90/365 day)                                                             | ✅     | |
 | 20 | Sleep goal setting (ideal hours + routine windows)                                      | ✅     | profile.idealSleepHours default 8; routine windowStart/End |
 | 21 | Ideal bedtime calculator — based on wake-time + desired duration, suggests wind-down start | ❌   | |
 | 22 | Jet-lag / late-night study mode — temporary adjusted schedule                           | ❌     | Exam/onsite weeks common |
 | 23 | Workout-correlation overlay: "On 7h sleep your avg volume was 10% lower than 8h+ nights" | ❌     | Workout sync |
 | 24 | Next-morning projected wake-time given bedtime ("If you sleep now, you'll get 6.5h")    | ❌     | |
-| 25 | Sleep consistency score (weekday vs weekend variance; &gt; 90min social-jetlag flagged)   | ❌     | |
+| 25 | Sleep consistency score (weekday vs weekend variance; &gt; 90min social-jetlag flagged)   | ✅     | |
 
 ---
 

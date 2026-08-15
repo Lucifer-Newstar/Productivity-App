@@ -1028,5 +1028,83 @@ function prepProg(plan) {
 assert(prepProg([]).pct === 0, "no plan → 0% (no NaN)");
 assert(prepProg([{prepped:true},{prepped:true},{prepped:false}]).pct === 67, "2/3 prepped → 67%");
 
-if (failures === 0) console.log("\n>>> WAVE 8A+8B+8C TESTS PASS");
+
+// ═══════════════════ WAVE 8D — SOMNIUM + HYDRATION polish ═══════════════════
+section("Wave 8D — sleep bank statement");
+function stmtQA(entries, ideal) {
+  const sorted = [...entries].sort((a,b)=>a.date.localeCompare(b.date));
+  const win = sorted.slice(-7);
+  const nights = win.length;
+  const totalSlept = win.reduce((n,e)=>n+(e.durationHours||0),0);
+  const totalNeeded = ideal*nights;
+  let trend = "flat";
+  if (nights >= 4) {
+    const half = Math.floor(nights/2);
+    const a = win.slice(0,half).reduce((n,e)=>n+e.durationHours,0)/half;
+    const b = win.slice(-half).reduce((n,e)=>n+e.durationHours,0)/half;
+    if (b-a > 0.4) trend = "improving"; else if (a-b > 0.4) trend = "declining";
+  }
+  const rd = x=>Math.round(x*10)/10;
+  return { nights, totalSlept: rd(totalSlept), totalNeeded: rd(totalNeeded), delta: rd(totalSlept-totalNeeded), trend };
+}
+const mkNights = hrs => hrs.map((h,i)=>({date:`2025-06-0${i+1}`, durationHours:h, quality:7, wakeTime:`2025-06-0${i+1}T07:00:00`}));
+let sq = stmtQA(mkNights([7,7,7,7,7,7,7]), 8);
+assert(sq.nights===7 && sq.delta===-7, "7×7h vs 8h ideal → −7h weekly delta");
+sq = stmtQA(mkNights([6,6,6,8.5,8.5,8.5]), 8);
+assert(sq.trend==="improving", "back half sleeps longer → improving trend");
+sq = stmtQA(mkNights([8.5,8.5,8.5,6,6,6]), 8);
+assert(sq.trend==="declining", "back half shorter → declining");
+sq = stmtQA([], 8);
+assert(sq.nights===0 && sq.delta===0, "empty → zeros, no NaN");
+
+section("Wave 8D — circadian consistency");
+function circQA(entries) {
+  const win = [...entries].sort((a,b)=>a.date.localeCompare(b.date)).slice(-14).filter(e=>e.wakeTime);
+  if (win.length < 3) return { score: 0, sigmaMin: 0, socialJetlagMin: 0, flagged: false };
+  const mins = win.map(e=>{const d=new Date(e.wakeTime); return d.getHours()*60+d.getMinutes();});
+  const mean = mins.reduce((a,b)=>a+b,0)/mins.length;
+  const sigma = Math.sqrt(mins.reduce((a,b)=>a+(b-mean)**2,0)/mins.length);
+  const score = Math.max(0, Math.min(100, Math.round(100*(1-Math.max(0,sigma-30)/120))));
+  const wd=[], we=[];
+  win.forEach((e,i)=>{const day=new Date(e.date+"T00:00:00").getDay();(day===0||day===6?we:wd).push(mins[i]);});
+  const avg=xs=>xs.length?xs.reduce((a,b)=>a+b,0)/xs.length:NaN;
+  const jet=(we.length&&wd.length)?Math.round(avg(we)-avg(wd)):0;
+  return { score, sigmaMin: Math.round(sigma), socialJetlagMin: jet, flagged: Math.abs(jet)>90 };
+}
+// perfectly consistent 7:00 wakes (weekdays Mon 2025-06-02 .. Fri 2025-06-06)
+const consistent = [2,3,4,5,6].map(d=>({date:`2025-06-0${d}`, wakeTime:`2025-06-0${d}T07:00:00`}));
+let cq = circQA(consistent);
+assert(cq.score===100 && cq.sigmaMin===0, "identical wake times → σ0, score 100");
+// weekend +3h drift → jetlag flag (Sat 2025-06-07, Sun 2025-06-08 wake 10:00)
+const jetlag = [...consistent,
+  {date:"2025-06-07", wakeTime:"2025-06-07T10:00:00"},
+  {date:"2025-06-08", wakeTime:"2025-06-08T10:00:00"}];
+cq = circQA(jetlag);
+assert(cq.flagged && cq.socialJetlagMin===180, "weekend 10am vs weekday 7am → 180min social jetlag flagged");
+assert(cq.score < 100, "variance drops score below 100");
+assert(circQA(consistent.slice(0,2)).score===0, "<3 nights → no score");
+
+section("Wave 8D — nap classification & urine status");
+function napQA(min, time) {
+  const kind = min <= 30 ? "power" : "long";
+  let late = false;
+  if (time) late = +time.split(":")[0] >= 16;
+  return { kind, late };
+}
+assert(napQA(20).kind==="power", "20min → power nap");
+assert(napQA(31).kind==="long", "31min → long nap");
+assert(napQA(20,"17:00").late, "5pm nap flagged late");
+assert(!napQA(45,"13:00").late, "1pm nap not late");
+function urineQA(c){ return c<=3?"ok":c<=5?"mild":"dehydrated"; }
+assert(urineQA(1)==="ok" && urineQA(3)==="ok", "colors 1-3 hydrated");
+assert(urineQA(4)==="mild" && urineQA(5)==="mild", "4-5 mild");
+assert(urineQA(6)==="dehydrated" && urineQA(8)==="dehydrated", "6+ dehydrated");
+
+section("Wave 8D — PIN hash (FNV-1a)");
+function pinQA(pin){let h=0x811c9dc5;for(let i=0;i<pin.length;i++){h^=pin.charCodeAt(i);h=Math.imul(h,0x01000193)>>>0;}return h.toString(36);}
+assert(pinQA("1234")===pinQA("1234"), "same PIN → same hash");
+assert(pinQA("1234")!==pinQA("1235"), "different PIN → different hash");
+assert(pinQA("0000").length>0, "hash non-empty");
+
+if (failures === 0) console.log("\n>>> WAVE 8A+8B+8C+8D TESTS PASS");
 else { console.error(`\n${failures} FAILURE(S) (incl. wave 8A)`); process.exit(1); }

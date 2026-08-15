@@ -262,9 +262,35 @@ export interface SleepEntry {
   wakeUps?: number;      // number of nighttime awakenings
   /** Dream journal text (encrypted via PIN in future; plaintext for now). */
   dream?: string;
+  /** Wave 8D — dream tags. */
+  dreamTags?: DreamTag[];
+  /** Wave 8D — bedtime procrastination: delayed sleep despite being tired. */
+  procrastinated?: boolean;
+  procrastinationReason?: ProcrastinationReason;
   /** Hygiene checklist ticked for this night. */
   hygiene?: SleepHygieneTick;
   note?: string;
+}
+
+export type DreamTag = "lucid" | "nightmare" | "bizarre" | "prophetic";
+export type ProcrastinationReason = "scrolling" | "work" | "anxiety" | "gaming" | "social" | "other";
+
+/** Wave 8D — nap log. */
+export interface NapEntry {
+  id: string;
+  date: string;   // YYYY-MM-DD
+  time?: string;  // HH:MM start
+  durationMin: number;
+  /** power (<=30min) vs long — derived at log time but stored for history. */
+  kind: "power" | "long";
+}
+
+/** Wave 8D — urine-color self-check (1-8 scale; 1-3 hydrated, 6+ dehydrated). */
+export interface UrineCheck {
+  id: string;
+  date: string;
+  time: string; // HH:MM
+  color: number; // 1-8
 }
 
 export interface SleepHygieneTick {
@@ -542,6 +568,9 @@ export interface HealthState {
   restaurantMeals: RestaurantMeal[];
   water: WaterEntry[];
   sleep: SleepEntry[];
+  /** Wave 8D — naps + urine self-checks. */
+  naps: NapEntry[];
+  urineChecks: UrineCheck[];
   measurements: MeasurementEntry[];
   photos: ProgressPhoto[];
   supplementDefs: SupplementDef[];
@@ -678,6 +707,8 @@ export function emptyHealthState(): HealthState {
     restaurantMeals: [],
     water: [],
     sleep: [],
+    naps: [],
+    urineChecks: [],
     measurements: [],
     photos: [],
     supplementDefs: SEED_SUPPLEMENT_DEFS.map(s => ({ ...s })),

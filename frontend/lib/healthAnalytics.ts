@@ -1242,3 +1242,94 @@ export function prepProgress(plan: PlannedMeal[]): { done: number; total: number
   const done = plan.filter(p => p.prepped).length;
   return { done, total, pct: total ? Math.round((done / total) * 100) : 0 };
 }
+
+// ---------------- Wave 8D — SOMNIUM + HYDRATION polish ----------------
+
+import type { NapEntry, UrineCheck } from "./healthTypes";
+
+/** Sleep-bank weekly statement: hours slept vs needed over the last 7 logged nights. */
+export interface SleepStatement {
+  nights: number;          // nights logged in window
+  totalSlept: number;      // h
+  totalNeeded: number;     // h (ideal × nights)
+  avgHours: number;
+  delta: number;           // slept − needed (negative = debt built this week)
+  avgQuality: number;      // 1-10
+  trend: "improving" | "flat" | "declining";
+}
+export function sleepStatement(entries: SleepEntry[], idealHours: number): SleepStatement {
+  const sorted = [...entries].sort((a, b) => a.date.localeCompare(b.date));
+  const win = sorted.slice(-7);
+  const nights = win.length;
+  const totalSlept = win.reduce((n, e) => n + (e.durationHours || 0), 0);
+  const totalNeeded = idealHours * nights;
+  const avgHours = nights ? totalSlept / nights : 0;
+  const avgQuality = nights ? win.reduce((n, e) => n + (e.quality || 0), 0) / nights : 0;
+  // Trend: first-half avg vs second-half avg of the window.
+  let trend: SleepStatement["trend"] = "flat";
+  if (nights >= 4) {
+    const half = Math.floor(nights / 2);
+    const a = win.slice(0, half).reduce((n, e) => n + e.durationHours, 0) / half;
+    const b = win.slice(-half).reduce((n, e) => n + e.durationHours, 0) / half;
+    if (b - a > 0.4) trend = "improving";
+    else if (a - b > 0.4) trend = "declining";
+  }
+  const rd = (x: number) => Math.round(x * 10) / 10;
+  return { nights, totalSlept: rd(totalSlept), totalNeeded: rd(totalNeeded), avgHours: rd(avgHours), delta: rd(totalSlept - totalNeeded), avgQuality: rd(avgQuality), trend };
+}
+
+/**
+ * Circadian consistency score 0-100 from wake-time variance over last 14 nights.
+ * σ ≤ 30min → 100; score decays linearly to 0 at σ = 2.5h.
+ * Also flags social jetlag: weekend vs weekday wake gap > 90min.
+ */
+export function circadianConsistency(entries: SleepEntry[]): { score: number; sigmaMin: number; socialJetlagMin: number; flagged: boolean } {
+  const win = [...entries].sort((a, b) => a.date.localeCompare(b.date)).slice(-14)
+    .filter(e => e.wakeTime);
+  if (win.length < 3) return { score: 0, sigmaMin: 0, socialJetlagMin: 0, flagged: false };
+  const wakeMins = win.map(e => {
+    const d = new Date(e.wakeTime);
+    return d.getHours() * 60 + d.getMinutes();
+  });
+  const mean = wakeMins.reduce((a, b) => a + b, 0) / wakeMins.length;
+  const sigma = Math.sqrt(wakeMins.reduce((a, b) => a + (b - mean) ** 2, 0) / wakeMins.length);
+  const score = Math.max(0, Math.min(100, Math.round(100 * (1 - Math.max(0, sigma - 30) / 120))));
+  // Social jetlag: avg weekend wake − avg weekday wake.
+  const wd: number[] = [], we: number[] = [];
+  win.forEach((e, i) => {
+    const day = new Date(e.date + "T00:00:00").getDay();
+    (day === 0 || day === 6 ? we : wd).push(wakeMins[i]);
+  });
+  const avg = (xs: number[]) => xs.length ? xs.reduce((a, b) => a + b, 0) / xs.length : NaN;
+  const jet = (we.length && wd.length) ? Math.round(avg(we) - avg(wd)) : 0;
+  return { score, sigmaMin: Math.round(sigma), socialJetlagMin: jet, flagged: Math.abs(jet) > 90 };
+}
+
+/** Nap classification + circadian note. */
+export function classifyNap(durationMin: number, time?: string): { kind: "power" | "long"; note: string } {
+  const kind = durationMin <= 30 ? "power" : "long";
+  let late = false;
+  if (time) {
+    const h = +time.split(":")[0];
+    late = h >= 16;
+  }
+  if (kind === "power") return { kind, note: late ? "Power nap, but post-4pm — may still delay sleep onset." : "Power nap ≤30min — alertness boost without sleep inertia." };
+  return { kind, note: late ? "Long nap after 4pm — high risk of pushing bedtime back. Cap at 30min next time." : "Long nap — expect some grogginess (sleep inertia); protects sleep debt though." };
+}
+
+/** Urine color 1-8 → hydration status. */
+export function urineStatus(color: number): { label: string; color: string; dehydrated: boolean } {
+  if (color <= 3) return { label: "Well hydrated", color: "#10b981", dehydrated: false };
+  if (color <= 5) return { label: "Mild dehydration — drink a glass now", color: "#f59e0b", dehydrated: false };
+  return { label: "Dehydrated — 500ml + electrolytes", color: "#ef4444", dehydrated: true };
+}
+
+/** Simple non-crypto PIN hash (FNV-1a) — local honesty lock, not security. */
+export function pinHash(pin: string): string {
+  let h = 0x811c9dc5;
+  for (let i = 0; i < pin.length; i++) {
+    h ^= pin.charCodeAt(i);
+    h = Math.imul(h, 0x01000193) >>> 0;
+  }
+  return h.toString(36);
+}
