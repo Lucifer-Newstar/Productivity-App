@@ -11,3 +11,6 @@ export default function HydrationPage() {
     </HealthPage>
   );
 }
+
+// FULLSCREEN — VITAL-SIGN shell paints edge-to-edge (skips shared TopNav, like /workout /projects /career)
+HydrationPage.fullScreen = true;

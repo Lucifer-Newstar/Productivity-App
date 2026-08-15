@@ -10,14 +10,14 @@ productivity-app/
 │   │   ├── projects/         # Projects space (a.k.a. "Forge")
 │   │   ├── workout/          # Workout space
 │   │   ├── career/           # Career space
-│   │   ├── health/           # Health space (VITAL-SIGN OS, 10 routes under construction)
+│   │   ├── health/           # Health space (VITAL-SIGN OS, 10 FULLSCREEN routes, v1.1)
 │   │   └── entertainment/    # Entertainment space (placeholder)
 │   ├── app/                  # App Router home "/" (dashboard)
 │   ├── components/           # UI (TopNav, SideNav, SpaceTasks, Dashboard, Notes, Habits, Pomodoro, Calendar, Tasks)
 │   │   ├── forge/            # Projects space (internal codename — routes live at /projects/*)
 │   │   ├── workout/          # Workout space
 │   │   ├── career/           # Career space
-│   │   └── health/           # Health space (planned — see health branch)
+│   │   └── health/           # Health space (VITAL-SIGN shell + 20 section components)
 │   └── lib/                  # Shared store, types, themes, algorithms, demo seeds
 ├── backend/                  # Express skeleton (offline-first; frontend does not call it)
 └── docs/                     # You are here
@@ -42,7 +42,7 @@ productivity-app/
 | **projects** (Forge) | `/projects/*` | ✅ | v1.0 shipped — see [`spaces/projects/README.md`](spaces/projects/README.md) |
 | **workout** | `/workout/*` | ✅ | Battle-tested — see [`spaces/workout/README.md`](spaces/workout/README.md) |
 | **career** | `/career/*` | ✅ | Night HUD / Blueprint — see [`spaces/career/README.md`](spaces/career/README.md) |
-| **health** | `/health/*` | planned | VITAL-SIGN OS in active build on branch `health` (257 features / 10 sections) — see [`spaces/health/README.md`](spaces/health/README.md) / [`FEATURES.md`](spaces/health/FEATURES.md) |
+| **health** | `/health/*` | ✅ | VITAL-SIGN OS v1.1 shipped (216 ✅ of 281 spec rows, waves 1-9) — see [`spaces/health/README.md`](spaces/health/README.md) / [`FEATURES.md`](spaces/health/FEATURES.md) / [`WAVES.md`](spaces/health/WAVES.md) |
 | **entertainment** | `/entertainment` | ❌ | `SpaceTasks` stub — awaiting full-bleed cinema theme |
 
 Each space folder holds:
@@ -73,6 +73,6 @@ Last known good build (2026-08-14 v1.0):
 
 ## Git conventions
 
-- `main` — stable. Feature branches merge in after explicit approval; old branches (`projects`, `career`, `workout`) have been merged and deleted. Active work lives on short-lived feature branches (e.g. `health`).
+- `main` — stable. Feature branches merge in after explicit approval; old branches (`projects`, `career`, `workout`) have been merged and deleted. The `health` branch merged into main (v1.1, 2026-08-15) and was deleted per convention.
 - Author: `Lucifer-Newstar <navin.jairam@gmail.com>` (pass via `git -c user.name=... -c user.email=... commit`).
 - No remote is configured (`fatal: 'origin' does not appear`); the repo is local-only by design.

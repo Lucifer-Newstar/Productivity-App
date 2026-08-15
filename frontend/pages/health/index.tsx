@@ -168,3 +168,6 @@ function Kpi({ label, value, unit, hint, color }: { label: string; value: string
     </div>
   );
 }
+
+// FULLSCREEN — VITAL-SIGN shell paints edge-to-edge (skips shared TopNav, like /workout /projects /career)
+TriagePage.fullScreen = true;

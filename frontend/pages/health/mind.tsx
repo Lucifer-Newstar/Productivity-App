@@ -12,3 +12,6 @@ export default function Page() {
     </HealthPage>
   );
 }
+
+// FULLSCREEN — VITAL-SIGN shell paints edge-to-edge (skips shared TopNav, like /workout /projects /career)
+Page.fullScreen = true;

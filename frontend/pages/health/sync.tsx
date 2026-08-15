@@ -219,3 +219,6 @@ function Toggle({ label, value, onChange }: { label: string; value: boolean; onC
     </label>
   );
 }
+
+// FULLSCREEN — VITAL-SIGN shell paints edge-to-edge (skips shared TopNav, like /workout /projects /career)
+LabPage.fullScreen = true;

@@ -113,7 +113,7 @@ Dark mode is default. Each FULLSCREEN space ships **two distinct visual language
 | Projects ("Forge", "Foundry") | Deep iron `#0f0d0b→#080706→#000` radial, molten amber `#f59e0b`, hot-orange `#ea580c`, quench-cyan `#06b6d4`, blood-red `#ef4444`, steel `#94a3b8`, violet `#818cf8`, pink `#f472b6`; Bebas Neue headings; I-beam rail, 6 px 135° chevron hazard stripe, temp gauge, diamond-plate footer, weld seams, rivets | Drafting Room: yellowed vellum `#f3ecdd→#e8dec4→#d9cba9`, brass grommets `#92400e`, burnt-orange `#c2410c` pencil, 20/100 px grid, rotated APPROVED stamps, Special Elite pencil type |
 | Health ("VITAL-SIGN") | Deep navy→black (`#0a1628→#050a14→#000`), EKG lime-green `#10b981`/`#34d399` primary, blood-red `#ef4444`/`#f87171` alerts, cyan `#06b6d4` trace accents, white `#f8fafc` readouts; JetBrains Mono data, Chakra Petch/Space Grotesk headers; live EKG SVG top trace, circular gauge tiles, ICU monitor aesthetic | CLINIC: sterile white/off-white `#fafafa→#f1f5f9`, slate `#334155` ink, lime-green accents, faint chart-grid paper background, soft shadows, red reserved for alarms |
 
-Non-FULLSCREEN pages (home, `/entertainment`) use the shared TopNav with an obsidian/parchment dual theme. (`/health` is FULLSCREEN VITAL-SIGN when built out.)
+Non-FULLSCREEN pages (home, `/entertainment`) use the shared TopNav with an obsidian/parchment dual theme. (`/health/*` is FULLSCREEN VITAL-SIGN — all 10 routes set `Page.fullScreen = true` and paint edge-to-edge via `HealthShell`.)
 
 `ThemeProvider` reads `kaizen.theme` from localStorage and sets `.dark` on `<html>` before paint.
 
