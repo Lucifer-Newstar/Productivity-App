@@ -106,7 +106,7 @@ library saved from history, common South Indian meals pre-seeded.
 | 39 | **Calorie budget** — Surplus/Deficit vs TDEE (pulled dynamically from SYNC LAB engine)  | ❌     | |
 | 40 | Auto-adjust TDEE on workout days (+calories from exercise volume via Workout bridge)    | ❌     | Workout sync |
 | 41 | Pre-workout meal flag + post-workout meal flag; auto-assigns post-workout window (1-2h post) | ❌  | Workout sync |
-| 42 | Pre-workout meal effectiveness tracker — logs perceived workout energy (1-10) correlating with pre-wo macros | ❌ | Workout sync |
+| 42 | Pre-workout meal effectiveness tracker — logs perceived workout energy (1-10) correlating with pre-wo macros | ✅ | Workout sync |
 | 43 | Post-workout meal timing tracker — did protein hit within 2h window                      | ❌     | Evidence: full-day protein dominates over "anabolic window" for trained lifters; tracker kept as awareness not prescription |
 | 44 | Food photography attachment — local file storage (dataURL/IndexedDB); one-tap per meal   | ✅     | Offline-first |
 | 45 | Photo timestamp + meal-tag; gallery view                                                | ❌     | |

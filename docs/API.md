@@ -203,6 +203,10 @@ Generic CRUD under `/health/*` — mirrors `HealthState` collections
 | healthSleep          | `/health/sleep`             |
 | healthNaps           | `/health/naps`              |
 | healthUrineChecks    | `/health/urine-checks`      |
+| healthWorkoutCheckins| `/health/workout-checkins`  |
+| healthGoals          | `/health/goals`             |
+| healthCompetitions   | `/health/competitions`      |
+| healthHabitBreaks    | `/health/habit-breaks`      |
 | healthMeasurements   | `/health/measurements`      |
 | healthPhotos         | `/health/photos`            |
 | healthSupplementDefs | `/health/supplement-defs`   |

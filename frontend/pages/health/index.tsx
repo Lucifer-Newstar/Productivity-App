@@ -6,6 +6,7 @@
  * Fuller triage tiles come in later waves.
  */
 import HealthPage from "../../components/health/HealthPage";
+import GlobalPanel from "../../components/health/GlobalPanel";
 import { useStore } from "../../lib/store";
 import { bmrMifflin, tdee, waterGoalMl, proteinTargetG, bmi, formatMl, formatKcal,
   computeSleepBank, avgSleepHours, formatHours, recoveryScore,
@@ -149,6 +150,9 @@ export default function TriagePage() {
           </p>
         </div>
       </div>
+
+      {/* Wave 8G — global connections: nudges, check-ins, recovery, goals, comps */}
+      <GlobalPanel />
     </HealthPage>
   );
 }

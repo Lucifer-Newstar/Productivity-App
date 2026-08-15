@@ -1259,5 +1259,78 @@ assert(photoRemQA([{date:"2025-05-01"}], "2025-06-28").due, "58 days → due");
 assert(!photoRemQA([{date:"2025-06-20"}], "2025-06-28").due, "8 days → not due");
 assert(photoRemQA([{date:"2025-05-31"}], "2025-06-28").daysSince===28, "exactly 28 days → due at boundary");
 
-if (failures === 0) console.log("\n>>> WAVE 8A-8F TESTS PASS");
+
+// ═══════════════════ WAVE 8G — GLOBAL connections ═══════════════════
+section("Wave 8G — recovery-time estimator");
+function recQA(a) {
+  let h = 24;
+  if (a.volumeKg > 8000 || a.durationMin > 100) h = 48;
+  else if (a.volumeKg > 4000 || a.durationMin > 70) h = 36;
+  if (a.sleepBank <= -8) h += 24;
+  else if (a.sleepBank <= -4) h += 12;
+  if (a.stress7 >= 7) h += 12;
+  return h;
+}
+assert(recQA({volumeKg:3000,durationMin:50,sleepBank:0,stress7:4})===24, "light session, rested → 24h");
+assert(recQA({volumeKg:9000,durationMin:80,sleepBank:0,stress7:4})===48, "9t session → 48h");
+assert(recQA({volumeKg:5000,durationMin:60,sleepBank:-9,stress7:8})===72, "36h base + debt24 + stress12 = 72h");
+assert(recQA({volumeKg:3000,durationMin:50,sleepBank:-5,stress7:4})===36, "mild debt adds 12h");
+
+section("Wave 8G — PR celebration");
+function celQA(a) {
+  if (a.newE1rm <= a.oldE1rm || a.bwNow <= 0 || a.bwOld <= 0 || a.oldE1rm <= 0) return null;
+  const oldR = a.oldE1rm/a.bwOld, newR = a.newE1rm/a.bwNow;
+  return Math.round(((newR-oldR)/oldR)*1000)/10;
+}
+assert(celQA({newE1rm:180,oldE1rm:160,bwNow:75,bwOld:75})===12.5, "DL 160→180 at same 75kg → +12.5% ratio");
+assert(celQA({newE1rm:160,oldE1rm:160,bwNow:75,bwOld:75})===null, "no PR → null");
+assert(celQA({newE1rm:180,oldE1rm:160,bwNow:85,bwOld:75})===-0.7, "PR but +10kg BW → ratio actually dips −0.7%");
+
+section("Wave 8G — energy balance & meal effectiveness");
+function ebQA(kcalIn, tdee, wo) {
+  const b = Math.round(kcalIn - (tdee+wo));
+  return { b, label: b>100?"surplus":b<-100?"deficit":"even" };
+}
+assert(ebQA(3000, 2600, 0).label==="surplus", "3000 in vs 2600 TDEE → surplus");
+assert(ebQA(2000, 2600, 300).label==="deficit", "2000 in vs 2900 out → deficit");
+assert(ebQA(2650, 2600, 0).label==="even", "±100 → even");
+function effQA(meals, checkins, flag) {
+  const flagged = new Set(meals.filter(m=>m[flag]).map(m=>m.date));
+  const w=[], wo=[];
+  for (const c of checkins) { if (c.quality==null) continue; (flagged.has(c.date)?w:wo).push(c.quality); }
+  const avg=xs=>xs.length?Math.round((xs.reduce((a,b)=>a+b,0)/xs.length)*10)/10:0;
+  return { withAvg: avg(w), withoutAvg: avg(wo) };
+}
+const effM = [{date:"2025-06-01",preWorkout:true},{date:"2025-06-03",preWorkout:true}];
+const effC = [{date:"2025-06-01",quality:8},{date:"2025-06-02",quality:5},{date:"2025-06-03",quality:9},{date:"2025-06-04",quality:6}];
+const eff = effQA(effM, effC, "preWorkout");
+assert(eff.withAvg===8.5 && eff.withoutAvg===5.5, "pre-WO meal days avg 8.5 vs 5.5 without");
+
+section("Wave 8G — nudge alerts");
+function nudgeQA(a) {
+  const inQuiet = a.quietStart > a.quietEnd ? (a.nowHours >= a.quietStart || a.nowHours < a.quietEnd) : (a.nowHours >= a.quietStart && a.nowHours < a.quietEnd);
+  if (inQuiet) return [];
+  const out = [];
+  const times = rows => rows.filter(r=>r.date===a.todayIso && r.time).map(r=>{const[h,m]=r.time.split(":").map(Number);return h+(m??0)/60;});
+  const mt = times(a.meals), wt = times(a.water);
+  if (a.nowHours >= 10) {
+    const lm = mt.length?Math.max(...mt):null;
+    if (lm==null) out.push("no-meals");
+    else if (a.nowHours-lm >= 5) out.push("meal-gap");
+    const lw = wt.length?Math.max(...wt):null;
+    if (lw==null) out.push("no-water");
+    else if (a.nowHours-lw >= 4) out.push("water-gap");
+  }
+  return out;
+}
+let nn = nudgeQA({meals:[],water:[],todayIso:"2025-06-01",nowHours:14,quietStart:22,quietEnd:8});
+assert(nn.includes("no-meals") && nn.includes("no-water"), "2pm, nothing logged → both nudges");
+nn = nudgeQA({meals:[{date:"2025-06-01",time:"08:00"}],water:[{date:"2025-06-01",time:"12:30"}],todayIso:"2025-06-01",nowHours:14,quietStart:22,quietEnd:8});
+assert(nn.includes("meal-gap") && !nn.includes("water-gap"), "6h since meal, 1.5h since water → meal nudge only");
+nn = nudgeQA({meals:[],water:[],todayIso:"2025-06-01",nowHours:23,quietStart:22,quietEnd:8});
+assert(nn.length===0, "11pm inside quiet hours → silent");
+nn = nudgeQA({meals:[],water:[],todayIso:"2025-06-01",nowHours:8.5,quietStart:22,quietEnd:8});
+assert(nn.length===0, "8:30am before 10am floor → silent");
+
+if (failures === 0) console.log("\n>>> WAVE 8A-8G TESTS PASS");
 else { console.error(`\n${failures} FAILURE(S) (incl. wave 8A)`); process.exit(1); }

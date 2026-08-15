@@ -1607,3 +1607,99 @@ export function photoReminder(photos: { date: string }[], todayIso: string, inte
   const daysSince = Math.floor((new Date(todayIso + "T00:00:00").getTime() - new Date(last.date + "T00:00:00").getTime()) / 86_400_000);
   return { due: daysSince >= intervalDays, daysSince };
 }
+
+// ---------------- Wave 8G — GLOBAL connections ----------------
+
+import type { WorkoutCheckin, MealEntry as Meal8G, WaterEntry as Water8G } from "./healthTypes";
+
+/**
+ * Recovery-time estimator (hours until next hard session) from workout
+ * intensity/volume + sleep bank + stress.
+ */
+export function recoveryTimeEstimate(args: {
+  volumeKg: number; durationMin: number;
+  sleepBank: number;   // negative = debt
+  stress7: number;     // 1-10 avg
+}): { hours: number; label: string } {
+  const { volumeKg, durationMin, sleepBank, stress7 } = args;
+  let h = 24;                                     // base for a normal session
+  if (volumeKg > 8000 || durationMin > 100) h = 48;
+  else if (volumeKg > 4000 || durationMin > 70) h = 36;
+  if (sleepBank <= -8) h += 24;
+  else if (sleepBank <= -4) h += 12;
+  if (stress7 >= 7) h += 12;
+  const label = h <= 24 ? "train tomorrow" : h <= 36 ? "one lighter day first" : h <= 48 ? "48h before same muscle group" : "extended recovery — sleep first";
+  return { hours: h, label };
+}
+
+/** PR celebration copy: new PR + bodyweight → ratio improvement %. */
+export function prCelebration(args: {
+  liftLabel: string; newE1rm: number; oldE1rm: number; bwNow: number; bwOld: number;
+}): { message: string; ratioGainPct: number } | null {
+  const { liftLabel, newE1rm, oldE1rm, bwNow, bwOld } = args;
+  if (newE1rm <= oldE1rm || bwNow <= 0 || bwOld <= 0 || oldE1rm <= 0) return null;
+  const oldRatio = oldE1rm / bwOld;
+  const newRatio = newE1rm / bwNow;
+  const ratioGainPct = Math.round(((newRatio - oldRatio) / oldRatio) * 1000) / 10;
+  return {
+    message: `New ${liftLabel} PR ${newE1rm}kg at ${bwNow.toFixed(1)}kg BW — S:W ratio ${oldRatio.toFixed(2)} → ${newRatio.toFixed(2)} (${ratioGainPct >= 0 ? "+" : ""}${ratioGainPct}%).`,
+    ratioGainPct,
+  };
+}
+
+/** Energy balance for a date: kcal in (meals) − (TDEE + workout burn). */
+export function energyBalance(args: {
+  kcalIn: number; tdeeKcal: number; workoutKcal: number;
+}): { balance: number; label: "surplus" | "deficit" | "even" } {
+  const balance = Math.round(args.kcalIn - (args.tdeeKcal + args.workoutKcal));
+  return { balance, label: balance > 100 ? "surplus" : balance < -100 ? "deficit" : "even" };
+}
+
+/**
+ * Pre/post-workout meal effectiveness: average workout quality (check-ins)
+ * on days with vs without a flagged pre-workout meal.
+ */
+export function mealEffectiveness(
+  meals: Meal8G[],
+  checkins: WorkoutCheckin[],
+  flag: "preWorkout" | "postWorkout",
+): { withAvg: number; withoutAvg: number; n: number } {
+  const flagged = new Set(meals.filter(m => m[flag]).map(m => m.date));
+  const withQ: number[] = [], withoutQ: number[] = [];
+  for (const c of checkins) {
+    if (c.quality == null) continue;
+    (flagged.has(c.date) ? withQ : withoutQ).push(c.quality);
+  }
+  const avg = (xs: number[]) => xs.length ? Math.round((xs.reduce((a, b) => a + b, 0) / xs.length) * 10) / 10 : 0;
+  return { withAvg: avg(withQ), withoutAvg: avg(withoutQ), n: withQ.length + withoutQ.length };
+}
+
+/**
+ * Local nudge alerts: gaps since last meal/water log today.
+ * Quiet hours + explicit opt-out respected by the caller.
+ */
+export function nudgeAlerts(args: {
+  meals: Meal8G[]; water: Water8G[]; todayIso: string; nowHours: number;
+  quietStart: number; quietEnd: number;
+}): string[] {
+  const { meals, water, todayIso, nowHours, quietStart, quietEnd } = args;
+  const inQuiet = quietStart > quietEnd
+    ? (nowHours >= quietStart || nowHours < quietEnd)
+    : (nowHours >= quietStart && nowHours < quietEnd);
+  if (inQuiet) return [];
+  const out: string[] = [];
+  const timesToday = (rows: { date: string; time?: string }[]) =>
+    rows.filter(r => r.date === todayIso && r.time)
+      .map(r => { const [h, m] = r.time!.split(":").map(Number); return h + (m ?? 0) / 60; });
+  const mealTimes = timesToday(meals);
+  const waterTimes = timesToday(water as { date: string; time?: string }[]);
+  if (nowHours >= 10) { // don't nag at dawn
+    const lastMeal = mealTimes.length ? Math.max(...mealTimes) : null;
+    if (lastMeal == null) out.push("No meals logged today — eat something (or log it).");
+    else if (nowHours - lastMeal >= 5) out.push(`No food in ${Math.floor(nowHours - lastMeal)}h — consider a snack.`);
+    const lastWater = waterTimes.length ? Math.max(...waterTimes) : null;
+    if (lastWater == null) out.push("No water logged today — start hydrating. 🌏 Chennai heat is unforgiving.");
+    else if (nowHours - lastWater >= 4) out.push(`No water in ${Math.floor(nowHours - lastWater)}h — drink a glass now.`);
+  }
+  return out;
+}

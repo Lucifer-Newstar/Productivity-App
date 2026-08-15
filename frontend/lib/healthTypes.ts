@@ -238,6 +238,55 @@ export interface RestaurantMeal {
   timesUsed: number;
 }
 
+/** Wave 8G — workout check-ins (energy/motivation/quality + soreness map). */
+export interface WorkoutCheckin {
+  id: string;
+  date: string; // YYYY-MM-DD
+  /** Pre-workout ratings 1-10. */
+  energyPre?: number;
+  motivation?: number;
+  /** Post-workout ratings 1-10. */
+  energyPost?: number;
+  quality?: number;
+  /** Sore body areas marked post-workout. */
+  soreAreas?: SoreArea[];
+}
+export type SoreArea =
+  | "neck" | "shoulders" | "chest" | "upper_back" | "lower_back"
+  | "biceps" | "triceps" | "forearms" | "abs"
+  | "glutes" | "quads" | "hamstrings" | "calves";
+
+/** Wave 8G — health goal dashboard entries. */
+export interface HealthGoalItem {
+  id: string;
+  title: string;
+  metric: "weight" | "bodyfat" | "sleep" | "water" | "protein" | "custom";
+  targetValue?: number;
+  unit?: string;
+  deadline?: string; // YYYY-MM-DD
+  done?: boolean;
+  createdAt: number;
+}
+
+/** Wave 8G — competition tracking (meets, sports events). */
+export interface CompetitionEntry {
+  id: string;
+  name: string;
+  date: string;
+  weightClassKg?: number;
+  weighInKg?: number;
+  result?: string;
+  note?: string;
+}
+
+/** Wave 8G — habit-break log (no guilt, just reset). */
+export interface HabitBreakEntry {
+  id: string;
+  date: string;
+  habit: string;   // e.g. "8 glasses water"
+  note?: string;
+}
+
 export interface WaterEntry {
   id: string;
   date: string;
@@ -590,6 +639,11 @@ export interface HealthState {
   /** Wave 8D — naps + urine self-checks. */
   naps: NapEntry[];
   urineChecks: UrineCheck[];
+  /** Wave 8G — check-ins, goals, competitions, habit breaks. */
+  workoutCheckins: WorkoutCheckin[];
+  healthGoals: HealthGoalItem[];
+  competitions: CompetitionEntry[];
+  habitBreaks: HabitBreakEntry[];
   measurements: MeasurementEntry[];
   /** Wave 8E — measurement targets + cadence + phase override. */
   measurementGoals?: MeasurementGoals;
@@ -732,6 +786,10 @@ export function emptyHealthState(): HealthState {
     sleep: [],
     naps: [],
     urineChecks: [],
+    workoutCheckins: [],
+    healthGoals: [],
+    competitions: [],
+    habitBreaks: [],
     measurements: [],
     measurementGoals: {},
     measureFrequency: "biweekly",
