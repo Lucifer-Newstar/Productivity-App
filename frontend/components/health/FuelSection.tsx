@@ -110,8 +110,8 @@ function MacroSliders({ totals, targetKcal }: { totals: { kcal: number; carbsG: 
   const preset = p.macroPreset ?? "balanced";
 
   const write = (next: { c: number; p: number; f: number }, presetId: MacroPresetId) => {
-    updateHealth(() => ({
-      profile: { ...p, macroPreset: presetId, macroCarbsPct: next.c, macroProteinPct: next.p, macroFatPct: next.f },
+    updateHealth(h => ({
+      profile: { ...h.profile, macroPreset: presetId, macroCarbsPct: next.c, macroProteinPct: next.p, macroFatPct: next.f },
     }));
   };
   const onSlide = (axis: "c" | "p" | "f", v: number) => write(rebalanceMacros(pct, axis, v), "custom");
@@ -369,7 +369,7 @@ export default function FuelSection() {
       const otherDays = h.meals.filter(m => m.date !== today);
       // Keep slots that have items OR wave-8A metadata (time/flags/photo).
       const todaysWithData = Object.values(nextSlots).filter(
-        m => m.items.length > 0 || m.time || m.social || m.cheat || m.photoDataUrl || m.carbQuality || m.pairing,
+        m => m.items.length > 0 || m.time || m.social || m.cheat || m.photoDataUrl || m.carbQuality || m.pairing || m.preWorkout || m.postWorkout,
       );
       return { meals: [...otherDays, ...todaysWithData] };
     });
@@ -545,6 +545,18 @@ export default function FuelSection() {
                     onChange={e=>patchMeal(s.id, { social: e.target.checked || undefined })}
                     style={{accentColor:"#60a5fa"}}/>
                   <Users size={10}/> SOCIAL
+                </label>
+                <label style={{display:"inline-flex", alignItems:"center", gap:4, cursor:"pointer", color: meal.preWorkout ? "#10b981" : "var(--hlth-muted)"}}>
+                  <input type="checkbox" checked={!!meal.preWorkout}
+                    onChange={e=>patchMeal(s.id, { preWorkout: e.target.checked || undefined })}
+                    style={{accentColor:"#10b981"}}/>
+                  PRE-WO
+                </label>
+                <label style={{display:"inline-flex", alignItems:"center", gap:4, cursor:"pointer", color: meal.postWorkout ? "#22d3ee" : "var(--hlth-muted)"}}>
+                  <input type="checkbox" checked={!!meal.postWorkout}
+                    onChange={e=>patchMeal(s.id, { postWorkout: e.target.checked || undefined })}
+                    style={{accentColor:"#22d3ee"}}/>
+                  POST-WO
                 </label>
                 <label style={{display:"inline-flex", alignItems:"center", gap:4, cursor:"pointer", color: meal.cheat ? "#f59e0b" : "var(--hlth-muted)"}}>
                   <input type="checkbox" checked={!!meal.cheat}

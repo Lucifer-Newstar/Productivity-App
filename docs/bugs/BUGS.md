@@ -247,3 +247,27 @@ After fixing BUG-001..005 the following were audited and passed:
 - **Root cause:** During wave 7 bridge wiring, `Droplet/Moon/Activity` were imported in `OverviewContent.tsx` and `TrendingUp/TrendingDown/classifyTemp` in `ReportsSection.tsx` for planned mini-stats that got moved inline. They were never referenced.
 - **Fix:** Removed unused icon/function imports from both files.
 - **Files:** `frontend/components/workout/OverviewContent.tsx`, `frontend/components/health/ReportsSection.tsx`.
+
+## BUG-H13 — Stale-closure profile writes in wave-8 components could clobber concurrent profile changes
+- **Found:** 2026-08-15 (Wave 9 QA sweep — code review of all wave-8 components)
+- **Severity:** Medium (data-loss window: two quick profile writes from different cards — e.g. dragging a macro slider right after changing the fasting preset — and the second write would resurrect the first card's captured stale `profile`, undoing the change)
+- **Root cause:** `FastingClock`, `MacroSliders` (FuelSection) and the PIN handlers in `SleepExtras` called `updateHealth(() => ({ profile: { ...p, … } }))` where `p`/`health.profile` was captured at render time, instead of using the functional-updater argument. Any profile mutation between render and click was silently overwritten.
+- **Fix:** All profile writes now use the functional form `updateHealth(h => ({ profile: { ...h.profile, … } }))` so they always merge over fresh state. (`SomaIntel`'s `phaseOverride`/`measureFrequency` writes were single-key patches and safe, left as-is.)
+- **Regression test:** "sequential functional profile patches both persist" in `scripts/qa-health.js`.
+- **Files:** `frontend/components/health/FastingClock.tsx`, `FuelSection.tsx`, `SleepExtras.tsx`.
+
+## BUG-H14 — Weekly-planner "EXEC day" dropped all but the last planned meal
+- **Found:** 2026-08-15 (Wave 9 QA sweep — manual flow test of the planner)
+- **Severity:** High (core wave-8C feature broken: executing a planned day with breakfast+lunch+dinner logged only dinner)
+- **Root cause:** `executeDay()` looped over the day's cells calling the parent's `onLogItem` (→ `addManualToSlot`) once per cell. Each call persisted through `todaysMeals`, a `useMemo` snapshot captured at render time — so every iteration overwrote the previous iteration's write, and only the final cell survived the batch of state updates.
+- **Fix:** `executeDay` now performs ONE `updateHealth` call that folds all planned cells into the meals array in a single reducer pass (appends into existing same-date/slot entries, creates missing slots).
+- **Regression tests:** 4 cases in `scripts/qa-health.js` ("3 planned cells → none dropped", re-exec append, date isolation).
+- **Files:** `frontend/components/health/PlannerPanel.tsx`.
+
+### Wave 9 QA verification (waves 8A-8G sweep)
+- **TypeScript** clean (`tsc --noEmit`), backend `tsc -p` clean.
+- **43/43 routes ○ static.** Health page sizes: TRIAGE 8.68 kB · nutrition 19.8 kB · hydration 5.3 kB · sleep 9.9 kB · physique 14.7 kB.
+- **458 unit assertions, 0 failures** (`scripts/qa-health.js`) — waves 1-7 (327) + 8A (26) + 8B (19) + 8C (16) + 8D (21) + 8E (20) + 8F (18) + 8G (15, incl. one corrected expectation: PR at +10kg BW yields a −0.7% S:W ratio dip, code was right, test was wrong) + wave-9 regressions (5).
+- **10/10 health routes HTTP 200** on production build smoke test.
+- **CLINIC light-theme audit:** all 229 color usages across the 7 new wave-8 components resolve through `--hlth-*` CSS vars; only theme-neutral literals are real-world swatches (urine-color scale) and semantic status colors.
+- **State-pattern audit:** all remaining `updateHealth(() => …)` calls verified single-key/latest-value safe.

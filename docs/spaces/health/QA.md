@@ -170,3 +170,33 @@ Each wave must satisfy before commit:
   - Edge cases handled: no bodyweight defaults to 70 kg; no sleep → bank 0, lastNightHrs 0; no vitals → rhrDelta 0, no fever/BP crisis; no injuries → no restriction line
 - [x] Triage §09 status updated to "Wave 6+7 ✓ heatmap/streaks/bridge/CSV+JSON"
 - [x] No `console.log/debug` in new code; all number inputs Math.round/Math.max(1,...) guarded to avoid divide-by-zero
+
+---
+
+# Wave 9 QA sweep (2026-08-15) — waves 8A-8G verification
+
+## Automated
+| Check | Result |
+|---|---|
+| `tsc --noEmit` (frontend) | ✅ 0 errors |
+| `tsc -p` (backend) | ✅ 0 errors |
+| `next build` | ✅ 43/43 routes ○ static |
+| `scripts/qa-health.js` | ✅ **458 assertions, 0 failures** |
+| HTTP smoke (prod server) | ✅ 10/10 health routes 200 |
+
+## Per-page manual checklist (production build)
+| Route | Checks | Result |
+|---|---|---|
+| `/health` | KPI grid, nudge panel (quiet-hours), phase banner, check-in sliders + soreness pills, recovery estimate, energy balance, goals/comps/habit-breaks CRUD | ✅ |
+| `/health/nutrition` | 4 slots + meta row (time/PRE-WO/POST-WO/social/cheat+reason/spike selectors/photo), fasting clock presets + countdown, macro sliders sum-100, frequent foods pin/log, nutrient panel (targets/radar/chips/counters), planner EXEC-day (BUG-H14 regression), recipes analyzer, restaurant pills | ✅ |
+| `/health/hydration` | glasses, beverages, caffeine warnings, sip pacing card, urine 8-shade card | ✅ |
+| `/health/sleep` | log form + dream tags + procrastination, bank bar, statement, consistency + jetlag, naps, 30/90d graph, PIN set/lock/unlock (BUG-H13 regression) | ✅ |
+| `/health/physique` | measurement form + pump toggle, S:W tiers, photos, phase banner + override, estimators + warnings, pie, goals + cadence, sparklines, PR-at-same-BW, correlations, overlay graph, indices, photo compare/slideshow | ✅ |
+| `/health/supplements` `/vitals` `/mind` `/sync` `/reports` | unchanged since waves 3-7 QA; re-smoked 200 + spot-checked render | ✅ |
+
+## Bugs found & fixed in this sweep
+- **BUG-H13** — stale-closure profile writes (FastingClock/MacroSliders/SleepExtras PIN) → functional updaters. Regression test added.
+- **BUG-H14** — planner EXEC-day dropped all but last meal (per-cell writes vs stale snapshot) → single batched reducer. 4 regression tests added.
+
+## Theme
+- CLINIC (light) audit: all wave-8 UI uses `--hlth-*` vars; no hardcoded dark backgrounds. Real-color literals limited to urine-scale swatches + semantic status colors (intentional).

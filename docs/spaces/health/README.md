@@ -27,7 +27,37 @@ being built as a full-bleed "vitals-signs OS" (working theme name:
 - **State slice:** `health: HealthState` in the root Zustand store, localStorage
   key `kaizen.root`, migration `migrateHealth`. Types in `lib/healthTypes.ts`.
 
-## Status at a glance (post-Wave 3)
+## Status at a glance (post-Wave 9 — v1.1 feature-complete)
+
+**Waves 8A–8G (2026-08-15)** added on top of the v1.0 base below:
+
+- **FUEL:** IF ring clock (16:8/18:6/14:10/OMAD/custom + fast streak), macro rough
+  sliders (always-100%) with Balanced/Cut/Bulk/Keto presets + gram target bars,
+  auto top-20 frequent-foods library (pinnable), social/cheat/pre-WO/post-WO meal
+  flags + guilt-reset, meal photos (dataURL), sugar-spike estimator (carb quality ×
+  pairing), 7 sub-nutrient trackers vs ICMR/WHO targets, 6-axis micronutrient radar,
+  vitamin/mineral RDA chips, antioxidant/probiotic/prebiotic counters, recipe
+  storage + nutrition analyzer, 7×4 weekly meal planner with EXEC-day + meal-prep
+  checkoffs, restaurant mode 🌏.
+- **HYDRATION:** hourly sip pacing card, urine-color 8-shade self-check.
+- **SOMNIUM:** sleep-bank weekly statement w/ trend, circadian consistency score +
+  social-jetlag flag, dream tags + PIN lock, bedtime-procrastination logger, nap
+  log (power/long), 30/90d sleep graph.
+- **SOMA:** phase auto-detect (bulk/cut/maint/recomp) + override, muscle-gain/fat-loss
+  estimators, rate monitors + INJURY RISK flag, water-weight + plateau detectors,
+  body-comp pie, measurement goals + cadence planner, pump measurements, per-part
+  sparklines, PR-at-same-BW tracker, lift↔measurement correlations, 90d overlay
+  graph, strength-to-size + work-capacity/anabolic/cali indices, IPF weight-class,
+  photo compare/slideshow/4-week reminder.
+- **GLOBAL (TRIAGE):** quiet-hours nudge alerts, phase status banners, workout
+  check-ins + soreness map, recovery-time estimator, PR celebration, energy
+  balance, meal-effectiveness readout, health goals, competitions, habit-break log.
+
+Full per-wave plan and completion notes: [`WAVES.md`](WAVES.md). QA: 458 unit
+assertions green, 43/43 routes static, bugs H13/H14 found+fixed in the wave-9
+sweep (see `docs/bugs/BUGS.md`).
+
+## Status at a glance (post-Wave 3, historical)
 
 - **Docs:** ✅ FEATURES.md (257 features across 10 sections, this README, QA, ALGORITHMS)
 - **Shell/components:** ✅ Wave 1 shipped — VITAL-SIGN/CLINIC themes, HealthShell, HealthHotkeys, EkgFlash, 10 FULLSCREEN routes

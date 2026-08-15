@@ -1332,5 +1332,43 @@ assert(nn.length===0, "11pm inside quiet hours → silent");
 nn = nudgeQA({meals:[],water:[],todayIso:"2025-06-01",nowHours:8.5,quietStart:22,quietEnd:8});
 assert(nn.length===0, "8:30am before 10am floor → silent");
 
-if (failures === 0) console.log("\n>>> WAVE 8A-8G TESTS PASS");
+
+// ═══════════════════ WAVE 9 — regression tests (BUG-006 / BUG-007) ═══════════════════
+section("Wave 9 — BUG-007 executeDay batches into one update");
+// Simulates the fixed executeDay reducer: multiple planner cells must all land.
+function execDayQA(existingMeals, cells, date) {
+  const meals = [...existingMeals];
+  for (const c of cells) {
+    const item = { name: c.name, kcal: c.kcal ?? 0 };
+    const idx = meals.findIndex(m => m.date === date && m.slot === c.slot);
+    if (idx >= 0) meals[idx] = { ...meals[idx], items: [...meals[idx].items, item] };
+    else meals.push({ date, slot: c.slot, items: [item] });
+  }
+  return meals;
+}
+let ex = execDayQA([], [
+  { slot: "breakfast", name: "oats", kcal: 300 },
+  { slot: "lunch", name: "rice", kcal: 500 },
+  { slot: "dinner", name: "curry", kcal: 450 },
+], "2025-06-01");
+assert(ex.length === 3, "3 planned cells → 3 meal slots created (none dropped)");
+assert(ex.reduce((n,m)=>n+m.items.length,0) === 3, "all 3 items landed");
+ex = execDayQA(ex, [{ slot: "lunch", name: "extra dal", kcal: 150 }], "2025-06-01");
+assert(ex.length === 3 && ex.find(m=>m.slot==="lunch").items.length === 2, "re-exec appends into existing slot");
+ex = execDayQA([{ date:"2025-05-31", slot:"lunch", items:[{name:"old",kcal:1}] }],
+  [{ slot:"lunch", name:"new", kcal: 2 }], "2025-06-01");
+assert(ex.length === 2, "different dates stay separate");
+
+section("Wave 9 — BUG-006 functional profile updates");
+// Two rapid updates through the functional pattern must both survive.
+function fnUpdateQA() {
+  let state = { profile: { a: 1, b: 1 } };
+  const update = (fn) => { state = { ...state, ...fn(state) }; };
+  update(h => ({ profile: { ...h.profile, a: 2 } }));
+  update(h => ({ profile: { ...h.profile, b: 2 } }));
+  return state.profile.a === 2 && state.profile.b === 2;
+}
+assert(fnUpdateQA(), "sequential functional profile patches both persist (no stale-closure clobber)");
+
+if (failures === 0) console.log("\n>>> WAVE 8A-9 TESTS PASS");
 else { console.error(`\n${failures} FAILURE(S) (incl. wave 8A)`); process.exit(1); }

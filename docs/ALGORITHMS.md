@@ -800,3 +800,87 @@ summary per date (kcal, protein, water ml, sleep h, supps taken, score 0–100).
 consecutive days from today backwards; `weeklyReport()` aggregates 7-day
 averages; `exportHealthCSV()` emits one row per day (same columns as
 `GET /api/health/export/csv` on the backend).
+
+## H31. Fasting window state (implemented Wave 8A)
+
+```
+normalize all hours to [0,24)
+eatingHours = (end − start) mod 24   (0 → treated as 24)
+inWindow    = start ≤ now < end      (wrap-around safe for cross-midnight windows)
+countdown   = hours to next transition (window opens/closes)
+```
+
+Presets: 16:8 (12→20), 18:6 (13→19), 14:10 (11→21), OMAD (13→14), custom.
+Fast streak counts consecutive days whose timed meals all fell in-window;
+an unlogged *today* doesn't break yesterday's streak.
+
+## H32. Macro rebalance — always sums 100 (implemented Wave 8A)
+
+Dragging one axis to `v` clamps to [0,100]; the other two scale
+proportionally to their previous ratio over the remaining `100 − v`
+(even split when both were 0). Gram targets: kcal budget × pct at
+4/4/9 kcal per gram (C/P/F).
+
+## H33. Sub-nutrient status (implemented Wave 8B)
+
+Three target kinds: `goal` (fiber 30g, omega-3 500mg — want ≥100%),
+`cap` (sugar 25g, sodium 2300mg w/ 1500 warn, cholesterol 300mg, sat-fat 25g
+— want <100%), `zero` (trans fat — any amount flags). Fiber pre-seeds from
+food-DB `fibreG` of the day's logged meals.
+
+## H34. Sugar-spike risk (implemented Wave 8B — H9 realized)
+
+```
+score = (simple:2 | mixed:1 | complex:0) + (pairing none:2 | some:1 | high:0)
+        + (carbs ≥80g: +1) − (0 < carbs < 20g: 1)
+≥4 high · ≥2 medium · else low
+```
+
+## H35. Recipe nutrition analyzer (implemented Wave 8C)
+
+Sum ingredient kcal/C/P/F → totals; ÷ max(1, portions) → per-serving
+(rounded 1dp). Planner cells linked to a recipe inherit per-serving values.
+
+## H36. Sleep statement + circadian consistency (implemented Wave 8D)
+
+Statement: last-7-nights slept vs needed (ideal × nights), trend from
+first-half vs second-half avg (±0.4h band). Consistency: wake-time σ over
+≤14 nights → `score = 100 × (1 − max(0, σ−30min)/120)`; social jetlag =
+avg weekend wake − avg weekday wake, flagged > 90min.
+
+## H37. Body-comp phase detection (implemented Wave 8E — H14 realized)
+
+28-day window: weight Δ (least-squares kg/week), waist Δ, big-4 e1RM sum
+now vs ≥28d-old PR history.
+
+```
+recomp: |Δw| ≤ 1kg AND waist ≤ −0.5cm AND strength > +1%
+bulk:   Δw > 1kg   → muscle-gain est. = Δw if waist ≤ +0.5cm and strength held
+cut:    Δw < −1kg  → fat-loss est. = −Δw if strength ≥ −1%
+warnings: rate > +0.75 kg/wk (fat-bulk) · < −1 kg/wk (rapid cut)
+          rapid cut + strength < −3% → INJURY RISK
+```
+
+Water-weight: ≥ +1.5kg within ≤1.5 days. Plateau: ≥3 tracked sites all
+< 0.5cm change across a ≥3-week span. Pump-flagged measurements are
+excluded from every baseline computation.
+
+## H38. Correlation & indices (implemented Wave 8F)
+
+- PR-at-same-BW: 28d PR delta vs BW delta; BW ≤ +1kg → "pure strength".
+- Lift↔site map: bench→chest, squat/dead→thigh, ohp→shoulders, pullup→arm.
+- Strength-to-size = e1RM / site-cm. Work capacity = 7d volume ÷ BW.
+- Anabolic index = (Δweight × Δstrength) / weeks (bulk-only, else 0).
+- Cali index = BW / (hardest unlocked difficulty × 10); skill S:W need
+  ≈ 0.6 + 0.08 × difficulty. IPF men's classes 59/66/74/83/93/105/120.
+- Photo reminder due at ≥28 days since last photo.
+
+## H39. Global connections (implemented Wave 8G)
+
+- Recovery time: 24h base (36h > 4t/70min · 48h > 8t/100min)
+  +12h bank ≤ −4 · +24h bank ≤ −8 · +12h stress ≥ 7.
+- PR celebration: ratio gain % = (new e1RM/BW − old e1RM/BW) / old ratio.
+- Energy balance = kcal in − (TDEE + workout MET-estimate); ±100 = even.
+- Meal effectiveness: avg check-in quality on pre-WO-meal days vs without.
+- Nudges: no meals logged / ≥5h meal gap / no water / ≥4h water gap;
+  suppressed inside quiet hours and before 10:00.

@@ -50,17 +50,17 @@ export default function FastingClock() {
   );
 
   const setPreset = (id: FastingPresetId) => {
-    if (id === "custom") { updateHealth(() => ({ profile: { ...p, fastingPreset: "custom" } })); return; }
+    if (id === "custom") { updateHealth(h => ({ profile: { ...h.profile, fastingPreset: "custom" } })); return; }
     const pre = FASTING_PRESETS[id];
-    updateHealth(() => ({ profile: { ...p, fastingPreset: id, eatingWindowStart: pre.start, eatingWindowEnd: pre.end } }));
+    updateHealth(h => ({ profile: { ...h.profile, fastingPreset: id, eatingWindowStart: pre.start, eatingWindowEnd: pre.end } }));
   };
   const setCustomHour = (which: "start" | "end", v: number) => {
     const val = Math.max(0, Math.min(23.5, v));
-    updateHealth(() => ({
+    updateHealth(h => ({
       profile: {
-        ...p, fastingPreset: "custom",
-        eatingWindowStart: which === "start" ? val : p.eatingWindowStart,
-        eatingWindowEnd: which === "end" ? val : p.eatingWindowEnd,
+        ...h.profile, fastingPreset: "custom",
+        eatingWindowStart: which === "start" ? val : h.profile.eatingWindowStart,
+        eatingWindowEnd: which === "end" ? val : h.profile.eatingWindowEnd,
       },
     }));
   };

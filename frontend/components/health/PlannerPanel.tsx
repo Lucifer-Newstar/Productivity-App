@@ -172,7 +172,23 @@ export default function PlannerPanel({ onLogItem }: {
 
   const executeDay = (dow: number) => {
     const cells = planForDow(health.mealPlan, dow);
-    for (const c of cells) onLogItem(c.slot, c.name, c.kcal ?? 0, c.carbsG ?? 0, c.proteinG ?? 0, c.fatG ?? 0);
+    if (cells.length === 0) return;
+    // BUG-007 fix: batch all cells into ONE store update — calling the per-item
+    // logger in a loop snapshots stale meal state and drops all but the last.
+    const date = todayIso();
+    updateHealth(h => {
+      const meals = [...h.meals];
+      for (const c of cells) {
+        const item = {
+          id: uid(), name: c.name, kcal: c.kcal ?? 0,
+          carbsG: c.carbsG ?? 0, proteinG: c.proteinG ?? 0, fatG: c.fatG ?? 0,
+        };
+        const idx = meals.findIndex(m => m.date === date && m.slot === c.slot);
+        if (idx >= 0) meals[idx] = { ...meals[idx], items: [...meals[idx].items, item] };
+        else meals.push({ id: uid(), date, slot: c.slot, items: [item] });
+      }
+      return { meals };
+    });
   };
 
   const saveRestaurantMeal = () => {

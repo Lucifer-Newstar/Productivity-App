@@ -191,14 +191,28 @@ a 20yo male lifter in Chennai (175cm, moderate activity, maintain, climate×1.1,
 8h ideal sleep, 12-20 IF window). Persisted at localStorage key `kaizen.health`.
 
 ```
-HealthState (as of Wave 3)
+HealthState (as of Wave 9 — v1.1 feature-complete)
  ├── profile:            HealthProfile      # gender/age/height/targets/activity/goal/city/climateMult/units/idealSleep/eatingWindow
  ├── scores:             DailyScore[]       # wave 6 — cached 0-100 composite
  ├── meals:              MealEntry[]        # Breakfast/Lunch/Dinner/Snack (Wave 2 ✓)
  │    └── items:         MealItem[]         # name+kcal+C/P/F (linked to 90-dish Indian food DB or manual)
  ├── water:              WaterEntry[]       # ml + beverage + electrolytes + caffeineMg (Wave 2 ✓)
  ├── sleep:              SleepEntry[]       # bed/wake ISO / durationH / quality 1-10 / latencyMin / wakeUps / dream? / hygiene? / note?
- ├── measurements:       MeasurementEntry[] # Wave 4 (multi-site tape)
+ ├── nutrients:          DailyNutrientEntry[] # Wave 8B — per-day fiber/sugar/sodium/chol/sat/trans/omega-3 + 6-axis radar + vit/mineral/functional-food quick-logs
+ ├── recipes:            Recipe[]           # Wave 8C — ingredients[] + portions → auto per-serving nutrition
+ ├── mealPlan:           PlannedMeal[]      # Wave 8C — 7-dow × 4-slot cells; prepped? flag for meal-prep
+ ├── restaurantMeals:    RestaurantMeal[]   # Wave 8C — per-eatery saved orders 🌏 (timesUsed/lastUsed)
+ ├── naps:               NapEntry[]         # Wave 8D — durationMin + power/long kind
+ ├── urineChecks:        UrineCheck[]       # Wave 8D — 1-8 color scale self-checks
+ ├── workoutCheckins:    WorkoutCheckin[]   # Wave 8G — energyPre/motivation/energyPost/quality 1-10 + soreAreas[]
+ ├── healthGoals:        HealthGoalItem[]   # Wave 8G — metric/target/deadline/done
+ ├── competitions:       CompetitionEntry[] # Wave 8G — meets: date/class/weighIn/result
+ ├── habitBreaks:        HabitBreakEntry[]  # Wave 8G — no-guilt reset log
+ ├── measurements:       MeasurementEntry[] # Wave 4 (multi-site tape) + pump? flag (Wave 8E, excluded from baselines)
+ ├── measurementGoals:   MeasurementGoals   # Wave 8E — target cm per body part
+ ├── measureFrequency:   MeasureFrequency   # Wave 8E — weekly|biweekly|monthly cadence
+ ├── phaseOverride:      PhysiquePhase|null # Wave 8E — manual bulk/cut/maint/recomp override
+ ├── pinnedFoods:        string[]           # Wave 8A — pinned names in frequent-foods library
  ├── supplementDefs:     SupplementDef[]    # 13 seeded + user customs (whey/creatine/multivit/D3/B12/omega3/Mg/Zn/Ca/ashwa/pre/eaa/probiotic)
  ├── supplementLog:      SupplementLog[]    # per-day per-suppId taken? + time + dose
  ├── vitals:             VitalsEntry[]      # Wave 5 (HR/BP/HRV/temp/SpO2)
@@ -209,6 +223,14 @@ HealthState (as of Wave 3)
  ├── wakeRoutine:        WakeRoutine        # windowStart/End + steps[] (ordered checklist)
  └── settings:           HealthSettings     # nudges/sound/quietHours/alcoholOptIn + 10 Workout bridge toggles
 ```
+
+**Wave 8 profile additions:** `fastingPreset` (16:8/18:6/14:10/omad/custom),
+`macroPreset` + `macroCarbsPct/ProteinPct/FatPct` (always sum 100),
+`pinHash` (FNV-1a — dream-journal honesty-lock, wave 8D).
+**Wave 8 MealEntry additions:** `photoDataUrl`, `carbQuality`/`pairing`
+(sugar-spike estimator), `preWorkout`/`postWorkout` flags (effectiveness
+tracking). **SleepEntry additions:** `dreamTags[]`, `procrastinated` +
+`procrastinationReason`.
 
 ### Key entity notes (Waves 1-3)
 

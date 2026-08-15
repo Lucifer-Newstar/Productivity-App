@@ -1,10 +1,17 @@
 # Health OS — v1.1 wave plan (waves 8A–8G + 9)
 
-Status after waves 1–7: **47/140 features done, 21 partial, 72 pending** (audit
-2026-08-15 against the master feature list). The remaining work is split into
-seven feature waves + one QA/merge wave. Work proceeds **one wave at a time**;
-each wave ends with `tsc --noEmit` clean, `next build` all-static, QA script
-green, and a conventional commit on the `health` branch.
+> **STATUS: ALL WAVES COMPLETE (2026-08-15).** 8A→8G shipped one commit each;
+> wave 9 QA sweep fixed BUG-H13/H14, flipped all stale FEATURES.md statuses,
+> and verified 458/458 QA assertions + 43/43 static routes. Spec status:
+> **216 ✅ / 2 🟡 / 63 ❌** — the remaining ❌ are v1.1+ nice-to-haves
+> (EKG animation, quick-log row, digestive/hunger logs, bloodwork storage,
+> restaurant sweat-estimator etc.) deliberately deferred.
+
+Status after waves 1–7 (historical): **47/140 features done, 21 partial, 72
+pending** (audit 2026-08-15 against the master feature list). The remaining
+work was split into seven feature waves + one QA/merge wave. Work proceeded
+**one wave at a time**; each wave ended with `tsc --noEmit` clean, `next build`
+all-static, QA script green, and a conventional commit on the `health` branch.
 
 Legend: 🆕 = new build · 🔁 = upgrade of a partial.
 

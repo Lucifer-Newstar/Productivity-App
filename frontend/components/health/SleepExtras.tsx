@@ -87,7 +87,7 @@ export default function SleepExtras() {
   const hasPin = !!health.profile.pinHash;
   const setPin = () => {
     if (pinInput.length < 4) { window.alert("PIN must be 4+ digits."); return; }
-    updateHealth(() => ({ profile: { ...health.profile, pinHash: pinHash(pinInput) } }));
+    updateHealth(h => ({ profile: { ...h.profile, pinHash: pinHash(pinInput) } }));
     setPinInput(""); setUnlocked(true);
   };
   const tryUnlock = () => {
@@ -95,7 +95,7 @@ export default function SleepExtras() {
     else window.alert("Wrong PIN.");
   };
   const removePin = () => {
-    updateHealth(() => ({ profile: { ...health.profile, pinHash: undefined } }));
+    updateHealth(h => ({ profile: { ...h.profile, pinHash: undefined } }));
     setUnlocked(false);
   };
 
