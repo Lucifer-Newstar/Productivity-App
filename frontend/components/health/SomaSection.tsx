@@ -25,6 +25,7 @@ import {
   latestMeasurement, currentBfPct, strengthClass, SW_STANDARDS, bmrKatch,
 } from "../../lib/healthAnalytics";
 import { PROGRESS_PHOTO_LABELS, type MeasurementEntry, type ProgressPhoto, type ProgressPhotoTag } from "../../lib/healthTypes";
+import SomaIntel from "./SomaIntel";
 
 function todayIso() { return new Date().toISOString().slice(0,10); }
 function uid() { return Math.random().toString(36).slice(2,10) + Date.now().toString(36); }
@@ -83,6 +84,7 @@ export default function SomaSection() {
     return init;
   });
   const [note, setNote] = useState("");
+  const [pump, setPump] = useState(false); // Wave 8E — post-workout pump measurement
 
   // Live previews
   const bf = useMemo(() => {
@@ -150,7 +152,7 @@ export default function SomaSection() {
 
   // Save measurement
   const save = () => {
-    const entry: MeasurementEntry = { id: uid(), date: mdate, weightKg: w, note: note || undefined };
+    const entry: MeasurementEntry = { id: uid(), date: mdate, weightKg: w, note: note || undefined, pump: pump || undefined };
     for (const s of SITES) {
       const v = toNum(vals[s.key]);
       if (v != null) (entry as any)[s.key] = v;
@@ -162,7 +164,7 @@ export default function SomaSection() {
       measurements: [...h.measurements.filter(x => x.date !== mdate), entry]
         .sort((a,b)=>a.date.localeCompare(b.date)),
     }));
-    setNote("");
+    setNote(""); setPump(false);
   };
 
   const removeMeasurement = (id: string) => {
@@ -297,6 +299,13 @@ export default function SomaSection() {
           ))}
           <Field label="Note (optional)">
             <input type="text" value={note} onChange={e=>setNote(e.target.value)} placeholder="post-bulk, week 6 cut, etc." style={input}/>
+          </Field>
+          {/* Wave 8E — pump measurement toggle */}
+          <Field label="Session context">
+            <label style={{display:"inline-flex",alignItems:"center",gap:6,cursor:"pointer",fontFamily:"var(--hlth-font-mono)",fontSize:11,color:pump?"#f472b6":"var(--hlth-muted)",padding:"6px 0"}}>
+              <input type="checkbox" checked={pump} onChange={e=>setPump(e.target.checked)} style={{accentColor:"#f472b6"}}/>
+              💪 pumped (post-workout) — kept separate from baseline trends
+            </label>
           </Field>
         </div>
 
@@ -451,6 +460,7 @@ export default function SomaSection() {
                 {m.armRightCm && <span style={{color:"var(--hlth-muted)"}}>arm {m.armRightCm}</span>}
                 {m.chestCm && <span style={{color:"var(--hlth-muted)"}}>chest {m.chestCm}</span>}
                 {m.thighRightCm && <span style={{color:"var(--hlth-muted)"}}>thigh {m.thighRightCm}</span>}
+                {m.pump && <span style={{color:"#f472b6",fontFamily:"var(--hlth-font-mono)",fontSize:9,border:"1px solid #f472b655",borderRadius:4,padding:"1px 5px"}}>PUMP</span>}
                 {m.note && <span style={{color:"var(--hlth-fg)",opacity:0.7}}>· {m.note}</span>}
                 <button onClick={()=>removeMeasurement(m.id)} style={{marginLeft:"auto",background:"transparent",border:"none",color:"var(--hlth-muted)",cursor:"pointer"}}>
                   <Trash2 size={12}/>
@@ -466,6 +476,9 @@ export default function SomaSection() {
           )}
         </div>
       )}
+
+      {/* Wave 8E — SOMA intelligence: phase detection, estimators, goals, cadence, sparklines */}
+      <SomaIntel/>
     </div>
   );
 }

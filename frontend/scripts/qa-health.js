@@ -1106,5 +1106,92 @@ assert(pinQA("1234")===pinQA("1234"), "same PIN → same hash");
 assert(pinQA("1234")!==pinQA("1235"), "different PIN → different hash");
 assert(pinQA("0000").length>0, "hash non-empty");
 
-if (failures === 0) console.log("\n>>> WAVE 8A+8B+8C+8D TESTS PASS");
+
+// ═══════════════════ WAVE 8E — SOMA intelligence ═══════════════════
+section("Wave 8E — weight slope regression");
+function slopeQA(points) {
+  const pts = [...points].sort((a,b)=>a.date.localeCompare(b.date));
+  if (pts.length < 2) return 0;
+  const t0 = new Date(pts[0].date+"T00:00:00").getTime();
+  const xs = pts.map(p=>(new Date(p.date+"T00:00:00").getTime()-t0)/(7*86400000));
+  const ys = pts.map(p=>p.weightKg);
+  const n = xs.length, mx = xs.reduce((a,b)=>a+b,0)/n, my = ys.reduce((a,b)=>a+b,0)/n;
+  let num=0, den=0;
+  for (let i=0;i<n;i++){num+=(xs[i]-mx)*(ys[i]-my);den+=(xs[i]-mx)**2;}
+  return den===0?0:Math.round((num/den)*100)/100;
+}
+assert(slopeQA([{date:"2025-06-01",weightKg:70},{date:"2025-06-08",weightKg:70.5},{date:"2025-06-15",weightKg:71}])===0.5, "+0.5kg/week linear gain");
+assert(slopeQA([{date:"2025-06-01",weightKg:72},{date:"2025-06-15",weightKg:70}])===-1, "−1kg/week over 2 weeks");
+assert(slopeQA([{date:"2025-06-01",weightKg:70}])===0, "single point → 0");
+assert(slopeQA([{date:"2025-06-01",weightKg:70},{date:"2025-06-08",weightKg:70}])===0, "flat → 0");
+
+section("Wave 8E — body-comp phase detection");
+function compQA(args) {
+  const { weightChangeKg, waistChangeCm, weeklyRateKg, sNow, sPrior } = args;
+  const strengthUp = sPrior > 0 && (sNow-sPrior) > sPrior*0.01;
+  const strengthDown = sPrior > 0 && (sNow-sPrior) < -sPrior*0.03;
+  const strengthStableOrUp = sPrior === 0 || (sNow-sPrior) >= -sPrior*0.01;
+  const weightStable = Math.abs(weightChangeKg) <= 1;
+  const waistDown = waistChangeCm <= -0.5;
+  const waistStableOrDown = waistChangeCm <= 0.5;
+  let phase;
+  if (weightStable && waistDown && strengthUp) phase = "recomp";
+  else if (weightChangeKg > 1) phase = "bulk";
+  else if (weightChangeKg < -1) phase = "cut";
+  else phase = "maintenance";
+  let muscleGainKg = null, fatLossKg = null;
+  if (phase==="bulk" && waistStableOrDown && strengthStableOrUp) muscleGainKg = weightChangeKg;
+  if (phase==="cut" && strengthStableOrUp) fatLossKg = -weightChangeKg;
+  const warnings = [];
+  if (weeklyRateKg > 0.75) warnings.push("bulk-rate");
+  if (weeklyRateKg < -1) warnings.push("cut-rate");
+  if (weeklyRateKg < -1 && strengthDown) warnings.push("INJURY");
+  return { phase, muscleGainKg, fatLossKg, warnings };
+}
+let cqa = compQA({weightChangeKg:0.5, waistChangeCm:-1.2, weeklyRateKg:0.12, sNow:520, sPrior:500});
+assert(cqa.phase==="recomp", "stable weight + waist↓ + strength↑ → RECOMP");
+cqa = compQA({weightChangeKg:2, waistChangeCm:0.2, weeklyRateKg:0.5, sNow:510, sPrior:500});
+assert(cqa.phase==="bulk" && cqa.muscleGainKg===2, "weight+2 waist-held strength-held → bulk, +2kg likely lean");
+cqa = compQA({weightChangeKg:2.5, waistChangeCm:2.5, weeklyRateKg:0.9, sNow:500, sPrior:500});
+assert(cqa.phase==="bulk" && cqa.muscleGainKg===null && cqa.warnings.includes("bulk-rate"), "fast bulk + waist↑ → no lean estimate + rate warning");
+cqa = compQA({weightChangeKg:-2, waistChangeCm:-1.5, weeklyRateKg:-0.5, sNow:505, sPrior:500});
+assert(cqa.phase==="cut" && cqa.fatLossKg===2, "weight−2 strength↑ → cut, −2kg likely fat");
+cqa = compQA({weightChangeKg:-5, waistChangeCm:-2, weeklyRateKg:-1.3, sNow:470, sPrior:500});
+assert(cqa.warnings.includes("cut-rate") && cqa.warnings.includes("INJURY"), "rapid loss + strength drop → cut-rate + INJURY RISK");
+cqa = compQA({weightChangeKg:0.3, waistChangeCm:0, weeklyRateKg:0.05, sNow:500, sPrior:500});
+assert(cqa.phase==="maintenance", "±1kg, no waist/strength change → maintenance");
+
+section("Wave 8E — water weight & plateau & cadence & goal progress");
+function spikeQA(pts) {
+  const s = [...pts].sort((a,b)=>a.date.localeCompare(b.date));
+  if (s.length < 2) return { spike:false, deltaKg:0 };
+  const a = s[s.length-2], b = s[s.length-1];
+  const days = (new Date(b.date).getTime()-new Date(a.date).getTime())/86400000;
+  const delta = Math.round((b.weightKg-a.weightKg)*10)/10;
+  return { spike: days<=1.5 && delta>=1.5, deltaKg: delta };
+}
+assert(spikeQA([{date:"2025-06-01",weightKg:70},{date:"2025-06-02",weightKg:71.8}]).spike, "+1.8kg overnight → water spike");
+assert(!spikeQA([{date:"2025-06-01",weightKg:70},{date:"2025-06-05",weightKg:71.8}]).spike, "+1.8kg over 4 days → not a spike");
+assert(!spikeQA([{date:"2025-06-01",weightKg:70},{date:"2025-06-02",weightKg:71}]).spike, "+1.0kg overnight → below threshold");
+function dueQA(lastDate, freq, today) {
+  const period = freq==="weekly"?7:freq==="biweekly"?14:30;
+  if (!lastDate) return { dueInDays: 0, overdue: true };
+  const elapsed = Math.floor((new Date(today+"T00:00:00").getTime()-new Date(lastDate+"T00:00:00").getTime())/86400000);
+  const d = period - elapsed;
+  return { dueInDays: Math.max(0,d), overdue: d<=0 };
+}
+assert(dueQA(undefined,"weekly","2025-06-10").overdue, "never measured → overdue");
+assert(dueQA("2025-06-01","weekly","2025-06-10").overdue, "9 days on weekly cadence → overdue");
+assert(dueQA("2025-06-01","monthly","2025-06-10").dueInDays===21, "monthly: 21 days left");
+function gpQA(start, cur, target) {
+  const total = target-start;
+  if (Math.abs(total)<0.1) return 100;
+  return Math.max(0, Math.min(100, Math.round(((cur-start)/total)*100)));
+}
+assert(gpQA(38, 40, 42)===50, "arm 38→40 toward 42 = 50%");
+assert(gpQA(90, 85, 80)===50, "waist 90→85 toward 80 = 50% (downward goal)");
+assert(gpQA(38, 37, 42)===0, "regression clamps at 0%");
+assert(gpQA(38, 43, 42)===100, "overshoot clamps at 100%");
+
+if (failures === 0) console.log("\n>>> WAVE 8A-8E TESTS PASS");
 else { console.error(`\n${failures} FAILURE(S) (incl. wave 8A)`); process.exit(1); }

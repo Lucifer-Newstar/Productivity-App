@@ -198,27 +198,27 @@ with body fat, tape measurements, and photos.
 | 05 | BF% trendline (30/90/365) — each measurement date stamped                              | ❌     | |
 | 06 | **Lean Body Mass** auto: `weight × (1 − BF%)`                                           | ❌     | |
 | 07 | Fat mass auto: `weight × BF%`                                                           | ❌     | |
-| 08 | **Muscle/Fat/Other pie** (fat mass, lean mass, residual ~8% as bone/water)              | ❌     | Visual |
+| 08 | **Muscle/Fat/Other pie** (fat mass, lean mass, residual ~8% as bone/water)              | ✅     | Visual |
 | 09 | BMI auto-computed (not flagged as "overweight" for lifters — annotated with "athletes often register 'overweight' BMI due to muscle") | ❌ | Anti-bad-psychology guard |
 | 10 | **Strength-to-Weight Ratio (S:W)** tracker — key ratio per major lift vs bodyweight. Pulls PRs from Workout | ❌ | Workout sync |
 | 11 | 1RM ÷ bodyweight for: Deadlift / Squat / Bench / OHP / Row / Pull-up (bodyweight rep-max estimate) | ❌ | |
 | 12 | S:W class tags for each lift: Novice / Intermediate / Advanced / Elite (standards based on bodyweight multiples) | ❌ | |
-| 13 | Muscle-gain estimator — over rolling 4-week window: if weight ↑ AND waist ↓/stable AND strength ≥ previous → "+X kg likely lean" | ❌ | Heuristic, not diagnostic |
-| 14 | Fat-loss estimator — over 4-week window: weight ↓ AND strength stable/↑ → "−X kg likely fat" | ❌ | Heuristic |
-| 15 | Recomp detector — weight stable (±1kg) but waist ↓ AND strength ↑ → "Recomp phase detected" | ❌ | |
-| 16 | Bulk / Cut / Maintenance / Recomp phase auto-detection with manual override             | ❌     | |
-| 17 | Bulk rate monitor: warns if &gt; 0.75 kg/week for 2+ weeks running → "You may be gaining too much fat" | ❌ | |
-| 18 | Cut rate monitor: warns if &gt; 1 kg/week → "Rapid cut — muscle loss risk"                  | ❌     | |
-| 19 | Rapid-weight-loss alert + strength drop → INJURY RISK flag                              | ❌     | |
-| 20 | Water-weight retention detector — weight spike &gt;1.5kg in 1 day after high-carb day OR hard workout → "Likely water retention (glycogen+water), not fat gain" | ❌ | |
+| 13 | Muscle-gain estimator — over rolling 4-week window: if weight ↑ AND waist ↓/stable AND strength ≥ previous → "+X kg likely lean" | ✅ | Heuristic, not diagnostic |
+| 14 | Fat-loss estimator — over 4-week window: weight ↓ AND strength stable/↑ → "−X kg likely fat" | ✅ | Heuristic |
+| 15 | Recomp detector — weight stable (±1kg) but waist ↓ AND strength ↑ → "Recomp phase detected" | ✅ | |
+| 16 | Bulk / Cut / Maintenance / Recomp phase auto-detection with manual override             | ✅     | |
+| 17 | Bulk rate monitor: warns if &gt; 0.75 kg/week for 2+ weeks running → "You may be gaining too much fat" | ✅ | |
+| 18 | Cut rate monitor: warns if &gt; 1 kg/week → "Rapid cut — muscle loss risk"                  | ✅     | |
+| 19 | Rapid-weight-loss alert + strength drop → INJURY RISK flag                              | ✅     | |
+| 20 | Water-weight retention detector — weight spike &gt;1.5kg in 1 day after high-carb day OR hard workout → "Likely water retention (glycogen+water), not fat gain" | ✅ | |
 | 21 | **Full tape measurements** (cm) with relaxed/flexed where applicable: Neck, Shoulders, Chest (relaxed/inhaled/flexed), Waist (navel), Hip/Glute, Arms (L/R flexed/relaxed), Forearms (L/R), Thighs (L/R), Calves (L/R), Wrists, Ankles | ❌ | |
-| 22 | Per-body-part progress chart (each measurement on its own sparkline)                    | ❌     | |
+| 22 | Per-body-part progress chart (each measurement on its own sparkline)                    | ✅     | |
 | 23 | **Asymmetry detector** — if L vs R arm/thigh/calf difference &gt;1cm, highlights with color + unilateral-exercise nudge | ❌ | |
-| 24 | Target measurements per body part + % progress bar                                      | ❌     | |
-| 25 | Measurement frequency planner (weekly = cutting, bi-weekly = maintenance, monthly = bulking) | ❌ | |
-| 26 | Measurement day reminder — suggests consistent day/time (Monday post-workout)          | ❌     | |
-| 27 | Flexed vs relaxed mode toggle                                                           | ❌     | |
-| 28 | Post-workout "pump" measurement log (immediately post-session)                          | ❌     | Workout sync |
+| 24 | Target measurements per body part + % progress bar                                      | ✅     | |
+| 25 | Measurement frequency planner (weekly = cutting, bi-weekly = maintenance, monthly = bulking) | ✅ | |
+| 26 | Measurement day reminder — suggests consistent day/time (Monday post-workout)          | ✅     | |
+| 27 | Flexed vs relaxed mode toggle                                                           | ✅     | |
+| 28 | Post-workout "pump" measurement log (immediately post-session)                          | ✅     | Workout sync |
 | 29 | **Measurement ↔ Workout correlation** overlay — "Bench PR up 10kg, chest up 2cm"        | ❌     | Workout sync |
 | 30 | Targeted measurement hints — on push day, prompt chest/arms; pull day → back/biceps; leg day → thighs/glutes | ❌ | Workout sync — reads routine focus |
 | 31 | Body-part priority suggestion: "Your chest measurement trails relative to your bench S:W" | ❌     | |
@@ -239,7 +239,7 @@ with body fat, tape measurements, and photos.
 | 46 | **Gym fit / apparel size predictor** — chest/waist/hip/arm → T-shirt/jeans size estimate | ❌     | Indian apparel size charts 🌏 |
 | 47 | Workout performance overlay graph (PRs + BW + BF% on same timeline)                     | ❌     | Workout sync |
 | 48 | PR-at-same-weight tracker — "You deadlifted +20kg at the same BW. Pure strength!"       | ❌     | Workout sync |
-| 49 | Plateau detector — measurements unchanged 4 weeks + consistent logging → "Consider routine change" nudge | ❌ | |
+| 49 | Plateau detector — measurements unchanged 4 weeks + consistent logging → "Consider routine change" nudge | ✅ | |
 | 50 | **TDEE reverse-engineering** — uses actual weight change over 2–4 weeks + logged intake + logged workout volume → auto-refine TDEE estimate | ❌ | Workout sync, key algorithm |
 | 51 | Maintenance calories auto-adjust — smoothed 14-day trend                                 | ❌     | |
 | 52 | Caloric intake target (bulk +250/cut −300/maintain) based on phase                      | ❌     | |

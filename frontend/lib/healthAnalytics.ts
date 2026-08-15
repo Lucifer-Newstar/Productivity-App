@@ -1333,3 +1333,145 @@ export function pinHash(pin: string): string {
   }
   return h.toString(36);
 }
+
+// ---------------- Wave 8E — SOMA intelligence ----------------
+
+import type { MeasureFrequency, PhysiquePhase } from "./healthTypes";
+
+/** Simple weight point used by the detectors (mirrors Workout.bodyweight). */
+export interface WeightPoint { date: string; weightKg: number; }
+
+/** Least-squares slope in kg/week over a series of weight points. */
+export function weightSlopeKgPerWeek(points: WeightPoint[]): number {
+  const pts = [...points].sort((a, b) => a.date.localeCompare(b.date));
+  if (pts.length < 2) return 0;
+  const t0 = new Date(pts[0].date + "T00:00:00").getTime();
+  const xs = pts.map(p => (new Date(p.date + "T00:00:00").getTime() - t0) / (7 * 86_400_000)); // weeks
+  const ys = pts.map(p => p.weightKg);
+  const n = xs.length;
+  const mx = xs.reduce((a, b) => a + b, 0) / n, my = ys.reduce((a, b) => a + b, 0) / n;
+  let num = 0, den = 0;
+  for (let i = 0; i < n; i++) { num += (xs[i] - mx) * (ys[i] - my); den += (xs[i] - mx) ** 2; }
+  return den === 0 ? 0 : Math.round((num / den) * 100) / 100;
+}
+
+/** Windowed helpers: values within the last N days from `today`. */
+function withinDays<T extends { date: string }>(rows: T[], days: number, todayIso: string): T[] {
+  const cutoff = new Date(new Date(todayIso + "T00:00:00").getTime() - days * 86_400_000).toISOString().slice(0, 10);
+  return rows.filter(r => r.date >= cutoff && r.date <= todayIso).sort((a, b) => a.date.localeCompare(b.date));
+}
+
+export interface BodyCompInputs {
+  weights: WeightPoint[];                        // bodyweight log (Workout source of truth)
+  waists: { date: string; waistCm: number }[];   // waist measurements
+  /** Strength proxy: summed best e1RM of key lifts at two time points (kg). */
+  strengthNow?: number;
+  strengthPrior?: number;
+  todayIso: string;
+}
+
+export interface BodyCompResult {
+  phase: PhysiquePhase | "unknown";
+  weeklyRateKg: number;          // +gain/−loss per week (28d regression)
+  weightChangeKg: number;        // 28d first→last
+  waistChangeCm: number;         // 28d first→last
+  strengthDelta: number;         // now − prior
+  muscleGainKg: number | null;   // estimated lean gain (null = can't tell)
+  fatLossKg: number | null;      // estimated fat loss
+  warnings: string[];            // bulk-rate / cut-rate / injury-risk flags
+}
+
+/**
+ * H14 implementation — 4-week window heuristics:
+ *  recomp: weight ±1kg AND waist ↓ AND strength ↑
+ *  bulk:   weight ↑ ; cut: weight ↓ ; else maintenance
+ *  muscle-gain estimate: weight ↑ + waist stable/↓ + strength ≥ → +Δweight "likely lean"
+ *  fat-loss estimate:    weight ↓ + strength stable/↑           → −Δweight "likely fat"
+ * Rate monitors: bulk >0.75 kg/wk warn ; cut >1 kg/wk warn ; cut + strength drop → INJURY RISK.
+ */
+export function bodyCompStatus(inp: BodyCompInputs): BodyCompResult {
+  const w28 = withinDays(inp.weights, 28, inp.todayIso);
+  const m28 = withinDays(inp.waists, 28, inp.todayIso);
+  const weeklyRateKg = weightSlopeKgPerWeek(w28);
+  const weightChangeKg = w28.length >= 2 ? Math.round((w28[w28.length - 1].weightKg - w28[0].weightKg) * 10) / 10 : 0;
+  const waistChangeCm = m28.length >= 2 ? Math.round((m28[m28.length - 1].waistCm - m28[0].waistCm) * 10) / 10 : 0;
+  const sNow = inp.strengthNow ?? 0, sPrior = inp.strengthPrior ?? 0;
+  const strengthDelta = Math.round((sNow - sPrior) * 10) / 10;
+  const strengthUp = sPrior > 0 && strengthDelta > sPrior * 0.01;   // >1% = up
+  const strengthDown = sPrior > 0 && strengthDelta < -sPrior * 0.03; // >3% drop = down
+  const strengthStableOrUp = sPrior === 0 || strengthDelta >= -sPrior * 0.01;
+
+  const warnings: string[] = [];
+  let phase: BodyCompResult["phase"] = "unknown";
+  let muscleGainKg: number | null = null;
+  let fatLossKg: number | null = null;
+
+  if (w28.length >= 2) {
+    const weightStable = Math.abs(weightChangeKg) <= 1;
+    const waistDown = waistChangeCm <= -0.5;
+    const waistStableOrDown = waistChangeCm <= 0.5;
+
+    if (weightStable && waistDown && strengthUp) phase = "recomp";
+    else if (weightChangeKg > 1) phase = "bulk";
+    else if (weightChangeKg < -1) phase = "cut";
+    else phase = "maintenance";
+
+    if (phase === "bulk" && waistStableOrDown && strengthStableOrUp) {
+      muscleGainKg = Math.round(weightChangeKg * 10) / 10; // likely lean
+    }
+    if (phase === "cut" && strengthStableOrUp) {
+      fatLossKg = Math.round(-weightChangeKg * 10) / 10; // likely fat
+    }
+
+    if (weeklyRateKg > 0.75) warnings.push(`Gaining ${weeklyRateKg} kg/week — above 0.75 lean-bulk ceiling, extra is likely fat.`);
+    if (weeklyRateKg < -1) warnings.push(`Losing ${Math.abs(weeklyRateKg)} kg/week — rapid cut, muscle-loss risk. Slow to ≤1 kg/week.`);
+    if (weeklyRateKg < -1 && strengthDown) warnings.push("INJURY RISK: rapid weight loss + strength drop. Eat more, deload, protect joints.");
+  }
+
+  return { phase, weeklyRateKg, weightChangeKg, waistChangeCm, strengthDelta, muscleGainKg, fatLossKg, warnings };
+}
+
+/** Water-weight detector: ≥1.5kg jump in ≤1 day → glycogen/water, not fat. */
+export function waterWeightSpike(weights: WeightPoint[]): { spike: boolean; deltaKg: number } {
+  const pts = [...weights].sort((a, b) => a.date.localeCompare(b.date));
+  if (pts.length < 2) return { spike: false, deltaKg: 0 };
+  const a = pts[pts.length - 2], b = pts[pts.length - 1];
+  const days = (new Date(b.date).getTime() - new Date(a.date).getTime()) / 86_400_000;
+  const delta = Math.round((b.weightKg - a.weightKg) * 10) / 10;
+  return { spike: days <= 1.5 && delta >= 1.5, deltaKg: delta };
+}
+
+/**
+ * Plateau detector: all tracked sites changed <0.5cm across a 4-week window
+ * with ≥2 measurement entries → suggest routine change.
+ */
+export function measurementPlateau(entries: MeasurementEntry[], todayIso: string): { plateau: boolean; weeks: number } {
+  const win = withinDays(entries, 28, todayIso);
+  if (win.length < 2) return { plateau: false, weeks: 0 };
+  const first = win[0], last = win[win.length - 1];
+  const sites: (keyof MeasurementEntry)[] = ["chestCm", "shoulderCm", "armLeftCm", "armRightCm", "thighLeftCm", "thighRightCm", "calfLeftCm", "calfRightCm", "waistCm"];
+  let tracked = 0, moved = 0;
+  for (const s of sites) {
+    const a = first[s] as number | undefined, b = last[s] as number | undefined;
+    if (a != null && b != null) { tracked++; if (Math.abs(b - a) >= 0.5) moved++; }
+  }
+  const spanWeeks = Math.round((new Date(last.date).getTime() - new Date(first.date).getTime()) / (7 * 86_400_000));
+  return { plateau: tracked >= 3 && moved === 0 && spanWeeks >= 3, weeks: spanWeeks };
+}
+
+/** Days until next measurement day given cadence and last measurement date. */
+export function nextMeasureDue(lastDate: string | undefined, freq: MeasureFrequency, todayIso: string): { dueInDays: number; overdue: boolean } {
+  const period = freq === "weekly" ? 7 : freq === "biweekly" ? 14 : 30;
+  if (!lastDate) return { dueInDays: 0, overdue: true };
+  const elapsed = Math.floor((new Date(todayIso + "T00:00:00").getTime() - new Date(lastDate + "T00:00:00").getTime()) / 86_400_000);
+  const dueInDays = period - elapsed;
+  return { dueInDays: Math.max(0, dueInDays), overdue: dueInDays <= 0 };
+}
+
+/** Progress toward a measurement goal — direction-aware (waist targets are usually "below"). */
+export function goalProgress(startCm: number, currentCm: number, targetCm: number): number {
+  const total = targetCm - startCm;
+  if (Math.abs(total) < 0.1) return 100;
+  const done = currentCm - startCm;
+  return Math.max(0, Math.min(100, Math.round((done / total) * 100)));
+}

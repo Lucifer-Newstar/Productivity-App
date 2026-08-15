@@ -369,8 +369,27 @@ export interface MeasurementEntry {
   weightKg?: number;
   /** Computed Navy BF% cached at save-time so historical values don't shift if constants change */
   navyBfPct?: number;
+  /** Wave 8E — post-workout "pump" measurement (vs baseline). */
+  pump?: boolean;
   note?: string;
 }
+
+/** Wave 8E — target measurements per body part (cm) + physique phase prefs. */
+export interface MeasurementGoals {
+  chestCm?: number;
+  shoulderCm?: number;
+  armCm?: number;      // either arm target
+  forearmCm?: number;
+  waistCm?: number;    // usually a "below" goal — direction inferred from current
+  thighCm?: number;
+  calfCm?: number;
+  neckCm?: number;
+}
+
+export type MeasureFrequency = "weekly" | "biweekly" | "monthly";
+
+/** Wave 8E — physique phase auto-detect can be overridden manually. */
+export type PhysiquePhase = "bulk" | "cut" | "maintenance" | "recomp";
 
 /** Progress photo — stored as dataURL (localStorage sized; bigger sets move to IndexedDB later) */
 export interface ProgressPhoto {
@@ -572,6 +591,10 @@ export interface HealthState {
   naps: NapEntry[];
   urineChecks: UrineCheck[];
   measurements: MeasurementEntry[];
+  /** Wave 8E — measurement targets + cadence + phase override. */
+  measurementGoals?: MeasurementGoals;
+  measureFrequency?: MeasureFrequency;
+  phaseOverride?: PhysiquePhase | null;
   photos: ProgressPhoto[];
   supplementDefs: SupplementDef[];
   supplementLog: SupplementLog[];
@@ -710,6 +733,9 @@ export function emptyHealthState(): HealthState {
     naps: [],
     urineChecks: [],
     measurements: [],
+    measurementGoals: {},
+    measureFrequency: "biweekly",
+    phaseOverride: null,
     photos: [],
     supplementDefs: SEED_SUPPLEMENT_DEFS.map(s => ({ ...s })),
     supplementLog: [],
