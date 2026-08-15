@@ -26,6 +26,7 @@ import {
 } from "../../lib/healthAnalytics";
 import { PROGRESS_PHOTO_LABELS, type MeasurementEntry, type ProgressPhoto, type ProgressPhotoTag } from "../../lib/healthTypes";
 import SomaIntel from "./SomaIntel";
+import SomaCorrelation from "./SomaCorrelation";
 
 function todayIso() { return new Date().toISOString().slice(0,10); }
 function uid() { return Math.random().toString(36).slice(2,10) + Date.now().toString(36); }
@@ -479,6 +480,9 @@ export default function SomaSection() {
 
       {/* Wave 8E — SOMA intelligence: phase detection, estimators, goals, cadence, sparklines */}
       <SomaIntel/>
+
+      {/* Wave 8F — workout correlation, indices, photo tools */}
+      <SomaCorrelation/>
     </div>
   );
 }

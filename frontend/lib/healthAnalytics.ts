@@ -1475,3 +1475,135 @@ export function goalProgress(startCm: number, currentCm: number, targetCm: numbe
   const done = currentCm - startCm;
   return Math.max(0, Math.min(100, Math.round((done / total) * 100)));
 }
+
+// ---------------- Wave 8F — SOMA × Workout correlation + photo tools ----------------
+
+/** Minimal PR shape consumed by correlation helpers (mirrors WorkoutPR). */
+export interface PrLike {
+  exerciseId: string;
+  value: number;
+  estimated1RM?: number;
+  date: string;
+  history?: { date: string; value: number; weight?: number }[];
+}
+
+/**
+ * PR-at-same-weight tracker: compares each lift's best e1RM now vs ~4 weeks ago
+ * alongside bodyweight then/now. If PR ↑ while BW same (±1kg) or lower →
+ * "pure strength gain" callout.
+ */
+export function prAtSameWeight(
+  prs: PrLike[],
+  weights: WeightPoint[],
+  todayIso: string,
+  liftIds: string[] = ["w-squat", "w-bench", "w-dead", "w-ohp"],
+): { lift: string; prDeltaKg: number; bwDeltaKg: number; pure: boolean }[] {
+  const cutoff = new Date(new Date(todayIso).getTime() - 28 * 86_400_000).toISOString().slice(0, 10);
+  const sortedW = [...weights].sort((a, b) => a.date.localeCompare(b.date));
+  const bwNow = sortedW.length ? sortedW[sortedW.length - 1].weightKg : 0;
+  const bwPastArr = sortedW.filter(w => w.date <= cutoff);
+  const bwPast = bwPastArr.length ? bwPastArr[bwPastArr.length - 1].weightKg : bwNow;
+  const bwDeltaKg = Math.round((bwNow - bwPast) * 10) / 10;
+  const out: { lift: string; prDeltaKg: number; bwDeltaKg: number; pure: boolean }[] = [];
+  for (const id of liftIds) {
+    const pr = prs.find(p => p.exerciseId === id);
+    if (!pr) continue;
+    const now = pr.estimated1RM ?? pr.value ?? 0;
+    const past = (pr.history ?? []).filter(h => h.date <= cutoff);
+    const prior = past.length ? Math.max(...past.map(h => h.value)) : now;
+    const prDeltaKg = Math.round((now - prior) * 10) / 10;
+    if (prDeltaKg > 0) {
+      out.push({ lift: id, prDeltaKg, bwDeltaKg, pure: bwDeltaKg <= 1 });
+    }
+  }
+  return out;
+}
+
+/**
+ * Measurement ↔ PR correlation: pair each lift's 28d PR delta with its most
+ * relevant body-part measurement delta ("Bench +10kg, chest +2cm").
+ */
+export const LIFT_SITE_MAP: Record<string, { site: keyof MeasurementEntry; siteLabel: string; liftLabel: string }> = {
+  "w-bench":  { site: "chestCm",     siteLabel: "chest", liftLabel: "Bench"    },
+  "w-squat":  { site: "thighRightCm",siteLabel: "thigh", liftLabel: "Squat"    },
+  "w-dead":   { site: "thighRightCm",siteLabel: "thigh", liftLabel: "Deadlift" },
+  "w-ohp":    { site: "shoulderCm",  siteLabel: "shoulders", liftLabel: "OHP"  },
+  "w-pullup": { site: "armRightCm",  siteLabel: "arm",  liftLabel: "Pull-ups"  },
+};
+export function liftMeasurementCorrelation(
+  prs: PrLike[],
+  measurements: MeasurementEntry[],
+  todayIso: string,
+): { liftLabel: string; prDelta: number; siteLabel: string; siteDelta: number | null }[] {
+  const cutoff = new Date(new Date(todayIso).getTime() - 28 * 86_400_000).toISOString().slice(0, 10);
+  const base = measurements.filter(m => !m.pump).sort((a, b) => a.date.localeCompare(b.date));
+  const out: { liftLabel: string; prDelta: number; siteLabel: string; siteDelta: number | null }[] = [];
+  for (const [id, map] of Object.entries(LIFT_SITE_MAP)) {
+    const pr = prs.find(p => p.exerciseId === id);
+    if (!pr) continue;
+    const now = pr.estimated1RM ?? pr.value ?? 0;
+    const past = (pr.history ?? []).filter(h => h.date <= cutoff);
+    const prior = past.length ? Math.max(...past.map(h => h.value)) : now;
+    const prDelta = Math.round((now - prior) * 10) / 10;
+    if (prDelta === 0) continue;
+    const withSite = base.filter(m => m[map.site] != null);
+    let siteDelta: number | null = null;
+    if (withSite.length >= 2) {
+      const pastM = withSite.filter(m => m.date <= cutoff);
+      const startVal = (pastM.length ? pastM[pastM.length - 1] : withSite[0])[map.site] as number;
+      const endVal = withSite[withSite.length - 1][map.site] as number;
+      siteDelta = Math.round((endVal - startVal) * 10) / 10;
+    }
+    out.push({ liftLabel: map.liftLabel, prDelta, siteLabel: map.siteLabel, siteDelta });
+  }
+  return out;
+}
+
+/** Strength-to-size ratio: lift e1RM (kg) per cm of its site. */
+export function strengthToSize(e1rmKg: number, siteCm: number): number {
+  if (siteCm <= 0) return 0;
+  return Math.round((e1rmKg / siteCm) * 100) / 100;
+}
+
+/** Work capacity score: (weekly volume kg × avg intensity) / bodyweight. */
+export function workCapacity(weeklyVolumeKg: number, avgIntensity: number, bodyweightKg: number): number {
+  if (bodyweightKg <= 0) return 0;
+  return Math.round((weeklyVolumeKg * (avgIntensity || 1)) / bodyweightKg);
+}
+
+/** Anabolic index: (Δweight kg × Δstrength kg) / weeks — only meaningful when both positive. */
+export function anabolicIndex(weightGainKg: number, strengthGainKg: number, weeks: number): number {
+  if (weeks <= 0 || weightGainKg <= 0 || strengthGainKg <= 0) return 0;
+  return Math.round(((weightGainKg * strengthGainKg) / weeks) * 10) / 10;
+}
+
+/** Calisthenics strength index: bodyweight / (skill difficulty × 10) — lower BW & higher difficulty unlocked = better. */
+export function caliStrengthIndex(bodyweightKg: number, hardestUnlockedDifficulty: number): number {
+  if (hardestUnlockedDifficulty <= 0) return 0;
+  return Math.round((bodyweightKg / (hardestUnlockedDifficulty * 10)) * 100) / 100;
+}
+
+/** Cali skill S:W requirement estimate: rough pull/push ratio needed at a bodyweight. */
+export function caliSkillRequirement(skillDifficulty: number): number {
+  // difficulty 1-10 → required strength-to-weight ≈ 0.6 + 0.08 × difficulty
+  return Math.round((0.6 + 0.08 * skillDifficulty) * 100) / 100;
+}
+
+/** Powerlifting-style weight class visualizer (IPF men's classes, kg). */
+export const IPF_CLASSES_M = [59, 66, 74, 83, 93, 105, 120];
+export function weightClass(bodyweightKg: number): { current: string; nextDown: number | null; distanceDown: number | null } {
+  const cls = IPF_CLASSES_M.find(c => bodyweightKg <= c);
+  const current = cls ? `-${cls}kg` : "120kg+";
+  const idx = cls ? IPF_CLASSES_M.indexOf(cls) : IPF_CLASSES_M.length;
+  const nextDown = idx > 0 ? IPF_CLASSES_M[idx - 1] : null;
+  const distanceDown = nextDown != null ? Math.round((bodyweightKg - nextDown) * 10) / 10 : null;
+  return { current, nextDown, distanceDown };
+}
+
+/** Photo reminder: due if no photo in `intervalDays` (default 28 = 4 weeks). */
+export function photoReminder(photos: { date: string }[], todayIso: string, intervalDays = 28): { due: boolean; daysSince: number | null } {
+  if (photos.length === 0) return { due: true, daysSince: null };
+  const last = [...photos].sort((a, b) => b.date.localeCompare(a.date))[0];
+  const daysSince = Math.floor((new Date(todayIso + "T00:00:00").getTime() - new Date(last.date + "T00:00:00").getTime()) / 86_400_000);
+  return { due: daysSince >= intervalDays, daysSince };
+}

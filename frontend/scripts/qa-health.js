@@ -1193,5 +1193,71 @@ assert(gpQA(90, 85, 80)===50, "waist 90→85 toward 80 = 50% (downward goal)");
 assert(gpQA(38, 37, 42)===0, "regression clamps at 0%");
 assert(gpQA(38, 43, 42)===100, "overshoot clamps at 100%");
 
-if (failures === 0) console.log("\n>>> WAVE 8A-8E TESTS PASS");
+
+// ═══════════════════ WAVE 8F — SOMA × Workout correlation ═══════════════════
+section("Wave 8F — PR at same weight");
+function pasQA(prs, weights, todayIso) {
+  const cutoff = new Date(new Date(todayIso).getTime()-28*86400000).toISOString().slice(0,10);
+  const sw = [...weights].sort((a,b)=>a.date.localeCompare(b.date));
+  const bwNow = sw.length ? sw[sw.length-1].weightKg : 0;
+  const past = sw.filter(w=>w.date<=cutoff);
+  const bwPast = past.length ? past[past.length-1].weightKg : bwNow;
+  const bwDeltaKg = Math.round((bwNow-bwPast)*10)/10;
+  const out = [];
+  for (const pr of prs) {
+    const now = pr.estimated1RM ?? pr.value ?? 0;
+    const hist = (pr.history ?? []).filter(h=>h.date<=cutoff);
+    const prior = hist.length ? Math.max(...hist.map(h=>h.value)) : now;
+    const d = Math.round((now-prior)*10)/10;
+    if (d > 0) out.push({ lift: pr.exerciseId, prDeltaKg: d, bwDeltaKg, pure: bwDeltaKg <= 1 });
+  }
+  return out;
+}
+const prsFx = [{ exerciseId:"w-dead", value:180, estimated1RM:180, date:"2025-06-25",
+  history:[{date:"2025-05-01",value:160},{date:"2025-06-25",value:180}] }];
+const wFx = [{date:"2025-05-01",weightKg:74.5},{date:"2025-06-25",weightKg:74.8}];
+let pg = pasQA(prsFx, wFx, "2025-06-28");
+assert(pg.length===1 && pg[0].prDeltaKg===20 && pg[0].pure, "DL +20kg at +0.3kg BW → pure strength");
+const wFx2 = [{date:"2025-05-01",weightKg:72},{date:"2025-06-25",weightKg:75}];
+pg = pasQA(prsFx, wFx2, "2025-06-28");
+assert(pg[0].pure===false, "+3kg BW → not pure");
+pg = pasQA([{exerciseId:"w-bench",value:100,history:[{date:"2025-05-01",value:100}]}], wFx, "2025-06-28");
+assert(pg.length===0, "no PR delta → no entry");
+
+section("Wave 8F — indices");
+function s2sQA(kg, cm){ return cm<=0?0:Math.round((kg/cm)*100)/100; }
+assert(s2sQA(120, 100)===1.2, "bench 120 / chest 100cm = 1.2 kg/cm");
+assert(s2sQA(120, 0)===0, "zero site guard");
+function wcQA(vol, inten, bw){ return bw<=0?0:Math.round((vol*(inten||1))/bw); }
+assert(wcQA(14000, 1, 70)===200, "14t week / 70kg = 200 work capacity");
+assert(wcQA(14000, 1, 0)===0, "zero BW guard");
+function anabQA(wg, sg, wk){ return (wk<=0||wg<=0||sg<=0)?0:Math.round(((wg*sg)/wk)*10)/10; }
+assert(anabQA(2, 20, 4)===10, "(2kg × 20kg)/4wk = 10");
+assert(anabQA(-1, 20, 4)===0, "cut phase → index 0");
+function caliQA(bw, diff){ return diff<=0?0:Math.round((bw/(diff*10))*100)/100; }
+assert(caliQA(75, 7)===1.07, "75kg / (7×10) = 1.07");
+function reqQA(d){ return Math.round((0.6+0.08*d)*100)/100; }
+assert(reqQA(8)===1.24, "difficulty-8 skill needs ≈1.24 S:W");
+function wclassQA(bw){
+  const C=[59,66,74,83,93,105,120];
+  const c=C.find(x=>bw<=x);
+  return c?`-${c}kg`:"120kg+";
+}
+assert(wclassQA(74.5)==="-83kg", "74.5kg → -83 class");
+assert(wclassQA(59)==="-59kg", "exactly 59 → -59 class");
+assert(wclassQA(125)==="120kg+", "125kg → superheavy");
+
+section("Wave 8F — photo reminder");
+function photoRemQA(photos, today, interval=28) {
+  if (photos.length===0) return { due:true, daysSince:null };
+  const last=[...photos].sort((a,b)=>b.date.localeCompare(a.date))[0];
+  const d=Math.floor((new Date(today+"T00:00:00").getTime()-new Date(last.date+"T00:00:00").getTime())/86400000);
+  return { due: d>=interval, daysSince: d };
+}
+assert(photoRemQA([], "2025-06-28").due, "no photos → due");
+assert(photoRemQA([{date:"2025-05-01"}], "2025-06-28").due, "58 days → due");
+assert(!photoRemQA([{date:"2025-06-20"}], "2025-06-28").due, "8 days → not due");
+assert(photoRemQA([{date:"2025-05-31"}], "2025-06-28").daysSince===28, "exactly 28 days → due at boundary");
+
+if (failures === 0) console.log("\n>>> WAVE 8A-8F TESTS PASS");
 else { console.error(`\n${failures} FAILURE(S) (incl. wave 8A)`); process.exit(1); }

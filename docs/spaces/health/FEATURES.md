@@ -219,26 +219,26 @@ with body fat, tape measurements, and photos.
 | 26 | Measurement day reminder — suggests consistent day/time (Monday post-workout)          | ✅     | |
 | 27 | Flexed vs relaxed mode toggle                                                           | ✅     | |
 | 28 | Post-workout "pump" measurement log (immediately post-session)                          | ✅     | Workout sync |
-| 29 | **Measurement ↔ Workout correlation** overlay — "Bench PR up 10kg, chest up 2cm"        | ❌     | Workout sync |
+| 29 | **Measurement ↔ Workout correlation** overlay — "Bench PR up 10kg, chest up 2cm"        | ✅     | Workout sync |
 | 30 | Targeted measurement hints — on push day, prompt chest/arms; pull day → back/biceps; leg day → thighs/glutes | ❌ | Workout sync — reads routine focus |
 | 31 | Body-part priority suggestion: "Your chest measurement trails relative to your bench S:W" | ❌     | |
-| 32 | Strength-standards comparison — per-lift classification (Beginner/Intermediate/Advanced/Elite) for current BW | ❌ | |
-| 33 | Calisthenics skill vs bodyweight visualizer — e.g., "At 75kg a muscle-up needs ≈ 1.10 S:W pull+push ratio" | ❌ | Workout sync — reads cali skills |
-| 34 | Weight class visualizer (for powerlifting-style class goals, BW-class strength)        | ❌     | |
+| 32 | Strength-standards comparison — per-lift classification (Beginner/Intermediate/Advanced/Elite) for current BW | ✅ | |
+| 33 | Calisthenics skill vs bodyweight visualizer — e.g., "At 75kg a muscle-up needs ≈ 1.10 S:W pull+push ratio" | ✅ | Workout sync — reads cali skills |
+| 34 | Weight class visualizer (for powerlifting-style class goals, BW-class strength)        | ✅     | |
 | 35 | **Progress Photos** — take/store locally (dataURL/IndexedDB), date+tag (front/back/side × relaxed/flexed) | ❌ | Offline-first |
-| 36 | Photo angle presets: Front relaxed, Front flexed, Back relaxed, Back flexed, Side relaxed, Side flexed | ❌ | 6-preset consistency |
-| 37 | "Same lighting" + "Same time" consistency reminders                                     | ❌     | |
-| 38 | Photo reminder every 4–6 weeks                                                          | ❌     | |
+| 36 | Photo angle presets: Front relaxed, Front flexed, Back relaxed, Back flexed, Side relaxed, Side flexed | ✅ | 6-preset consistency |
+| 37 | "Same lighting" + "Same time" consistency reminders                                     | ✅     | |
+| 38 | Photo reminder every 4–6 weeks                                                          | ✅     | |
 | 39 | Post-workout photo prompt (on PR, on measurement day)                                   | ❌     | Workout sync — listens for PR event |
 | 40 | Before/after program photos — start/end tagged photos for specific workout program      | ❌     | Workout sync |
-| 41 | Side-by-side photo comparison tool (any two dates)                                      | ❌     | |
-| 42 | Photo slideshow mode (transformations over time)                                        | ❌     | |
+| 41 | Side-by-side photo comparison tool (any two dates)                                      | ✅     | |
+| 42 | Photo slideshow mode (transformations over time)                                        | ✅     | |
 | 43 | Photo annotation (mark-up with lines/text)                                              | ❌     | v1.2+ optional |
-| 44 | Measurement trend vs strength trend overlay                                             | ❌     | Workout sync |
-| 45 | Strength-to-size ratio per body part (e.g., "Chest strength-to-size 1.2 — top 20%")     | ❌     | |
+| 44 | Measurement trend vs strength trend overlay                                             | ✅     | Workout sync |
+| 45 | Strength-to-size ratio per body part (e.g., "Chest strength-to-size 1.2 — top 20%")     | ✅     | |
 | 46 | **Gym fit / apparel size predictor** — chest/waist/hip/arm → T-shirt/jeans size estimate | ❌     | Indian apparel size charts 🌏 |
-| 47 | Workout performance overlay graph (PRs + BW + BF% on same timeline)                     | ❌     | Workout sync |
-| 48 | PR-at-same-weight tracker — "You deadlifted +20kg at the same BW. Pure strength!"       | ❌     | Workout sync |
+| 47 | Workout performance overlay graph (PRs + BW + BF% on same timeline)                     | ✅     | Workout sync |
+| 48 | PR-at-same-weight tracker — "You deadlifted +20kg at the same BW. Pure strength!"       | ✅     | Workout sync |
 | 49 | Plateau detector — measurements unchanged 4 weeks + consistent logging → "Consider routine change" nudge | ✅ | |
 | 50 | **TDEE reverse-engineering** — uses actual weight change over 2–4 weeks + logged intake + logged workout volume → auto-refine TDEE estimate | ❌ | Workout sync, key algorithm |
 | 51 | Maintenance calories auto-adjust — smoothed 14-day trend                                 | ❌     | |
