@@ -30,6 +30,7 @@ import { MACRO_PRESETS, type MacroPresetId } from "../../lib/healthTypes";
 import type { MealEntry, MealItem } from "../../lib/healthTypes";
 import FastingClock from "./FastingClock";
 import NutrientPanel from "./NutrientPanel";
+import PlannerPanel from "./PlannerPanel";
 
 type Slot = "breakfast" | "lunch" | "dinner" | "snack";
 const SLOTS: { id: Slot; label: string; icon: React.ReactNode; color: string }[] = [
@@ -483,6 +484,9 @@ export default function FuelSection() {
 
       {/* Wave 8B — nutrient depth (sub-nutrients, radar, vits/minerals, functional foods) */}
       <NutrientPanel/>
+
+      {/* Wave 8C — recipes, weekly planner + meal prep, restaurant mode */}
+      <PlannerPanel onLogItem={(slot, name, kcal, c, p, f) => addManualToSlot(slot, name, kcal, c, p, f)}/>
 
       {/* Meal slots */}
       <div style={{display:"flex", flexDirection:"column", gap:14}}>

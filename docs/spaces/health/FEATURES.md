@@ -71,7 +71,7 @@ library saved from history, common South Indian meals pre-seeded.
 | 04 | "Repeat last week same day" button                                                      | ❌     | |
 | 05 | Custom Food Library — 20 most-frequent meals auto-tracked, pinable                      | ✅     | Pick from dropdown to pre-fill kcal+macros |
 | 06 | 🇮🇳 **Indian Food Database** — 80+ pre-seeded common dishes (idli, dosa, sambar rice, biryani, parotta, chappathi, kurma, pongal, poori, curd rice, lemon rice, rasam rice, chaat, chai/filter coffee, lassi, sweets, chicken 65, mutton curry, egg curry, fish curry, thali sets, etc.) with rough kcal+macros per serving | ❌ | 🌏 Chennai / TN essentials pre-seeded |
-| 07 | **Restaurant Mode** — save meals from specific Chennai eateries (Saravana Bhavan, Murugan Idli, local messes, Domino's, KFC) with rough kcal 🌏 | ❌ | Next visit auto-fills |
+| 07 | **Restaurant Mode** — save meals from specific Chennai eateries (Saravana Bhavan, Murugan Idli, local messes, Domino's, KFC) with rough kcal 🌏 | ✅ | Next visit auto-fills |
 | 08 | **Macro rough sliders** — 3 sliders (Carbs/Protein/Fats g) that auto-total to logged kcal. Drag one, the others readjust proportionally to kcal target | ✅ | Core "no food scale" UX |
 | 09 | Macro pie/donut chart — actual vs target                                                | ✅     | |
 | 10 | Macro target presets: Balanced (40/30/30), Cut (30/40/30), Bulk (50/30/20), Keto (10/25/65), Custom | ✅     | |
@@ -98,10 +98,10 @@ library saved from history, common South Indian meals pre-seeded.
 | 31 | Social meal flag (ate with others checkbox) — mood/social correlation                   | ✅     | |
 | 32 | Cheat meal flag + reason tag (celebratory / stress / craving / social)                  | ✅     | |
 | 33 | Cheat-day guilt-reset button ("No guilt. Log it. Move on.")                              | ✅     | Psychology-first |
-| 34 | **Recipe storage** — name, ingredients list, portions, prep time, kcal/macros/serving   | ❌     | Pick recipe from library → pre-fills meal entry |
-| 35 | Recipe Nutrition Analyzer — paste ingredients+quantities → totals per serving (uses built-in food DB) | ❌ | |
-| 36 | **Meal Prep Planner** — weekly view to plan meals, check off when prepped, prep-day template (Sunday common for students/workers) | ❌ | |
-| 37 | Weekly Meal Planner — 7 days × 3–4 meals grid. "Execute" copies to today's daily log    | ❌     | |
+| 34 | **Recipe storage** — name, ingredients list, portions, prep time, kcal/macros/serving   | ✅     | Pick recipe from library → pre-fills meal entry |
+| 35 | Recipe Nutrition Analyzer — paste ingredients+quantities → totals per serving (uses built-in food DB) | ✅ | |
+| 36 | **Meal Prep Planner** — weekly view to plan meals, check off when prepped, prep-day template (Sunday common for students/workers) | ✅ | |
+| 37 | Weekly Meal Planner — 7 days × 3–4 meals grid. "Execute" copies to today's daily log    | ✅     | |
 | 38 | Meal-time-of-day analytics — shows which meals are most consistent/erratic              | ❌     | |
 | 39 | **Calorie budget** — Surplus/Deficit vs TDEE (pulled dynamically from SYNC LAB engine)  | ❌     | |
 | 40 | Auto-adjust TDEE on workout days (+calories from exercise volume via Workout bridge)    | ❌     | Workout sync |

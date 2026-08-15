@@ -975,5 +975,58 @@ assert(fiberFrom(fMeals, "2025-06-01") === 13, "sums fibre across same-day meals
 assert(fiberFrom(fMeals, "2025-06-03") === 0, "no meals → 0g");
 assert(fiberFrom([{date:"2025-06-01",items:[{name:"x",kcal:1}]}], "2025-06-01") === 0, "items without fibreG → 0");
 
-if (failures === 0) console.log("\n>>> WAVE 8A+8B TESTS PASS");
+
+// ═══════════════════ WAVE 8C — FUEL planning ═══════════════════
+section("Wave 8C — recipe nutrition analyzer");
+function recipeNut(r) {
+  let kcal = 0, c = 0, p = 0, f = 0;
+  for (const ing of r.ingredients) { kcal += ing.kcal ?? 0; c += ing.carbsG ?? 0; p += ing.proteinG ?? 0; f += ing.fatG ?? 0; }
+  const n = Math.max(1, r.portions || 1);
+  const rd = x => Math.round(x * 10) / 10;
+  return {
+    total: { kcal: Math.round(kcal), carbsG: rd(c), proteinG: rd(p), fatG: rd(f) },
+    perServing: { kcal: Math.round(kcal / n), carbsG: rd(c / n), proteinG: rd(p / n), fatG: rd(f / n) },
+  };
+}
+const rec = { portions: 4, ingredients: [
+  { name: "chicken", kcal: 800, carbsG: 0, proteinG: 150, fatG: 20 },
+  { name: "rice", kcal: 520, carbsG: 112, proteinG: 10, fatG: 2 },
+  { name: "oil", kcal: 240, carbsG: 0, proteinG: 0, fatG: 27 },
+]};
+let rn = recipeNut(rec);
+assert(rn.total.kcal === 1560, "recipe total kcal sums (1560)");
+assert(rn.perServing.kcal === 390, "per-serving = total/portions (390)");
+assert(rn.perServing.proteinG === 40, "per-serving protein 160/4 = 40");
+rn = recipeNut({ portions: 0, ingredients: [{ name: "x", kcal: 100 }] });
+assert(rn.perServing.kcal === 100, "portions 0 clamps to 1 (no div-by-zero)");
+rn = recipeNut({ portions: 3, ingredients: [] });
+assert(rn.total.kcal === 0 && rn.perServing.kcal === 0, "empty ingredients → 0");
+rn = recipeNut({ portions: 3, ingredients: [{ name: "dal", kcal: 100, proteinG: 7 }] });
+assert(rn.perServing.proteinG === 2.3, "per-serving rounds to 1dp (7/3 → 2.3)");
+
+section("Wave 8C — planner helpers");
+function isoDowQA(iso) { const d = new Date(iso + "T00:00:00"); return (d.getDay() + 6) % 7; }
+assert(isoDowQA("2026-08-10") === 0, "2026-08-10 is a Monday → dow 0");
+assert(isoDowQA("2026-08-15") === 5, "2026-08-15 is a Saturday → dow 5");
+assert(isoDowQA("2026-08-16") === 6, "2026-08-16 is a Sunday → dow 6");
+function planFor(plan, dow) {
+  const order = { breakfast: 0, lunch: 1, dinner: 2, snack: 3 };
+  return plan.filter(p => p.dow === dow).sort((a, b) => order[a.slot] - order[b.slot]);
+}
+const plan = [
+  { id: "1", dow: 0, slot: "dinner", name: "d" },
+  { id: "2", dow: 0, slot: "breakfast", name: "b" },
+  { id: "3", dow: 1, slot: "lunch", name: "l" },
+];
+const mon = planFor(plan, 0);
+assert(mon.length === 2 && mon[0].slot === "breakfast" && mon[1].slot === "dinner", "planForDow filters + orders slots");
+assert(planFor(plan, 4).length === 0, "empty day → []");
+function prepProg(plan) {
+  const total = plan.length, done = plan.filter(p => p.prepped).length;
+  return { done, total, pct: total ? Math.round((done / total) * 100) : 0 };
+}
+assert(prepProg([]).pct === 0, "no plan → 0% (no NaN)");
+assert(prepProg([{prepped:true},{prepped:true},{prepped:false}]).pct === 67, "2/3 prepped → 67%");
+
+if (failures === 0) console.log("\n>>> WAVE 8A+8B+8C TESTS PASS");
 else { console.error(`\n${failures} FAILURE(S) (incl. wave 8A)`); process.exit(1); }

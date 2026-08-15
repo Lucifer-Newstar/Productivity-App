@@ -183,6 +183,61 @@ export interface DailyNutrientEntry {
   prebiotics?: number;   // onion/garlic/raw banana/oats servings
 }
 
+/**
+ * Wave 8C — FUEL planning: recipes, weekly meal planner (+prep), restaurant mode.
+ */
+export interface RecipeIngredient {
+  id: string;
+  name: string;
+  /** Quantity label ("2 cups", "200g") — freeform. */
+  qty: string;
+  kcal: number;
+  carbsG?: number;
+  proteinG?: number;
+  fatG?: number;
+}
+export interface Recipe {
+  id: string;
+  name: string;
+  ingredients: RecipeIngredient[];
+  /** How many servings the full recipe makes. */
+  portions: number;
+  prepTimeMin?: number;
+  note?: string;
+  createdAt: number;
+}
+
+/** One planned cell of the 7-day × 4-slot weekly grid. */
+export interface PlannedMeal {
+  id: string;
+  /** 0 = Monday … 6 = Sunday. */
+  dow: number;
+  slot: "breakfast" | "lunch" | "dinner" | "snack";
+  name: string;
+  kcal?: number;
+  carbsG?: number;
+  proteinG?: number;
+  fatG?: number;
+  /** Optional link to a recipe (pre-fills macros/serving). */
+  recipeId?: string;
+  /** Meal-prep checkbox — cooked/packed in advance. */
+  prepped?: boolean;
+}
+
+/** Saved meal from a specific eatery (Restaurant Mode 🌏). */
+export interface RestaurantMeal {
+  id: string;
+  restaurant: string;
+  name: string;
+  kcal: number;
+  carbsG?: number;
+  proteinG?: number;
+  fatG?: number;
+  /** Last date this was logged (for sorting). */
+  lastUsed?: string;
+  timesUsed: number;
+}
+
 export interface WaterEntry {
   id: string;
   date: string;
@@ -481,6 +536,10 @@ export interface HealthState {
   meals: MealEntry[];
   /** Wave 8B — per-day nutrient depth rows. */
   nutrients: DailyNutrientEntry[];
+  /** Wave 8C — recipes, weekly planner cells, restaurant meals. */
+  recipes: Recipe[];
+  mealPlan: PlannedMeal[];
+  restaurantMeals: RestaurantMeal[];
   water: WaterEntry[];
   sleep: SleepEntry[];
   measurements: MeasurementEntry[];
@@ -614,6 +673,9 @@ export function emptyHealthState(): HealthState {
     scores: [],
     meals: [],
     nutrients: [],
+    recipes: [],
+    mealPlan: [],
+    restaurantMeals: [],
     water: [],
     sleep: [],
     measurements: [],

@@ -196,6 +196,9 @@ Generic CRUD under `/health/*` — mirrors `HealthState` collections
 | healthScores         | `/health/scores`            |
 | healthMeals          | `/health/meals`             |
 | healthNutrients      | `/health/nutrients`         |
+| healthRecipes        | `/health/recipes`           |
+| healthMealPlan       | `/health/meal-plan`         |
+| healthRestaurantMeals| `/health/restaurant-meals`  |
 | healthWater          | `/health/water`             |
 | healthSleep          | `/health/sleep`             |
 | healthMeasurements   | `/health/measurements`      |

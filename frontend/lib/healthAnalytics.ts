@@ -1202,3 +1202,43 @@ export function fiberFromMeals(meals: MealEntry8B[], date: string): number {
   for (const m of meals) if (m.date === date) for (const it of m.items) g += it.fibreG ?? 0;
   return Math.round(g);
 }
+
+// ---------------- Wave 8C — FUEL planning ----------------
+
+import type { Recipe, RecipeIngredient, PlannedMeal } from "./healthTypes";
+
+/** Totals for a whole recipe and per serving (Recipe Nutrition Analyzer). */
+export function recipeNutrition(r: Pick<Recipe, "ingredients" | "portions">): {
+  total: { kcal: number; carbsG: number; proteinG: number; fatG: number };
+  perServing: { kcal: number; carbsG: number; proteinG: number; fatG: number };
+} {
+  let kcal = 0, c = 0, p = 0, f = 0;
+  for (const ing of r.ingredients) {
+    kcal += ing.kcal ?? 0; c += ing.carbsG ?? 0; p += ing.proteinG ?? 0; f += ing.fatG ?? 0;
+  }
+  const n = Math.max(1, r.portions || 1);
+  const rd = (x: number) => Math.round(x * 10) / 10;
+  return {
+    total: { kcal: Math.round(kcal), carbsG: rd(c), proteinG: rd(p), fatG: rd(f) },
+    perServing: { kcal: Math.round(kcal / n), carbsG: rd(c / n), proteinG: rd(p / n), fatG: rd(f / n) },
+  };
+}
+
+/** Day-of-week index (0=Mon…6=Sun) for an ISO date. */
+export function isoDow(dateIso: string): number {
+  const d = new Date(dateIso + "T00:00:00");
+  return (d.getDay() + 6) % 7;
+}
+
+/** Planner cells for a given day-of-week, ordered breakfast→snack. */
+export function planForDow(plan: PlannedMeal[], dow: number): PlannedMeal[] {
+  const order: Record<PlannedMeal["slot"], number> = { breakfast: 0, lunch: 1, dinner: 2, snack: 3 };
+  return plan.filter(p => p.dow === dow).sort((a, b) => order[a.slot] - order[b.slot]);
+}
+
+/** Meal-prep progress across the week's plan. */
+export function prepProgress(plan: PlannedMeal[]): { done: number; total: number; pct: number } {
+  const total = plan.length;
+  const done = plan.filter(p => p.prepped).length;
+  return { done, total, pct: total ? Math.round((done / total) * 100) : 0 };
+}
