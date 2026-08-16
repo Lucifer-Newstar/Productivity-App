@@ -19,17 +19,28 @@
 - Full-text local search, type/status filters and sorting
 - Seed library for first-run demonstration
 
-Remaining Wave 1 polish: cover image upload, dedicated review spoiler toggle, queue drag-order and empty-state onboarding.
+Wave 1 follow-up now also includes validated manual cover upload, a review spoiler flag and explicit numeric queue ordering. Rich drag-reorder remains optional interaction polish.
 
-## Wave 2 — provider integrations
+## Wave 2 — provider integrations 🟡 in progress
 
-- Same-origin provider adapter routes
-- MAL anime, AniList manga, TMDB movie/series
-- Google Books + Open Library books
-- Comic Vine comics and NYT bestseller discovery
-- Normalized preview/import and metadata refresh
-- Cache, timeout, provider rate limits and attribution
+Shipped in the first slice:
+
+- Same-origin validated search route with per-client throttling
+- MAL anime, AniList manga and TMDB movie/series adapters
+- Google Books → Open Library fallback
+- Comic Vine → Books fallback
+- Normalized catalogue result preview/import in Quick Add
+- Provider timeout, bounded result cache and 429 handling
+- Allowlisted same-origin image proxy with redirect/type/5 MB controls
+- Server-only environment configuration and provider-status endpoint
+
+Remaining:
+
+- NYT bestseller/trending endpoint and unified Discover screen
+- Detail enrichment/metadata refresh after import
+- TMDB required Credits/About treatment in UI
 - Session-only BYOK overrides
+- Automated live-provider contract fixtures
 
 ## Wave 3 — organization and history
 

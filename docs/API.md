@@ -52,7 +52,15 @@ Base URL: `http://127.0.0.1:4000/api` (loopback-only by default)
 | Events | `/entertainment/events` | Generic CRUD |
 | Settings | `/entertainment/settings` | Singleton GET/PUT |
 
-Provider-search proxy endpoints are reserved for Entertainment Wave 2 and are not exposed yet. See `spaces/entertainment/APIS.md` for the approved provider/security contract.
+The Next.js frontend also exposes same-origin Wave 2 catalogue routes (separate from the Express base URL):
+
+| Method | Next.js path | Description |
+|---|---|---|
+| GET | `/api/entertainment/search?q=&type=` | Validated normalized provider search |
+| GET | `/api/entertainment/providers` | Boolean server configuration status; never returns credentials |
+| GET | `/api/entertainment/image?url=` | Internal HTTPS allowlisted image proxy |
+
+See `spaces/entertainment/APIS.md` for provider, credential, caching and attribution contracts.
 
 ## Workout space
 

@@ -9,7 +9,12 @@ _Last updated: 2026-08-16, Wave 0 + Wave 1 core._
 - [x] `npx tsc --noEmit`
 - [x] `npm run build` — `/entertainment` statically prerendered
 - [x] Production HTTP smoke — `/entertainment` returns 200 and AFTERGLOW marker
-- [x] `node scripts/qa-entertainment.js` — 29/29 assertions
+- [x] Live AniList manga search — 7 normalized `Vagabond` matches
+- [x] Live Open Library fallback — 12 normalized `Dune` matches
+- [x] Open Library cover redirect chain — allowlisted proxy returns bounded JPEG 200
+- [x] Unconfigured MAL — bounded 503 with configuration guidance
+- [x] Cross-site search and non-allowlisted image host — rejected 403
+- [x] `node scripts/qa-entertainment.js` — 41/41 assertions
 
 ## Wave 1 functional checklist
 
@@ -35,4 +40,8 @@ _Last updated: 2026-08-16, Wave 0 + Wave 1 core._
 - [x] No arbitrary remote cover URL is accepted in Wave 1
 - [x] Delete requires confirmation
 - [x] Persisted state has an explicit schema version and migration
-- [x] Provider integration is blocked on same-origin adapters (Wave 2)
+- [x] Provider integration uses same-origin fixed adapters
+- [x] Search validates type/query and rejects cross-site browser requests
+- [x] Provider credentials are server-only and absent from normalized results
+- [x] Image proxy validates HTTPS host, every redirect, MIME type, timeout and 5 MB cap
+- [x] Manual cover upload reuses JPEG/PNG/WebP 2 MB validation

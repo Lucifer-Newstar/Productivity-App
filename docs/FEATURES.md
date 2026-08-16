@@ -6,7 +6,7 @@ Three spaces fully ship today: **Workout** (imperial Japanese/obsidian, battle-t
 — branded "Forge" in the UI; full project/task OS with 16 strategy canvases).
 **Health** is in active construction on branch `health` (257-feature spec approved, 9-wave plan,
 deep Workout bridge documented). **Entertainment / AFTERGLOW** has entered Wave 1 with a
-full-screen cinema shell, local media library, manual Quick Add and core tracking; API discovery follows in Wave 2.
+full-screen cinema shell, local media library and core tracking; Wave 2 catalogue search now ships same-origin MAL/AniList/TMDB/Books/Comic Vine adapters with secure image proxying.
 
 Per-space deep dives: [`spaces/workout`](spaces/workout/README.md) ·
 [`spaces/career`](spaces/career/README.md) ·

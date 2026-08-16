@@ -26,7 +26,7 @@ AFTERGLOW is Kaizen's local-first media tracker for books, comics, manga, movies
 - Full-text local search, filters and five sorting modes
 - Defensive persistence migration and first-run seed
 
-Provider search deliberately remains disabled until Wave 2 adapters can keep credentials server-side and normalize/licence/cache results correctly.
+Wave 2 is now in progress: Quick Add can search/import through same-origin MAL, AniList, TMDB, Google Books/Open Library and Comic Vine adapters. Providers that require credentials return a clear configuration message; AniList and Open Library work without keys. Remote covers are fetched only through an allowlisted, bounded image proxy.
 
 ## Theme
 

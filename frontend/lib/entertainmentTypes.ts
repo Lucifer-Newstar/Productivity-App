@@ -4,6 +4,34 @@ export type MediaPriority = "high" | "medium" | "low";
 export type RatingScale = "ten" | "five";
 export type EntertainmentView = "dashboard" | "library" | "calendar" | "discover" | "stats" | "studio";
 
+export interface MediaSearchResult {
+  provider: Exclude<NonNullable<EntertainmentItem["provider"]>, "manual">;
+  providerId: string;
+  mediaType: MediaType;
+  title: string;
+  originalTitle?: string;
+  alternateTitles: string[];
+  description?: string;
+  coverUrl?: string;
+  backdropUrl?: string;
+  releaseDate?: string;
+  releaseYear?: number;
+  genres: string[];
+  creators: string[];
+  cast: string[];
+  studios: string[];
+  countries: string[];
+  language?: string;
+  runtimeMinutes?: number;
+  totalPages?: number;
+  totalChapters?: number;
+  totalVolumes?: number;
+  totalEpisodes?: number;
+  totalSeasons?: number;
+  sourceMaterial?: string;
+  externalUrl?: string;
+}
+
 export interface MediaProgress {
   currentPage?: number;
   totalPages?: number;
@@ -27,6 +55,8 @@ export interface EntertainmentItem {
   originalTitle?: string;
   description?: string;
   coverDataUrl?: string;
+  /** Same-origin provider image proxy URL; never an arbitrary remote URL. */
+  coverUrl?: string;
   releaseDate?: string;
   releaseYear?: number;
   genres: string[];
