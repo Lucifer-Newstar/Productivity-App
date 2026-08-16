@@ -55,6 +55,7 @@ API protections include Helmet headers, no-store responses, explicit CORS, read/
 - Forge/workout imports are limited to 5 MB and bounded record counts.
 - Forge JSON restore recursively removes prototype-pollution keys and rejects excessive depth, arrays and strings.
 - Health image uploads accept only JPEG, PNG and WebP and are limited to 2 MB. SVG is rejected.
+- Entertainment BYOK credentials are optional tab-session overrides: `sessionStorage` only, bounded same-origin headers only, never root state, exports, query strings or response payloads. Server environment credentials remain safer.
 - Exports contain private user data. Store and share them accordingly.
 
 ## Browser headers

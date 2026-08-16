@@ -58,4 +58,12 @@ test('trending route validates type and rate limits',trendingRoute.includes('TYP
 test('Discover screen is enabled',page.includes('label:"Discover",icon:Compass,ready:true')&&page.includes('function Discover'));
 test('Discover prevents duplicate provider imports',page.includes('IN YOUR LIBRARY')&&page.includes('providerId'));
 test('TMDB attribution notice present',page.includes('not endorsed or certified by TMDB'));
+const detailsRoute=read('app/api/entertainment/details/route.ts');
+const credentialBridge=read('app/api/entertainment/_credentials.ts');
+test('session-only BYOK UI present',page.includes('sessionStorage')&&page.includes('SAVE SESSION KEYS'));
+test('custom credentials travel in headers, not query strings',credentialBridge.includes('x-afterglow-tmdb')&&!credentialBridge.includes('searchParams'));
+test('detail refresh route validates provider, type and id',detailsRoute.includes('PROVIDERS.has(provider)')&&detailsRoute.includes('/^[\\w:.-]{1,128}$/'));
+test('metadata refresh preserves personal state',page.includes('progress:{...item.progress')&&!page.includes('rating:r.rating'));
+test('approved local TMDB logo is present',fs.existsSync(path.join(root,'public/entertainment/tmdb-logo.svg')));
+test('provider detail refresh button present',page.includes('REFRESH FROM'));
 console.log(`\n${pass} passed, ${fail} failed`); if(fail)process.exit(1);

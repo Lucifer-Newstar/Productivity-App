@@ -6,7 +6,7 @@ The approved specification contains 96 numbered features. Wave 0 and the first W
 
 | Range | Area | Status |
 |---|---|---|
-| 1 | Unified API search/add | 🟡 search/import shipped; configured providers required |
+| 1 | Unified API search/add | ✅ normalized search/import; configured providers required |
 | 2 | Custom media entry | ✅ |
 | 3 | Status tracking | ✅ |
 | 4 | Type-aware progress | ✅ core counters |
@@ -31,8 +31,8 @@ The approved specification contains 96 numbered features. Wave 0 and the first W
 | 88 | Unified dashboard | ✅ Wave 1 core |
 | 89 | Quick Add | ✅ catalogue search + manual modes |
 | 90 | Full-text search | ✅ local library |
-| 91 | API integration | 🟡 search + trending adapters shipped; detail enrichment pending |
-| 92 | Custom API keys | ❌ Wave 2, session-only security design |
+| 91 | API integration | ✅ search, trending and detail-refresh adapters |
+| 92 | Custom API keys | ✅ session-only BYOK; server environment preferred |
 | 93 | Bulk import/export | ❌ Wave 3 |
 | 94 | Backup/restore | ❌ Wave 3 |
 | 95 | Dark/light mode | ✅ |

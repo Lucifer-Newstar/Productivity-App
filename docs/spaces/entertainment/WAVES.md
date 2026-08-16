@@ -21,7 +21,7 @@
 
 Wave 1 follow-up now also includes validated manual cover upload, a review spoiler flag and explicit numeric queue ordering. Rich drag-reorder remains optional interaction polish.
 
-## Wave 2 — provider integrations 🟡 in progress
+## Wave 2 — provider integrations ✅
 
 Shipped in the first slice:
 
@@ -37,12 +37,14 @@ Shipped in the first slice:
 - MAL airing chart, AniList manga trending, TMDB weekly film/TV, NYT bestsellers and Comic Vine recent issues
 - Provider Credits footer with required TMDB non-endorsement notice
 
-Remaining:
+Final slice shipped:
 
-- Detail enrichment/metadata refresh after import
-- TMDB logo asset in a dedicated Credits/About panel
-- Session-only BYOK overrides
-- Automated live-provider contract fixtures
+- Detail enrichment/metadata refresh for MAL, AniList, TMDB, Google Books and Open Library
+- Refresh merges catalogue fields while preserving progress, ratings, notes, reviews, tags and history
+- Dedicated Providers & Credits panel with an approved local TMDB logo asset
+- Session-only BYOK overrides transported as bounded same-origin headers; never root-state persisted/exported
+
+Live-provider contract fixtures remain an ongoing QA improvement rather than a Wave 2 blocker.
 
 ## Wave 3 — organization and history
 
