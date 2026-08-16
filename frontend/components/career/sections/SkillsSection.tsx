@@ -17,6 +17,7 @@ import {
   ChevronDown, User, Link2, BookOpen, Target, X, Check,
 } from "lucide-react";
 import { useStore } from "../../../lib/store";
+import { safeExternalUrl } from "../../../lib/security";
 import SkillRadar from "../SkillRadar";
 import type { CareerSkill, SkillUsageFreq } from "../../../lib/careerTypes";
 
@@ -322,7 +323,7 @@ export default function SkillsSection() {
                                 <div key={i} className="flex items-center gap-2 text-xs rounded-sm px-2 py-1"
                                   style={{background:"var(--cr-card)",border:"1px solid var(--cr-borderSoft)"}}>
                                   <Link2 size={10} style={{color:COLORS.green}}/>
-                                  <a href={l.url} target="_blank" rel="noreferrer" className="flex-1 truncate hover:underline"
+                                  <a href={safeExternalUrl(l.url) ?? undefined} target="_blank" rel="noopener noreferrer" className="flex-1 truncate hover:underline"
                                     style={{color:"var(--cr-fg)"}}>{l.label}</a>
                                   <span className="truncate text-[10px]" style={{color:"var(--cr-fgMuted)"}}>{l.url}</span>
                                   <button onClick={()=>removeLink(s.id,i)} style={{color:COLORS.red}}><X size={10}/></button>
@@ -354,7 +355,7 @@ export default function SkillsSection() {
                                   style={{background:"var(--cr-card)",border:"1px solid var(--cr-borderSoft)"}}>
                                   <BookOpen size={10} style={{color:COLORS.pink}}/>
                                   {r.url ? (
-                                    <a href={r.url} target="_blank" rel="noreferrer" className="flex-1 truncate hover:underline"
+                                    <a href={safeExternalUrl(r.url) ?? undefined} target="_blank" rel="noopener noreferrer" className="flex-1 truncate hover:underline"
                                       style={{color:"var(--cr-fg)"}}>{r.title}</a>
                                   ) : (
                                     <span className="flex-1" style={{color:"var(--cr-fg)"}}>{r.title}</span>

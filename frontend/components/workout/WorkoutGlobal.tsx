@@ -29,6 +29,7 @@ import {
   Database, RefreshCcw,
 } from "lucide-react";
 import { useStore } from "../../lib/store";
+import { assertImportFileSize, csvCell } from "../../lib/security";
 import { weeklyStats, frequencyByDay, timePreference, consistencyScore, shouldDeload, goalProgress } from "../../lib/workoutAnalytics";
 import CelebrationModal from "./CelebrationModal";
 
@@ -51,6 +52,7 @@ export default function WorkoutGlobal() {
   // found in the file, using ad-hoc blocks keyed to the matching exercise. New
   // exercise names are added to the library under "misc" equipment.
   function importCSV(file: File) {
+    try { assertImportFileSize(file); } catch (error) { alert(error instanceof Error ? error.message : "Invalid import."); return; }
     const reader = new FileReader();
     reader.onload = () => {
       try {
@@ -193,7 +195,7 @@ export default function WorkoutGlobal() {
           String((set.weight ?? 0) * set.value), set.notes ?? ""]);
       }
     }
-    return rows.map((r) => r.map((c) => `"${String(c).replace(/"/g,'""')}"`).join(",")).join("\n");
+    return rows.map((r) => r.map(csvCell).join(",")).join("\n");
   }
 
   // Goal achievement detection — fire celebration when a goal flips to achieved

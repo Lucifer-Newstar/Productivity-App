@@ -2,17 +2,22 @@
 
 The backend is an Express REST server (`backend/src/server.ts`) that mirrors
 the **entire** frontend domain model — all 5 spaces plus the home dashboard.
-It is intentionally minimal: in-memory store out of the box, no DB, no auth.
+It uses an in-memory store and optional service-level API-key authentication.
 The offline-first frontend does not depend on it; it exists so local data can
 be pushed/pulled to a server (`/api/sync`) and as the reference contract for a
-future production implementation (Postgres/Prisma, JWT auth).
+future production implementation (Postgres/Prisma and per-user auth).
 
-Base URL: `http://localhost:4000/api`
+Base URL: `http://127.0.0.1:4000/api` (loopback-only by default)
 
 ## Common
 
-- All request/response bodies are JSON (`express.json`, 8 MB limit — progress
-  photos are dataURLs).
+- All request/response bodies are strict JSON (`express.json`, 5 MB default limit).
+- Set `KAIZEN_API_KEY` for every network-exposed deployment. Send it as
+  `X-Kaizen-Key: …` or `Authorization: Bearer …`. Only the two liveness routes
+  bypass authentication. This is service-level protection, not multi-user authorization.
+- Read and mutation rate limits, payload complexity/depth limits, unsafe-key
+  rejection and per-table capacity limits are enforced. Responses are `no-store`.
+- Browser CORS origins come from the comma-separated `CORS_ORIGINS` allowlist.
 - All resources expose the same shape as the TypeScript types in
   `frontend/lib/types.ts`, `careerTypes.ts`, `forgeTypes.ts`, `healthTypes.ts`.
 - Every collection gets the same generic CRUD:
@@ -21,7 +26,8 @@ Base URL: `http://localhost:4000/api`
 - **Singleton documents** (profile/settings-style objects) use `GET` / `PUT`
   instead — `PUT` merges the body into the stored object.
 - Errors use standard HTTP status codes; body is `{ "error": "message" }`.
-- CORS is enabled for `http://localhost:3000`.
+- Default CORS origins are `http://localhost:3000` and `http://127.0.0.1:3000`.
+- See [`SECURITY.md`](SECURITY.md) for environment variables and deployment requirements.
 
 ## Service health
 

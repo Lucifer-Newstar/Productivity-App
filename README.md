@@ -5,7 +5,7 @@
 
 ## Stack
 
-- **Frontend** — Next.js **14.2.15** (pinned), React 18, TypeScript, Tailwind 3,
+- **Frontend** — Next.js **16.3.1**, React 19, TypeScript, Tailwind 3,
   Framer Motion, lucide-react.
   - App Router (`/`) for the home dashboard with a left `SideNav`.
   - Pages Router for standalone space routes (`/projects`, `/workout`,
@@ -20,6 +20,7 @@
   - [`FEATURES.md`](./docs/FEATURES.md) — checklist status of all 149 workout
     features.
   - [`API.md`](./docs/API.md) — backend REST reference.
+  - [`SECURITY.md`](./docs/SECURITY.md) — secure deployment, threat model and audit history.
 
 ## Getting started
 
@@ -45,4 +46,10 @@ Git credentials for this repo are configured as
 cd frontend && ./node_modules/.bin/next build     # production build
 cd frontend && ./node_modules/.bin/tsc --noEmit   # type check
 cd backend  && npm run build                      # compile backend
+cd frontend && npm audit --omit=dev                # production dependency audit
+cd backend  && npm audit --omit=dev
 ```
+
+The API binds to `127.0.0.1` by default. Before intentionally exposing it on a
+network, set `KAIZEN_API_KEY` and an explicit `CORS_ORIGINS` allowlist; see
+[`docs/SECURITY.md`](./docs/SECURITY.md).

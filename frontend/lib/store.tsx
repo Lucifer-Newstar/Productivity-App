@@ -35,6 +35,7 @@ import React, { createContext, useContext, useEffect, useRef, useState, useCallb
 } from "./types";
 import { SPACES } from "./types";
 import { evaluateBadges, epley1RM, readinessScore as computeReadiness } from "./workoutAnalytics";
+import { csvCell } from "./security";
 import { DEFAULT_EXERCISES } from "./exerciseLibrary";
 import { TEMPLATE_LIST, cloneTemplate } from "./careerRoadmaps";
 import type {
@@ -1330,7 +1331,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
       rows.push(["cardio", c.date, c.type, "", c.distanceMeters != null ? String(c.distanceMeters) : "", "m",
         "", "", "", String(c.durationSec), "", c.notes ?? ""]);
     }
-    return rows.map((r) => r.map((c) => `"${String(c).replace(/"/g,'""')}"`).join(",")).join("\n");
+    return rows.map((r) => r.map(csvCell).join(",")).join("\n");
   }, [workout, getExerciseForBlock]);
 
   // ---- Calisthenics ----

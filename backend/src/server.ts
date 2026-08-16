@@ -20,10 +20,84 @@
 
 import express, { Request, Response, NextFunction } from "express";
 import cors from "cors";
+import helmet from "helmet";
+import { rateLimit } from "express-rate-limit";
+import { timingSafeEqual } from "node:crypto";
 
 const app = express();
-app.use(cors({ origin: ["http://localhost:3000", "http://127.0.0.1:3000"] }));
-app.use(express.json({ limit: "8mb" })); // photos are dataURLs — allow room
+app.disable("x-powered-by");
+app.set("trust proxy", false);
+app.use(helmet({ contentSecurityPolicy: false, crossOriginResourcePolicy: { policy: "same-site" } }));
+app.use((_req, res, next) => { res.setHeader("Cache-Control", "no-store"); next(); });
+
+const allowedOrigins = new Set(
+  (process.env.CORS_ORIGINS ?? "http://localhost:3000,http://127.0.0.1:3000")
+    .split(",").map((s) => s.trim()).filter(Boolean),
+);
+app.use(cors({
+  origin(origin, callback) {
+    // Requests without Origin are CLI/native clients; browser origins must be explicit.
+    if (!origin || allowedOrigins.has(origin)) return callback(null, true);
+    return callback(new Error("Origin not allowed"));
+  },
+  methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization", "X-Kaizen-Key"],
+  maxAge: 600,
+}));
+app.use(express.json({ limit: process.env.JSON_LIMIT ?? "5mb", strict: true }));
+
+const apiLimiter = rateLimit({
+  windowMs: 15 * 60_000,
+  limit: Number(process.env.RATE_LIMIT ?? 300),
+  standardHeaders: "draft-8",
+  legacyHeaders: false,
+});
+const writeLimiter = rateLimit({
+  windowMs: 15 * 60_000,
+  limit: Number(process.env.WRITE_RATE_LIMIT ?? 120),
+  standardHeaders: "draft-8",
+  legacyHeaders: false,
+});
+app.use("/api", apiLimiter);
+app.use("/api", (req, res, next) => /^(POST|PUT|PATCH|DELETE)$/.test(req.method) ? writeLimiter(req, res, next) : next());
+
+// Optional API-key protection. Network exposure should always set KAIZEN_API_KEY.
+const apiKey = process.env.KAIZEN_API_KEY;
+app.use("/api", (req, res, next) => {
+  if (!apiKey || req.path === "/health-check" || req.path === "/health") return next();
+  const supplied = req.header("x-kaizen-key") ?? req.header("authorization")?.replace(/^Bearer\s+/i, "");
+  if (!supplied) return res.status(401).json({ error: "authentication required" });
+  const expectedBuf = Buffer.from(apiKey);
+  const suppliedBuf = Buffer.from(supplied);
+  if (expectedBuf.length !== suppliedBuf.length || !timingSafeEqual(expectedBuf, suppliedBuf)) {
+    return res.status(401).json({ error: "invalid credentials" });
+  }
+  return next();
+});
+
+const BLOCKED_KEYS = new Set(["__proto__", "prototype", "constructor"]);
+function assertSafeJson(value: unknown, depth = 0, budget = { nodes: 0 }): void {
+  if (++budget.nodes > 100_000) throw new Error("payload is too complex");
+  if (depth > 30) throw new Error("payload is nested too deeply");
+  if (typeof value === "string" && value.length > 500_000) throw new Error("string is too large");
+  if (Array.isArray(value)) {
+    if (value.length > 20_000) throw new Error("array has too many entries");
+    value.forEach((item) => assertSafeJson(item, depth + 1, budget));
+  } else if (value && typeof value === "object") {
+    for (const [key, item] of Object.entries(value as Record<string, unknown>)) {
+      if (BLOCKED_KEYS.has(key)) throw new Error("unsafe object key");
+      assertSafeJson(item, depth + 1, budget);
+    }
+  }
+}
+app.use("/api", (req, res, next) => {
+  try {
+    if (req.body !== undefined) assertSafeJson(req.body);
+    next();
+  } catch (error) {
+    res.status(400).json({ error: error instanceof Error ? error.message : "invalid payload" });
+  }
+});
 
 // ---------------- In-memory store ----------------
 // Collections of records keyed by id.
@@ -173,6 +247,14 @@ const singletons: Record<string, Row | null> = {
 
 const uid = () => Math.random().toString(36).slice(2, 10) + Date.now().toString(36);
 const today = () => new Date().toISOString().slice(0, 10);
+const MAX_ROWS_PER_TABLE = Number(process.env.MAX_ROWS_PER_TABLE ?? 20_000);
+const VALID_ID = /^[A-Za-z0-9._:-]{1,128}$/;
+const isRecord = (value: unknown): value is Row => !!value && typeof value === "object" && !Array.isArray(value);
+const csvCell = (value: unknown) => {
+  let text = String(value ?? "");
+  if (/^[\t\r\n ]*[=+\-@]/.test(text)) text = `'${text}`;
+  return `"${text.replace(/"/g, '""')}"`;
+};
 
 // ---------------- Generic handlers ----------------
 const list = (table: string) => (_req: Request, res: Response) => res.json(Object.values(db[table]));
@@ -182,12 +264,17 @@ const get = (table: string) => (req: Request, res: Response) => {
   return res.json(r);
 };
 const create = (table: string) => (req: Request, res: Response) => {
-  const id = req.body?.id ?? uid();
-  const row = { ...req.body, id, createdAt: req.body?.createdAt ?? Date.now() };
+  if (!isRecord(req.body)) return res.status(400).json({ error: "JSON object required" });
+  if (Object.keys(db[table]).length >= MAX_ROWS_PER_TABLE) return res.status(413).json({ error: "table capacity reached" });
+  const id = req.body.id == null ? uid() : String(req.body.id);
+  if (!VALID_ID.test(id)) return res.status(400).json({ error: "invalid id" });
+  if (db[table][id]) return res.status(409).json({ error: "id already exists" });
+  const row = { ...req.body, id, createdAt: req.body.createdAt ?? Date.now() };
   db[table][id] = row;
   return res.status(201).json(row);
 };
 const patch = (table: string) => (req: Request, res: Response) => {
+  if (!isRecord(req.body)) return res.status(400).json({ error: "JSON object required" });
   const r = db[table][req.params.id];
   if (!r) return res.status(404).json({ error: "not found" });
   db[table][req.params.id] = { ...r, ...req.body, id: r.id };
@@ -205,14 +292,17 @@ const getSingleton = (key: string) => (_req: Request, res: Response) => {
   res.json(singletons[key]);
 };
 const putSingleton = (key: string) => (req: Request, res: Response) => {
-  singletons[key] = { ...(singletons[key] ?? {}), ...(req.body ?? {}) };
-  res.json(singletons[key]);
+  if (!isRecord(req.body)) return res.status(400).json({ error: "JSON object required" });
+  singletons[key] = { ...(singletons[key] ?? {}), ...req.body };
+  return res.json(singletons[key]);
 };
 
 // ---------------- Session-specific routes (Workout) ----------------
 
 // Start a new session
 app.post("/api/sessions", (req, res) => {
+  if (!isRecord(req.body)) return res.status(400).json({ error: "JSON object required" });
+  if (Object.keys(db.sessions).length >= MAX_ROWS_PER_TABLE) return res.status(413).json({ error: "session capacity reached" });
   const id = uid();
   const { name, routineId, readinessScore } = req.body;
   const row = {
@@ -227,6 +317,8 @@ app.post("/api/sessions", (req, res) => {
 app.post("/api/sessions/:id/sets", (req, res) => {
   const s = db.sessions[req.params.id];
   if (!s) return res.status(404).json({ error: "session not found" });
+  if (!isRecord(req.body)) return res.status(400).json({ error: "JSON object required" });
+  if (!Array.isArray(s.sets) || s.sets.length >= 2_000) return res.status(413).json({ error: "set capacity reached" });
   const set = { ...req.body, id: uid() };
   s.sets.push(set);
   s.totalVolumeKg = s.sets.reduce((n: number, x: any) => n + ((x.weight ?? 0) * (x.value ?? 0)), 0);
@@ -252,8 +344,10 @@ app.post("/api/sync", (req, res) => {
     if (t && typeof t === "object") {
       const asObj: Record<string, Row> = {};
       const rows: Row[] = Array.isArray(t) ? t : (Object.values(t) as Row[]);
+      if (rows.length > MAX_ROWS_PER_TABLE) return res.status(413).json({ error: `${table} exceeds table capacity` });
       for (const row of rows) {
-        if (row && row.id) asObj[row.id] = row;
+        if (!isRecord(row) || !VALID_ID.test(String(row.id ?? ""))) continue;
+        asObj[String(row.id)] = row;
       }
       db[table] = asObj;
     }
@@ -299,7 +393,7 @@ app.get("/api/export/csv", (_req, res) => {
         String((set.weight ?? 0) * (set.value ?? 0)), set.notes ?? ""]);
     }
   }
-  const csv = rows.map((r) => r.map((c) => `"${String(c).replace(/"/g, '""')}"`).join(",")).join("\n");
+  const csv = rows.map((r) => r.map(csvCell).join(",")).join("\n");
   res.setHeader("Content-Type", "text/csv");
   res.setHeader("Content-Disposition", `attachment; filename="kaizen-${today()}.csv"`);
   res.send(csv);
@@ -524,7 +618,7 @@ app.get("/api/health/export/csv", (_req, res) => {
       String((Object.values(db.healthSupplementLog) as any[]).filter((l) => l.date === date).length),
       String(meals.length)]);
   }
-  const csv = rows.map((r) => r.map((x) => `"${String(x).replace(/"/g, '""')}"`).join(",")).join("\n");
+  const csv = rows.map((r) => r.map(csvCell).join(",")).join("\n");
   res.setHeader("Content-Type", "text/csv");
   res.setHeader("Content-Disposition", `attachment; filename="kaizen-health-${today()}.csv"`);
   res.send(csv);
@@ -718,12 +812,22 @@ app.get("/api/health-check", (_req, res) => res.json({
 app.get("/api/health", (_req, res) => res.json({ ok: true, time: Date.now() }));
 
 // ---------------- Error handler ----------------
-app.use((err: Error, _req: Request, res: Response, _next: NextFunction) => {
-  console.error(err);
-  res.status(500).json({ error: err.message });
+app.use((req, res) => res.status(404).json({ error: "not found", path: req.path }));
+app.use((err: Error & { type?: string; status?: number }, _req: Request, res: Response, _next: NextFunction) => {
+  const status = err.message === "Origin not allowed" ? 403
+    : err.type === "entity.too.large" ? 413
+    : err.type === "entity.parse.failed" ? 400
+    : (err.status && err.status >= 400 && err.status < 500 ? err.status : 500);
+  if (status >= 500) console.error(err);
+  res.status(status).json({ error: status >= 500 ? "internal server error" : err.message });
 });
 
 const PORT = parseInt(process.env.PORT ?? "4000", 10);
-app.listen(PORT, () => {
-  console.log(`[kaizen-backend] listening on http://localhost:${PORT}`);
+// Loopback by default: set HOST=0.0.0.0 only behind TLS/reverse proxy and with KAIZEN_API_KEY.
+const HOST = process.env.HOST ?? "127.0.0.1";
+app.listen(PORT, HOST, () => {
+  if (HOST !== "127.0.0.1" && HOST !== "localhost" && !apiKey) {
+    console.warn("[kaizen-backend] WARNING: network-exposed API has no KAIZEN_API_KEY");
+  }
+  console.log(`[kaizen-backend] listening on http://${HOST}:${PORT}`);
 });

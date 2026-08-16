@@ -1,6 +1,6 @@
 # Architecture
 
-Kaizen is a **Next.js 14.2.15** monorepo-style app (Pages Router + an App Router
+Kaizen is a **Next.js 16.3.1** monorepo-style app (Pages Router + an App Router
 home). It is a single codebase hosting 5 spaces — Workout, Projects (branded
 "Forge" in UI), Career, Health ("VITAL-SIGN" medical OS), Entertainment —
 not 5 separate apps.

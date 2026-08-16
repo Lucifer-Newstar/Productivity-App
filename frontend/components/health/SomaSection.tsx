@@ -20,6 +20,7 @@
 import { useMemo, useState, useRef } from "react";
 import { Ruler, Scale, Target, Camera, Upload, Trash2, Plus, AlertTriangle, TrendingDown, TrendingUp, User, Dumbbell } from "lucide-react";
 import { useStore } from "../../lib/store";
+import { readSafeImageAsDataUrl } from "../../lib/security";
 import {
   navyBF_m, bmi, bmiCategory, lbmKg, fatMassKg, whtr, detectAsymmetries,
   latestMeasurement, currentBfPct, strengthClass, SW_STANDARDS, bmrKatch,
@@ -215,12 +216,15 @@ export default function SomaSection() {
     stopCam();
   };
 
-  const handleFile = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const f = e.target.files?.[0]; if (!f) return;
-    const reader = new FileReader();
-    reader.onload = () => setPreviewUrl(reader.result as string);
-    reader.readAsDataURL(f);
+  const handleFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const f = e.target.files?.[0];
     e.target.value = "";
+    if (!f) return;
+    try {
+      setPreviewUrl(await readSafeImageAsDataUrl(f));
+    } catch (error) {
+      window.alert(error instanceof Error ? error.message : "Invalid image.");
+    }
   };
 
   const savePhoto = () => {

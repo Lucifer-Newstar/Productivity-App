@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import { useStore } from "../../../lib/store";
 import type { ProjectTask, ForgeProject } from "../../../lib/forgeTypes";
+import { assertImportFileSize, csvCell, parseSafeJsonFile } from "../../../lib/security";
 
 const uid = () => Math.random().toString(36).slice(2,10)+Date.now().toString(36);
 const today = () => new Date().toISOString().slice(0,10);
@@ -22,7 +23,7 @@ function tasksToCSV(tasks:ProjectTask[], projects:Record<string,any>){
   for(const t of tasks){
     rows.push([t.id,t.title.replace(/"/g,'""'),projects[t.projectId]?.codename||"",t.status,t.priority,t.dueDate||"",String(t.estimateMins||""),String(t.actualMins||""),String(t.pomodoros||0),String(t.effort||""),String(t.impact||""),String(t.energy||""),String(t.focus||""),(t.tags||[]).join("|"),t.createdAt,t.completedAt||""]);
   }
-  return rows.map(r=>r.map(c=>`"${String(c).replace(/"/g,'""')}"`).join(",")).join("\n");
+  return rows.map(r=>r.map(csvCell).join(",")).join("\n");
 }
 
 function parseCSV(text:string): string[][] {
@@ -142,13 +143,15 @@ export default function VaultSection() {
     window.dispatchEvent(new CustomEvent("career:toast",{detail:{title:"CSV EXPORTED",sub:`${forge.tasks.length} blocks`,color:"#06b6d4",icon:"check"}}));
   };
   const importJSON = (file:File) => {
+    try { assertImportFileSize(file); } catch (error) { alert(error instanceof Error ? error.message : "Invalid backup."); return; }
     const reader = new FileReader();
     reader.onload = () => {
       try {
-        const data = JSON.parse(reader.result as string);
-        if(!data.projects||!data.tasks) throw new Error("bad file");
+        const data = parseSafeJsonFile(file, reader.result as string) as Record<string, unknown>;
+        if (!Array.isArray(data.projects) || !Array.isArray(data.tasks)) throw new Error("Invalid backup shape.");
+        if (data.projects.length > 2_000 || data.tasks.length > 10_000) throw new Error("Backup has too many records.");
         if(confirm("Replace current Forge state with this backup?")){
-          updateForge(()=>data);
+          updateForge(() => data as any);
           window.dispatchEvent(new CustomEvent("career:burst",{detail:{color:"#22c55e",count:30}}));
           window.dispatchEvent(new CustomEvent("career:toast",{detail:{title:"RESTORED",sub:"Backup loaded",color:"#22c55e",icon:"check"}}));
         }
@@ -157,6 +160,7 @@ export default function VaultSection() {
     reader.readAsText(file);
   };
   const importCSV = (file:File) => {
+    try { assertImportFileSize(file); } catch (error) { alert(error instanceof Error ? error.message : "Invalid import."); return; }
     const reader = new FileReader();
     reader.onload = () => {
       try {
@@ -181,13 +185,14 @@ export default function VaultSection() {
     for (const p of forge.projects) {
       rows.push([p.id,p.codename,p.title.replace(/"/g,'""'),p.brief.replace(/"/g,'""'),p.why.replace(/"/g,'""'),p.status,String(p.priority),p.color,p.icon,p.createdAt,p.deadline||"",p.completedAt||"",(p.tags||[]).join("|"),String(p.budget?.estimated||""),String(p.budget?.actual||0)]);
     }
-    const csv = rows.map(r=>r.map(c=>`"${String(c).replace(/"/g,'""')}"`).join(",")).join("\n");
+    const csv = rows.map(r=>r.map(csvCell).join(",")).join("\n");
     const blob = new Blob([csv],{type:"text/csv"});
     const url = URL.createObjectURL(blob);
     const a=document.createElement("a"); a.href=url; a.download=`kaizen-projects-${today()}.csv`; a.click();
     URL.revokeObjectURL(url);
   };
   const importProjectCSV = (file:File) => {
+    try { assertImportFileSize(file); } catch (error) { alert(error instanceof Error ? error.message : "Invalid import."); return; }
     const reader = new FileReader();
     reader.onload = () => {
       try {

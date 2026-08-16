@@ -1,6 +1,6 @@
 # Kaizen — Docs index
 
-Kaizen is a **5-space productivity monorepo** built on Next.js 14 (Pages Router + an App Router `/` dashboard). All spaces live in one frontend, one Zustand store, and one `localStorage` persistence root — there is no standalone "Forge app".
+Kaizen is a **5-space productivity monorepo** built on Next.js 16 (Pages Router + an App Router `/` dashboard). All spaces live in one frontend, one React Context store, and one `localStorage` persistence root — there is no standalone "Forge app".
 
 ```
 productivity-app/
@@ -35,6 +35,7 @@ productivity-app/
 | [`FEATURES.md`](FEATURES.md) | Per-space feature audit (✅/🟡/❌) |
 | [`ALGORITHMS.md`](ALGORITHMS.md) | Pure math helpers (1RM/Wilks, plate loading, readiness, velocity regression) |
 | [`API.md`](API.md) | Backend REST reference |
+| [`SECURITY.md`](SECURITY.md) | Threat model, deployment controls, audit findings and security tests |
 
 ### Per-space docs (`docs/spaces/<space>/`)
 | Space | Route | Full-screen | Status |

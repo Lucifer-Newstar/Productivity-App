@@ -1,6 +1,6 @@
 # 🌸 Kaizen — Continuous Improvement
 
-A sleek, modern life-OS app built with **Next.js 14**, **TypeScript**, **Tailwind CSS**, and **Framer Motion**.
+A sleek, modern life-OS app built with **Next.js 16**, **React 19**, **TypeScript**, **Tailwind CSS**, and **Framer Motion**.
 
 ## ✨ Features
 
@@ -61,8 +61,8 @@ productivity-app/
 
 ## 🛠 Tech Stack
 
-- Next.js 14 (App Router)
-- React 18
+- Next.js 16 (App Router + Pages Router)
+- React 19
 - TypeScript
 - Tailwind CSS 3
 - Framer Motion

@@ -33,6 +33,7 @@ import type {
   CaliFail, CalisthenicsSkill,
 } from "./types";
 import { MUSCLE_FILTER_GROUP } from "./types";
+import { csvCell } from "./security";
 
 // ---------- 1RM estimates ----------
 
@@ -289,7 +290,7 @@ export function exportCSV(
       [c.routeName, c.fuel, c.notes].filter(Boolean).join(" · "),
     ]);
   }
-  return rows.map((r) => r.map((cell) => `"${String(cell).replace(/"/g, '""')}"`).join(",")).join("\n");
+  return rows.map((r) => r.map(csvCell).join(",")).join("\n");
 }
 
 // ---------- Beep ----------

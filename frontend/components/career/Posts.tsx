@@ -11,6 +11,7 @@ import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { Briefcase, FileText, ExternalLink, Lock, Link as LinkIcon } from "lucide-react";
 import { useStore } from "../../lib/store";
+import { safeExternalUrl } from "../../lib/security";
 
 export default function Posts({ activeTrackId }: { activeTrackId: string | "all" }) {
   const { career, setLinkedin } = useStore();
@@ -35,8 +36,8 @@ export default function Posts({ activeTrackId }: { activeTrackId: string | "all"
           <input value={liValue} onChange={(e) => setLiValue(e.target.value)} onBlur={saveLi}
             placeholder="https://linkedin.com/in/yourhandle"
             className="w-full bg-white/5 border border-white/5 rounded-lg px-3 py-2 text-sm text-white placeholder:text-gray-600 outline-none focus:border-[#0A66C2]/50" />
-          {career.linkedin ? (
-            <a href={career.linkedin} target="_blank" rel="noopener noreferrer"
+          {safeExternalUrl(career.linkedin) ? (
+            <a href={safeExternalUrl(career.linkedin)!} target="_blank" rel="noopener noreferrer"
               className="btn-ghost w-full flex items-center justify-center gap-2 text-sm" style={{ borderColor: "#0A66C240", color: "#0A66C2" }}>
               <ExternalLink size={14} /> Open profile
             </a>

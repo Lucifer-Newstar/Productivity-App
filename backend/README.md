@@ -16,19 +16,27 @@ npm run dev       # tsx watch — auto-reloads on change
 # API running at http://localhost:4000
 ```
 
-For production:
+For production/network access:
 
 ```bash
 npm run build
+HOST=0.0.0.0 \
+KAIZEN_API_KEY='use-a-long-random-secret' \
+CORS_ORIGINS='https://kaizen.example.com' \
 npm start
 ```
 
+Do not expose the API without an API key and TLS reverse proxy. See
+`docs/SECURITY.md` for all controls and accepted limitations.
+
 ## What's included
 
-- CORS enabled for `http://localhost:3000` (Next.js dev server)
-- JSON body parser (8 mb limit — progress photos are dataURLs)
-- **110 collections** with generic CRUD (list/create/get/patch/delete) +
-  **6 singleton documents** (GET/PUT):
+- Loopback-only binding by default (`127.0.0.1`)
+- Explicit CORS origin allowlist
+- Optional API-key authentication for every data route
+- Helmet, read/write rate limits, strict bounded JSON and unsafe-key rejection
+- **121 collections** with generic CRUD (list/create/get/patch/delete) +
+  **10 singleton documents** (GET/PUT):
   - **Core** — tasks, notes (`/api/core/*`)
   - **Workout** — 25 collections (exercises, PRs, routines, sessions,
     calisthenics chains/skills/flows/GtG/isometrics/intervals/mobility/planche,
