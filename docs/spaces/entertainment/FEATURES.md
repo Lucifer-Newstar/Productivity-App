@@ -22,14 +22,16 @@ The approved specification contains 96 numbered features. Wave 0 and the first W
 | 31–36 | Series depth | 🟡 episode progress base shipped; Wave 4 depth pending |
 | 37–41 | Movie depth | 🟡 watched state base shipped; Wave 4 depth pending |
 | 42–47 | Anime depth | 🟡 episode progress base shipped; Wave 4 depth pending |
-| 48–55 | Discovery/recommendations | ❌ Wave 5 |
+| 48–50 | Local recommendations/mood/surprise | ❌ Wave 5 |
+| 51 | Trending lists | ✅ Discover screen; live provider charts |
+| 52–55 | Gap/exploration/blind-spots/marathons | ❌ Wave 5 |
 | 56–72 | Stats/analytics | 🟡 dashboard totals shipped; Wave 6 reports pending |
 | 73–78 | Offline social | ❌ Wave 7 |
 | 79–87 | Creation/expression | ❌ Wave 8 |
 | 88 | Unified dashboard | ✅ Wave 1 core |
 | 89 | Quick Add | ✅ catalogue search + manual modes |
 | 90 | Full-text search | ✅ local library |
-| 91 | API integration | 🟡 six provider adapters shipped; trending/detail enrichment pending |
+| 91 | API integration | 🟡 search + trending adapters shipped; detail enrichment pending |
 | 92 | Custom API keys | ❌ Wave 2, session-only security design |
 | 93 | Bulk import/export | ❌ Wave 3 |
 | 94 | Backup/restore | ❌ Wave 3 |

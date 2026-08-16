@@ -107,6 +107,43 @@ async function searchComicVine(q:string):Promise<MediaSearchResult[]> {
   }));
 }
 
+async function trendingMal():Promise<MediaSearchResult[]> {
+  const key=process.env.MAL_CLIENT_ID;
+  if(!key)throw new ProviderError("MyAnimeList trending is not configured. Add MAL_CLIENT_ID on the server.",503,"mal");
+  const fields="id,title,main_picture,alternative_titles,start_date,synopsis,genres,num_episodes,studios,source";
+  const data=await jsonFetch(`https://api.myanimelist.net/v2/anime/ranking?ranking_type=airing&limit=12&fields=${encodeURIComponent(fields)}`,{headers:{"X-MAL-CLIENT-ID":key}},"MyAnimeList");
+  return (data.data??[]).map((e:any)=>e.node).filter(Boolean).map((n:any)=>({provider:"mal",providerId:String(n.id),mediaType:"anime",title:text(n.title,300)??"Untitled",originalTitle:text(n.alternative_titles?.ja,300),alternateTitles:[n.alternative_titles?.en,...(n.alternative_titles?.synonyms??[])].map((x:any)=>text(x,300)).filter(Boolean),description:text(n.synopsis),coverUrl:imageProxy(n.main_picture?.large??n.main_picture?.medium),releaseDate:text(n.start_date,20),releaseYear:year(n.start_date),genres:(n.genres??[]).map((g:any)=>text(g.name,80)).filter(Boolean),creators:[],cast:[],studios:(n.studios??[]).map((x:any)=>text(x.name,100)).filter(Boolean),countries:["Japan"],totalEpisodes:Number(n.num_episodes)||undefined,sourceMaterial:text(n.source,80),externalUrl:`https://myanimelist.net/anime/${n.id}`}));
+}
+async function trendingAniListManga():Promise<MediaSearchResult[]> {
+  const query=`query{Page(page:1,perPage:12){media(type:MANGA,isAdult:false,sort:[TRENDING_DESC,POPULARITY_DESC]){id title{romaji english native} description coverImage{extraLarge large} startDate{year month day} genres countryOfOrigin chapters volumes staff(perPage:6){nodes{name{full}}} source siteUrl}}}`;
+  const data=await jsonFetch("https://graphql.anilist.co",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({query})},"AniList");
+  return (data.data?.Page?.media??[]).map((n:any)=>({provider:"anilist",providerId:String(n.id),mediaType:"manga",title:text(n.title?.english??n.title?.romaji,300)??"Untitled",originalTitle:text(n.title?.native,300),alternateTitles:[n.title?.romaji,n.title?.english,n.title?.native].map((x:any)=>text(x,300)).filter(Boolean),description:text(n.description),coverUrl:imageProxy(n.coverImage?.extraLarge??n.coverImage?.large),releaseYear:n.startDate?.year,genres:(n.genres??[]).map((x:any)=>text(x,80)).filter(Boolean),creators:(n.staff?.nodes??[]).map((s:any)=>text(s.name?.full,100)).filter(Boolean),cast:[],studios:[],countries:n.countryOfOrigin?[String(n.countryOfOrigin)]:[],totalChapters:Number(n.chapters)||undefined,totalVolumes:Number(n.volumes)||undefined,sourceMaterial:text(n.source,80),externalUrl:text(n.siteUrl,500)}));
+}
+async function trendingTmdb(type:"movie"|"series"):Promise<MediaSearchResult[]> {
+  const token=process.env.TMDB_ACCESS_TOKEN;if(!token)throw new ProviderError("TMDB trending is not configured. Add TMDB_ACCESS_TOKEN on the server.",503,"tmdb");
+  const kind=type==="series"?"tv":"movie",data=await jsonFetch(`https://api.themoviedb.org/3/trending/${kind}/week?language=en-US`,{headers:{Authorization:`Bearer ${token}`}},"TMDB");
+  return (data.results??[]).slice(0,12).map((n:any)=>({provider:"tmdb",providerId:`${kind}:${n.id}`,mediaType:type,title:text(n.title??n.name,300)??"Untitled",originalTitle:text(n.original_title??n.original_name,300),alternateTitles:[],description:text(n.overview),coverUrl:n.poster_path?imageProxy(`https://image.tmdb.org/t/p/w500${n.poster_path}`):undefined,releaseDate:text(n.release_date??n.first_air_date,20),releaseYear:year(n.release_date??n.first_air_date),genres:[],creators:[],cast:[],studios:[],countries:(n.origin_country??[]).map(String),language:text(n.original_language,20),externalUrl:`https://www.themoviedb.org/${kind}/${n.id}`}));
+}
+async function trendingBooks():Promise<MediaSearchResult[]> {
+  const key=process.env.NYT_BOOKS_API_KEY;if(!key)throw new ProviderError("Book trending is not configured. Add NYT_BOOKS_API_KEY on the server.",503,"nyt");
+  const data=await jsonFetch(`https://api.nytimes.com/svc/books/v3/lists/overview.json?api-key=${encodeURIComponent(key)}`,{},"NYT Books");
+  const books=(data.results?.lists??[]).flatMap((l:any)=>(l.books??[]).map((b:any)=>({...b,_list:l.list_name}))).slice(0,12);
+  return books.map((n:any)=>({provider:"nyt",providerId:String(n.primary_isbn13??n.primary_isbn10??n.title),mediaType:"book",title:text(n.title,300)??"Untitled",alternateTitles:[],description:text(n.description),coverUrl:imageProxy(n.book_image),releaseYear:undefined,genres:n._list?[text(n._list,100)].filter(Boolean):[],creators:n.author?[text(n.author,100)].filter(Boolean):[],cast:[],studios:n.publisher?[text(n.publisher,100)].filter(Boolean):[],countries:[],externalUrl:text(n.amazon_product_url,500)}));
+}
+async function trendingComics():Promise<MediaSearchResult[]> {
+  const key=process.env.COMICVINE_API_KEY;if(!key)throw new ProviderError("Comic discovery is not configured. Add COMICVINE_API_KEY on the server.",503,"comic-vine");
+  const fields="id,name,deck,description,image,date_added,cover_date,site_detail_url";
+  const data=await jsonFetch(`https://comicvine.gamespot.com/api/issues/?api_key=${encodeURIComponent(key)}&format=json&sort=date_added:desc&limit=12&field_list=${fields}`,{headers:{"User-Agent":"Kaizen-AFTERGLOW/1.0"}},"Comic Vine");
+  return (data.results??[]).map((n:any)=>({provider:"comic-vine",providerId:String(n.id),mediaType:"comic",title:text(n.name,300)??"Untitled",alternateTitles:[],description:text(n.deck??n.description),coverUrl:imageProxy(n.image?.original_url??n.image?.super_url),releaseDate:text(n.cover_date,20),releaseYear:year(n.cover_date),genres:[],creators:[],cast:[],studios:[],countries:[],externalUrl:text(n.site_detail_url,500)}));
+}
+
+export async function trendingEntertainment(type:MediaType):Promise<MediaSearchResult[]> {
+  const key=`trending:${type}`,hit=cache.get(key);if(hit&&Date.now()-hit.at<CACHE_TTL)return hit.data;
+  let data:MediaSearchResult[];
+  if(type==="anime")data=await trendingMal();else if(type==="manga")data=await trendingAniListManga();else if(type==="movie"||type==="series")data=await trendingTmdb(type);else if(type==="comic")data=await trendingComics();else data=await trendingBooks();
+  data=data.slice(0,12);cache.set(key,{at:Date.now(),data});return data;
+}
+
 export function providerStatus() {
   return { mal:!!process.env.MAL_CLIENT_ID, anilist:true, tmdb:!!process.env.TMDB_ACCESS_TOKEN, googleBooks:!!process.env.GOOGLE_BOOKS_API_KEY, openLibrary:true, comicVine:!!process.env.COMICVINE_API_KEY, nytBooks:!!process.env.NYT_BOOKS_API_KEY };
 }

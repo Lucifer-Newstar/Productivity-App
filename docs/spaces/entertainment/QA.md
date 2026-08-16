@@ -10,11 +10,14 @@ _Last updated: 2026-08-16, Wave 0 + Wave 1 core._
 - [x] `npm run build` — `/entertainment` statically prerendered
 - [x] Production HTTP smoke — `/entertainment` returns 200 and AFTERGLOW marker
 - [x] Live AniList manga search — 7 normalized `Vagabond` matches
+- [x] Live AniList trending — 12 normalized manga chart entries
+- [x] Unconfigured MAL/TMDB/NYT/Comic Vine charts — bounded explanatory 503
+- [x] Cross-site trending request — rejected 403
 - [x] Live Open Library fallback — 12 normalized `Dune` matches
 - [x] Open Library cover redirect chain — allowlisted proxy returns bounded JPEG 200
 - [x] Unconfigured MAL — bounded 503 with configuration guidance
 - [x] Cross-site search and non-allowlisted image host — rejected 403
-- [x] `node scripts/qa-entertainment.js` — 41/41 assertions
+- [x] `node scripts/qa-entertainment.js` — 46/46 assertions
 
 ## Wave 1 functional checklist
 

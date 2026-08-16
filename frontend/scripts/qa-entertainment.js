@@ -52,4 +52,10 @@ test('image proxy uses exact allowlist, timeout and size cap',imageRoute.include
 test('manual cover uses safe image reader',page.includes('readSafeImageAsDataUrl'));
 test('review spoiler control present',page.includes('reviewContainsSpoilers'));
 test('manual queue ordering present',page.includes('Queue order')&&page.includes('queueOrder-b.queueOrder'));
+const trendingRoute=read('app/api/entertainment/trending/route.ts');
+test('trending adapters cover six media sections',providers.includes('trendingMal')&&providers.includes('trendingAniListManga')&&providers.includes('trendingTmdb')&&providers.includes('trendingBooks')&&providers.includes('trendingComics'));
+test('trending route validates type and rate limits',trendingRoute.includes('TYPES.has(type)')&&trendingRoute.includes('discovery rate limit exceeded'));
+test('Discover screen is enabled',page.includes('label:"Discover",icon:Compass,ready:true')&&page.includes('function Discover'));
+test('Discover prevents duplicate provider imports',page.includes('IN YOUR LIBRARY')&&page.includes('providerId'));
+test('TMDB attribution notice present',page.includes('not endorsed or certified by TMDB'));
 console.log(`\n${pass} passed, ${fail} failed`); if(fail)process.exit(1);

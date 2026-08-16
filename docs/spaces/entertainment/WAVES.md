@@ -33,12 +33,14 @@ Shipped in the first slice:
 - Provider timeout, bounded result cache and 429 handling
 - Allowlisted same-origin image proxy with redirect/type/5 MB controls
 - Server-only environment configuration and provider-status endpoint
+- Unified Discover screen with six media tabs and duplicate-import protection
+- MAL airing chart, AniList manga trending, TMDB weekly film/TV, NYT bestsellers and Comic Vine recent issues
+- Provider Credits footer with required TMDB non-endorsement notice
 
 Remaining:
 
-- NYT bestseller/trending endpoint and unified Discover screen
 - Detail enrichment/metadata refresh after import
-- TMDB required Credits/About treatment in UI
+- TMDB logo asset in a dedicated Credits/About panel
 - Session-only BYOK overrides
 - Automated live-provider contract fixtures
 

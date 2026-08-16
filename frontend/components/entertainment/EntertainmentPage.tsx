@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { AnimatePresence, motion } from "framer-motion";
 import {
@@ -23,7 +23,7 @@ const STATUS: {id:MediaStatus;label:string;color:string}[] = [
 const TYPE_COLORS: Record<MediaType,string> = { book:"#fbbf24",comic:"#fb7185",manga:"#c084fc",movie:"#22d3ee",series:"#60a5fa",anime:"#f472b6" };
 const VIEW_NAV: {id:EntertainmentView;label:string;icon:any;ready:boolean}[] = [
   {id:"dashboard",label:"Now Playing",icon:Clapperboard,ready:true},{id:"library",label:"Library",icon:Library,ready:true},
-  {id:"calendar",label:"Calendar",icon:CalendarDays,ready:false},{id:"discover",label:"Discover",icon:Compass,ready:false},
+  {id:"calendar",label:"Calendar",icon:CalendarDays,ready:false},{id:"discover",label:"Discover",icon:Compass,ready:true},
   {id:"stats",label:"Stats",icon:BarChart3,ready:false},{id:"studio",label:"Studio",icon:Sparkles,ready:false},
 ];
 
@@ -34,6 +34,9 @@ function progressPct(item: EntertainmentItem) {
     : item.type==="comic"||item.type==="manga" ? [p.currentChapter,p.totalChapters]
     : [p.currentEpisode,p.totalEpisodes];
   return pair[1] ? Math.min(100,Math.round(((pair[0]??0)/pair[1])*100)) : item.status==="completed"?100:0;
+}
+function itemFromSearchResult(r:MediaSearchResult):EntertainmentItem {
+  const now=Date.now();return {id:uid(),provider:r.provider,providerId:r.providerId,type:r.mediaType,title:r.title,originalTitle:r.originalTitle,description:r.description,coverUrl:r.coverUrl,releaseDate:r.releaseDate,releaseYear:r.releaseYear,genres:r.genres,creators:r.creators,cast:r.cast,studios:r.studios,language:r.language,status:"planned",progress:{totalPages:r.totalPages,totalChapters:r.totalChapters,totalVolumes:r.totalVolumes,totalEpisodes:r.totalEpisodes,totalSeasons:r.totalSeasons},repeats:0,priority:"medium",queueOrder:now,tags:[],favorite:false,archived:false,minutesConsumed:0,createdAt:now,updatedAt:now};
 }
 function progressLabel(item: EntertainmentItem) {
   const p=item.progress;
@@ -59,6 +62,7 @@ export default function EntertainmentPage() {
     items:s.items.map(i=>i.id===id?{...i,...patch,updatedAt:Date.now()}:i),events:[event(id,kind,detail),...s.events].slice(0,5000),
   }));
   const remove=(id:string)=>updateEntertainment(s=>({items:s.items.filter(i=>i.id!==id),events:s.events.filter(e=>e.itemId!==id)}));
+  const addSearchResult=(r:MediaSearchResult)=>{const item=itemFromSearchResult(r);updateEntertainment(s=>s.items.some(i=>i.provider===item.provider&&i.providerId===item.providerId)?{}:{items:[item,...s.items],events:[event(item.id,"added",r.provider),...s.events]});};
 
   const visible=useMemo(()=>entertainment.items.filter(i=>!i.archived).filter(i=>type==="all"||i.type===type).filter(i=>status==="all"||i.status===status).filter(i=>{
     const q=search.trim().toLowerCase(); if(!q)return true;
@@ -115,7 +119,7 @@ export default function EntertainmentPage() {
           <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-4 mb-9">{active.length?active.map(i=><MediaCard key={i.id} item={i} onOpen={()=>setSelected(i.id)} onPatch={patchItem}/>):<Empty text="Nothing in progress. Start something from your queue."/>}</div>
           <SectionTitle title="Up next" sub="Your highest-priority queue" action={()=>setView("library")}/>
           <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-4">{planned.sort((a,b)=>({high:0,medium:1,low:2}[a.priority]-{high:0,medium:1,low:2}[b.priority])||(a.queueOrder-b.queueOrder)).slice(0,6).map(i=><MediaCard key={i.id} item={i} onOpen={()=>setSelected(i.id)} onPatch={patchItem}/>)}</div>
-        </> : <>
+        </> : view==="discover" ? <Discover existing={entertainment.items} onAdd={addSearchResult}/> : <>
           <div className="flex flex-wrap items-end gap-3 mb-6"><div className="mr-auto"><div className="text-xs tracking-[.24em] text-cyan-400">THE ARCHIVE</div><h1 className="text-3xl font-black mt-1">Library <span style={{color:"var(--muted)"}}>({visible.length})</span></h1></div>
             <Filter value={type} onChange={v=>setType(v as any)} options={[['all','All media'],...Object.entries(MEDIA_TYPE_LABELS)]}/><Filter value={status} onChange={v=>setStatus(v as any)} options={[['all','All statuses'],...STATUS.map(s=>[s.id,s.label])]}/><Filter value={sort} onChange={v=>setSort(v as any)} options={[["updated","Recently updated"],["title","Title"],["rating","Rating"],["progress","Progress"],["priority","Priority"]]}/>
           </div>
@@ -126,6 +130,19 @@ export default function EntertainmentPage() {
     <AnimatePresence>{addOpen&&<AddModal onClose={()=>setAddOpen(false)} onAdd={item=>{updateEntertainment(s=>({items:[item,...s.items],events:[event(item.id,"added"),...s.events]}));setAddOpen(false);}}/>}</AnimatePresence>
     <AnimatePresence>{selectedItem&&<DetailDrawer item={selectedItem} onClose={()=>setSelected(null)} onPatch={patchItem} onDelete={()=>{remove(selectedItem.id);setSelected(null);}}/>}</AnimatePresence>
   </div>;
+}
+
+function Discover({existing,onAdd}:{existing:EntertainmentItem[];onAdd:(r:MediaSearchResult)=>void}){
+ const [type,setType]=useState<MediaType>("manga"),[results,setResults]=useState<MediaSearchResult[]>([]),[loading,setLoading]=useState(false),[error,setError]=useState("");
+ const load=async(t=type)=>{setLoading(true);setError("");setResults([]);try{const response=await fetch(`/api/entertainment/trending?type=${t}`),data=await response.json();if(!response.ok)throw new Error(data.error||"Discovery unavailable");setResults(data.results??[])}catch(e){setError(e instanceof Error?e.message:"Discovery unavailable")}finally{setLoading(false)}};
+ useEffect(()=>{load(type)},[type]);
+ const ids=new Set(existing.map(i=>`${i.provider}:${i.providerId}`));
+ return <div><div className="relative ent-panel rounded-[28px] p-6 md:p-8 overflow-hidden mb-6"><div className="absolute right-0 top-0 w-72 h-72 bg-cyan-400/10 rounded-full blur-3xl"/><div className="relative"><div className="text-xs tracking-[.28em] text-cyan-400">THE PROJECTION BOOTH</div><h1 className="text-3xl md:text-4xl font-black mt-2">Discover what is moving now.</h1><p className="text-sm mt-3 max-w-2xl" style={{color:"var(--muted)"}}>Live provider charts—not fabricated local popularity. Add any result to your private queue.</p></div></div>
+ <div className="flex flex-wrap gap-2 mb-5">{(Object.keys(MEDIA_TYPE_LABELS) as MediaType[]).map(t=><button key={t} onClick={()=>setType(t)} className={`px-4 py-2 rounded-full text-xs font-bold border ${type===t?"bg-fuchsia-500 border-fuchsia-500 text-white":""}`} style={type===t?{}:{borderColor:"var(--line)"}}>{MEDIA_TYPE_LABELS[t]}</button>)}<button onClick={()=>load()} className="ml-auto w-9 h-9 rounded-full border grid place-items-center" style={{borderColor:"var(--line)"}}><LoaderCircle size={14} className={loading?"animate-spin":""}/></button></div>
+ {error&&<div className="ent-panel rounded-2xl border-amber-500/30 p-5 mb-5"><div className="text-amber-300 text-sm font-bold">Provider setup needed</div><p className="text-xs mt-1" style={{color:"var(--muted)"}}>{error}</p><p className="text-[10px] mt-3" style={{color:"var(--muted)"}}>Add server credentials from <code>frontend/.env.example</code>. Manga discovery works without a key.</p></div>}
+ {loading?<div className="py-20 grid place-items-center"><LoaderCircle className="animate-spin text-fuchsia-400"/></div>:<div className="grid sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-4">{results.map(r=>{const added=ids.has(`${r.provider}:${r.providerId}`);return <article key={`${r.provider}:${r.providerId}`} className="ent-panel rounded-2xl overflow-hidden"><div className="h-52 relative overflow-hidden" style={{background:`${TYPE_COLORS[r.mediaType]}22`}}>{r.coverUrl?<img src={r.coverUrl} alt="" className="w-full h-full object-cover"/>:<div className="w-full h-full grid place-items-center text-4xl" style={{color:TYPE_COLORS[r.mediaType]}}>{MEDIA_TYPE_ICONS[r.mediaType]}</div>}<span className="absolute left-3 top-3 px-2 py-1 rounded-full bg-black/70 text-[9px] uppercase text-white">{r.provider}</span></div><div className="p-4"><h3 className="font-black line-clamp-2 min-h-10">{r.title}</h3><p className="text-[10px] mt-1 truncate" style={{color:"var(--muted)"}}>{[r.releaseYear,...r.creators].filter(Boolean).join(" · ")||r.genres.slice(0,2).join(" · ")}</p><button disabled={added} onClick={()=>onAdd(r)} className={`w-full mt-4 rounded-xl py-2 text-xs font-black ${added?"bg-emerald-500/15 text-emerald-300":"bg-fuchsia-500 text-white"}`}>{added?"IN YOUR LIBRARY":"+ ADD TO QUEUE"}</button></div></article>})}</div>}
+ <div className="mt-10 pt-5 border-t text-[10px] leading-relaxed" style={{borderColor:"var(--line)",color:"var(--muted)"}}><strong>DATA CREDITS.</strong> Anime: MyAnimeList · Manga: AniList · Film/TV: TMDB · Books: NYT Books · Comics: Comic Vine. This product uses the TMDB API but is not endorsed or certified by TMDB.</div>
+ </div>
 }
 
 function SectionTitle({title,sub,action}:{title:string;sub:string;action:()=>void}){return <div className="flex items-end mb-3"><div><h2 className="font-black text-xl">{title}</h2><p className="text-xs" style={{color:"var(--muted)"}}>{sub}</p></div><button onClick={action} className="ml-auto text-xs text-fuchsia-400 flex items-center">VIEW ALL <ChevronRight size={13}/></button></div>}

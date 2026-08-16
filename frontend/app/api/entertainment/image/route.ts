@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 export const runtime="nodejs";
 export const dynamic="force-dynamic";
-const EXACT=new Set(["api-cdn.myanimelist.net","cdn.myanimelist.net","image.tmdb.org","books.google.com","books.googleusercontent.com","covers.openlibrary.org","archive.org","comicvine.gamespot.com","static.comicvine.com","static01.nyt.com"]);
+const EXACT=new Set(["api-cdn.myanimelist.net","cdn.myanimelist.net","image.tmdb.org","books.google.com","books.googleusercontent.com","covers.openlibrary.org","archive.org","comicvine.gamespot.com","static.comicvine.com","static01.nyt.com","storage.googleapis.com"]);
 function allowed(url:URL){return url.protocol==="https:"&&(EXACT.has(url.hostname)||/^s[1-4]\.anilist\.co$/.test(url.hostname)||/^ia\d+\.us\.archive\.org$/.test(url.hostname));}
 
 export async function GET(request:NextRequest){
