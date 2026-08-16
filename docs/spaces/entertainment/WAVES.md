@@ -63,13 +63,15 @@ Shipped:
 - MAL XML/XML.GZ, AniList JSON, Trakt CSV, Simkl CSV and Kitsu JSON import adapters
 - Bounded import preview, status/progress mapping and duplicate suppression
 
-## Wave 4 — media-specific depth
+## Wave 4 — media-specific depth ✅
 
-- Book speed, editions, narrator and DNF analysis
-- Comic/manga volume ownership and missing-volume tracker
-- Series/anime season and episode logs, binge detection and schedules
-- Movie venue/version plus acting/cinematography scores
-- Anime source, seiyuu and OP/ED markers
+- Books: page-session logger, reading speed/ETA, format, edition, narrator score and DNF reason
+- Comics/manga: chapter+volume progress, format, creator/studio favorites and owned/read/missing volume matrix
+- Series: season totals, per-episode logs/ratings, daily+weekly binge flags, platform and audio preference
+- Release/schedule notifications: explicit permission and once-per-title/day local alerts
+- Movies: venue/version plus acting/cinematography sub-scores and director favorites
+- Anime: sub/dub, source, studio/seiyuu favorites, seasons/episodes and OP/ED song markers
+- Entertainment schema v3 migration for every deep-tracking collection
 
 ## Wave 5 — discovery intelligence
 

@@ -24,11 +24,11 @@ The approved specification contains 96 numbered features. Wave 0 and the first W
 | 16 | Tracking history | ✅ immutable activity timeline |
 | 17 | Monthly rollover | ✅ idempotent prior-month completed archival |
 | 18 | Archive | ✅ archive, restore, permanent cleanup and data vault |
-| 19–25 | Books depth | 🟡 page progress/format base shipped; Wave 4 depth pending |
-| 26–30 | Comics/manga depth | 🟡 chapter progress base shipped; Wave 4 depth pending |
-| 31–36 | Series depth | 🟡 episode progress base shipped; Wave 4 depth pending |
-| 37–41 | Movie depth | 🟡 watched state base shipped; Wave 4 depth pending |
-| 42–47 | Anime depth | 🟡 episode progress base shipped; Wave 4 depth pending |
+| 19–25 | Books depth | ✅ progress, format/edition, favorites, speed/ETA, narrator, DNF |
+| 26–30 | Comics/manga depth | ✅ chapter/volume, format, talent favorites, ownership matrix |
+| 31–36 | Series depth | ✅ seasons, episodes/ratings, binge, alerts, platform, audio |
+| 37–41 | Movie depth | ✅ venue/version, cinematography/acting and director favorites |
+| 42–47 | Anime depth | ✅ audio, studio/source, seasons, seiyuu and OP/ED |
 | 48–50 | Local recommendations/mood/surprise | ❌ Wave 5 |
 | 51 | Trending lists | ✅ Discover screen; live provider charts |
 | 52–55 | Gap/exploration/blind-spots/marathons | ❌ Wave 5 |

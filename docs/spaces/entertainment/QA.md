@@ -20,7 +20,7 @@ _Last updated: 2026-08-16, Wave 0 + Wave 1 core._
 - [x] Open Library cover redirect chain — allowlisted proxy returns bounded JPEG 200
 - [x] Unconfigured MAL — bounded 503 with configuration guidance
 - [x] Cross-site search and non-allowlisted image host — rejected 403
-- [x] `node scripts/qa-entertainment.js` — 71/71 assertions
+- [x] `node scripts/qa-entertainment.js` — 89/89 assertions
 
 ## Wave 1 functional checklist
 
@@ -55,6 +55,20 @@ _Last updated: 2026-08-16, Wave 0 + Wave 1 core._
 - [x] Expanded-import 20 MB and imported-record 10,000 caps
 - [x] Import preview plus provider-ID/title fallback de-duplication
 - [x] Compound genre/tag/priority/rating/favorites/backlog-age filters
+
+## Wave 4 deep-tracking checklist
+
+- [x] Book sessions calculate pages/hour and estimated completion time
+- [x] Book format, edition, narrator rating and DNF reason
+- [x] Comic/manga owned/read/missing matrix up to 200 volumes
+- [x] Season totals and episode-level logs/ratings
+- [x] Daily/weekly binge thresholds
+- [x] Streaming platform, sub/dub/original preference
+- [x] Permission-gated release notifications with once-per-title/day acknowledgement
+- [x] Movie venue, version, cinematography and acting scores
+- [x] Anime source, studio, seiyuu and OP/ED markers
+- [x] Favorite creator/studio toggles
+- [x] Schema v3 deep-array migration defaults
 
 ## Security checklist
 

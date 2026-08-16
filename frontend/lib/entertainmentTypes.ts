@@ -46,6 +46,16 @@ export interface MediaProgress {
   watched?: boolean;
 }
 
+export interface ReadingLog { id:string;date:string;pages:number;minutes:number }
+export interface VolumeState { number:number;owned:boolean;read:boolean }
+export interface SeasonState { season:number;totalEpisodes?:number;watchedEpisodes:number[];episodeRatings:Record<string,number> }
+export interface EpisodeWatchLog { id:string;date:string;season:number;episode:number }
+export interface BookDetails { readingFormat?:string;edition?:string;narrator?:string;narrationRating?:number;readingLogs:ReadingLog[] }
+export interface ComicDetails { readingFormat?:string;volumes:VolumeState[] }
+export interface SeriesDetails { platform?:string;audioMode?:"subbed"|"dubbed"|"original";seasons:SeasonState[];episodeLogs:EpisodeWatchLog[];notificationsEnabled?:boolean }
+export interface MovieDetails { venue?:string;version?:string;cinematographyRating?:number;actingRating?:number }
+export interface AnimeDetails { audioMode?:"subbed"|"dubbed";sourceMaterial?:string;voiceActors:string[];openingSong?:string;endingSong?:string;likedOpening?:boolean;likedEnding?:boolean }
+
 export interface EntertainmentItem {
   id: string;
   provider?: "mal" | "anilist" | "tmdb" | "google-books" | "open-library" | "comic-vine" | "nyt" | "trakt" | "simkl" | "kitsu" | "manual";
@@ -63,6 +73,8 @@ export interface EntertainmentItem {
   creators: string[];
   cast: string[];
   studios: string[];
+  favoriteCreatorNames?: string[];
+  favoriteStudioNames?: string[];
   status: MediaStatus;
   progress: MediaProgress;
   rating?: number;
@@ -83,6 +95,11 @@ export interface EntertainmentItem {
   minutesConsumed?: number;
   purchasePrice?: number;
   droppedReason?: string;
+  bookDetails?: BookDetails;
+  comicDetails?: ComicDetails;
+  seriesDetails?: SeriesDetails;
+  movieDetails?: MovieDetails;
+  animeDetails?: AnimeDetails;
   createdAt: number;
   updatedAt: number;
 }
@@ -113,7 +130,7 @@ export interface EntertainmentSettings {
 }
 
 export interface EntertainmentState {
-  schemaVersion: 2;
+  schemaVersion: 3;
   items: EntertainmentItem[];
   collections: EntertainmentCollection[];
   events: EntertainmentEvent[];
@@ -124,7 +141,7 @@ export interface EntertainmentState {
 const now = Date.now();
 const day = 86_400_000;
 export const SEED_ENTERTAINMENT: EntertainmentState = {
-  schemaVersion: 2,
+  schemaVersion: 3,
   items: [
     { id:"ent-dune",provider:"manual",type:"book",title:"Dune",description:"Politics, ecology and prophecy on Arrakis.",releaseYear:1965,genres:["Science Fiction"],creators:["Frank Herbert"],cast:[],studios:[],status:"in-progress",progress:{currentPage:286,totalPages:688},rating:9,startedAt:new Date(now-12*day).toISOString().slice(0,10),repeats:0,priority:"high",queueOrder:1,tags:["epic","desert","thoughtful"],format:"Paperback",language:"English",favorite:true,archived:false,minutesConsumed:420,createdAt:now-18*day,updatedAt:now-day},
     { id:"ent-shogun",provider:"manual",type:"series",title:"Shōgun",description:"Power and survival in feudal Japan.",releaseYear:2024,genres:["Drama","History"],creators:["Rachel Kondo","Justin Marks"],cast:[],studios:["FX"],status:"in-progress",progress:{currentEpisode:6,totalEpisodes:10,currentSeason:1,totalSeasons:1},rating:9,startedAt:new Date(now-8*day).toISOString().slice(0,10),repeats:0,priority:"medium",queueOrder:2,tags:["samurai","political","weekend"],format:"Streaming",language:"Japanese / English",favorite:false,archived:false,minutesConsumed:360,createdAt:now-10*day,updatedAt:now-2*day},
@@ -141,13 +158,15 @@ export const SEED_ENTERTAINMENT: EntertainmentState = {
 export function migrateEntertainment(raw: Partial<EntertainmentState> | null | undefined): EntertainmentState {
   if (!raw || typeof raw !== "object") return SEED_ENTERTAINMENT;
   return {
-    schemaVersion: 2,
+    schemaVersion: 3,
     items: Array.isArray(raw.items) ? raw.items.map((item) => ({
       ...item,
       genres: Array.isArray(item.genres) ? item.genres : [],
       creators: Array.isArray(item.creators) ? item.creators : [],
       cast: Array.isArray(item.cast) ? item.cast : [],
       studios: Array.isArray(item.studios) ? item.studios : [],
+      favoriteCreatorNames: Array.isArray(item.favoriteCreatorNames) ? item.favoriteCreatorNames : [],
+      favoriteStudioNames: Array.isArray(item.favoriteStudioNames) ? item.favoriteStudioNames : [],
       tags: Array.isArray(item.tags) ? item.tags : [],
       progress: item.progress ?? {},
       repeats: item.repeats ?? 0,
@@ -155,6 +174,11 @@ export function migrateEntertainment(raw: Partial<EntertainmentState> | null | u
       queueOrder: item.queueOrder ?? 0,
       favorite: item.favorite ?? false,
       archived: item.archived ?? false,
+      bookDetails: item.type === "book" ? { readingLogs: [], ...(item.bookDetails ?? {}) } : item.bookDetails,
+      comicDetails: item.type === "comic" || item.type === "manga" ? { volumes: [], ...(item.comicDetails ?? {}) } : item.comicDetails,
+      seriesDetails: item.type === "series" || item.type === "anime" ? { seasons: [], episodeLogs: [], ...(item.seriesDetails ?? {}) } : item.seriesDetails,
+      movieDetails: item.type === "movie" ? { ...(item.movieDetails ?? {}) } : item.movieDetails,
+      animeDetails: item.type === "anime" ? { voiceActors: [], ...(item.animeDetails ?? {}) } : item.animeDetails,
       updatedAt: item.updatedAt ?? item.createdAt ?? Date.now(),
     })) as EntertainmentItem[] : SEED_ENTERTAINMENT.items,
     collections: Array.isArray(raw.collections) ? raw.collections : [],
