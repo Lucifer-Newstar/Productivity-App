@@ -1,9 +1,7 @@
-/**
- * Entertainment space page — scoped task list for the Entertainment space.
- * Routed at /entertainment.
- */
-import SpaceTasks from "../../components/SpaceTasks";
+/** Entertainment / AFTERGLOW — full-screen media OS. */
+import EntertainmentPage, { FULLSCREEN } from "../../components/entertainment/EntertainmentPage";
 
-export default function EntertainmentPage() {
-  return <SpaceTasks space="entertainment" />;
+export default function Page() {
+  return <EntertainmentPage />;
 }
+Page.fullScreen = FULLSCREEN;

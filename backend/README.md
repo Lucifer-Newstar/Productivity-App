@@ -35,8 +35,8 @@ Do not expose the API without an API key and TLS reverse proxy. See
 - Explicit CORS origin allowlist
 - Optional API-key authentication for every data route
 - Helmet, read/write rate limits, strict bounded JSON and unsafe-key rejection
-- **121 collections** with generic CRUD (list/create/get/patch/delete) +
-  **10 singleton documents** (GET/PUT):
+- **124 collections** with generic CRUD (list/create/get/patch/delete) +
+  **11 singleton documents** (GET/PUT):
   - **Core** — tasks, notes (`/api/core/*`)
   - **Workout** — 25 collections (exercises, PRs, routines, sessions,
     calisthenics chains/skills/flows/GtG/isometrics/intervals/mobility/planche,
@@ -45,8 +45,8 @@ Do not expose the API without an API key and TLS reverse proxy. See
   - **Career** — 25 collections (`/api/career/*`)
   - **Forge / Projects** — 37 collections + streak/settings singletons
     (`/api/forge/*`)
-  - **Health / VITAL-SIGN** — 19 collections + profile/settings/
-    bedtime-routine/wake-routine singletons (`/api/health/*`)
+  - **Health / VITAL-SIGN** — health collections + profile/settings/routine singletons (`/api/health/*`)
+  - **Entertainment / AFTERGLOW** — items, collections, events + settings singleton (`/api/entertainment/*`)
 - Session-specific helpers:
   - `POST /api/sessions` — start a new session
   - `POST /api/sessions/:id/sets` — log a set (auto-updates total volume)

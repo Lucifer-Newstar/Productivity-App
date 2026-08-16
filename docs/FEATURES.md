@@ -5,8 +5,8 @@ Three spaces fully ship today: **Workout** (imperial Japanese/obsidian, battle-t
 **Career** (Night HUD / Blueprint dual themes), and **Projects** (Foundry / Drafting-Room dual themes
 — branded "Forge" in the UI; full project/task OS with 16 strategy canvases).
 **Health** is in active construction on branch `health` (257-feature spec approved, 9-wave plan,
-deep Workout bridge documented). **Entertainment** is still a placeholder (SpaceTasks) pending a
-full-bleed cinema/neon redesign.
+deep Workout bridge documented). **Entertainment / AFTERGLOW** has entered Wave 1 with a
+full-screen cinema shell, local media library, manual Quick Add and core tracking; API discovery follows in Wave 2.
 
 Per-space deep dives: [`spaces/workout`](spaces/workout/README.md) ·
 [`spaces/career`](spaces/career/README.md) ·

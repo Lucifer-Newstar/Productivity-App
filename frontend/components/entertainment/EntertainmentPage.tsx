@@ -1,0 +1,158 @@
+"use client";
+
+import { useMemo, useState } from "react";
+import Link from "next/link";
+import { AnimatePresence, motion } from "framer-motion";
+import {
+  Archive, BarChart3, BookOpen, CalendarDays, ChevronRight, Clapperboard,
+  Compass, Film, Heart, Library, Moon, Plus, Search, Sparkles, Star,
+  Sun, Trash2, X, Zap,
+} from "lucide-react";
+import { useStore } from "../../lib/store";
+import { useTheme } from "../../lib/theme";
+import type { EntertainmentEventType, EntertainmentItem, EntertainmentView, MediaPriority, MediaStatus, MediaType } from "../../lib/entertainmentTypes";
+import { MEDIA_TYPE_ICONS, MEDIA_TYPE_LABELS } from "../../lib/entertainmentTypes";
+
+const uid = () => Math.random().toString(36).slice(2,10) + Date.now().toString(36);
+const today = () => new Date().toISOString().slice(0,10);
+const STATUS: {id:MediaStatus;label:string;color:string}[] = [
+  {id:"planned",label:"Plan to",color:"#94a3b8"},{id:"in-progress",label:"In progress",color:"#22d3ee"},
+  {id:"completed",label:"Completed",color:"#34d399"},{id:"paused",label:"Paused",color:"#fbbf24"},{id:"dropped",label:"Dropped",color:"#fb7185"},
+];
+const TYPE_COLORS: Record<MediaType,string> = { book:"#fbbf24",comic:"#fb7185",manga:"#c084fc",movie:"#22d3ee",series:"#60a5fa",anime:"#f472b6" };
+const VIEW_NAV: {id:EntertainmentView;label:string;icon:any;ready:boolean}[] = [
+  {id:"dashboard",label:"Now Playing",icon:Clapperboard,ready:true},{id:"library",label:"Library",icon:Library,ready:true},
+  {id:"calendar",label:"Calendar",icon:CalendarDays,ready:false},{id:"discover",label:"Discover",icon:Compass,ready:false},
+  {id:"stats",label:"Stats",icon:BarChart3,ready:false},{id:"studio",label:"Studio",icon:Sparkles,ready:false},
+];
+
+function progressPct(item: EntertainmentItem) {
+  const p=item.progress;
+  if(item.type==="movie") return p.watched||item.status==="completed"?100:0;
+  const pair = item.type==="book" ? [p.currentPage,p.totalPages]
+    : item.type==="comic"||item.type==="manga" ? [p.currentChapter,p.totalChapters]
+    : [p.currentEpisode,p.totalEpisodes];
+  return pair[1] ? Math.min(100,Math.round(((pair[0]??0)/pair[1])*100)) : item.status==="completed"?100:0;
+}
+function progressLabel(item: EntertainmentItem) {
+  const p=item.progress;
+  if(item.type==="movie") return p.watched||item.status==="completed"?"Watched":"Not watched";
+  if(item.type==="book") return `${p.currentPage??0} / ${p.totalPages??"?"} pages`;
+  if(item.type==="comic"||item.type==="manga") return `${p.currentChapter??0} / ${p.totalChapters??"?"} chapters`;
+  return `${p.currentEpisode??0} / ${p.totalEpisodes??"?"} episodes`;
+}
+
+export default function EntertainmentPage() {
+  const { entertainment, updateEntertainment } = useStore();
+  const { theme, toggle } = useTheme();
+  const [view,setView]=useState<EntertainmentView>("dashboard");
+  const [search,setSearch]=useState("");
+  const [type,setType]=useState<MediaType|"all">("all");
+  const [status,setStatus]=useState<MediaStatus|"all">("all");
+  const [sort,setSort]=useState<"updated"|"title"|"rating"|"progress"|"priority">("updated");
+  const [addOpen,setAddOpen]=useState(false);
+  const [selected,setSelected]=useState<string|null>(null);
+
+  const event = (itemId:string,kind:EntertainmentEventType,detail?:string) => ({id:uid(),itemId,type:kind,detail,at:Date.now()});
+  const patchItem=(id:string,patch:Partial<EntertainmentItem>,kind:EntertainmentEventType="updated",detail?:string)=>updateEntertainment(s=>({
+    items:s.items.map(i=>i.id===id?{...i,...patch,updatedAt:Date.now()}:i),events:[event(id,kind,detail),...s.events].slice(0,5000),
+  }));
+  const remove=(id:string)=>updateEntertainment(s=>({items:s.items.filter(i=>i.id!==id),events:s.events.filter(e=>e.itemId!==id)}));
+
+  const visible=useMemo(()=>entertainment.items.filter(i=>!i.archived).filter(i=>type==="all"||i.type===type).filter(i=>status==="all"||i.status===status).filter(i=>{
+    const q=search.trim().toLowerCase(); if(!q)return true;
+    return [i.title,i.description,...i.creators,...i.genres,...i.tags,i.notes,i.review].filter(Boolean).join(" ").toLowerCase().includes(q);
+  }).sort((a,b)=>{
+    if(sort==="title")return a.title.localeCompare(b.title);
+    if(sort==="rating")return (b.rating??-1)-(a.rating??-1);
+    if(sort==="progress")return progressPct(b)-progressPct(a);
+    if(sort==="priority")return ({high:0,medium:1,low:2}[a.priority]-{high:0,medium:1,low:2}[b.priority]);
+    return b.updatedAt-a.updatedAt;
+  }),[entertainment.items,type,status,search,sort]);
+
+  const active=entertainment.items.filter(i=>i.status==="in-progress"&&!i.archived);
+  const completed=entertainment.items.filter(i=>i.status==="completed");
+  const planned=entertainment.items.filter(i=>i.status==="planned"&&!i.archived);
+  const hours=Math.round(entertainment.items.reduce((n,i)=>n+(i.minutesConsumed??0),0)/60);
+  const selectedItem=entertainment.items.find(i=>i.id===selected);
+
+  return <div className="ent-root" data-light={theme==="light"?"1":"0"}>
+    <style jsx global>{`
+      .ent-root{min-height:100vh;color:#f8fafc;background:radial-gradient(circle at 75% -10%,rgba(236,72,153,.18),transparent 34%),radial-gradient(circle at 10% 30%,rgba(34,211,238,.10),transparent 30%),#06040b;font-family:Inter,system-ui,sans-serif;--panel:rgba(17,13,27,.84);--line:rgba(255,255,255,.09);--muted:#8f8aa1;--text:#f8fafc}
+      .ent-root[data-light="1"]{color:#24182b;background:radial-gradient(circle at 80% 0,rgba(236,72,153,.13),transparent 35%),#fff8fb;--panel:rgba(255,255,255,.88);--line:rgba(76,29,71,.14);--muted:#74677a;--text:#24182b}
+      .ent-panel{background:var(--panel);border:1px solid var(--line);box-shadow:0 18px 60px rgba(0,0,0,.16);backdrop-filter:blur(16px)}
+      .ent-root input,.ent-root select,.ent-root textarea{color:var(--text)}
+      .ent-root option{background:#17101f;color:#fff}
+    `}</style>
+    <div className="fixed inset-x-0 top-0 h-1 z-50 bg-gradient-to-r from-fuchsia-500 via-pink-400 to-cyan-400"/>
+    <header className="h-[74px] border-b flex items-center px-4 md:px-7 gap-4 sticky top-0 z-40" style={{borderColor:"var(--line)",background:"color-mix(in srgb, var(--panel) 92%, transparent)",backdropFilter:"blur(18px)"}}>
+      <Link href="/" className="flex items-center gap-3 shrink-0">
+        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-fuchsia-500 to-cyan-400 grid place-items-center shadow-lg shadow-fuchsia-500/20"><Film size={20}/></div>
+        <div><div className="text-[10px] tracking-[.34em] uppercase" style={{color:"var(--muted)"}}>Kaizen presents</div><div className="font-black tracking-[.08em]">AFTERGLOW</div></div>
+      </Link>
+      <div className="hidden md:flex flex-1 max-w-xl ml-auto relative"><Search size={15} className="absolute left-3 top-2.5" style={{color:"var(--muted)"}}/><input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Search titles, creators, tags, notes…" className="w-full rounded-full border bg-transparent pl-9 pr-4 py-2 text-sm outline-none focus:border-fuchsia-400/60" style={{borderColor:"var(--line)"}}/></div>
+      <button onClick={()=>setAddOpen(true)} className="rounded-full px-4 py-2 text-xs font-bold bg-gradient-to-r from-fuchsia-500 to-pink-500 text-white flex items-center gap-2"><Plus size={14}/> QUICK ADD</button>
+      <button onClick={toggle} className="w-9 h-9 rounded-full border grid place-items-center" style={{borderColor:"var(--line)"}}>{theme==="dark"?<Sun size={15}/>:<Moon size={15}/>}</button>
+    </header>
+
+    <div className="flex min-h-[calc(100vh-74px)]">
+      <aside className="hidden lg:flex w-60 border-r p-4 flex-col gap-1 shrink-0" style={{borderColor:"var(--line)"}}>
+        <div className="text-[10px] tracking-[.24em] uppercase px-3 py-3" style={{color:"var(--muted)"}}>Your screening room</div>
+        {VIEW_NAV.map(n=><button key={n.id} onClick={()=>n.ready&&setView(n.id)} className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-left transition ${view===n.id?"bg-fuchsia-500/15 text-fuchsia-300":"hover:bg-white/5"} ${!n.ready?"opacity-40":""}`}><n.icon size={16}/><span className="flex-1">{n.label}</span>{!n.ready&&<span className="text-[8px] uppercase tracking-wider">soon</span>}</button>)}
+        <div className="mt-auto ent-panel rounded-2xl p-4"><div className="flex items-center gap-2 text-xs font-bold text-cyan-300"><Zap size={13}/> WAVE 1 LIVE</div><p className="text-[11px] mt-2 leading-relaxed" style={{color:"var(--muted)"}}>Core library is local-first. Provider search lands in Wave 2.</p></div>
+      </aside>
+
+      <main className="flex-1 min-w-0 p-4 md:p-7 xl:p-9">
+        <div className="md:hidden relative mb-4"><Search size={15} className="absolute left-3 top-3" style={{color:"var(--muted)"}}/><input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Search your library…" className="w-full rounded-xl border bg-transparent pl-9 pr-3 py-2.5 text-sm" style={{borderColor:"var(--line)"}}/></div>
+        {view==="dashboard" ? <>
+          <section className="relative overflow-hidden ent-panel rounded-[28px] p-6 md:p-9 mb-7">
+            <div className="absolute -right-16 -top-24 w-80 h-80 rounded-full bg-fuchsia-500/15 blur-3xl"/>
+            <div className="relative max-w-2xl"><div className="text-xs font-bold tracking-[.3em] text-fuchsia-400 mb-3">TONIGHT'S MARQUEE</div><h1 className="text-3xl md:text-5xl font-black leading-tight">Your stories.<br/><span className="text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-400 to-cyan-300">One living archive.</span></h1><p className="mt-4 text-sm max-w-xl leading-relaxed" style={{color:"var(--muted)"}}>Track every page, episode and frame without turning leisure into homework.</p></div>
+          </section>
+          <div className="grid grid-cols-2 xl:grid-cols-4 gap-3 mb-8">{([["IN MOTION",active.length,"#22d3ee"],["QUEUED",planned.length,"#f472b6"],["FINISHED",completed.length,"#34d399"],["TIME INSIDE",`${hours}h`,"#fbbf24"]] as [string,string|number,string][]).map(x=><div key={x[0] as string} className="ent-panel rounded-2xl p-4"><div className="text-[9px] tracking-[.22em]" style={{color:"var(--muted)"}}>{x[0]}</div><div className="text-2xl font-black mt-1" style={{color:x[2]}}>{x[1]}</div></div>)}</div>
+          <SectionTitle title="Continue the story" sub={`${active.length} currently in progress`} action={()=>setView("library")}/>
+          <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-4 mb-9">{active.length?active.map(i=><MediaCard key={i.id} item={i} onOpen={()=>setSelected(i.id)} onPatch={patchItem}/>):<Empty text="Nothing in progress. Start something from your queue."/>}</div>
+          <SectionTitle title="Up next" sub="Your highest-priority queue" action={()=>setView("library")}/>
+          <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-4">{planned.sort((a,b)=>({high:0,medium:1,low:2}[a.priority]-{high:0,medium:1,low:2}[b.priority])).slice(0,6).map(i=><MediaCard key={i.id} item={i} onOpen={()=>setSelected(i.id)} onPatch={patchItem}/>)}</div>
+        </> : <>
+          <div className="flex flex-wrap items-end gap-3 mb-6"><div className="mr-auto"><div className="text-xs tracking-[.24em] text-cyan-400">THE ARCHIVE</div><h1 className="text-3xl font-black mt-1">Library <span style={{color:"var(--muted)"}}>({visible.length})</span></h1></div>
+            <Filter value={type} onChange={v=>setType(v as any)} options={[['all','All media'],...Object.entries(MEDIA_TYPE_LABELS)]}/><Filter value={status} onChange={v=>setStatus(v as any)} options={[['all','All statuses'],...STATUS.map(s=>[s.id,s.label])]}/><Filter value={sort} onChange={v=>setSort(v as any)} options={[["updated","Recently updated"],["title","Title"],["rating","Rating"],["progress","Progress"],["priority","Priority"]]}/>
+          </div>
+          <div className="grid md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-4">{visible.map(i=><MediaCard key={i.id} item={i} onOpen={()=>setSelected(i.id)} onPatch={patchItem}/>)}{!visible.length&&<Empty text="No titles match this cut."/>}</div>
+        </>}
+      </main>
+    </div>
+    <AnimatePresence>{addOpen&&<AddModal onClose={()=>setAddOpen(false)} onAdd={item=>{updateEntertainment(s=>({items:[item,...s.items],events:[event(item.id,"added"),...s.events]}));setAddOpen(false);}}/>}</AnimatePresence>
+    <AnimatePresence>{selectedItem&&<DetailDrawer item={selectedItem} onClose={()=>setSelected(null)} onPatch={patchItem} onDelete={()=>{remove(selectedItem.id);setSelected(null);}}/>}</AnimatePresence>
+  </div>;
+}
+
+function SectionTitle({title,sub,action}:{title:string;sub:string;action:()=>void}){return <div className="flex items-end mb-3"><div><h2 className="font-black text-xl">{title}</h2><p className="text-xs" style={{color:"var(--muted)"}}>{sub}</p></div><button onClick={action} className="ml-auto text-xs text-fuchsia-400 flex items-center">VIEW ALL <ChevronRight size={13}/></button></div>}
+function Empty({text}:{text:string}){return <div className="ent-panel rounded-2xl p-8 text-center text-sm col-span-full" style={{color:"var(--muted)"}}>{text}</div>}
+function Filter({value,onChange,options}:{value:string;onChange:(v:string)=>void;options:string[][]}){return <select value={value} onChange={e=>onChange(e.target.value)} className="rounded-xl border bg-transparent px-3 py-2 text-xs outline-none" style={{borderColor:"var(--line)"}}>{options.map(o=><option key={o[0]} value={o[0]}>{o[1]}</option>)}</select>}
+
+function MediaCard({item,onOpen,onPatch}:{item:EntertainmentItem;onOpen:()=>void;onPatch:(id:string,p:Partial<EntertainmentItem>,k?:EntertainmentEventType,d?:string)=>void}){
+ const pct=progressPct(item), sc=STATUS.find(s=>s.id===item.status)!;
+ return <motion.article layout whileHover={{y:-3}} className="ent-panel rounded-2xl overflow-hidden group cursor-pointer" onClick={onOpen}>
+  <div className="h-32 relative p-4 flex items-end" style={{background:`linear-gradient(135deg,${TYPE_COLORS[item.type]}35,#0b0712)`}}><div className="absolute top-3 left-3 w-9 h-9 rounded-xl grid place-items-center font-black" style={{background:TYPE_COLORS[item.type],color:"#09060d"}}>{MEDIA_TYPE_ICONS[item.type]}</div><button onClick={e=>{e.stopPropagation();onPatch(item.id,{favorite:!item.favorite});}} className={`absolute right-3 top-3 w-8 h-8 rounded-full grid place-items-center ${item.favorite?"bg-pink-500 text-white":"bg-black/30 text-white/60"}`}><Heart size={14} fill={item.favorite?"currentColor":"none"}/></button><div><div className="text-[9px] uppercase tracking-[.2em]" style={{color:TYPE_COLORS[item.type]}}>{MEDIA_TYPE_LABELS[item.type]}</div><h3 className="font-black text-lg leading-tight text-white">{item.title}</h3></div></div>
+  <div className="p-4"><div className="flex items-center gap-2 text-[10px]"><span className="w-2 h-2 rounded-full" style={{background:sc.color}}/><span style={{color:sc.color}}>{sc.label}</span><span className="ml-auto">{item.rating?<><Star size={10} className="inline text-amber-400" fill="currentColor"/> {item.rating}/10</>:"Unrated"}</span></div><div className="mt-3 h-1.5 rounded-full bg-white/5 overflow-hidden"><div className="h-full rounded-full" style={{width:`${pct}%`,background:`linear-gradient(90deg,${TYPE_COLORS[item.type]},#ec4899)`}}/></div><div className="flex mt-2 text-[10px]" style={{color:"var(--muted)"}}><span>{progressLabel(item)}</span><span className="ml-auto">{pct}%</span></div></div>
+ </motion.article>
+}
+
+function AddModal({onClose,onAdd}:{onClose:()=>void;onAdd:(i:EntertainmentItem)=>void}){
+ const [title,setTitle]=useState("");const [type,setType]=useState<MediaType>("movie");const [status,setStatus]=useState<MediaStatus>("planned");const [priority,setPriority]=useState<MediaPriority>("medium");const [creator,setCreator]=useState("");const [genres,setGenres]=useState("");const [tags,setTags]=useState("");const [year,setYear]=useState("");const [description,setDescription]=useState("");
+ const submit=()=>{if(!title.trim())return;const now=Date.now();onAdd({id:uid(),provider:"manual",type,title:title.trim(),description:description.trim()||undefined,releaseYear:year?Number(year):undefined,genres:genres.split(",").map(x=>x.trim()).filter(Boolean),creators:creator.split(",").map(x=>x.trim()).filter(Boolean),cast:[],studios:[],status,progress:{},repeats:0,priority,queueOrder:now,tags:tags.split(",").map(x=>x.trim()).filter(Boolean),favorite:false,archived:false,createdAt:now,updatedAt:now});};
+ return <motion.div className="fixed inset-0 z-[80] bg-black/75 backdrop-blur-sm grid place-items-center p-4" initial={{opacity:0}} animate={{opacity:1}} exit={{opacity:0}} onMouseDown={onClose}><motion.div onMouseDown={e=>e.stopPropagation()} initial={{scale:.96,y:16}} animate={{scale:1,y:0}} exit={{scale:.96}} className="ent-panel rounded-3xl w-full max-w-2xl p-6 max-h-[90vh] overflow-auto"><div className="flex"><div><div className="text-xs tracking-[.22em] text-fuchsia-400">QUICK ADD · MANUAL</div><h2 className="text-2xl font-black">Add to the archive</h2></div><button onClick={onClose} className="ml-auto"><X/></button></div><p className="text-xs mt-2" style={{color:"var(--muted)"}}>Provider search arrives in Wave 2. Manual entries always remain available.</p><div className="grid md:grid-cols-2 gap-3 mt-6"><Field label="Title *"><input autoFocus value={title} onChange={e=>setTitle(e.target.value)} className="input"/></Field><Field label="Media type"><Filter value={type} onChange={v=>setType(v as MediaType)} options={Object.entries(MEDIA_TYPE_LABELS)}/></Field><Field label="Status"><Filter value={status} onChange={v=>setStatus(v as MediaStatus)} options={STATUS.map(s=>[s.id,s.label])}/></Field><Field label="Priority"><Filter value={priority} onChange={v=>setPriority(v as MediaPriority)} options={[["high","High"],["medium","Medium"],["low","Low"]]}/></Field><Field label="Creator / author / director"><input value={creator} onChange={e=>setCreator(e.target.value)} className="input" placeholder="Comma separated"/></Field><Field label="Release year"><input type="number" min="1800" max="2100" value={year} onChange={e=>setYear(e.target.value)} className="input"/></Field><Field label="Genres"><input value={genres} onChange={e=>setGenres(e.target.value)} className="input" placeholder="Drama, Sci-Fi"/></Field><Field label="Mood / custom tags"><input value={tags} onChange={e=>setTags(e.target.value)} className="input" placeholder="cozy, weekend"/></Field><div className="md:col-span-2"><Field label="Description"><textarea rows={3} value={description} onChange={e=>setDescription(e.target.value)} className="input resize-none"/></Field></div></div><div className="flex justify-end gap-2 mt-6"><button onClick={onClose} className="px-4 py-2 text-sm">Cancel</button><button onClick={submit} disabled={!title.trim()} className="px-5 py-2 rounded-xl text-sm font-bold bg-gradient-to-r from-fuchsia-500 to-pink-500 text-white disabled:opacity-40">ADD TITLE</button></div><style jsx>{`.input{width:100%;border:1px solid var(--line);background:transparent;border-radius:12px;padding:9px 11px;font-size:13px;outline:none}`}</style></motion.div></motion.div>
+}
+function Field({label,children}:{label:string;children:React.ReactNode}){return <label className="block"><span className="text-[10px] uppercase tracking-wider block mb-1.5" style={{color:"var(--muted)"}}>{label}</span>{children}</label>}
+
+function DetailDrawer({item,onClose,onPatch,onDelete}:{item:EntertainmentItem;onClose:()=>void;onPatch:(id:string,p:Partial<EntertainmentItem>,k?:EntertainmentEventType,d?:string)=>void;onDelete:()=>void}){
+ const p=item.progress; const setStatus=(s:MediaStatus)=>onPatch(item.id,{status:s,startedAt:s==="in-progress"?(item.startedAt??today()):item.startedAt,completedAt:s==="completed"?today():item.completedAt,progress:item.type==="movie"&&s==="completed"?{...p,watched:true}:p},s==="completed"?"completed":s==="dropped"?"dropped":s==="paused"?"paused":s==="in-progress"?"started":"updated",s);
+ const progressKeys: string[] = item.type==="book"?["currentPage","totalPages"]:item.type==="comic"||item.type==="manga"?["currentChapter","totalChapters"]:item.type==="movie"?[]:["currentEpisode","totalEpisodes"];
+ return <motion.div className="fixed inset-0 z-[70] bg-black/55 backdrop-blur-sm flex justify-end" initial={{opacity:0}} animate={{opacity:1}} exit={{opacity:0}} onMouseDown={onClose}><motion.aside onMouseDown={e=>e.stopPropagation()} initial={{x:80}} animate={{x:0}} exit={{x:80}} className="ent-panel w-full max-w-xl h-full overflow-auto p-6 md:p-8"><div className="flex items-start"><div className="w-12 h-12 rounded-2xl grid place-items-center font-black text-xl" style={{background:TYPE_COLORS[item.type],color:"#09060d"}}>{MEDIA_TYPE_ICONS[item.type]}</div><button onClick={onClose} className="ml-auto"><X/></button></div><div className="text-[10px] tracking-[.24em] uppercase mt-6" style={{color:TYPE_COLORS[item.type]}}>{MEDIA_TYPE_LABELS[item.type]} {item.releaseYear?`· ${item.releaseYear}`:""}</div><h2 className="text-3xl font-black mt-1">{item.title}</h2><p className="text-sm mt-3 leading-relaxed" style={{color:"var(--muted)"}}>{item.description||"No synopsis yet."}</p>
+ <div className="grid grid-cols-2 gap-3 mt-6"><Field label="Status"><Filter value={item.status} onChange={v=>setStatus(v as MediaStatus)} options={STATUS.map(s=>[s.id,s.label])}/></Field><Field label="Rating / 10"><input type="number" min="1" max="10" value={item.rating??""} onChange={e=>onPatch(item.id,{rating:e.target.value?Number(e.target.value):undefined},"rated")} className="detail-input"/></Field>{progressKeys.map((k:string)=><Field key={k} label={k.replace(/([A-Z])/g," $1")}><input type="number" min="0" value={(p as any)[k]??""} onChange={e=>onPatch(item.id,{progress:{...p,[k]:Math.max(0,Number(e.target.value))}},"progress",k)} className="detail-input"/></Field>)}<Field label="Started"><input type="date" value={item.startedAt??""} onChange={e=>onPatch(item.id,{startedAt:e.target.value})} className="detail-input"/></Field><Field label="Finished"><input type="date" value={item.completedAt??""} onChange={e=>onPatch(item.id,{completedAt:e.target.value})} className="detail-input"/></Field><Field label="Repeats"><div className="flex gap-2"><input type="number" min="0" value={item.repeats} onChange={e=>onPatch(item.id,{repeats:Math.max(0,Number(e.target.value))})} className="detail-input"/><button onClick={()=>onPatch(item.id,{repeats:item.repeats+1},"repeated")} className="px-3 rounded-xl bg-fuchsia-500/15 text-fuchsia-300">+1</button></div></Field><Field label="Priority"><Filter value={item.priority} onChange={v=>onPatch(item.id,{priority:v as MediaPriority})} options={[["high","High"],["medium","Medium"],["low","Low"]]}/></Field></div>
+ <div className="mt-5"><Field label="Personal notes"><textarea rows={4} value={item.notes??""} onChange={e=>onPatch(item.id,{notes:e.target.value})} className="detail-input resize-none"/></Field></div><div className="mt-4"><Field label="Review"><textarea rows={5} value={item.review??""} onChange={e=>onPatch(item.id,{review:e.target.value})} className="detail-input resize-none"/></Field></div><div className="mt-4"><Field label="Tags"><input value={item.tags.join(", ")} onChange={e=>onPatch(item.id,{tags:e.target.value.split(",").map(x=>x.trim()).filter(Boolean)})} className="detail-input"/></Field></div>
+ <div className="flex gap-2 mt-7"><button onClick={()=>onPatch(item.id,{archived:true},"updated","archived")} className="px-4 py-2 rounded-xl border text-xs flex items-center gap-2" style={{borderColor:"var(--line)"}}><Archive size={13}/> Archive</button><button onClick={()=>{if(confirm(`Delete “${item.title}”?`))onDelete();}} className="px-4 py-2 rounded-xl border border-red-500/30 text-red-400 text-xs flex items-center gap-2"><Trash2 size={13}/> Delete</button></div><style jsx>{`.detail-input{width:100%;border:1px solid var(--line);background:transparent;border-radius:12px;padding:9px 11px;font-size:13px;outline:none}`}</style></motion.aside></motion.div>
+}
+
+export const FULLSCREEN = true;

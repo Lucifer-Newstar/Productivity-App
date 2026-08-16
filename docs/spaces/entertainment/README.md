@@ -1,24 +1,43 @@
-# Entertainment space 🎮
+# Entertainment space — AFTERGLOW 🎬
 
-The **Entertainment** space currently renders `<SpaceTasks space="entertainment" />`
-— a reusable scoped task list (add/toggle/delete with priority chips, shared
-TopNav). It is a **placeholder** pending a full-bleed cinema / media-backlog
-redesign.
+AFTERGLOW is Kaizen's local-first media tracker for books, comics, manga, movies, TV series and anime. The former `SpaceTasks` placeholder was replaced by a full-screen cinema shell in Wave 1.
 
-- Route: `/entertainment`
-- Shell: shared TopNav + padded main column (not FULLSCREEN yet)
-- State: uses the cross-space `tasks` collection in the root store (filtered by `space === "entertainment"`)
-- Theme: inherits Workout/Kaizen obsidian-gold by default
+## Route and files
 
-## Planned v1.0 theme (not yet implemented)
-Film-noir / cinema neon aesthetic:
-- Deep velvet/midnight background (`#0b0514`→`#000`)
-- Magenta `#ec4899` + cyan `#22d3ee` neon marquee
-- Marquee chaser lights at the top beam
-- Watch / Listen / Read / Play queues with ratings, backlog, now-playing
-- Card-style movie-poster / album-covers
-- Full-screen (FULLSCREEN flag) when built out
+- Route: `/entertainment` (`Page.fullScreen = true`)
+- UI: `frontend/components/entertainment/EntertainmentPage.tsx`
+- Types/seeds/migration: `frontend/lib/entertainmentTypes.ts`
+- Store key: `localStorage["kaizen.entertainment"]`
+- Provider plan: [`APIS.md`](APIS.md)
+- Delivery plan: [`WAVES.md`](WAVES.md)
+- 96-feature audit: [`FEATURES.md`](FEATURES.md)
+- QA: [`QA.md`](QA.md)
 
-## QA status
-- `/entertainment` returns 200 OK, renders SpaceTasks correctly.
-- No dedicated Entertainment components, types, or theme yet.
+## Current implementation — Wave 0 + Wave 1 core
+
+- AFTERGLOW dark/light full-screen shell
+- Dashboard with active, queued, completed and consumed-time KPIs
+- Continue and priority-queue cards
+- Manual Quick Add across all six media types
+- Statuses: planned, in progress, completed, paused and dropped
+- Type-aware page/chapter/episode/movie progress
+- Rating, review, notes, dates, repeats, priority, creators, genres and tags
+- Favorites, archive and delete
+- Full-text local search, filters and five sorting modes
+- Defensive persistence migration and first-run seed
+
+Provider search deliberately remains disabled until Wave 2 adapters can keep credentials server-side and normalize/licence/cache results correctly.
+
+## Theme
+
+**Dark — Midnight Screening:** near-black violet, projected fuchsia/cyan light, translucent screening-room panels and a marquee beam.
+
+**Light — Matinee:** warm blush-white, plum text and restrained neon accents. It reuses Kaizen's global theme preference but does not inherit the generic TopNav.
+
+External font imports are not used; system/local fallback stacks preserve the security policy.
+
+## State boundary
+
+`EntertainmentState` owns items, collections, immutable activity events and settings. Provider metadata and personal tracking are intentionally separated at field level: metadata refreshes must never overwrite ratings, progress, notes, reviews, tags, favorites or history.
+
+The root store exposes one functional `updateEntertainment()` mutator, matching Health/Forge/Career update semantics and avoiding stale-closure writes.

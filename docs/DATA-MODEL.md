@@ -9,6 +9,8 @@ Kaizen's state is split across typed modules:
   ForgeState).
 - `frontend/lib/healthTypes.ts` — Health space data model (nutrition, hydration,
   sleep, physique, supplements, vitals, mind, settings). See below.
+- `frontend/lib/entertainmentTypes.ts` — AFTERGLOW media items, progress,
+  collections, event history, settings, seed and schema migration.
 - Workout types live in `types.ts` for legacy reasons and are being incrementally
   split out.
 

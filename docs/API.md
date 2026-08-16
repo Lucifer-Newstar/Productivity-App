@@ -43,6 +43,17 @@ Base URL: `http://127.0.0.1:4000/api` (loopback-only by default)
 | tasks      | `/core/tasks`  |
 | notes      | `/core/notes`  |
 
+## Entertainment / AFTERGLOW
+
+| Resource | Path | Semantics |
+|---|---|---|
+| Items | `/entertainment/items` | Generic CRUD |
+| Collections | `/entertainment/collections` | Generic CRUD |
+| Events | `/entertainment/events` | Generic CRUD |
+| Settings | `/entertainment/settings` | Singleton GET/PUT |
+
+Provider-search proxy endpoints are reserved for Entertainment Wave 2 and are not exposed yet. See `spaces/entertainment/APIS.md` for the approved provider/security contract.
+
 ## Workout space
 
 ### Collections (generic CRUD)

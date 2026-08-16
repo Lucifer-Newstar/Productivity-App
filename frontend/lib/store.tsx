@@ -48,6 +48,8 @@ import type {
   HealthState, HealthProfile, HealthSettings,
 } from "./healthTypes";
 import { emptyHealthState, DEFAULT_BEDTIME_ROUTINE, DEFAULT_WAKE_ROUTINE, SEED_SUPPLEMENT_DEFS } from "./healthTypes";
+import type { EntertainmentState } from "./entertainmentTypes";
+import { SEED_ENTERTAINMENT, migrateEntertainment } from "./entertainmentTypes";
 import { isDoneStatus as isTaskDone } from "../components/forge/forgeUtils";
 
 // Generate ids for runtime-created entities.
@@ -659,6 +661,9 @@ interface StoreState {
   // health (VITAL-SIGN OS)
   health: HealthState;
   updateHealth: (updater: (h: HealthState) => Partial<HealthState> | HealthState) => void;
+  // entertainment (cinema/media OS)
+  entertainment: EntertainmentState;
+  updateEntertainment: (updater: (e: EntertainmentState) => Partial<EntertainmentState> | EntertainmentState) => void;
   addTrack: (name: string, color: string) => void;
   updateTrack: (id: string, patch: Partial<CareerTrack>) => void; deleteTrack: (id: string) => void;
   addConcept: (trackId: string, title: string) => void;
@@ -894,6 +899,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
   const [workout, setWorkout] = useLocalState<WorkoutState>("kaizen.workout", SEED_WORKOUT, migrateWorkout);
   const [forge, setForge]     = useLocalState<ForgeState>("kaizen.forge", SEED_FORGE, migrateForge);
   const [health, setHealth]   = useLocalState<HealthState>("kaizen.health", SEED_HEALTH, migrateHealth);
+  const [entertainment, setEntertainment] = useLocalState<EntertainmentState>("kaizen.entertainment", SEED_ENTERTAINMENT, migrateEntertainment);
 
   useEffect(() => {
     ["prod.tasks","prod.notes","prod.projects","prod.habits"].forEach((k) => localStorage.removeItem(k));
@@ -1023,6 +1029,12 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
       const patch = updater(h);
       return { ...h, ...patch };
     }), [setHealth]);
+
+  const updateEntertainment = useCallback<StoreState["updateEntertainment"]>((updater) =>
+    setEntertainment((state) => {
+      const patch = updater(state);
+      return { ...state, ...patch };
+    }), [setEntertainment]);
 
   const addRoadmapFromTemplate = useCallback<StoreState["addRoadmapFromTemplate"]>((templateId, name) => {
     setCareer((c) => {
@@ -1614,6 +1626,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     archiveRoadmap, deleteRoadmap, seedCareerDemo,
     forge, updateForge, seedForgeDemo, logForgeAction,
     health, updateHealth,
+    entertainment, updateEntertainment,
     workout, addExercise, updateExercise, deleteExercise,
     logPR, deletePR, addSkill, deleteSkill, addProgression, toggleProgressionDone, updateProgression, deleteProgression,
     addRoutine, updateRoutine, deleteRoutine, addBlock, updateBlock, deleteBlock, reorderBlocks,

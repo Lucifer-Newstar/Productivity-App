@@ -9,6 +9,7 @@
  *   - Career  → 25 collections                   (frontend/lib/careerTypes.ts)
  *   - Forge   → 37 collections + 2 singletons    (frontend/lib/forgeTypes.ts)
  *   - Health  → 20 collections + 4 singletons    (frontend/lib/healthTypes.ts)
+ *   - Entertainment → 3 collections + 1 singleton (frontend/lib/entertainmentTypes.ts)
  *
  * All routes are JSON. This is intentionally minimal — no database, no auth,
  * no validation library. It lets the offline-first frontend push/pull its
@@ -199,6 +200,10 @@ const db: Record<string, Record<string, Row>> = {
   forgeAffinity: {},
   forgeCustomStatuses: {},
   forgeAuditLog: {},
+  // Entertainment (AFTERGLOW) domain
+  entertainmentItems: {},
+  entertainmentCollections: {},
+  entertainmentEvents: {},
   // Health (VITAL-SIGN) domain
   healthScores: {},
   healthMeals: {},
@@ -243,6 +248,7 @@ const singletons: Record<string, Row | null> = {
   workoutSettings: null,   // WorkoutState.settings (units, phase, plates, etc.)
   workoutMeta: null,       // WorkoutState scalars: activeSessionId, lastWorkoutDate, currentStreak, longestStreak
   careerMeta: null,        // CareerState scalars/objects: retirement plan, linkedin url
+  entertainmentSettings: null, // EntertainmentState.settings
 };
 
 const uid = () => Math.random().toString(36).slice(2, 10) + Date.now().toString(36);
@@ -737,6 +743,10 @@ const CRUD: [string, string][] = [
   ["forgeAffinity",       "/forge/affinity"],
   ["forgeCustomStatuses", "/forge/custom-statuses"],
   ["forgeAuditLog",       "/forge/audit-log"],
+  // Entertainment (AFTERGLOW)
+  ["entertainmentItems",       "/entertainment/items"],
+  ["entertainmentCollections", "/entertainment/collections"],
+  ["entertainmentEvents",      "/entertainment/events"],
   // Health (VITAL-SIGN)
   ["healthScores",         "/health/scores"],
   ["healthMeals",          "/health/meals"],
@@ -789,6 +799,7 @@ const SINGLETONS: [string, string][] = [
   ["workoutSettings", "/workout/settings"],
   ["workoutMeta",     "/workout/meta"],
   ["careerMeta",      "/career/meta"],
+  ["entertainmentSettings", "/entertainment/settings"],
 ];
 for (const [key, path] of SINGLETONS) {
   const full = `/api${path}`;
