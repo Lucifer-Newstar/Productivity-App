@@ -23,7 +23,8 @@ AFTERGLOW is Kaizen's local-first media tracker for books, comics, manga, movies
 - Type-aware page/chapter/episode/movie progress
 - Rating, review, notes, dates, repeats, priority, creators, genres and tags
 - Favorites, archive and delete
-- Full-text local search, filters and five sorting modes
+- Full-text local search, advanced compound filters and five sorting modes
+- MAL XML/GZ, AniList JSON, Trakt/Simkl CSV and Kitsu JSON import with preview/de-duplication
 - Cross-media collections, release/schedule calendar and `.ics` export
 - Immutable activity history and idempotent monthly rollover
 - Archive/data vault with CSV, JSON backup and safe restore

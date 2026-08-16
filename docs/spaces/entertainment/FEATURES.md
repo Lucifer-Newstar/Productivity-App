@@ -18,7 +18,7 @@ The approved specification contains 96 numbered features. Wave 0 and the first W
 | 10 | Tags/custom labels | ✅ |
 | 11 | Personal collections | ✅ cross-media shelves + membership management |
 | 12 | Favorites | ✅ dedicated item flag and filtering-ready state |
-| 13 | Smart filters | 🟡 type/status/search shipped; advanced date/tag/rating builder pending |
+| 13 | Smart filters | ✅ type/status/genre/tag/priority/rating/favorites/backlog age |
 | 14 | Sorting | ✅ title/update/rating/progress/priority + queue order |
 | 15 | Calendar / ICS | ✅ month grid, schedules/releases and `.ics` export |
 | 16 | Tracking history | ✅ immutable activity timeline |
@@ -40,7 +40,7 @@ The approved specification contains 96 numbered features. Wave 0 and the first W
 | 90 | Full-text search | ✅ local library |
 | 91 | API integration | ✅ search, trending and detail-refresh adapters |
 | 92 | Custom API keys | ✅ session-only BYOK; server environment preferred |
-| 93 | Bulk import/export | 🟡 complete CSV export; external-service imports pending |
+| 93 | Bulk import/export | ✅ CSV export + MAL/AniList/Trakt/Simkl/Kitsu import |
 | 94 | Backup/restore | ✅ bounded JSON backup + safe migrated restore |
 | 95 | Dark/light mode | ✅ |
 | 96 | Multi-language | ❌ Wave 9 |

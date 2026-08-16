@@ -20,7 +20,7 @@ _Last updated: 2026-08-16, Wave 0 + Wave 1 core._
 - [x] Open Library cover redirect chain — allowlisted proxy returns bounded JPEG 200
 - [x] Unconfigured MAL — bounded 503 with configuration guidance
 - [x] Cross-site search and non-allowlisted image host — rejected 403
-- [x] `node scripts/qa-entertainment.js` — 62/62 assertions
+- [x] `node scripts/qa-entertainment.js` — 71/71 assertions
 
 ## Wave 1 functional checklist
 
@@ -49,6 +49,12 @@ _Last updated: 2026-08-16, Wave 0 + Wave 1 core._
 - [x] Archive restore/permanent cleanup maintains collection referential integrity
 - [x] JSON restore uses bounded safe parser plus schema migration
 - [x] CSV export applies formula-injection neutralization
+- [x] MAL anime/manga XML and compressed XML.GZ parser
+- [x] AniList and Kitsu JSON parsers
+- [x] Trakt and Simkl CSV parsers
+- [x] Expanded-import 20 MB and imported-record 10,000 caps
+- [x] Import preview plus provider-ID/title fallback de-duplication
+- [x] Compound genre/tag/priority/rating/favorites/backlog-age filters
 
 ## Security checklist
 

@@ -46,7 +46,7 @@ Final slice shipped:
 
 Live-provider contract fixtures remain an ongoing QA improvement rather than a Wave 2 blocker.
 
-## Wave 3 — organization and history 🟡 core complete
+## Wave 3 — organization and history ✅
 
 Shipped:
 
@@ -59,8 +59,9 @@ Shipped:
 - CSV export with spreadsheet-formula neutralization
 - Full JSON backup plus bounded, prototype-safe, migrated restore
 - Entertainment schema v2 migration
-
-Remaining as Wave 3B: advanced compound filters and external Trakt/MAL/AniList/Simkl/Kitsu import adapters.
+- Advanced genre/tag/priority/rating/favorites/backlog-age smart filters
+- MAL XML/XML.GZ, AniList JSON, Trakt CSV, Simkl CSV and Kitsu JSON import adapters
+- Bounded import preview, status/progress mapping and duplicate suppression
 
 ## Wave 4 — media-specific depth
 

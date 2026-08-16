@@ -58,6 +58,7 @@ export default function EntertainmentPage() {
   const [type,setType]=useState<MediaType|"all">("all");
   const [status,setStatus]=useState<MediaStatus|"all">("all");
   const [sort,setSort]=useState<"updated"|"title"|"rating"|"progress"|"priority">("updated");
+  const [advancedOpen,setAdvancedOpen]=useState(false),[genre,setGenre]=useState("all"),[tag,setTag]=useState("all"),[priorityFilter,setPriorityFilter]=useState<MediaPriority|"all">("all"),[minRating,setMinRating]=useState(0),[backlogAge,setBacklogAge]=useState(0),[favoritesOnly,setFavoritesOnly]=useState(false);
   const [addOpen,setAddOpen]=useState(false);
   const [providerOpen,setProviderOpen]=useState(false);
   const [selected,setSelected]=useState<string|null>(null);
@@ -70,7 +71,7 @@ export default function EntertainmentPage() {
   const addSearchResult=(r:MediaSearchResult)=>{const item=itemFromSearchResult(r);updateEntertainment(s=>s.items.some(i=>i.provider===item.provider&&i.providerId===item.providerId)?{}:{items:[item,...s.items],events:[event(item.id,"added",r.provider),...s.events]});};
   const refreshItem=async(item:EntertainmentItem)=>{if(!item.provider||item.provider==="manual"||!item.providerId)throw new Error("Manual entries have no provider metadata to refresh.");const response=await fetch(`/api/entertainment/details?provider=${encodeURIComponent(item.provider)}&id=${encodeURIComponent(item.providerId)}&type=${item.type}`,{headers:providerHeaders()}),data=await response.json();if(!response.ok)throw new Error(data.error||"Metadata refresh failed");const r=data.result as MediaSearchResult;patchItem(item.id,{title:r.title,originalTitle:r.originalTitle,description:r.description,coverUrl:r.coverUrl,releaseDate:r.releaseDate,releaseYear:r.releaseYear,genres:r.genres,creators:r.creators,cast:r.cast,studios:r.studios,language:r.language,progress:{...item.progress,totalPages:r.totalPages??item.progress.totalPages,totalChapters:r.totalChapters??item.progress.totalChapters,totalVolumes:r.totalVolumes??item.progress.totalVolumes,totalEpisodes:r.totalEpisodes??item.progress.totalEpisodes,totalSeasons:r.totalSeasons??item.progress.totalSeasons}},"updated",`refreshed from ${r.provider}`)};
 
-  const visible=useMemo(()=>entertainment.items.filter(i=>!i.archived).filter(i=>type==="all"||i.type===type).filter(i=>status==="all"||i.status===status).filter(i=>{
+  const visible=useMemo(()=>entertainment.items.filter(i=>!i.archived).filter(i=>type==="all"||i.type===type).filter(i=>status==="all"||i.status===status).filter(i=>genre==="all"||i.genres.includes(genre)).filter(i=>tag==="all"||i.tags.includes(tag)).filter(i=>priorityFilter==="all"||i.priority===priorityFilter).filter(i=>(i.rating??0)>=minRating).filter(i=>!favoritesOnly||i.favorite).filter(i=>!backlogAge||(i.status==="planned"&&i.createdAt<Date.now()-backlogAge*86_400_000)).filter(i=>{
     const q=search.trim().toLowerCase(); if(!q)return true;
     return [i.title,i.description,...i.creators,...i.genres,...i.tags,i.notes,i.review].filter(Boolean).join(" ").toLowerCase().includes(q);
   }).sort((a,b)=>{
@@ -79,13 +80,14 @@ export default function EntertainmentPage() {
     if(sort==="progress")return progressPct(b)-progressPct(a);
     if(sort==="priority")return ({high:0,medium:1,low:2}[a.priority]-{high:0,medium:1,low:2}[b.priority])||(a.queueOrder-b.queueOrder);
     return b.updatedAt-a.updatedAt;
-  }),[entertainment.items,type,status,search,sort]);
+  }),[entertainment.items,type,status,genre,tag,priorityFilter,minRating,backlogAge,favoritesOnly,search,sort]);
 
   const active=entertainment.items.filter(i=>i.status==="in-progress"&&!i.archived);
   const completed=entertainment.items.filter(i=>i.status==="completed");
   const planned=entertainment.items.filter(i=>i.status==="planned"&&!i.archived);
   const hours=Math.round(entertainment.items.reduce((n,i)=>n+(i.minutesConsumed??0),0)/60);
   const selectedItem=entertainment.items.find(i=>i.id===selected);
+  const genreOptions=Array.from(new Set(entertainment.items.flatMap(i=>i.genres))).sort();const tagOptions=Array.from(new Set(entertainment.items.flatMap(i=>i.tags))).sort();
   useEffect(()=>{const month=new Date().toISOString().slice(0,7);updateEntertainment(s=>{if(!s.settings.monthlyRollover||s.lastRolloverMonth===month)return{};const moved=s.items.filter(i=>i.status==="completed"&&!i.archived&&!!i.completedAt&&i.completedAt.slice(0,7)<month);return{lastRolloverMonth:month,items:s.items.map(i=>moved.some(x=>x.id===i.id)?{...i,archived:true,updatedAt:Date.now()}:i),events:[...moved.map(i=>event(i.id,"rollover",month)),...s.events].slice(0,5000)}})},[updateEntertainment]);
 
   return <div className="ent-root" data-light={theme==="light"?"1":"0"}>
@@ -133,8 +135,8 @@ export default function EntertainmentPage() {
           : view==="archive" ? <ArchiveView state={entertainment} update={updateEntertainment}/>
           : view==="discover" ? <Discover existing={entertainment.items} onAdd={addSearchResult}/> : <>
           <div className="flex flex-wrap items-end gap-3 mb-6"><div className="mr-auto"><div className="text-xs tracking-[.24em] text-cyan-400">THE ARCHIVE</div><h1 className="text-3xl font-black mt-1">Library <span style={{color:"var(--muted)"}}>({visible.length})</span></h1></div>
-            <Filter value={type} onChange={v=>setType(v as any)} options={[['all','All media'],...Object.entries(MEDIA_TYPE_LABELS)]}/><Filter value={status} onChange={v=>setStatus(v as any)} options={[['all','All statuses'],...STATUS.map(s=>[s.id,s.label])]}/><Filter value={sort} onChange={v=>setSort(v as any)} options={[["updated","Recently updated"],["title","Title"],["rating","Rating"],["progress","Progress"],["priority","Priority"]]}/>
-          </div>
+            <Filter value={type} onChange={v=>setType(v as any)} options={[['all','All media'],...Object.entries(MEDIA_TYPE_LABELS)]}/><Filter value={status} onChange={v=>setStatus(v as any)} options={[['all','All statuses'],...STATUS.map(s=>[s.id,s.label])]}/><Filter value={sort} onChange={v=>setSort(v as any)} options={[["updated","Recently updated"],["title","Title"],["rating","Rating"],["progress","Progress"],["priority","Priority"]]}/><button onClick={()=>setAdvancedOpen(v=>!v)} className={`rounded-xl border px-3 py-2 text-xs ${advancedOpen?"bg-fuchsia-500/15 text-fuchsia-300":""}`} style={{borderColor:"var(--line)"}}>SMART FILTERS</button>
+          </div>{advancedOpen&&<div className="ent-panel rounded-2xl p-4 grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-3 mb-5"><Filter value={genre} onChange={setGenre} options={[["all","All genres"],...genreOptions.map(x=>[x,x])]}/><Filter value={tag} onChange={setTag} options={[["all","All tags"],...tagOptions.map(x=>[x,x])]}/><Filter value={priorityFilter} onChange={v=>setPriorityFilter(v as MediaPriority|"all")} options={[["all","All priorities"],["high","High"],["medium","Medium"],["low","Low"]]}/><Filter value={String(minRating)} onChange={v=>setMinRating(Number(v))} options={[["0","Any rating"],["5","5+ rating"],["7","7+ rating"],["8","8+ rating"],["9","9+ rating"]]}/><Filter value={String(backlogAge)} onChange={v=>setBacklogAge(Number(v))} options={[["0","Any backlog age"],["30","Planned 30+ days"],["90","Planned 90+ days"],["365","Planned 1+ year"]]}/><label className="rounded-xl border px-3 py-2 text-xs flex items-center gap-2" style={{borderColor:"var(--line)"}}><input type="checkbox" checked={favoritesOnly} onChange={e=>setFavoritesOnly(e.target.checked)}/> Favorites only</label><button onClick={()=>{setGenre("all");setTag("all");setPriorityFilter("all");setMinRating(0);setBacklogAge(0);setFavoritesOnly(false)}} className="text-[10px] text-fuchsia-400 col-span-full text-left">RESET SMART FILTERS</button></div>}
           <div className="grid md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-4">{visible.map(i=><MediaCard key={i.id} item={i} onOpen={()=>setSelected(i.id)} onPatch={patchItem}/>)}{!visible.length&&<Empty text="No titles match this cut."/>}</div>
         </>}
       </main>

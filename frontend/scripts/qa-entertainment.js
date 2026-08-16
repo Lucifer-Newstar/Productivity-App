@@ -77,4 +77,14 @@ test('CSV export neutralizes spreadsheet formulae',organize.includes('map(csvCel
 test('monthly rollover is idempotent by month',page.includes('lastRolloverMonth===month')&&page.includes('"rollover"'));
 test('schedule date is editable',page.includes('Schedule next')&&page.includes('scheduledFor'));
 test('organization routes are enabled',page.includes('label:"Collections"')&&page.includes('label:"History"')&&page.includes('label:"Archive"'));
+const importer=read('lib/entertainmentImport.ts');
+test('MAL XML anime/manga parser exists',importer.includes('parseMalXml')&&importer.includes('series_animedb_id')&&importer.includes('manga_mangadb_id'));
+test('AniList and Kitsu JSON parsers exist',importer.includes('parseAniListJson')&&importer.includes('parseKitsuJson'));
+test('Trakt/Simkl CSV adapter exists',importer.includes('parseCsv')&&importer.includes('"trakt"|"simkl"'));
+test('external imports enforce size and 10k caps',importer.includes('assertImportFileSize')&&importer.includes('10_000'));
+test('MAL gzip export has bounded decompression',importer.includes('DecompressionStream')&&importer.includes('Expanded import exceeds 20 MB'));
+test('import preview and duplicate skip are wired',organize.includes('IMPORT PREVIEW')&&organize.includes('duplicates will be skipped'));
+test('advanced genre/tag/priority filters exist',page.includes('All genres')&&page.includes('All tags')&&page.includes('All priorities'));
+test('rating, backlog-age and favorites filters exist',page.includes('Any rating')&&page.includes('Planned 90+ days')&&page.includes('Favorites only'));
+test('smart filters can be reset',page.includes('RESET SMART FILTERS'));
 console.log(`\n${pass} passed, ${fail} failed`); if(fail)process.exit(1);

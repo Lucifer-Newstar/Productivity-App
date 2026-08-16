@@ -48,7 +48,7 @@ export interface MediaProgress {
 
 export interface EntertainmentItem {
   id: string;
-  provider?: "mal" | "anilist" | "tmdb" | "google-books" | "open-library" | "comic-vine" | "nyt" | "manual";
+  provider?: "mal" | "anilist" | "tmdb" | "google-books" | "open-library" | "comic-vine" | "nyt" | "trakt" | "simkl" | "kitsu" | "manual";
   providerId?: string;
   type: MediaType;
   title: string;
