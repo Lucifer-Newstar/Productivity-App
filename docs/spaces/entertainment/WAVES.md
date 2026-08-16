@@ -46,14 +46,21 @@ Final slice shipped:
 
 Live-provider contract fixtures remain an ongoing QA improvement rather than a Wave 2 blocker.
 
-## Wave 3 — organization and history
+## Wave 3 — organization and history 🟡 core complete
 
-- Collections, favorites view and advanced smart filters
-- Calendar, release/schedule events and `.ics` export
-- Immutable activity timeline and monthly rollover
-- Archive manager
-- JSON/CSV backup and safe restore
-- Trakt/MAL/AniList/Simkl/Kitsu import adapters
+Shipped:
+
+- Cross-media collections with membership management
+- Calendar month grid for schedules and provider release dates
+- Local `.ics` export
+- Immutable activity timeline
+- Idempotent month-boundary rollover for previously completed titles
+- Archive restore/permanent-delete manager
+- CSV export with spreadsheet-formula neutralization
+- Full JSON backup plus bounded, prototype-safe, migrated restore
+- Entertainment schema v2 migration
+
+Remaining as Wave 3B: advanced compound filters and external Trakt/MAL/AniList/Simkl/Kitsu import adapters.
 
 ## Wave 4 — media-specific depth
 

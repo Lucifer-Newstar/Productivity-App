@@ -15,7 +15,7 @@ test('rating, review and notes fields',types.includes('rating?:')&&types.include
 test('dates and repeats fields',types.includes('startedAt?:')&&types.includes('completedAt?:')&&types.includes('repeats:'));
 test('priority, queue and tags fields',types.includes('priority:')&&types.includes('queueOrder:')&&types.includes('tags:'));
 test('favorites and archive fields',types.includes('favorite:')&&types.includes('archived:'));
-test('schema version is explicit',types.includes('schemaVersion: 1'));
+test('schema version is explicit',types.includes('schemaVersion: 2'));
 test('defensive migration exists',types.includes('migrateEntertainment'));
 test('first-run seed covers all sections',Array.from(types.matchAll(/type:"(book|comic|manga|movie|series|anime)"/g)).length>=5);
 test('store persists dedicated key',store.includes('"kaizen.entertainment"'));
@@ -66,4 +66,15 @@ test('detail refresh route validates provider, type and id',detailsRoute.include
 test('metadata refresh preserves personal state',page.includes('progress:{...item.progress')&&!page.includes('rating:r.rating'));
 test('approved local TMDB logo is present',fs.existsSync(path.join(root,'public/entertainment/tmdb-logo.svg')));
 test('provider detail refresh button present',page.includes('REFRESH FROM'));
+const organize=read('components/entertainment/EntertainmentOrganize.tsx');
+test('collections CRUD and membership are wired',organize.includes('function CollectionsView')&&organize.includes('itemIds.includes'));
+test('calendar renders Monday-first month grid',organize.includes('["Mon","Tue","Wed","Thu","Fri","Sat","Sun"]'));
+test('calendar exports RFC-style ICS',organize.includes('BEGIN:VCALENDAR')&&organize.includes('DTSTART;VALUE=DATE'));
+test('activity timeline resolves event labels',organize.includes('eventLabel')&&organize.includes('Activity history'));
+test('archive restore and permanent cleanup are wired',organize.includes('ArchiveRestore')&&organize.includes('collections:s.collections.map'));
+test('JSON backup uses safe bounded restore',organize.includes('parseSafeJsonFile')&&organize.includes('assertImportFileSize'));
+test('CSV export neutralizes spreadsheet formulae',organize.includes('map(csvCell)'));
+test('monthly rollover is idempotent by month',page.includes('lastRolloverMonth===month')&&page.includes('"rollover"'));
+test('schedule date is editable',page.includes('Schedule next')&&page.includes('scheduledFor'));
+test('organization routes are enabled',page.includes('label:"Collections"')&&page.includes('label:"History"')&&page.includes('label:"Archive"'));
 console.log(`\n${pass} passed, ${fail} failed`); if(fail)process.exit(1);

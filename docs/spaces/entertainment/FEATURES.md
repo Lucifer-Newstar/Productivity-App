@@ -16,7 +16,14 @@ The approved specification contains 96 numbered features. Wave 0 and the first W
 | 8 | Notes/reviews/privacy | 🟡 notes/reviews shipped; sharing privacy Wave 7 |
 | 9 | Priority/manual queue | 🟡 priority shipped; drag-order pending |
 | 10 | Tags/custom labels | ✅ |
-| 11–18 | Lists, filters, calendar, history/archive | 🟡 filters/sort/archive shipped; remainder Wave 3 |
+| 11 | Personal collections | ✅ cross-media shelves + membership management |
+| 12 | Favorites | ✅ dedicated item flag and filtering-ready state |
+| 13 | Smart filters | 🟡 type/status/search shipped; advanced date/tag/rating builder pending |
+| 14 | Sorting | ✅ title/update/rating/progress/priority + queue order |
+| 15 | Calendar / ICS | ✅ month grid, schedules/releases and `.ics` export |
+| 16 | Tracking history | ✅ immutable activity timeline |
+| 17 | Monthly rollover | ✅ idempotent prior-month completed archival |
+| 18 | Archive | ✅ archive, restore, permanent cleanup and data vault |
 | 19–25 | Books depth | 🟡 page progress/format base shipped; Wave 4 depth pending |
 | 26–30 | Comics/manga depth | 🟡 chapter progress base shipped; Wave 4 depth pending |
 | 31–36 | Series depth | 🟡 episode progress base shipped; Wave 4 depth pending |
@@ -33,7 +40,7 @@ The approved specification contains 96 numbered features. Wave 0 and the first W
 | 90 | Full-text search | ✅ local library |
 | 91 | API integration | ✅ search, trending and detail-refresh adapters |
 | 92 | Custom API keys | ✅ session-only BYOK; server environment preferred |
-| 93 | Bulk import/export | ❌ Wave 3 |
-| 94 | Backup/restore | ❌ Wave 3 |
+| 93 | Bulk import/export | 🟡 complete CSV export; external-service imports pending |
+| 94 | Backup/restore | ✅ bounded JSON backup + safe migrated restore |
 | 95 | Dark/light mode | ✅ |
 | 96 | Multi-language | ❌ Wave 9 |

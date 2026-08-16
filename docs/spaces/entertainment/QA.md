@@ -20,7 +20,7 @@ _Last updated: 2026-08-16, Wave 0 + Wave 1 core._
 - [x] Open Library cover redirect chain — allowlisted proxy returns bounded JPEG 200
 - [x] Unconfigured MAL — bounded 503 with configuration guidance
 - [x] Cross-site search and non-allowlisted image host — rejected 403
-- [x] `node scripts/qa-entertainment.js` — 52/52 assertions
+- [x] `node scripts/qa-entertainment.js` — 62/62 assertions
 
 ## Wave 1 functional checklist
 
@@ -38,6 +38,17 @@ _Last updated: 2026-08-16, Wave 0 + Wave 1 core._
 - [x] Search covers title, description, creators, genres, tags, notes and review
 - [x] Type/status filters and sorting work
 - [x] Empty result states are bounded
+
+## Wave 3 organization checklist
+
+- [x] Collections CRUD and membership management
+- [x] Monday-first calendar and local RFC-style `.ics` export
+- [x] Schedule date editing and provider release markers
+- [x] Activity timeline resolves item/event labels
+- [x] Monthly rollover runs once per month and archives only older completions
+- [x] Archive restore/permanent cleanup maintains collection referential integrity
+- [x] JSON restore uses bounded safe parser plus schema migration
+- [x] CSV export applies formula-injection neutralization
 
 ## Security checklist
 
