@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "status": "benchmark candidates only — no architecture selection",
+  "status": "benchmark candidates only \u2014 no architecture selection",
   "runtime": {
     "llamaServer": "<LOCAL_LLAMA_SERVER_PATH>",
     "llamaBench": "<LOCAL_LLAMA_BENCH_PATH>",
@@ -20,8 +20,17 @@
     "temperature": 0,
     "maxOutputTokens": 256,
     "repetitions": 20,
-    "contextSizes": [4096, 8192],
-    "concurrency": [1, 2],
+    "contextSizes": [
+      2048,
+      4096,
+      8192,
+      12288,
+      16384
+    ],
+    "concurrency": [
+      1,
+      2
+    ],
     "cancellationDelaySeconds": 1,
     "recoveryObservationSeconds": 30,
     "strictArtifactHashes": true
@@ -62,7 +71,7 @@
     },
     {
       "id": "larger-spill-control",
-      "label": "7B–8B Q4_K_M spill/control candidate",
+      "label": "7B\u20138B Q4_K_M spill/control candidate",
       "sourcePage": "SELECT_ONLY_AFTER_4B_BASELINES",
       "modelPath": "<LOCAL_LARGER_CONTROL_PATH>",
       "artifactSha256": "CAPTURE_MODEL_SHA256",

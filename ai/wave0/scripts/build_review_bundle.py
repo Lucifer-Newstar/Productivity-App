@@ -31,7 +31,7 @@ def main():
     if len(candidates)<args.minimum_candidates:blockers.append(f"need at least {args.minimum_candidates} measured candidates")
     public_candidates={}
     for cid,c in sorted(candidates.items()):
-        missing_profiles=sorted(required_profiles-c["profiles"]);missing_contexts=sorted({4096,8192}-c["contexts"])
+        missing_profiles=sorted(required_profiles-c["profiles"]);missing_contexts=sorted({2048,4096,8192,12288,16384}-c["contexts"])
         if missing_profiles:blockers.append(f"{cid}: missing profiles {missing_profiles}")
         if missing_contexts:blockers.append(f"{cid}: missing contexts {missing_contexts}")
         if not c["soakDurations"] or any(not x or x<1800 for x in c["soakDurations"]):blockers.append(f"{cid}: missing 30-minute soak")

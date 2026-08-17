@@ -99,7 +99,7 @@ $scoreArgs = @(
 )
 if ($soakPath) { $scoreArgs += @("--soak", $soakPath) }
 if ($embeddingPath) { $scoreArgs += @("--embeddings", $embeddingPath) }
-Invoke-Step "Frozen W0-GATE-1 scoring" { python @scoreArgs }
+Invoke-Step "Frozen W0-GATE-2 scoring" { python @scoreArgs }
 
 $sanitizeArgs = @(
   "scripts/sanitize_results.py",

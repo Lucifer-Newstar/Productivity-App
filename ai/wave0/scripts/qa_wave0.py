@@ -22,7 +22,7 @@ def main():
     source=(ROOT/"scripts/run_benchmarks.py").read_text()
     check("benchmark has no downloader",all(x not in source for x in ["urlretrieve(","huggingface_hub","requests.get("]))
     check("benchmark redacts model paths",'"<local-path-redacted>"' in source)
-    orchestrator=(ROOT/"run_target_wave0.ps1").read_text();check("target orchestrator preserves Wave 0 boundary",all(x in orchestrator for x in ["results-local","sanitize_results.py","score_results.py","Exactly one candidate","Do not start Wave 1"]) and "get_today" not in orchestrator)
+    orchestrator=(ROOT/"run_target_wave0.ps1").read_text();check("target orchestrator preserves Wave 0 boundary",all(x in orchestrator for x in ["results-local","sanitize_results.py","score_results.py","Exactly one candidate","starting v0.2"]) and "get_today" not in orchestrator)
     run(["node","prototypes/revision-coordinator.mjs"]);check("revision prototype passes",True)
     run([sys.executable,"prototypes/pairing_server.py","--self-test"]);check("pairing prototype passes",True)
     for p in list((ROOT/"scripts").glob("*.py"))+list((ROOT/"prototypes").glob("*.py")):py_compile.compile(str(p),doraise=True)
@@ -41,20 +41,20 @@ def main():
         try:run([sys.executable,"scripts/benchmark_embeddings.py","--base-url","http://127.0.0.1:18993","--repetitions","2","--output",str(d/"embeddings.json")])
         finally:embedding_server.terminate();embedding_server.wait(timeout=5)
         embedding_result=json.loads((d/"embeddings.json").read_text());check("embedding harness ranks synthetic paraphrases",embedding_result["ranking"]["hitAt1"]==1)
-        run([sys.executable,"scripts/score_results.py","--models",str(d/"model.json"),"--retrieval",str(d/"retrieval.json"),"--embeddings",str(d/"embeddings.json"),"--lifecycle",str(d/"lifecycle.json"),"--pairing",str(d/"pairing.json"),"--revision",str(d/"revision.json"),"--soak",str(d/"soak.json"),"--output",str(d/"score.json")]);score=json.loads((d/"score.json").read_text());check("frozen gate scorer reports incomplete synthetic run",score["gateVersion"]=="W0-GATE-1" and score["overall"] in ("incomplete","fail"))
+        run([sys.executable,"scripts/score_results.py","--models",str(d/"model.json"),"--retrieval",str(d/"retrieval.json"),"--embeddings",str(d/"embeddings.json"),"--lifecycle",str(d/"lifecycle.json"),"--pairing",str(d/"pairing.json"),"--revision",str(d/"revision.json"),"--soak",str(d/"soak.json"),"--output",str(d/"score.json")]);score=json.loads((d/"score.json").read_text());check("frozen gate scorer reports incomplete synthetic run",score["gateVersion"]=="W0-GATE-2" and score["overall"] in ("incomplete","fail"))
         public=ROOT/"results-public/.qa-sanitized.json"
         try:
-            run([sys.executable,"scripts/sanitize_results.py","--hardware",str(d/"hardware.json"),"--models",str(d/"model.json"),"--retrieval",str(d/"retrieval.json"),"--embeddings",str(d/"embeddings.json"),"--lifecycle",str(d/"lifecycle.json"),"--pairing",str(d/"pairing.json"),"--revision",str(d/"revision.json"),"--score",str(d/"score.json"),"--soak",str(d/"soak.json"),"--transport",str(d/"transport.json"),"--output",str(public)]);sanitized=json.loads(public.read_text());check("sanitizer emits allowlisted public aggregate",sanitized["classification"]=="PUBLIC-SANITIZED-AGGREGATE" and "runs" not in sanitized.get("models",{}) and sanitized["embeddings"]["ranking"]["hitAt1"]==1 and sanitized["pairing"]["passed"] and sanitized["revision"]["passed"] and sanitized["score"]["gateVersion"]=="W0-GATE-1" and sanitized["soak"]["summary"]["totalRequests"]>0)
+            run([sys.executable,"scripts/sanitize_results.py","--hardware",str(d/"hardware.json"),"--models",str(d/"model.json"),"--retrieval",str(d/"retrieval.json"),"--embeddings",str(d/"embeddings.json"),"--lifecycle",str(d/"lifecycle.json"),"--pairing",str(d/"pairing.json"),"--revision",str(d/"revision.json"),"--score",str(d/"score.json"),"--soak",str(d/"soak.json"),"--transport",str(d/"transport.json"),"--output",str(public)]);sanitized=json.loads(public.read_text());check("sanitizer emits allowlisted public aggregate",sanitized["classification"]=="PUBLIC-SANITIZED-AGGREGATE" and "runs" not in sanitized.get("models",{}) and sanitized["embeddings"]["ranking"]["hitAt1"]==1 and sanitized["pairing"]["passed"] and sanitized["revision"]["passed"] and sanitized["score"]["gateVersion"]=="W0-GATE-2" and sanitized["soak"]["summary"]["totalRequests"]>0)
         finally: public.unlink(missing_ok=True)
     with tempfile.TemporaryDirectory() as bundle_dir:
         bundle_dir=pathlib.Path(bundle_dir)
         for candidate in ("a","b","c"):
             for profile in ("AC balanced","AC performance"):
-                aggregate={"classification":"PUBLIC-SANITIZED-AGGREGATE","hardware":{"benchmarkProfileLabel":profile},"models":{"summaries":[{"candidate":candidate,"contextSize":4096},{"candidate":candidate,"contextSize":8192}]},"score":{"overall":"pass"},"soak":{"actualDurationSeconds":1800},"lifecycle":{"passed":True}}
+                aggregate={"classification":"PUBLIC-SANITIZED-AGGREGATE","hardware":{"benchmarkProfileLabel":profile},"models":{"summaries":[{"candidate":candidate,"contextSize":context} for context in (2048,4096,8192,12288,16384)]},"score":{"overall":"pass"},"soak":{"actualDurationSeconds":1800},"lifecycle":{"passed":True}}
                 (bundle_dir/f"{candidate}-{profile.replace(' ','-')}.json").write_text(json.dumps(aggregate))
         run([sys.executable,"scripts/build_review_bundle.py","--input-dir",str(bundle_dir),"--output",str(bundle_dir/"bundle.json")]);bundle=json.loads((bundle_dir/"bundle.json").read_text());check("review bundle enforces complete candidate/profile coverage",bundle["selectionReady"] and len(bundle["candidates"])==3)
     run([sys.executable,"scripts/privacy_scan.py","--mode","tracked"]);check("tracked public files pass privacy scan",True)
     production_markers=("def get_today", '"/get_today"', "'/get_today'")
-    check("no production get_today implementation",not any(any(m in p.read_text(errors="ignore") for m in production_markers) for p in ROOT.rglob("*.py") if p.name!="qa_wave0.py"))
+    check("Wave 0 harness contains no production get_today implementation",not any(any(m in p.read_text(errors="ignore") for m in production_markers) for p in ROOT.rglob("*.py") if p.name!="qa_wave0.py"))
     print(f"\n{passed} Wave 0 harness checks passed")
 if __name__=="__main__":main()

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Apply frozen W0-GATE-1 thresholds without changing them after results."""
+"""Apply frozen W0-GATE-2 thresholds without changing them after results."""
 from __future__ import annotations
 import argparse, json
 from pathlib import Path
@@ -26,7 +26,7 @@ def main():
         mem=s.get("memory") or {};gpu=s.get("nvidia") or {};check(rows,prefix+":process-ram",mem.get("peakProcessRssBytes"),"max",mg["processRamBytesMax"]);check(rows,prefix+":system-headroom",mem.get("minimumSystemAvailableBytes"),"min",mg["systemAvailableBytesMin"]);check(rows,prefix+":vram",gpu.get("peakMemoryUsedMiB"),"max",mg["vramPeakMiBMax"]);check(rows,prefix+":temp-p95",gpu.get("p95TemperatureC"),"max",mg["gpuTemperatureP95CMax"]);check(rows,prefix+":temp-max",gpu.get("peakTemperatureC"),"max",mg["gpuTemperatureAbsoluteCMax"]);check(rows,prefix+":shutdown",s.get("shutdownMs"),"max",mg["shutdownMsMax"])
     for candidate in sorted({x.get("candidate") for x in summaries}):
         candidate_rows=[x for x in summaries if x.get("candidate")==candidate];base=next((x for x in candidate_rows if x.get("contextSize")==4096),None);large=next((x for x in candidate_rows if x.get("contextSize")==8192),None)
-        check(rows,f"model:{candidate}:4k-required",base is not None,"eq",True)
+        for context in mg.get("contextSizesRequiredForMeasurement",[4096,8192]):check(rows,f"model:{candidate}:{context}-measured",any(x.get("contextSize")==context for x in candidate_rows),"eq",True)
         base_ttft=(base or {}).get("latencyMs",{}).get("ttft",{}).get("p50");large_ttft=(large or {}).get("latencyMs",{}).get("ttft",{}).get("p50");ratio=large_ttft/base_ttft if base_ttft and large_ttft else None;check(rows,f"model:{candidate}:8k-ttft-ratio",ratio,"max",mg["context8kLatencyRatioMax"])
         for row in candidate_rows:
             c={x.get("clients"):x for x in row.get("concurrency",[])};single=c.get(1,{}).get("p95RequestMs");double=c.get(2,{}).get("p95RequestMs");cr=double/single if single and double else None;check(rows,f"model:{candidate}:{row.get('contextSize')}:concurrency2-ratio",cr,"max",mg["concurrency2LatencyRatioMax"])

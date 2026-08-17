@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "gateVersion": "W0-GATE-1",
+  "gateVersion": "W0-GATE-2",
   "frozenBeforeTargetMeasurements": true,
   "model": {
     "startupP95MsMax": 45000,
@@ -24,7 +24,14 @@
     "shutdownMsMax": 10000,
     "resourceRecoverySecondsMax": 30,
     "context8kLatencyRatioMax": 2.0,
-    "concurrency2LatencyRatioMax": 2.5
+    "concurrency2LatencyRatioMax": 2.5,
+    "contextSizesRequiredForMeasurement": [
+      2048,
+      4096,
+      8192,
+      12288,
+      16384
+    ]
   },
   "retrieval": {
     "hitAt1Min": 0.95,
