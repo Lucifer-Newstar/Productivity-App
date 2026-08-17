@@ -79,6 +79,28 @@ Editing creates an audit event and preserves origin metadata; it does not falsif
 
 **PROPOSED DECISION:** explicit expiry defaults by memory type and sensitivity. No retention duration is locked yet. Raw conversations are not memories and are governed separately by [PRIVACY.md](PRIVACY.md).
 
-## Storage
+## Storage and independent lifecycle
 
-**REQUIRES TECHNICAL SPIKE:** local memory store and vector-index technology. Requirements: transactions, schema migrations, deletion guarantees, metadata filtering, export/wipe, backup behavior and Windows compatibility.
+**LOCKED DECISION:** Kaizen state and AI state have deliberately independent lifecycles.
+
+- Wiping AI state removes memories, conversations, embeddings and AI caches without modifying authoritative Kaizen records.
+- Wiping/resetting Kaizen state does not preserve derived AI claims as substitute truth; source-dependent memories become orphaned and must expire, be contested or be explicitly re-grounded.
+- AI backup inclusion is explicit and separately labeled. Restoring an AI backup never restores/overwrites authoritative Kaizen records.
+- Memory deletion must remove the record, retrieval chunks and every vector/index reference; tombstones may persist only as non-content audit metadata under the retention policy.
+- Corrupt AI storage fails closed and can be rebuilt from retained authoritative sources only with consent. It cannot block deterministic Kaizen startup.
+
+**REQUIRES TECHNICAL SPIKE:** local memory store and vector-index technology. The evaluation must cover:
+
+- transactions and crash consistency,
+- schema migrations and downgrade behavior,
+- backup exclusion/inclusion, restore and version mismatch,
+- record deletion and verifiable vector deletion,
+- corruption detection, quarantine and recovery/rebuild,
+- Windows path, locking, antivirus and packaging behavior,
+- independent Kaizen wipe and AI wipe scenarios,
+- source deletion/ID change and orphan handling,
+- consent revocation cleanup,
+- metadata filtering, export and full wipe,
+- index-model migration when embedding dimensions change.
+
+No storage backend is selected at the architecture gate.

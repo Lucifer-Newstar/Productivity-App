@@ -64,4 +64,10 @@ Concise records of decisions that affect multiple spaces.
 
 **Why:** An AI service cannot safely infer current browser-owned state, and premature model/vector/runtime choices would create accidental coupling. Tools use versioned plain contracts rather than React imports; deterministic analytics remain the source of truth.
 
-**Status:** Architecture documentation approved; Wave 0 and runtime implementation are not yet authorized. Detailed AI decisions live in [`../ai/DECISION-REGISTER.md`](../ai/DECISION-REGISTER.md).
+**Status:** Architecture documentation approved; Wave 0 preparation is authorized but production AI feature implementation is not. Detailed AI decisions live in [`../ai/DECISION-REGISTER.md`](../ai/DECISION-REGISTER.md).
+
+## ADR-011 — Intelligence source-of-truth precedence
+
+**Decision:** Current authoritative domain records outrank deterministic derived analytics, which outrank confirmed memory, episodic/pattern memory, inference and recommendations. Stale analytics never outrank newer records.
+
+**Why:** AI memory and generated interpretations are contextual aids, not competing databases. Conflicts trigger memory validation and user-visible disclosure rather than silent state override.

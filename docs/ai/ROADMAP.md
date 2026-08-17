@@ -1,6 +1,6 @@
 # Intelligence Engine roadmap and acceptance gates
 
-Documentation approval is required before Wave 0. Completion of this roadmap document does not authorize implementation.
+Architecture review has authorized Wave 0 preparation and controlled feasibility spikes. Production AI feature implementation remains blocked until the Wave 0 selection report is reviewed.
 
 ## Wave 0 — Architecture and feasibility seal
 

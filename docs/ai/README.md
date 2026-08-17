@@ -1,8 +1,8 @@
 # Kaizen Intelligence Engine — architecture gate
 
-**Status:** documentation phase only  
-**Architecture package version:** 0.1-draft  
-**Runtime implementation:** not started
+**Status:** architecture approved with review conditions resolved; Wave 0 preparation active<br>
+**Architecture package version:** 0.2-review<br>
+**Production AI implementation:** not started
 
 The Kaizen Intelligence Engine is an independent, local-first intelligence layer above Kaizen's deterministic domains. Kaizen data and algorithms remain authoritative; models interpret, plan and propose through controlled tools; the user remains the final authority.
 
@@ -30,8 +30,8 @@ Every design choice in this package uses one of four labels:
 | 7 | Embedding provider | [PROVIDERS.md](PROVIDERS.md#embedding-provider) |
 | 8 | Capability registry | [PROVIDERS.md](PROVIDERS.md#capability-registry) |
 | 9 | Streaming/transport | [ARCHITECTURE.md](ARCHITECTURE.md#transport-and-session-flow) |
-| 10 | Structured responses | [RESPONSES.md](RESPONSES.md) |
-| 11 | Evidence/freshness | [RESPONSES.md](RESPONSES.md#evidence-and-freshness) |
+| 10 | Structured responses | [RESPONSES.md](RESPONSES.md), [UX-CONTRACTS.md](UX-CONTRACTS.md) |
+| 11 | Evidence/freshness | [RESPONSES.md](RESPONSES.md#evidence-and-freshness), [UX-CONTRACTS.md](UX-CONTRACTS.md#intelligence-response-presentation) |
 | 12 | Tools and permissions | [TOOLS.md](TOOLS.md) |
 | 13 | Context orchestration | [CONTEXT-ORCHESTRATION.md](CONTEXT-ORCHESTRATION.md) |
 | 14 | Memory lifecycle | [MEMORY.md](MEMORY.md) |
@@ -59,4 +59,4 @@ Every design choice in this package uses one of four labels:
 
 ## Gate rule
 
-Completion of these documents does **not** authorize Wave 0, runtime AI code, model installation, vector-backend selection or changes to the current application architecture. After documentation review, work stops until explicit approval.
+Architecture review authorizes **Wave 0 preparation and controlled benchmark/prototype spikes only** under [`wave-0/README.md`](wave-0/README.md). It does not authorize production AI features, user-state mutation, permanent model/vector/transport/runtime selection, or changes to authoritative application architecture. Any candidate selection requires a reviewed selection report and ADR before production implementation.

@@ -94,6 +94,14 @@ session.cancelled
 
 Private model reasoning is never transported. Progress events describe operations, not chain-of-thought.
 
+## Local process lifecycle
+
+**REQUIRES TECHNICAL SPIKE:** compare an independently launched service with an app-managed child process on the target Windows laptop.
+
+Regardless of selection, the lifecycle contract must provide explicit `offline`, `starting`, `loading-model`, `ready`, `busy` and `failed` states; prevent duplicate engines; support cancellation; detect crashes; define idle unload/shutdown; and prevent orphan model processes. Closing a browser tab must have documented behavior and must not imply shutdown unless acknowledged by the engine. The spike records RAM/VRAM release after cancel, unload, tab close and process exit.
+
+User-facing state is defined in [UX-CONTRACTS.md](UX-CONTRACTS.md#engine-lifecycle-presentation).
+
 ## Failure behavior
 
 | Failure | Required behavior |

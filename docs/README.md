@@ -17,7 +17,7 @@ Kaizen is a local-first productivity and life OS built as one Next.js applicatio
 
 A global local-first NotificationCenter is mounted across Home and every full-screen space, with section/category controls and an initial high-value rule catalog.
 
-The proposed **Kaizen Intelligence Engine** is currently at the architecture-documentation gate. No runtime AI implementation, permanent model, vector backend or AI route exists yet. See [`ai/README.md`](ai/README.md) for the consolidated architecture package and review status.
+The proposed **Kaizen Intelligence Engine** has passed architecture review and is in Wave 0 preparation. No production AI implementation, permanent model, vector backend or AI route exists yet. See [`ai/README.md`](ai/README.md) for the consolidated architecture package and review status.
 
 Current production verification: **39/39 user routes return HTTP 200**, five same-origin Entertainment provider routes are dynamic, all remaining pages are statically prerendered, TypeScript and ESLint pass, and both dependency audits are clean.
 
@@ -50,7 +50,7 @@ Current production verification: **39/39 user routes return HTTP 200**, five sam
 - [`ai/OPEN-QUESTIONS.md`](ai/OPEN-QUESTIONS.md) — unresolved choices that must not be guessed.
 - [`ai/ROADMAP.md`](ai/ROADMAP.md) — documentation gate through v1.0 acceptance criteria.
 
-This package is documentation only and does not authorize Wave 0.
+Wave 0 preparation and controlled spikes are authorized; production AI features remain blocked pending the reviewed selection report.
 
 ### Design
 

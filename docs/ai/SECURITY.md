@@ -41,13 +41,31 @@ Retrieved content cannot:
 
 - Bind to loopback by default.
 - Authenticate browser↔engine sessions with short-lived credentials.
-- Restrict origins and methods.
+- Restrict origins, hosts and methods.
 - Apply request, context, stream and rate limits.
 - Disable network exposure by default.
-- Never rely on “localhost” as authentication.
+- Never rely on “localhost” as authentication; webpages, extensions and other local processes are potential attackers.
 - Do not weaken production CSP; production remains free of `unsafe-eval`.
 
-**REQUIRES TECHNICAL SPIKE:** secure first-run pairing and transport choice.
+### Pairing/authentication requirements
+
+**LOCKED DECISION:** authenticated pairing is a Wave 0 security blocker before real Kaizen records cross the process boundary, not merely before writes.
+
+The spike must prove:
+
+- explicit first-run pairing initiated from Kaizen and confirmed through a channel another webpage cannot silently complete,
+- unguessable short-lived session credentials stored outside ordinary persisted domain state,
+- origin/host allowlists and rejection of credential-less requests,
+- session expiry, rotation, revocation and process-restart behavior,
+- replay resistance and one-session scope,
+- CSRF-style/cross-site request rejection,
+- per-session domain/tool authorization,
+- no credentials in URLs, logs, model context or exports,
+- safe behavior when a browser extension or another local process attempts access.
+
+Read-only prototyping may use synthetic fixtures in an isolated harness before pairing is solved. It may not expose actual user data through an unauthenticated endpoint.
+
+**REQUIRES TECHNICAL SPIKE:** secure first-run pairing mechanism and HTTP+SSE versus WebSocket transport.
 
 ## Model supply chain
 

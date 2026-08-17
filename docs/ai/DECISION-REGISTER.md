@@ -22,6 +22,26 @@ This register prevents exploratory choices from becoming accidental architecture
 | AI-ADR-014 | First slice is grounded `get_today`, not generic chat | Proves the real architecture and user value. |
 | AI-ADR-015 | Career–Forge evidence graph is formal | Project work becomes verified career evidence without invented outcomes. |
 | AI-ADR-016 | Constitution is versioned and provider-independent | Shared behavior cannot live only in mutable prompts. |
+| AI-ADR-017 | Source-of-truth precedence is explicit | Memory and model inference can never override current authoritative records or deterministic analytics. |
+
+## Source-of-truth precedence
+
+**LOCKED DECISION**
+
+```text
+Current authoritative domain record
+    > deterministic derived analytics from current records
+    > explicit current user instruction/confirmation
+    > user-confirmed AI memory
+    > system-generated episodic memory
+    > candidate/pattern memory
+    > AI inference
+    > AI recommendation
+```
+
+This order is about factual conflict, not authorization: the Constitution and hard policy still govern whether an operation is permitted. A confirmed memory can guide interpretation but cannot overwrite a newer domain record. When a record and memory conflict, Kaizen uses the record, marks the memory for validation/contest, and discloses the conflict when relevant. Deterministic analytics must identify their input snapshot; analytics from stale records do not outrank newer records.
+
+Example: a Forge record says the deadline is August 22 while a confirmed memory says the user intended August 20. August 22 is the current deadline; August 20 may be presented only as an earlier intention.
 
 ## Proposed decisions
 
