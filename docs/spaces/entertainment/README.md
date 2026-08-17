@@ -11,6 +11,7 @@ AFTERGLOW is Kaizen's local-first media tracker for books, comics, manga, movies
 - Provider plan: [`APIS.md`](APIS.md)
 - Delivery plan: [`WAVES.md`](WAVES.md)
 - 96-feature audit: [`FEATURES.md`](FEATURES.md)
+- User guide: [`USER-GUIDE.md`](USER-GUIDE.md)
 - QA: [`QA.md`](QA.md)
 
 ## Current implementation — v1.0, Waves 0–9 complete

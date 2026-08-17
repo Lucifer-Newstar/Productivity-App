@@ -1,12 +1,12 @@
 # Health Space QA
 
-Last audited: 2026-08-14 (Wave 3 shipped on `health` branch).
+Current baseline: Health v1.1 Waves 1–9 is merged into `main`; 458/458 Health assertions pass on the `entertainment` branch. Historical per-wave results below retain their original dates.
 
 ## Current state
 
 - `/health/*` routes live (10 FULLSCREEN routes): triage, fuel, hydration, somnium, soma, apothecary, vitals, mind, lab, reports.
 - Wave 1 (shell) shipped: types, store slice (`kaizen.health`), VITAL-SIGN dark + CLINIC light themes, HealthShell with left rail + EKG trace, EkgFlash transition, HealthHotkeys (g-chord, t, ?), mounted-guard bootsplash.
-- Wave 2 (fuel+hydration) shipped: meal timeline, 90-dish Indian food DB, manual quick-add, macro donut SVG, repeat-yesterday, TDEE target; 8-glass visual grid, 11 beverages with hydration coefficients, caffeine tally with EFSA 400mg cap + post-4pm sleep warning, electrolytes flag, undo, chronological log.
+- Wave 2 (fuel+hydration) shipped: meal timeline, 130-entry Indian food DB, manual quick-add, macro donut SVG, repeat-yesterday, TDEE target; 8-glass visual grid, 11 beverages with hydration coefficients, caffeine tally with EFSA 400mg cap + post-4pm sleep warning, electrolytes flag, undo, chronological log.
 - Wave 3 (somnium+apothecary) shipped: sleep log (bed/wake datetimes with auto duration, quality 1-10, latency, wakeups, dream journal, 10-item hygiene checklist), 14-day rolling sleep bank (capped [-20h, +10h], 0.5× credit accrual), deload hint pushed to Workout at ≥10h debt; bedtime/wake routine builders (ordered checklists with per-step add/remove + adherence %); circadian zeitgeber anchors (first sun, first meal, caffeine cutoff, last meal, screen-off times); 13-seed supplement stack (whey, creatine, multivit, D3, B12, omega-3, magnesium, zinc, calcium, ashwagandha, pre-workout, EAA, probiotic) with quick-toggle tiles, streak counts, 30-day adherence %, custom add/remove; India-specific micronutrient deficiency badges (10 nutrients: D3, B12, iron, zinc, calcium, omega-3, magnesium, vitC, folate, potassium) computed from 7-day food+supp+sunlight intake with ICMR/NIN prevalence context; sunlight exposure log with time-of-day; recovery score 0-100 on triage (50% last-night + 30% bank + 20% hydration); triage KPI row extended with sleep bank, recovery, supp adherence, deficiency count.
 - Lab (§08) is fully functional: profile editor (gender/age/height/activity/goal/climate mult/sleep/IF window/units/target weight) + 10 Workout bridge toggles.
 

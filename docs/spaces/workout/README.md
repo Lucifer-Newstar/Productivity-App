@@ -44,7 +44,7 @@ See `docs/DATA-MODEL.md` — `WorkoutState` includes exercises, prs, skills,
 routines, sessions (with rich WorkoutSetLog metadata), readiness, badges,
 bodyweight, settings, caliChains/skills/flows, gtg, isometricLogs, intervalLogs,
 mobility, planche entries, cardioLogs, programs, goals, customMetrics,
-challenges, journal, board, restDays, etc. Persisted to `localStorage["kaizen.root"]`.
+challenges, journal, board, restDays, etc. Persisted to `localStorage["kaizen.workout"]`.
 
 ## Key features shipped
 - One-thumb in-session UI with superset/giant-set auto-skip

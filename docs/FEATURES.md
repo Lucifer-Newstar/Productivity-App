@@ -517,7 +517,7 @@ Global: project comparison, template library, energy/time balance dial, CSV impo
 | Canvases | WireframeTab: per-screen cards with sketch nav/hero/CTA/button placeholders + Figma notes, +SCREEN | ✅ |
 | Canvases | VoiceTab: MediaRecorder getUserMedia, mm:ss+timer+pulsing dot, Blob URLs on window.__forgeVoice, <audio controls>, transcript textarea, delete revokes URL | ✅ |
 | Codebase | Docblock/comment pass across all Forge files (forgeTypes, forgeUtils, pages/projects/*, ActionNav, ForgeShell, Foundry/Quarry/Smelter/Vault/Drill/Canvases/Demo/Store) | ✅ |
-| Build | tsc --noEmit clean; next build 33/33 routes ○ static; shared CSS ~14.7 kB; Smelter First Load JS ~26.3 kB | ✅ |
+| Build | Current Next 16 production build clean; TypeScript/ESLint pass; Projects routes prerender static | ✅ |
 
 ## Forge v1.0 status (post wave 11)
 
@@ -529,7 +529,7 @@ Forge is feature-complete against the committed v1 scope (waves 1–11):
 - Audit log (capped 500), daily streak tracking, skill-bump into Career, project CSV I/O,
   cross-project resource heatmap, skill-gap alerts, ember soundscape, settings modal,
   ⌘K hotkeys, STRIKE sparks, HammerStrike transitions, Foundry/Drafting dual themes
-- Detailed docs: docs/forge/README.md + docs/forge/CANVASES.md + docs/forge/HOTKEYS.md
+- Detailed docs: `docs/spaces/projects/README.md`, `CANVASES.md` and `QA.md`
 
 Known v1.2+ backlog (intentional deferral): storyboard canvas, full CPM float calc,
 project comparison view, effort variance report, auto-Eisenhower filing, stakeholder↔
@@ -540,35 +540,22 @@ columns, HTML5-dnd polish on Kanban cards.
 
 # Health (VITAL-SIGN) Feature Status
 
-The `/health` space is being built on branch `health` as a full-bleed medical/vitals OS
-codename **VITAL-SIGN** with a CLINIC light variant. It covers non-exercise wellness
-data across 10 sections (TRIAGE, FUEL, HYDRATION, SOMNIUM, SOMA, APOTHECARY,
-VITALS, MIND, SYNC LAB, REPORTS) — 257 features total — and connects bidirectionally
-to Workout through a governed bridge contract.
+Health v1.1 is merged into the stable baseline and completed Waves 1–9. The authoritative 281-row audit lives in [`spaces/health/FEATURES.md`](spaces/health/FEATURES.md).
 
-- Full per-feature checklist: [`spaces/health/FEATURES.md`](spaces/health/FEATURES.md)
-- Architecture + theme: [`spaces/health/README.md`](spaces/health/README.md)
-- Algorithms (BMR/TDEE/Navy BF%/dynamic hydration/sleep bank/recovery/bridge): [`ALGORITHMS.md`](ALGORITHMS.md)
-- QA gates + per-wave checklist: [`spaces/health/QA.md`](spaces/health/QA.md)
+- ✅ Complete: **216**
+- 🟡 Partial: **2**
+- ❌ Deferred from v1.1 scope: **63**
+- Automated Health assertions: **458/458**
+- Routes: 10 full-screen pages under `/health/*`
+- Workout bridge: shipped for readiness, hydration, injury/burnout advice, recovery and body-composition correlations
 
-Profile defaults are tuned to a 20yo male lifter in Chennai, TN, India: ICMR RDA
-micronutrient targets with elevated emphasis on Vitamin D/B12/iron/zinc/calcium/omega-3
-(per ICMR/NIN urban-India deficiency data), Chennai +10% climate multiplier for
-hydration, 80+ pre-seeded Indian dishes (idli/dosa/sambar/parotta/biryani/chicken 65/thali/filter coffee/chai/etc.),
-coconut water as a default electrolyte beverage, Fitzpatrick Type IV-V skin note for
-Vit D synthesis, IST midnight reset, and Indian crisis helplines in the Mind section.
+# Entertainment (AFTERGLOW) Feature Status
 
-## Current implementation status (wave 0 — docs + branch)
+AFTERGLOW v1.0 completed Waves 0–9 on the `entertainment` branch. The authoritative 96-feature audit lives in [`spaces/entertainment/FEATURES.md`](spaces/entertainment/FEATURES.md).
 
-| Area | Status |
-|---|---|
-| Feature spec (257 features / 10 sections / 9 waves) | ✅ |
-| Algorithms (14 + bridge contract) | ✅ documented |
-| Architecture docs | ✅ updated |
-| Data model (HealthState shape) | ✅ documented (types file not yet created) |
-| Per-space README + QA | ✅ |
-| `health` git branch created | ✅ |
-| Code (shell/components/types/store/routes) | ❌ Wave 1 pending |
-| tsc / build / smoke | ❌ N/A until code ships |
-
-Merge to `main` will happen after explicit user approval post-wave-9 QA.
+- ✅ Complete: **94**
+- 🟡 Intentional partials: **2** — public sharing mode and full deep-form translation
+- ❌ Missing: **0**
+- Structural/security assertions: **168/168**
+- Executable domain/security tests: **42/42** (9 intelligence, 11 reports, 5 social, 9 migration, 8 frontend security)
+- Route: `/entertainment` plus five same-origin provider API routes

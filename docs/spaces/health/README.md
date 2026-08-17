@@ -2,8 +2,7 @@
 
 The **Health** space is Kaizen's non-exercise wellness tracker — nutrition,
 hydration, sleep, physique, supplements, vitals, and mental wellness. It is
-being built as a full-bleed "vitals-signs OS" (working theme name:
-**VITAL-SIGN**) with a deep two-way bridge to Workout.
+implemented as the full-bleed **VITAL-SIGN** OS with a deep two-way bridge to Workout. Version 1.1 completed Waves 1–9 and is merged into the stable baseline.
 
 - **Brand color:** `#a3e635` (EKG lime-green)
 - **Accent alerts:** blood-red `#ef4444`
@@ -23,9 +22,9 @@ being built as a full-bleed "vitals-signs OS" (working theme name:
 - **Profile defaults (user):** 20yo male, Chennai TN India — tropical wet-dry
   climate (~70-80% RH, 35+°C 8 months/year); ICMR-aligned micronutrient targets
   flagging Vit D/B12/iron/zinc/calcium/omega-3 as at-risk per regional
-  deficiency data; 80+ Indian dishes pre-seeded in the food library.
-- **State slice:** `health: HealthState` in the root Zustand store, localStorage
-  key `kaizen.root`, migration `migrateHealth`. Types in `lib/healthTypes.ts`.
+  deficiency data; 130 Indian dishes pre-seeded in the food library.
+- **State slice:** `health: HealthState` in the root React Context store, localStorage
+  key `kaizen.health`, migration `migrateHealth`. Types in `lib/healthTypes.ts`.
 
 ## Status at a glance (post-Wave 9 — v1.1 feature-complete)
 
@@ -61,7 +60,7 @@ sweep (see `docs/bugs/BUGS.md`).
 
 - **Docs:** ✅ FEATURES.md (257 features across 10 sections, this README, QA, ALGORITHMS)
 - **Shell/components:** ✅ Wave 1 shipped — VITAL-SIGN/CLINIC themes, HealthShell, HealthHotkeys, EkgFlash, 10 FULLSCREEN routes
-- **FUEL (Wave 2):** ✅ Meals timeline, 90-dish Indian food DB, macro donut, repeat-yesterday, manual add
+- **FUEL (Wave 2):** ✅ Meals timeline, 130-entry Indian food DB, macro donut, repeat-yesterday, manual add
 - **HYDRATION (Wave 2):** ✅ 8-glass grid, 11 beverages with hydration coefficients, EFSA 400mg caffeine cap + post-4pm warning, electrolytes, undo
 - **SOMNIUM (Wave 3):** ✅ Sleep log (bed/wake/quality/latency/wakeups/dream/hygiene), 14-day sleep bank, circadian anchors, bed/wake routine builders with adherence %, 7-night bar history
 - **APOTHECARY (Wave 3):** ✅ 13-seed supplement stack, streaks + 30d adherence, 🇮🇳 deficiency risk badges (10 micronutrients, ICMR prevalence), sunlight log for Vit D
@@ -91,7 +90,7 @@ sweep (see `docs/bugs/BUGS.md`).
 | Health **advises** Workout | hydration %, sleep debt, recovery score, injury flags, deload hints, TDEE cal target, supp markers | Advisory props/flags surfaced in Workout UI |
 | Forbidden | Health mutating Workout collections directly; circular imports between healthAnalytics and workoutAnalytics | Enforced via code review |
 
-Full contract table and all algorithms live in [`docs/ALGORITHMS.md`](/docs/ALGORITHMS.md).
+Full contract table and all algorithms live in [`docs/ALGORITHMS.md`](../../ALGORITHMS.md).
 
 ## Theme detail — VITAL-SIGN (dark, default)
 
@@ -128,5 +127,5 @@ to diagnose or treat any condition.
 
 - [FEATURES.md](./FEATURES.md) — full 257-feature spec (the build checklist)
 - [QA.md](./QA.md) — per-wave QA checklist + known gaps
-- [`docs/bugs/BUGS.md`](/docs/bugs/BUGS.md) — bugs found & fixed
-- [`docs/ALGORITHMS.md`](/docs/ALGORITHMS.md) — all formulas + bridge contract
+- [`docs/bugs/BUGS.md`](../../bugs/BUGS.md) — bugs found & fixed
+- [`docs/ALGORITHMS.md`](../../ALGORITHMS.md) — all formulas + bridge contract

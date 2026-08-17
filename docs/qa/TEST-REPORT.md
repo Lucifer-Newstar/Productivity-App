@@ -1,5 +1,7 @@
 # Workout QA Test Report
 
+> **Historical snapshot.** This report preserves the 2026-08-13 Next.js 14 Workout baseline. For current versions, route counts and release gates, use [`README.md`](README.md).
+
 _Branch: `workout` (merged to `main`) · Author: Lucifer-Newstar · Date: 2026-08-13_
 
 Smoke-test and bug-fix pass for the Workout space after landing superset/GtG/

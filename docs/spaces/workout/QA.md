@@ -1,6 +1,6 @@
 # Workout space — QA
 
-_Last full pass: 2026-08-13 (see `docs/qa/TEST-REPORT.md` for that report). Sanity-re-verified 2026-08-14._
+_Current regression baseline (2026-08-16): TypeScript, ESLint and production build pass on `entertainment`; all Workout routes are included in the 39/39 HTTP smoke. `docs/qa/TEST-REPORT.md` remains the historical dedicated Workout report._
 
 ## Build verification
 

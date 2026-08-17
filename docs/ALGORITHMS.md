@@ -623,7 +623,7 @@ adherence number is "today so far").
 
 # Health ↔ Workout bridge contract
 
-The two spaces share the root Zustand store but own separate state slices.
+The two spaces share the root React Context store but own separate persisted state slices.
 Access happens via selectors — no cross-slice mutation.
 
 ## Health READS from Workout (pull)

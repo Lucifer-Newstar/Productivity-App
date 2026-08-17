@@ -1,6 +1,6 @@
 # Entertainment space — QA
 
-_Last updated: 2026-08-16, Wave 0 + Wave 1 core._
+_Last updated: 2026-08-16, AFTERGLOW v1.0 Waves 0–9 plus post-release full-site security hardening._
 
 ## Automated gates
 

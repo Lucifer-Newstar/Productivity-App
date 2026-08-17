@@ -9,6 +9,8 @@ future production implementation (Postgres/Prisma and per-user auth).
 
 Base URL: `http://127.0.0.1:4000/api` (loopback-only by default)
 
+Current model surface: **137 collection tables and 11 singleton documents** across Core, Workout, Career, Forge, Health and Entertainment.
+
 ## Common
 
 - All request/response bodies are strict JSON (`express.json`, 5 MB default limit).
@@ -19,7 +21,7 @@ Base URL: `http://127.0.0.1:4000/api` (loopback-only by default)
   rejection and per-table capacity limits are enforced. Responses are `no-store`.
 - Browser CORS origins come from the comma-separated `CORS_ORIGINS` allowlist.
 - All resources expose the same shape as the TypeScript types in
-  `frontend/lib/types.ts`, `careerTypes.ts`, `forgeTypes.ts`, `healthTypes.ts`.
+  `frontend/lib/types.ts`, `careerTypes.ts`, `forgeTypes.ts`, `healthTypes.ts`, `entertainmentTypes.ts`.
 - Every collection gets the same generic CRUD:
   `GET /x` (list) · `POST /x` (create; server assigns `id` unless provided) ·
   `GET /x/:id` · `PATCH /x/:id` (partial merge) · `DELETE /x/:id` (204).
@@ -324,7 +326,7 @@ Full-state push/pull backup:
 
 ```bash
 cd backend
-npm install
-npm run dev     # tsx watch — http://localhost:4000
+npm ci
+npm run dev     # tsx watch — http://127.0.0.1:4000
 npm run build && npm start   # production
 ```

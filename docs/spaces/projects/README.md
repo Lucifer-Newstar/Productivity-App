@@ -42,7 +42,7 @@ frontend/
 ├── lib/
 │   ├── forgeTypes.ts        # All domain types (40+ collections)
 │   ├── forgeDemo.ts         # buildForgeDemo() — vivid seed dataset
-│   └── store.tsx            # Zustand root — Forge sub-tree lives here
+│   └── store.tsx            # React Context root — Forge sub-tree lives here
 └── pages/projects/…         # Route entry points (5 files)
 ```
 
@@ -72,7 +72,7 @@ Toggle via the Sun/Moon in the top beam (reuses global `ThemeProvider`).
 
 ## Data contract
 
-Forge state is a subtree of the global Zustand store under key `forge: ForgeState`.
+Forge state is a subtree of the global React Context store under key `forge: ForgeState`.
 The contract is four pieces (all in `lib/forgeTypes.ts` + `lib/store.tsx`):
 
 1. **`ForgeState`** — typed shape for 40+ collections (projects, tasks, scratch,
@@ -138,7 +138,7 @@ Shared helpers exported from Canvases: `ProjPicker`, `BlockEditor`, `SectionHead
 - **STRIKE** ⚡ button — 14 amber spark particles, `⌘K` quick-find palette.
 
 ## Offline-first
-- All state persists to `localStorage["kaizen.root"]` via Zustand.
+- All Forge state persists to `localStorage["kaizen.forge"]` through the hydration-safe store hook.
 - Backend routes under `/api/forge/*` exist but are intentionally **not wired** —
   the Projects space works fully offline.
 - Voice-note Blobs are session-only (`window.__forgeVoice[id]` — Blob URLs can't
