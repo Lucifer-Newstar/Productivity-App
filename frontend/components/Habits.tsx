@@ -8,7 +8,7 @@
 
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { Flame, Plus, Check, Droplets, Dumbbell, BookOpen, Moon, X } from "lucide-react";
+import { Flame, Plus, Check, Droplets, Dumbbell, BookOpen, Moon, X, Sprout } from "lucide-react";
 
 interface Habit {
   id: string;
@@ -96,7 +96,7 @@ export default function Habits() {
         <div>
           <p className="text-sm text-gray-500 dark:text-gray-400">Longest active streak</p>
           <p className="text-2xl font-bold text-gray-900 dark:text-white">
-            {Math.max(0, ...habits.map((h) => h.streak))} days 🔥
+            {Math.max(0, ...habits.map((h) => h.streak))} days
           </p>
         </div>
       </div>
@@ -169,7 +169,7 @@ export default function Habits() {
         })}
         {habits.length === 0 && (
           <div className="text-center py-12 text-gray-500">
-            <p className="text-4xl mb-2">🌱</p>
+            <Sprout size={34} className="mx-auto mb-3 text-emerald-500" strokeWidth={1.5}/>
             <p className="text-sm">Start building a habit — it only takes 21 days.</p>
           </div>
         )}

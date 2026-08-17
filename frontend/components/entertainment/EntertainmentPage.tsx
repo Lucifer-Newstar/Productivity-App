@@ -128,11 +128,12 @@ export default function EntertainmentPage() {
       <aside className="hidden lg:flex w-60 border-r p-4 flex-col gap-1 shrink-0" style={{borderColor:"var(--line)"}}>
         <div className="text-[10px] tracking-[.24em] uppercase px-3 py-3" style={{color:"var(--muted)"}}>Your screening room</div>
         {VIEW_NAV.map(n=><button key={n.id} onClick={()=>n.ready&&setView(n.id)} className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-left transition ${view===n.id?"bg-fuchsia-500/15 text-fuchsia-300":"hover:bg-white/5"} ${!n.ready?"opacity-40":""}`}><n.icon size={16}/><span className="flex-1">{navLabel(n.id,n.label)}</span>{!n.ready&&<span className="text-[8px] uppercase tracking-wider">soon</span>}</button>)}
-        <div className="mt-auto ent-panel rounded-2xl p-4"><div className="flex items-center gap-2 text-xs font-bold text-cyan-300"><Zap size={13}/> WAVE 1 LIVE</div><p className="text-[11px] mt-2 leading-relaxed" style={{color:"var(--muted)"}}>Core library is local-first. Provider search lands in Wave 2.</p></div>
+        <div className="mt-auto ent-panel rounded-2xl p-4"><div className="flex items-center gap-2 text-xs font-bold text-cyan-300"><Zap size={13}/> LOCAL-FIRST / ONLINE</div><p className="text-[11px] mt-2 leading-relaxed" style={{color:"var(--muted)"}}>Private tracking, provider discovery and local intelligence in one cinema system.</p></div>
       </aside>
 
       <main id="ent-main" tabIndex={-1} className="flex-1 min-w-0 p-4 md:p-7 xl:p-9">
         <div className="md:hidden relative mb-4"><Search size={15} className="absolute left-3 top-3" style={{color:"var(--muted)"}}/><input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Search your library…" className="w-full rounded-xl border bg-transparent pl-9 pr-3 py-2.5 text-sm" style={{borderColor:"var(--line)"}}/></div>
+        <AnimatePresence mode="wait"><motion.div key={view} initial={{opacity:0,y:14,filter:"blur(8px)"}} animate={{opacity:1,y:0,filter:"blur(0px)"}} exit={{opacity:0,y:-10,filter:"blur(5px)"}} transition={{duration:.32,ease:[.22,1,.36,1]}}>
         {view==="dashboard" ? <>
           <section className="relative overflow-hidden ent-panel rounded-[28px] p-6 md:p-9 mb-7">
             <div className="absolute -right-16 -top-24 w-80 h-80 rounded-full bg-fuchsia-500/15 blur-3xl"/>
@@ -156,6 +157,7 @@ export default function EntertainmentPage() {
           </div>{advancedOpen&&<div className="ent-panel rounded-2xl p-4 grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-3 mb-5"><Filter value={genre} onChange={setGenre} options={[["all","All genres"],...genreOptions.map(x=>[x,x])]}/><Filter value={tag} onChange={setTag} options={[["all","All tags"],...tagOptions.map(x=>[x,x])]}/><Filter value={priorityFilter} onChange={v=>setPriorityFilter(v as MediaPriority|"all")} options={[["all","All priorities"],["high","High"],["medium","Medium"],["low","Low"]]}/><Filter value={String(minRating)} onChange={v=>setMinRating(Number(v))} options={[["0","Any rating"],["5","5+ rating"],["7","7+ rating"],["8","8+ rating"],["9","9+ rating"]]}/><Filter value={String(backlogAge)} onChange={v=>setBacklogAge(Number(v))} options={[["0","Any backlog age"],["30","Planned 30+ days"],["90","Planned 90+ days"],["365","Planned 1+ year"]]}/><label className="rounded-xl border px-3 py-2 text-xs flex items-center gap-2" style={{borderColor:"var(--line)"}}><input type="checkbox" checked={favoritesOnly} onChange={e=>setFavoritesOnly(e.target.checked)}/> Favorites only</label><button onClick={()=>{setGenre("all");setTag("all");setPriorityFilter("all");setMinRating(0);setBacklogAge(0);setFavoritesOnly(false)}} className="text-[10px] text-fuchsia-400 col-span-full text-left">RESET SMART FILTERS</button></div>}
           <div className="grid md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-4">{visible.map(i=><MediaCard key={i.id} item={i} onOpen={()=>setSelected(i.id)} onPatch={patchItem}/>)}{!visible.length&&<Empty text="No titles match this cut."/>}</div>
         </>}
+        </motion.div></AnimatePresence>
       </main>
     </div>
     <AnimatePresence>{providerOpen&&<ProviderModal onClose={()=>setProviderOpen(false)}/>}</AnimatePresence>

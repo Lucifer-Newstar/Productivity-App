@@ -19,8 +19,10 @@
 import { useMemo, useState } from "react";
 import {
   Activity, Heart, Thermometer, Plus, Trash2, AlertTriangle,
-  Stethoscope, Pill, Bandage, Shield, Clipboard,
+  Stethoscope, Pill, Bandage, Shield, Clipboard, Brain, Wind, AudioLines,
+  Waves, RefreshCw, BatteryLow, Utensils, Bone, Zap, Flower2, CircleHelp,
 } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
 import { useStore } from "../../lib/store";
 import {
   classifyBp, classifyTemp, classifySpo2, classifyRhr, latestVitals, avgRhr,
@@ -42,21 +44,21 @@ function nowHHMM() {
   return `${String(d.getHours()).padStart(2,"0")}:${String(d.getMinutes()).padStart(2,"0")}`;
 }
 
-const SYMPTOM_META: { id: SymptomId; label: string; emoji: string }[] = [
-  { id: "headache",    label: "Headache",     emoji: "🤕" },
-  { id: "fever",       label: "Fever",        emoji: "🌡️" },
-  { id: "cold_cough",  label: "Cold / Cough", emoji: "🤧" },
-  { id: "sore_throat", label: "Sore throat",  emoji: "🗣️" },
-  { id: "body_ache",   label: "Body ache",    emoji: "💪" },
-  { id: "nausea",      label: "Nausea",       emoji: "🤢" },
-  { id: "dizziness",   label: "Dizziness",    emoji: "😵" },
-  { id: "fatigue",     label: "Fatigue",      emoji: "😮‍💨" },
-  { id: "skin",        label: "Skin issue",   emoji: "🩹" },
-  { id: "digestive",   label: "Digestive",    emoji: "🍽️" },
-  { id: "joint_pain",  label: "Joint pain",   emoji: "🦴" },
-  { id: "cramping",    label: "Cramping",     emoji: "⚡" },
-  { id: "allergies",   label: "Allergies",    emoji: "🌸" },
-  { id: "other",       label: "Other",        emoji: "❓" },
+const SYMPTOM_META: { id: SymptomId; label: string; icon: LucideIcon }[] = [
+  { id: "headache",    label: "Headache",     icon: Brain },
+  { id: "fever",       label: "Fever",        icon: Thermometer },
+  { id: "cold_cough",  label: "Cold / Cough", icon: Wind },
+  { id: "sore_throat", label: "Sore throat",  icon: AudioLines },
+  { id: "body_ache",   label: "Body ache",    icon: Activity },
+  { id: "nausea",      label: "Nausea",       icon: Waves },
+  { id: "dizziness",   label: "Dizziness",    icon: RefreshCw },
+  { id: "fatigue",     label: "Fatigue",      icon: BatteryLow },
+  { id: "skin",        label: "Skin issue",   icon: Bandage },
+  { id: "digestive",   label: "Digestive",    icon: Utensils },
+  { id: "joint_pain",  label: "Joint pain",   icon: Bone },
+  { id: "cramping",    label: "Cramping",     icon: Zap },
+  { id: "allergies",   label: "Allergies",    icon: Flower2 },
+  { id: "other",       label: "Other",        icon: CircleHelp },
 ];
 
 const INJURY_CATEGORIES: { id: NonNullable<InjuryEntry["category"]>; label: string }[] = [
@@ -387,7 +389,7 @@ export default function VitalsSection() {
                 background: selSym===s.id ? "rgba(239,68,68,0.15)" : "var(--hlth-card2)",
                 border:`1px solid ${selSym===s.id ? "#ef4444" : "var(--hlth-border-soft)"}`,
                 color: selSym===s.id ? "#ef4444" : "var(--hlth-fg)",fontFamily:"var(--hlth-font-mono)",fontSize:10,letterSpacing:"0.05em"}}>
-              <span style={{marginRight:4}}>{s.emoji}</span>{s.label}
+              <s.icon size={13} style={{marginRight:4}}/>{s.label}
             </button>
           ))}
         </div>
@@ -415,7 +417,7 @@ export default function VitalsSection() {
               const meta = SYMPTOM_META.find(m=>m.id===s.symptom)!;
               return (
                 <span key={s.id} style={{display:"inline-flex",alignItems:"center",gap:5,padding:"4px 8px",borderRadius:4,background:"rgba(239,68,68,0.1)",border:"1px solid rgba(239,68,68,0.3)",color:"#ef4444",fontFamily:"var(--hlth-font-mono)",fontSize:10}}>
-                  {meta.emoji} {meta.label} · {s.severity}/5
+                  <meta.icon size={12}/> {meta.label} · {s.severity}/5
                   <button onClick={()=>del("symptoms",s.id)} style={{background:"transparent",border:"none",color:"inherit",cursor:"pointer"}}>×</button>
                 </span>
               );
@@ -430,7 +432,7 @@ export default function VitalsSection() {
                 const meta = SYMPTOM_META.find(m=>m.id===s.symptom)!;
                 return <div key={s.id} style={{display:"flex",alignItems:"center",gap:8,padding:"4px 8px",borderRadius:4,background:"var(--hlth-card2)",fontSize:10,fontFamily:"var(--hlth-font-mono)"}}>
                   <span style={{color:"var(--hlth-muted)",minWidth:75}}>{s.date}</span>
-                  <span>{meta.emoji} {meta.label}</span>
+                  <span style={{display:"inline-flex",alignItems:"center",gap:5}}><meta.icon size={12}/>{meta.label}</span>
                   <span style={{color:"var(--hlth-muted)"}}>({s.severity}/5)</span>
                   {s.note && <span style={{color:"var(--hlth-muted)",opacity:0.7}}>· {s.note}</span>}
                   <button onClick={()=>del("symptoms",s.id)} style={{marginLeft:"auto",background:"transparent",border:"none",color:"var(--hlth-muted)",cursor:"pointer"}}><Trash2 size={10}/></button>

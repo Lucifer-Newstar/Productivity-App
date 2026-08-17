@@ -76,7 +76,7 @@ export default function WorkoutShell({ section, battleButton, battleCard, childr
 
   return (
     <div
-      className={`${isDark ? "dark" : "parchment"} min-h-screen w-full flex flex-col relative overflow-hidden`}
+      className={`workout-shell ${isDark ? "dark" : "parchment"} min-h-screen w-full flex flex-col relative overflow-hidden`}
       style={{
         color: isDark ? "#f3e9d2" : "#1a0f0a",
         background: isDark

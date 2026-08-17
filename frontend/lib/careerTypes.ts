@@ -398,7 +398,7 @@ export interface CareerState {
   linkedin?: string;
 }
 
-// Legacy types retained so old components (Roadmap/Notes/Posts/Goals/AchievementVault/TrackTabs) keep compiling.
+// Legacy data shapes retained only for lossless migration of older browser state.
 export interface LegacySubConcept { id: string; title: string; done: boolean; }
 export interface LegacyConcept    { id: string; title: string; subConcepts: LegacySubConcept[]; }
 export interface LegacyNote       { id: string; title: string; content: string; updatedAt: number; trackId?: string; }

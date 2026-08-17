@@ -58,15 +58,15 @@ module.exports = {
         },
       },
       fontFamily: {
-        sans:   ["Inter", "system-ui", "sans-serif"],
-        mono:   ["JetBrains Mono", "monospace"],
+        sans:   ["Manrope Variable", "Manrope", "system-ui", "sans-serif"],
+        mono:   ["JetBrains Mono Variable", "JetBrains Mono", "monospace"],
         // Cormorant Garamond + Cinzel for the royal/imperial display feel, with
         // a Japanese serif (Shippori Mincho) retained purely so decorative
         // background kanji render correctly (it does NOT appear in UI text).
-        serif:     ["Cormorant Garamond", "Georgia", "serif"],
+        serif:     ["Source Serif 4 Variable", "Georgia", "serif"],
         imperial:  ["Cinzel", "Cormorant Garamond", "Georgia", "serif"],
-        display:   ["Cinzel Decorative", "Cinzel", "Cormorant Garamond", "serif"],
-        body_serif:["Cormorant Garamond", "Georgia", "serif"],
+        display:   ["Sora Variable", "Space Grotesk Variable", "sans-serif"],
+        body_serif:["Cormorant Garamond", "Source Serif 4 Variable", "Georgia", "serif"],
         jp:        ["\"Shippori Mincho\"", "\"Noto Serif JP\"", "serif"],
       },
       animation: {

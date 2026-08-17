@@ -11,6 +11,7 @@ import { motion } from "framer-motion";
 import { ChevronLeft, ChevronRight, Plus } from "lucide-react";
 import { useStore } from "../lib/store";
 import { SPACES } from "../lib/types";
+import SpaceIcon from "./SpaceIcon";
 
 const weekdayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
@@ -164,7 +165,7 @@ export default function Calendar() {
                   <div className="w-1 h-8 rounded-full shrink-0" style={{ background: meta.color }} />
                   <p className={`flex-1 text-sm ${t.completed ? "line-through text-gray-400 dark:text-gray-500" : "text-gray-800 dark:text-gray-200"}`}>{t.title}</p>
                   <span className="chip" style={{ background: `${meta.color}20`, color: meta.color }}>
-                    {meta.emoji} {meta.name}
+                    <SpaceIcon space={meta.id} size={10}/> {meta.name}
                   </span>
                   {t.completed && <span className="chip bg-lime-500/20 text-lime-600 dark:text-accent-lime">Done</span>}
                 </div>

@@ -14,22 +14,24 @@ import { useMemo, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Activity, Save, Timer, Route, Heart, Zap, Wind, Footprints, Trash2,
+  Bike, Waves, ShipWheel, Mountain, CircleEllipsis,
 } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
 import { useStore } from "../../lib/store";
 import type { CardioType, CardioLog } from "../../lib/types";
 
 // VO2 max Cooper test (12-minute run distance in meters → ml/kg/min).
 const cooperVo2 = (distM: number) => +(distM / 15 - 13.9).toFixed(1);
 
-const TYPE_META: Record<CardioType, { label: string; emoji: string; color: string }> = {
-  run:         { label: "Run",       emoji: "🏃", color: "#ec4899" },
-  bike:        { label: "Bike",      emoji: "🚴", color: "#06b6d4" },
-  swim:        { label: "Swim",      emoji: "🏊", color: "#8b5cf6" },
-  row:         { label: "Row",       emoji: "🚣", color: "#a3e635" },
-  "jump-rope": { label: "Jump Rope", emoji: "🪢", color: "#f59e0b" },
-  walk:        { label: "Walk",      emoji: "🚶", color: "#22c55e" },
-  hike:        { label: "Hike",      emoji: "🥾", color: "#84cc16" },
-  other:       { label: "Other",     emoji: "🏃", color: "#64748b" },
+const TYPE_META: Record<CardioType, { label: string; icon: LucideIcon; color: string }> = {
+  run:          { label: "Run",       icon: Activity,       color: "#ec4899" },
+  bike:         { label: "Bike",      icon: Bike,           color: "#06b6d4" },
+  swim:         { label: "Swim",      icon: Waves,          color: "#8b5cf6" },
+  row:          { label: "Row",       icon: ShipWheel,      color: "#a3e635" },
+  "jump-rope": { label: "Jump Rope", icon: Zap,            color: "#f59e0b" },
+  walk:         { label: "Walk",      icon: Footprints,     color: "#22c55e" },
+  hike:         { label: "Hike",      icon: Mountain,       color: "#84cc16" },
+  other:        { label: "Other",     icon: CircleEllipsis, color: "#64748b" },
 };
 
 export default function WorkoutCardio() {
@@ -145,7 +147,7 @@ export default function WorkoutCardio() {
                     active ? "text-white" : "text-gray-400 bg-white/5 border-white/10 hover:border-white/20"
                   }`}
                   style={active ? { background: m.color, borderColor: m.color } : undefined}>
-                  {m.emoji} {m.label}
+                  <m.icon size={14}/> {m.label}
                 </button>
               );
             })}
@@ -304,7 +306,7 @@ export default function WorkoutCardio() {
               const rec = hrRecovery(l);
               return (
                 <div key={l.id} className="flex items-center gap-3 p-3 rounded-xl bg-white/5 group">
-                  <span className="text-2xl">{m.emoji}</span>
+                  <span className="w-9 h-9 rounded-lg grid place-items-center" style={{background:`${m.color}18`,color:m.color}}><m.icon size={18}/></span>
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-medium text-white truncate">
                       {m.label} {l.routeName ? `· ${l.routeName}` : ""}

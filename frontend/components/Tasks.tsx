@@ -9,10 +9,11 @@
 
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Flag, Calendar, Trash2, Search, Plus } from "lucide-react";
+import { Flag, Calendar, Trash2, Search, SearchX, Plus } from "lucide-react";
 import Link from "next/link";
 import { useStore } from "../lib/store";
 import { SPACES } from "../lib/types";
+import SpaceIcon from "./SpaceIcon";
 import type { Priority, SpaceId } from "../lib/types";
 
 const priorityStyles: Record<Priority, { bg: string; text: string; label: string }> = {
@@ -143,7 +144,7 @@ export default function Tasks() {
               ? { background: `${s.color}30`, color: s.color }
               : { background: `${s.color}15`, color: s.color }}
           >
-            {s.emoji} {s.name}
+            <SpaceIcon space={s.id} size={12}/> {s.name}
           </button>
         ))}
       </div>
@@ -178,7 +179,7 @@ export default function Tasks() {
                       <Flag size={10} /> {pstyle.label}
                     </span>
                     <Link href={`/${meta.id}`} className="chip hover:opacity-80" style={{ background: `${meta.color}20`, color: meta.color }}>
-                      {meta.emoji} {meta.name}
+                      <SpaceIcon space={meta.id} size={10}/> {meta.name}
                     </Link>
                     <span className="chip text-gray-500 bg-black/5 dark:bg-white/5">
                       <Calendar size={10} />
@@ -198,7 +199,7 @@ export default function Tasks() {
         </AnimatePresence>
         {filtered.length === 0 && (
           <div className="text-center py-12 text-gray-500">
-            <p className="text-4xl mb-2">🔍</p>
+            <SearchX size={34} className="mx-auto mb-3 text-slate-400" strokeWidth={1.5}/>
             <p className="text-sm">No tasks match these filters.</p>
           </div>
         )}

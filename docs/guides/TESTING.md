@@ -22,6 +22,7 @@ npm run qa:entertainment:social              # 5 executable tests
 npm run qa:entertainment:migration           # 9 executable tests
 npm run qa:security                          # 8 frontend security tests
 npm run qa:notifications                     # global notification rules/settings
+npm run qa:ui                                # icon/font/theme/motion foundation
 npm run qa:docs                              # documentation links/status/contracts
 ```
 

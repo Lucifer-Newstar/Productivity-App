@@ -47,22 +47,19 @@ export interface Space {
   id: SpaceId;
   name: string;
   color: string;
-  emoji: string;
 }
 
 export const SPACES: Space[] = [
-  { id: "projects",      name: "Forge",         color: "#f59e0b", emoji: "⚒️" },
-  { id: "workout",       name: "Workout",       color: "#b91c1c", emoji: "💪" },
-  { id: "career",        name: "Career",        color: "#06b6d4", emoji: "💼" },
-  { id: "entertainment", name: "Entertainment", color: "#a78bfa", emoji: "🎮" },
-  { id: "health",        name: "Health",        color: "#a3e635", emoji: "❤️" },
+  { id: "projects",      name: "Forge",         color: "#f59e0b" },
+  { id: "workout",       name: "Workout",       color: "#ef4444" },
+  { id: "career",        name: "Career",        color: "#22d3ee" },
+  { id: "entertainment", name: "Entertainment", color: "#c084fc" },
+  { id: "health",        name: "Health",        color: "#84cc16" },
 ];
 
 // ---------------- Career ----------------
-// The new comprehensive Career data model lives in ./careerTypes.ts and is
-// re-exported here. The legacy shapes (CareerTrack/CareerConcept/etc.) that the
-// old components (Roadmap/Notes/Posts/Goals/AchievementVault/TrackTabs) consume
-// are preserved as Legacy* types in careerTypes.ts and aliased here for back-compat.
+// The comprehensive Career model lives in ./careerTypes.ts. Only the legacy
+// Track/Concept aliases still used by the migration seed are re-exported here.
 
 export type {
   CareerSectionId,
@@ -81,30 +78,7 @@ export type {
   SpeakingEngagement, VisionBoardItem,
   LegacyTrack as CareerTrack,
   LegacyConcept as CareerConcept,
-  LegacySubConcept as CareerSubConcept,
-  LegacyNote as CareerNote,
-  LegacyBullet as CareerBullet,
-  CareerTrackId,
 } from "./careerTypes";
-
-// Legacy Goal/Achievement shapes used by old Goals.tsx & AchievementVault.tsx.
-// These live on the legacy tracks but we keep them compatible with the old UI.
-export interface CareerGoal {
-  id: string;
-  title: string;
-  description?: string;
-  trackId?: string;
-  done: boolean;
-  deadline?: string;
-}
-export interface CareerAchievement {
-  id: string;
-  title: string;
-  description?: string;
-  date: string;
-  icon: string;
-  trackId?: string;
-}
 
 // ---------------- Workout ----------------
 

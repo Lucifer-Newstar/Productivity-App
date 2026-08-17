@@ -34,7 +34,14 @@ Current production verification: **39/39 user routes return HTTP 200**, five sam
 | [`security/AUDIT-2026-08-16.md`](security/AUDIT-2026-08-16.md) | Latest full-site audit, remediations and residual risks |
 | [`reports/DOCS-SYNC-2026-08-16.md`](reports/DOCS-SYNC-2026-08-16.md) | Source-vs-doc verification and corrections |
 | [`reports/CLEANUP-2026-08-17.md`](reports/CLEANUP-2026-08-17.md) | Dead-code removal and documentation reorganization |
+| [`reports/UI-REFRESH-2026-08-17.md`](reports/UI-REFRESH-2026-08-17.md) | Icon, typography, theme and motion foundation |
 | [`notifications/README.md`](notifications/README.md) | Global inbox, rule catalog, settings and scope decisions |
+
+### Design
+
+- [`design/THEME-SYSTEMS.md`](design/THEME-SYSTEMS.md) — distinct light/dark visual identities.
+- [`design/ICONOGRAPHY.md`](design/ICONOGRAPHY.md) — icon mapping and emoji policy.
+- [`design/MOTION.md`](design/MOTION.md) — route and interaction motion.
 
 ### Guides
 
