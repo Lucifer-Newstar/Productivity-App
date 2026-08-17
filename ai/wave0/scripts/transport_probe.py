@@ -11,6 +11,9 @@ class SSEHandler(BaseHTTPRequestHandler):
         if self.path!="/events":self.send_error(404);return
         self.send_response(200);self.send_header("content-type","text/event-stream");self.send_header("cache-control","no-store");self.end_headers()
         for i in range(self.count):self.wfile.write(f"data: {{\"i\":{i}}}\n\n".encode());self.wfile.flush()
+    def do_POST(self):
+        if self.path!="/tool-result":self.send_error(404);return
+        self.rfile.read(int(self.headers.get("content-length","0")));raw=b'{"ack":true}';self.send_response(200);self.send_header("content-type","application/json");self.send_header("content-length",str(len(raw)));self.end_headers();self.wfile.write(raw)
 
 def ws_frame(payload):
     b=payload.encode();n=len(b)
@@ -59,7 +62,7 @@ def main():
     ap=argparse.ArgumentParser();ap.add_argument("--output",required=True);ap.add_argument("--messages",type=int,default=200);ap.add_argument("--runs",type=int,default=20);args=ap.parse_args();SSEHandler.count=WSHandler.count=args.messages
     sse=ThreadingHTTPServer(("127.0.0.1",0),SSEHandler);threading.Thread(target=sse.serve_forever,daemon=True).start()
     ws=socketserver.ThreadingTCPServer(("127.0.0.1",0),WSHandler);threading.Thread(target=ws.serve_forever,daemon=True).start()
-    sse_ms=[];ws_ms=[];ws_round=[]
+    sse_ms=[];sse_callback=[];ws_ms=[];ws_round=[]
     try:
         for _ in range(args.runs):
             t=time.perf_counter();seen=0
@@ -67,6 +70,9 @@ def main():
                 for line in r:
                     if line.startswith(b"data:"):seen+=1
             assert seen==args.messages;sse_ms.append((time.perf_counter()-t)*1000)
+            callback=urllib.request.Request(f"http://127.0.0.1:{sse.server_port}/tool-result",data=b'{"toolResult":true}',headers={"content-type":"application/json"},method="POST");rt=time.perf_counter()
+            with urllib.request.urlopen(callback) as response:response.read()
+            sse_callback.append((time.perf_counter()-rt)*1000)
             sock=socket.create_connection(("127.0.0.1",ws.server_address[1]));key=base64.b64encode(os.urandom(16)).decode();request=(f"GET / HTTP/1.1\r\nHost: 127.0.0.1\r\nUpgrade: websocket\r\nConnection: Upgrade\r\nSec-WebSocket-Key: {key}\r\nSec-WebSocket-Version: 13\r\n\r\n").encode();t=time.perf_counter();sock.sendall(request);resp=b""
             while b"\r\n\r\n" not in resp:resp+=sock.recv(4096)
             _,buffer=resp.split(b"\r\n\r\n",1)
@@ -74,6 +80,6 @@ def main():
             ws_ms.append((time.perf_counter()-t)*1000);rt=time.perf_counter();sock.sendall(client_frame('{"toolResult":true}'));_,buffer=recv_frame_buffered(sock,buffer);ws_round.append((time.perf_counter()-rt)*1000);sock.close()
     finally:sse.shutdown();sse.server_close();ws.shutdown();ws.server_close()
     def stats(x):return {"mean":round(statistics.mean(x),3),"p50":round(pctl(x,.5),3),"p95":round(pctl(x,.95),3)}
-    out={"schemaVersion":1,"messagesPerRun":args.messages,"runs":args.runs,"sseDeliveryMs":stats(sse_ms),"webSocketDeliveryMs":stats(ws_ms),"webSocketBidirectionalRoundTripMs":stats(ws_round),"limitations":["Loopback mock payloads only","No TLS/proxy/browser/CSP behavior","SSE tool callback uses separate HTTP and is not measured","Protocol microbenchmark cannot decide maintainability/reconnect semantics"]}
+    out={"schemaVersion":1,"messagesPerRun":args.messages,"runs":args.runs,"sseDeliveryMs":stats(sse_ms),"sseHttpCallbackRoundTripMs":stats(sse_callback),"webSocketDeliveryMs":stats(ws_ms),"webSocketBidirectionalRoundTripMs":stats(ws_round),"limitations":["Loopback mock payloads only","No TLS/proxy/browser/CSP/reconnect behavior","Protocol microbenchmark cannot decide maintainability/session semantics"]}
     path=Path(args.output);path.parent.mkdir(parents=True,exist_ok=True);path.write_text(json.dumps(out,indent=2),encoding="utf-8");print(json.dumps(out,indent=2))
 if __name__=="__main__":main()

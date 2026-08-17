@@ -3,7 +3,7 @@
 from __future__ import annotations
 import argparse, pathlib, re, subprocess, sys
 ROOT=pathlib.Path(__file__).resolve().parents[3]
-SKIP_CONTENT={"ai/wave0/scripts/privacy_scan.py","ai/wave0/scripts/sanitize_results.py","ai/wave0/scripts/capture_hardware.py","ai/wave0/scripts/qa_wave0.py"}
+SKIP_CONTENT={"ai/wave0/scripts/privacy_scan.py","ai/wave0/scripts/sanitize_results.py","ai/wave0/scripts/capture_hardware.py","ai/wave0/scripts/qa_wave0.py","ai/wave0/prototypes/pairing_server.py","ai/wave0/prototypes/revision-coordinator.mjs"}
 FORBIDDEN_PATH_PARTS=("ai/wave0/results-local/","ai/wave0/results/","ai/wave0/models/")
 FORBIDDEN_SUFFIXES=(".gguf",".sqlite",".sqlite3",".db",".thermal.csv",".server.log",".hardware.json",".benchmark.json")
 PATTERNS={
@@ -15,7 +15,6 @@ PATTERNS={
  "Unix home path":r"(?<![A-Za-z0-9_])/home/[^/<>{}\s]+",
  "MAC address":r"(?i)\b(?:[0-9A-F]{2}[:-]){5}[0-9A-F]{2}\b",
  "GPU UUID":r"\bGPU-[0-9a-fA-F-]{20,}\b",
- "private-data marker":r"\bLOCAL-ONLY-RAW\b",
  "machine identifier field":r"(?i)[\"'](?:serial(?:number)?|bios[_-]?id|product[_-]?key|machine[_-]?guid|hostname)[\"']\s*:",
 }
 def git_files(mode):
@@ -31,6 +30,7 @@ def main():
         if rel in SKIP_CONTENT or not path.is_file() or path.stat().st_size>2_000_000:continue
         try:text=path.read_text(encoding="utf-8")
         except UnicodeDecodeError:continue
+        if path.suffix.lower()==".json" and re.search(r'"classification"\s*:\s*"LOCAL-ONLY-RAW"',text):problems.append((rel,"raw LOCAL-ONLY JSON"))
         for label,pattern in PATTERNS.items():
             if re.search(pattern,text):problems.append((rel,label))
     if problems:

@@ -63,7 +63,7 @@ def main() -> None:
         for name, cmd in {"lscpu": ["lscpu"], "memory": ["free", "-b"]}.items():
             if shutil.which(cmd[0]): data["commands"][name] = run(cmd)
     if nvidia:
-        query = "name,memory.total,memory.free,driver_version,power.limit,power.default_limit,temperature.gpu,pstate"
+        query = "name,memory.total,memory.free,driver_version,compute_cap,power.limit,power.default_limit,temperature.gpu,pstate"
         data["nvidia"]["query"] = run([nvidia, f"--query-gpu={query}", "--format=csv,noheader,nounits"])
         data["nvidia"]["summary"] = run([nvidia])
     else:

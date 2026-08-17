@@ -58,9 +58,13 @@ Use an explicit, verified `llama-server`/`llama-bench` build. Record version and
 
 - `config/*.local.example.json` — public placeholder templates
 - `scripts/capture_hardware.py` — LOCAL-ONLY hardware/NVIDIA/power capture
-- `scripts/run_benchmarks.py` — lifecycle, latency, resource, structured/tool and concurrency runs
-- `scripts/benchmark_retrieval.py` — SQLite FTS5 baseline
-- `scripts/monitor_nvidia.py` — LOCAL-ONLY sampled VRAM/power/thermal log
+- `scripts/run_benchmarks.py` — latency, resource, structured/tool, concurrency and cancellation runs
+- `scripts/probe_lifecycle.py` — normal shutdown, simulated crash, port release and restart
+- `scripts/benchmark_retrieval.py` — SQLite FTS5 scale/ranking/recency baseline
+- `scripts/benchmark_embeddings.py` — optional synthetic paraphrase retrieval against a local embedding endpoint
+- `scripts/monitor_nvidia.py` — LOCAL-ONLY standalone VRAM/power/thermal log
+- `scripts/soak_model.py` — sustained request load with thermal/resource drift
+- `scripts/score_results.py` — applies frozen `W0-GATE-1` thresholds
 - `scripts/sanitize_results.py` — allowlist aggregate exporter
 - `scripts/privacy_scan.py` — staged/tracked privacy and secret gate
 - `prototypes/` — isolated revision, pairing and mock-runtime tests

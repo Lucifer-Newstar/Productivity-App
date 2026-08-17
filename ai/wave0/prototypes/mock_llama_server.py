@@ -9,8 +9,17 @@ class H(BaseHTTPRequestHandler):
         if self.path=="/health":self.send_response(200);self.send_header("content-type","application/json");self.end_headers();self.wfile.write(b'{"status":"ok"}')
         else:self.send_error(404)
     def do_POST(self):
+        n=int(self.headers.get("content-length","0"));body=json.loads(self.rfile.read(n))
+        if self.path=="/v1/embeddings":
+            texts=body.get("input",[]);texts=[texts] if isinstance(texts,str) else texts
+            groups=[("kubernetes","authentication","cluster","login","security"),("terraform","portfolio","infrastructure","work sample"),("sleep","recovery","rest","quality","readiness"),("interview","roadmap","hiring","conversation","learning plan")]
+            data=[]
+            for i,text in enumerate(texts):
+                low=text.lower();vec=[float(sum(term in low for term in group)) for group in groups]+[.01]
+                data.append({"object":"embedding","index":i,"embedding":vec})
+            raw=json.dumps({"object":"list","data":data,"model":"mock"}).encode();self.send_response(200);self.send_header("content-type","application/json");self.send_header("content-length",str(len(raw)));self.end_headers();self.wfile.write(raw);return
         if self.path!="/v1/chat/completions":self.send_error(404);return
-        n=int(self.headers.get("content-length","0"));body=json.loads(self.rfile.read(n));user=body.get("messages",[])[-1].get("content","")
+        user=body.get("messages",[])[-1].get("content","")
         self.send_response(200);self.send_header("content-type","text/event-stream");self.send_header("cache-control","no-store");self.end_headers()
         if body.get("tools"):
             name="get_today" if "focus on today" in user.lower() else "get_tasks"

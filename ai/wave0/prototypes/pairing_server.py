@@ -15,6 +15,7 @@ class State:
         digest=hashlib.sha256(token.encode()).hexdigest();expires=self.sessions.get(digest,0)
         if expires<=time.time():self.sessions.pop(digest,None);return False
         return True
+    def revoke(self,token): return self.sessions.pop(hashlib.sha256(token.encode()).hexdigest(),None) is not None
 class Handler(BaseHTTPRequestHandler):
     server_version="KaizenPairingPrototype/0";sys_version=""
     def log_message(self,*_):pass
@@ -32,6 +33,7 @@ class Handler(BaseHTTPRequestHandler):
             return self.sendj(200,{"ok":True}) if token and self.server.state.valid(token) else self.sendj(401,{"error":"invalid session"})
         self.sendj(404,{"error":"not found"})
 class Server(ThreadingHTTPServer):
+    allow_reuse_address=True
     def __init__(self,addr,state):super().__init__(addr,Handler);self.state=state
 
 def request(url,origin,headers=None):
@@ -40,20 +42,32 @@ def request(url,origin,headers=None):
         with urllib.request.urlopen(r,timeout=3) as x:return x.status,json.loads(x.read())
     except urllib.error.HTTPError as e:return e.code,json.loads(e.read())
 def self_test():
-    state=State(ttl=2);srv=Server(("127.0.0.1",0),state);threading.Thread(target=srv.serve_forever,daemon=True).start();base=f"http://127.0.0.1:{srv.server_port}"
+    state=State(ttl=.25);srv=Server(("127.0.0.1",0),state);threading.Thread(target=srv.serve_forever,daemon=True).start();base=f"http://127.0.0.1:{srv.server_port}"
     try:
+        assert srv.server_address[0]=="127.0.0.1"
         assert request(base+"/pair","https://evil.example",{"X-Kaizen-Pairing-Code":state.code})[0]==403
+        assert request(base+"/pair","http://localhost:3000",{"Host":"evil.example","X-Kaizen-Pairing-Code":state.code})[0]==421
         assert request(base+"/pair","http://localhost:3000",{"X-Kaizen-Pairing-Code":"wrong"})[0]==401
         status,data=request(base+"/pair","http://localhost:3000",{"X-Kaizen-Pairing-Code":state.code});assert status==200;token=data["sessionToken"]
         assert request(base+"/pair","http://localhost:3000",{"X-Kaizen-Pairing-Code":state.code})[0]==401
         assert request(base+"/session/check","http://localhost:3000")[0]==401
         assert request(base+"/session/check","http://localhost:3000",{"Authorization":"Bearer "+token})[0]==200
-        time.sleep(2.05);assert request(base+"/session/check","http://localhost:3000",{"Authorization":"Bearer "+token})[0]==401
-        print("W0-02 pairing prototype: 7 security assertions passed")
+        assert state.revoke(token) is True
+        assert request(base+"/session/check","http://localhost:3000",{"Authorization":"Bearer "+token})[0]==401
+        expiring=State(ttl=.1);short_token=expiring.pair(expiring.code);assert expiring.valid(short_token)
+        time.sleep(.12);assert expiring.valid(short_token) is False
+        restarted=State(ttl=1);assert restarted.valid(token) is False
+        result={"schemaVersion":1,"classification":"LOCAL-ONLY-RAW","passed":True,"assertions":13,"checks":["loopback bind","malicious origin rejected","invalid host rejected","incorrect code rejected","pairing succeeds","pairing replay rejected","missing session rejected","valid session accepted","revocation succeeds","revoked session rejected","short session initially valid","expired session rejected","restart invalidates session"]}
+        print("W0-02 pairing prototype: 13 security assertions passed");return result
     finally:srv.shutdown();srv.server_close()
 def main():
-    ap=argparse.ArgumentParser();ap.add_argument("--self-test",action="store_true");ap.add_argument("--port",type=int,default=18765);args=ap.parse_args()
-    if args.self_test:return self_test()
+    ap=argparse.ArgumentParser();ap.add_argument("--self-test",action="store_true");ap.add_argument("--output");ap.add_argument("--port",type=int,default=18765);args=ap.parse_args()
+    if args.self_test:
+        result=self_test()
+        if args.output:
+            from pathlib import Path
+            p=Path(args.output);p.parent.mkdir(parents=True,exist_ok=True);p.write_text(json.dumps(result,indent=2),encoding="utf-8")
+        return
     state=State(300);srv=Server(("127.0.0.1",args.port),state);print(f"PAIRING CODE (prototype only): {state.code}\nlistening on 127.0.0.1:{args.port}")
     try:srv.serve_forever()
     except KeyboardInterrupt:pass

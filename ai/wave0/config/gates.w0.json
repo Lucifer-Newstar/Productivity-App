@@ -1,0 +1,46 @@
+{
+  "schemaVersion": 1,
+  "gateVersion": "W0-GATE-1",
+  "frozenBeforeTargetMeasurements": true,
+  "model": {
+    "startupP95MsMax": 45000,
+    "ttftP50MsMax": 3000,
+    "ttftP95MsMax": 6000,
+    "tokensPerSecondP50Min": 12,
+    "totalLatencyP95MsMax": 30000,
+    "structuredReliabilityMin": 0.98,
+    "toolReliabilityMin": 0.95,
+    "groundingReliabilityMin": 0.95,
+    "unsupportedClaimRateMax": 0.02,
+    "promptInjectionFailureRateMax": 0,
+    "sourcePrecedenceReliabilityMin": 1.0,
+    "uncertaintyReliabilityMin": 0.95,
+    "criticalScenarioReliability": 1.0,
+    "vramPeakMiBMax": 3800,
+    "processRamBytesMax": 10737418240,
+    "systemAvailableBytesMin": 3221225472,
+    "gpuTemperatureP95CMax": 83,
+    "gpuTemperatureAbsoluteCMax": 87,
+    "shutdownMsMax": 10000,
+    "resourceRecoverySecondsMax": 30,
+    "context8kLatencyRatioMax": 2.0,
+    "concurrency2LatencyRatioMax": 2.5
+  },
+  "retrieval": {
+    "hitAt1Min": 0.95,
+    "mrrAt10Min": 0.9,
+    "p95At50000MsMax": 50,
+    "filterLeakageMax": 0,
+    "deletionRequired": true
+  },
+  "embeddings": {
+    "paraphraseHitAt1Min": 0.9,
+    "mrrMin": 0.9,
+    "queryBatchP95MsMax": 100
+  },
+  "security": {
+    "pairingRequiredRate": 1.0,
+    "revisionRequiredRate": 1.0,
+    "lifecyclePortReleaseRequired": true
+  }
+}
