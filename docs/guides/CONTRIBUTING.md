@@ -55,6 +55,16 @@ Never trust restored URLs, images or arbitrary object keys.
 - Do not render user HTML.
 - Avoid external fonts/scripts/CDNs unless the security policy and offline preview are deliberately updated.
 
+## Public-repository privacy gate
+
+Enable the tracked hook once per clone:
+
+```bash
+git config core.hooksPath .githooks
+```
+
+The hook runs the Wave 0 staged privacy/secret scanner. Raw AI hardware captures, benchmark logs, prompts/outputs, machine configuration and telemetry stay in ignored `ai/wave0/results-local/` or `*.local.json`. Only reviewed allowlist-sanitized aggregates may be staged from `results-public/`.
+
 ## Pull-request checklist
 
 - [ ] Focused branch and commit history

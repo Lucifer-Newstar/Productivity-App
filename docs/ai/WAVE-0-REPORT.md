@@ -1,13 +1,37 @@
 # Wave 0 Selection Report
 
 **Status:** `INCOMPLETE — TARGET HARDWARE AND MODEL RESULTS REQUIRED`<br>
-**Report version:** 0.1<br>
+**Report version:** 0.2 — privacy boundary and frozen gates<br>
 **Date:** 2026-08-17<br>
 **Production `get_today()` authorization:** **BLOCKED**
 
 ## Executive decision
 
 Wave 0 infrastructure and synthetic prototypes are viable, but no generation model, quantization, embedding model, vector backend or final transport is selected. The target is now identified as an ASUS TUF Gaming A15 FA506NCR with Ryzen 7 7435HS, RTX 3050 Laptop GPU (4 GB GDDR6, 60 W/75 W Dynamic Boost) and 16 GB DDR5. Machine-generated Windows, driver, memory-speed, storage, model, power and thermal results are still required. Production feature work remains blocked until those measurements are attached and this report is reviewed.
+
+## Evidence and privacy rules
+
+This report uses three explicitly labeled layers:
+
+1. **MEASURED FACT** — produced by the versioned harness from LOCAL-ONLY raw artifacts.
+2. **INTERPRETATION** — what the measurement means under the frozen gates.
+3. **RECOMMENDATION** — proposed selection; never presented as measurement.
+
+Raw hardware captures, prompts/outputs, telemetry, logs, paths and machine configuration remain under ignored `ai/wave0/results-local/`. Public figures come only from the allowlist sanitizer and must be independently traceable to the owner's retained raw run. No personal Kaizen data is used.
+
+Frozen criteria: [`wave-0/PASS-FAIL-CRITERIA.md`](wave-0/PASS-FAIL-CRITERIA.md).<br>
+Candidate inventory: [`wave-0/CANDIDATE-MATRIX.md`](wave-0/CANDIDATE-MATRIX.md).<br>
+Target method: [`wave-0/TARGET-RUNBOOK.md`](wave-0/TARGET-RUNBOOK.md).
+
+## Methodology
+
+- One verified llama.cpp Windows CUDA build/hash for all candidates.
+- Identical synthetic Kaizen scenarios, temperature, output cap and repetitions.
+- 4K and 8K context; concurrency 1 and 2.
+- AC balanced and AC performance runs recorded separately.
+- Three cold loads and 30-minute thermal soak per finalist.
+- Structured/tool/grounding/security scoring before speed comparison.
+- Candidates failing a hard gate are rejected before weighted interpretation.
 
 ## Target environment
 
@@ -22,42 +46,45 @@ Wave 0 infrastructure and synthetic prototypes are viable, but no generation mod
 | OS | Windows 11 | Edition/build pending |
 | Adapter | 180 W | Power-profile capture pending |
 
-The Arena sandbox remains a non-target 2-vCPU/1.9 GiB environment without NVIDIA. See [TARGET-HARDWARE-CAPTURE.md](TARGET-HARDWARE-CAPTURE.md) and [TARGET-RUNBOOK.md](TARGET-RUNBOOK.md).
+The Arena sandbox remains a non-target 2-vCPU/1.9 GiB environment without NVIDIA. See [`wave-0/TARGET-HARDWARE-CAPTURE.md`](wave-0/TARGET-HARDWARE-CAPTURE.md) and [`wave-0/TARGET-RUNBOOK.md`](wave-0/TARGET-RUNBOOK.md).
 
 ## Measured prototype results
 
 ### Revision/snapshot prototype
 
-- 9 assertions passed.
-- Demonstrated per-domain monotonic counters, no-op behavior, cross-domain Forge+Career transaction, failed transaction behavior, reload persistence, revision-vector snapshot IDs, stable-capture retry and epoch rotation after corrupt metadata.
-- Limitation: temporary-file prototype; no React/localStorage integration or multi-tab lock yet.
+**MEASURED FACT:** 17 assertions passed for monotonic/no-op revisions, Forge+Career transaction vectors, failed transaction behavior, reload persistence, stale detection, stable-capture retry, epoch rotation and single-writer lease rejection/transfer.
+
+**INTERPRETATION:** epoch + per-domain vectors are viable in an isolated file prototype. React/localStorage persistence health and browser lock behavior remain unmeasured.
+
+**RECOMMENDATION:** retain the strategy for browser integration prototyping; do not mark it production-ready.
 
 ### Pairing/session prototype
 
-- 7 security assertions passed.
-- Rejected malicious origin and incorrect code.
-- Enforced one-time pairing, authenticated session, token expiry and no unauthenticated session access.
-- Tokens are stored as hashes in the prototype.
-- Limitation: console-displayed pairing code is a test channel, not a selected product pairing design.
+**MEASURED FACT:** 13 security assertions passed for loopback bind, malicious origin/host, incorrect/replayed pairing code, missing/valid/revoked/expired sessions and restart invalidation. Session tokens are stored as hashes.
+
+**INTERPRETATION:** one-time pairing with expiring sessions is viable as a security baseline. Console-displayed pairing is only a test channel.
+
+**RECOMMENDATION:** continue this design into browser transport validation; do not expose real Kaizen data until the final pairing UX/channel passes review.
 
 ### SQLite FTS5 baseline
 
-Synthetic in-memory corpus: 20,000 Kaizen-like records, 200 domain-filtered queries.
+**MEASURED FACT — non-target sandbox, synthetic corpus:**
 
-| Metric | Result |
-|---|---:|
-| Index build | 63.166 ms |
-| Mean query | 3.869 ms |
-| p50 | 3.836 ms |
-| p95 | 3.959 ms |
-| Maximum | 6.270 ms |
-| Source deletion | verified |
+| Records | Index build | Query p50 | Query p95 | Exact Hit@1 | MRR@10 | Paraphrase Hit@10 | Filter leakage | Deletion |
+|---:|---:|---:|---:|---:|---:|---:|---:|---|
+| 1,000 | 3.520 ms | 0.169 ms | 0.224 ms | 1.00 | 1.00 | 0.00 | 0 | verified |
+| 10,000 | 34.649 ms | 1.420 ms | 1.739 ms | 1.00 | 1.00 | 0.00 | 0 | verified |
+| 50,000 | 204.984 ms | 7.469 ms | 13.039 ms | 1.00 | 1.00 | 0.00 | 0 | verified |
 
-This supports SQLite FTS5 as a serious lexical/structured candidate. It does **not** select SQLite as the vector backend: no embeddings, disk I/O, Windows locking, antivirus behavior, corruption or backup test has run.
+Public sanitized aggregate: `ai/wave0/results-public/sandbox-retrieval-aggregate.json`.
+
+**INTERPRETATION:** structured domain filters + FTS5 BM25 + bounded recency/importance passed exact queries with substantial latency headroom, but lexical retrieval missed all four intentionally non-overlapping paraphrases. Target Windows disk/locking/antivirus, corruption and backup remain unmeasured.
+
+**RECOMMENDATION:** retain SQLite FTS5 for exact/filtered retrieval. The measured paraphrase gap justifies benchmarking an embedding provider, but does not yet justify selecting a vector database; compare embedding quality/latency first and keep storage replaceable.
 
 ### SSE vs WebSocket mock transport
 
-Twenty loopback runs, 200 tiny events per run:
+**MEASURED FACT — non-target sandbox:** twenty loopback runs, 200 tiny events per run.
 
 | Metric | SSE | WebSocket |
 |---|---:|---:|
@@ -66,7 +93,9 @@ Twenty loopback runs, 200 tiny events per run:
 | p95 | 5.342 ms | 5.664 ms |
 | WebSocket bidirectional round trip | — | 0.133 ms mean |
 
-The differences are negligible relative to model latency. This microbenchmark does not select a transport. HTTP+SSE remains the simpler provisional preference because streaming is predominantly server→browser and tool results can use authenticated HTTP callbacks. Browser reconnect, session recovery, pairing, CSP and callback measurements are still required before selection.
+**INTERPRETATION:** protocol overhead is negligible relative to model latency; this mock does not test browser reconnect, session recovery, pairing, CSP or SSE callback cost.
+
+**RECOMMENDATION:** keep authenticated HTTP+SSE as the simpler baseline and WebSocket as the comparison candidate. Do not select either until target browser/session tests complete.
 
 ## llama.cpp integration status
 
@@ -91,13 +120,20 @@ The harness never downloads a model and fails closed when no candidate is enable
 
 ## Structured output and tool reliability
 
-The evaluation dataset currently checks:
+The public synthetic evaluation dataset now checks:
 
-- grounded priority selection with valid IDs
-- low confidence/uncertainty when velocity evidence is absent
-- prompt injection inside imported content
-- minimum-tool `get_today` selection
-- refusal to invent unavailable write tools
+- structured schema compliance and grounded priority selection,
+- exact tool selection and argument generation,
+- uncertainty when velocity/evidence is absent,
+- prompt injection in imported text and tool requests,
+- current-record and deterministic-analytic precedence over memory,
+- stale snapshot classification,
+- fabricated source-ID traps,
+- Health consent exclusion,
+- empty-account behavior,
+- cross-domain Forge/Workout/readiness conflict reasoning,
+- deterministic deadline-forecast tool selection,
+- refusal to invent unavailable write or Health tools.
 
 **Measured model pass rates: pending target model runs.** No native tool-calling strategy is enabled by architecture until its pass threshold is met. Schema-constrained JSON and prompted/native tools will be compared rather than assumed equivalent.
 
@@ -114,6 +150,28 @@ The evaluation dataset currently checks:
 - Exact limits remain unselected.
 - NVIDIA sample logger records VRAM, utilization, power, temperature and p-state.
 - Thermal soak, AC/battery power modes, KV-cache pressure, cancellation memory release and two-client behavior are pending target execution.
+
+## Target model measurement table
+
+All cells remain `PENDING` until sanitized target exports are reviewed.
+
+| Candidate | Quant | Load p95 | TTFT p50/p95 | tok/s p50 | Total p95 | RAM peak | VRAM peak | GPU util | CPU util | Temp p95/max | Structured | Tools | Hallucination | Injection critical | 4K/8K | C1/C2 | Verdict |
+|---|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---|---|---|
+| Qwen3 4B Instruct 2507 | Q4_K_M | PENDING | PENDING | PENDING | PENDING | PENDING | PENDING | PENDING | PENDING | PENDING | PENDING | PENDING | PENDING | PENDING | PENDING | PENDING | PENDING |
+| Gemma 3 4B IT QAT | Q4_0 | PENDING | PENDING | PENDING | PENDING | PENDING | PENDING | PENDING | PENDING | PENDING | PENDING | PENDING | PENDING | PENDING | PENDING | PENDING | PENDING |
+| Phi-4 Mini Instruct | Q4_K_M | PENDING | PENDING | PENDING | PENDING | PENDING | PENDING | PENDING | PENDING | PENDING | PENDING | PENDING | PENDING | PENDING | PENDING | PENDING | PENDING |
+| Larger spill/control | TBD | PENDING | PENDING | PENDING | PENDING | PENDING | PENDING | PENDING | PENDING | PENDING | PENDING | PENDING | PENDING | PENDING | PENDING | PENDING | PENDING |
+
+## Raw and sanitized evidence inventory
+
+| Artifact | Classification | Status |
+|---|---|---|
+| Hardware captures by power profile | LOCAL-ONLY raw | Pending target run |
+| Model/server raw JSON and logs | LOCAL-ONLY raw | Pending target run |
+| Per-second thermal/power CSV | LOCAL-ONLY raw | Pending target run |
+| Retrieval raw JSON | LOCAL-ONLY raw | Pending target run |
+| Sanitized aggregate JSON | Public allowlist export | Pending target run |
+| This report's measured tables | Public sanitized summary | Incomplete |
 
 ## Trade-offs and rejected candidates
 
@@ -152,6 +210,24 @@ These are recommendations, not locked selections:
 - context 4K/8K reliability and memory curves
 - 20–30 minute thermal soak per finalist
 - concurrency 1/2 and cancellation resource release
+
+## Final selection fields
+
+These remain unresolved until target evidence passes `W0-GATE-1`:
+
+| Decision | Current value |
+|---|---|
+| Recommended model | No selection |
+| Recommended quantization | No selection |
+| Recommended runtime/build | llama.cpp is a candidate; no build selected |
+| Recommended context budget | No selection; 4K mandatory test, 8K comparison |
+| Recommended concurrency | No selection; single client baseline |
+| Retrieval | FTS5 baseline under evaluation; vector layer unproven |
+| Transport | HTTP+SSE provisional baseline; no selection |
+| Pairing/security | One-time pairing + expiring session concept; mechanism unselected |
+| Revision/snapshot | Epoch + per-domain vector prototype; browser integration pending |
+| Known limitations | 4 GB VRAM, 16 GB RAM; target measurements missing |
+| Unresolved | Model/tool reliability, Windows lifecycle, thermals, embeddings/vector need |
 
 ## Final status
 

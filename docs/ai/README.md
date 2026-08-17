@@ -57,6 +57,13 @@ Every design choice in this package uses one of four labels:
 7. Controls: agent, security, privacy and actions
 8. Evaluation, [observability](OBSERVABILITY.md), domain intelligence, roadmap and [OPEN-QUESTIONS.md](OPEN-QUESTIONS.md)
 
+## Active Wave 0 review
+
+- [`WAVE-0-REPORT.md`](WAVE-0-REPORT.md) — canonical incomplete/final Selection Report.
+- [`wave-0/PASS-FAIL-CRITERIA.md`](wave-0/PASS-FAIL-CRITERIA.md) — frozen pre-measurement gates.
+- [`wave-0/CANDIDATE-MATRIX.md`](wave-0/CANDIDATE-MATRIX.md) — candidate identities, estimates and rationale.
+- [`PRIVACY.md`](PRIVACY.md#public-repository-vs-local-only-boundary) — PUBLIC vs LOCAL-ONLY contract.
+
 ## Gate rule
 
 Architecture review authorizes **Wave 0 preparation and controlled benchmark/prototype spikes only** under [`wave-0/README.md`](wave-0/README.md). It does not authorize production AI features, user-state mutation, permanent model/vector/transport/runtime selection, or changes to authoritative application architecture. Any candidate selection requires a reviewed selection report and ADR before production implementation.

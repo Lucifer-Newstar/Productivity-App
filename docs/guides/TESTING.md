@@ -78,9 +78,9 @@ cd ai/wave0
 python scripts/qa_wave0.py
 ```
 
-This gate verifies disabled-by-default model candidates, loopback configuration, no automatic downloads, revision and pairing prototypes, Python syntax, hardware capture, SQLite FTS deletion, SSE/WebSocket probe, deterministic mock model evaluation and absence of production `get_today()` code.
+This gate verifies disabled-by-default candidates, strict hashes, loopback/no-download rules, revision and pairing prototypes, hardware capture, FTS ranking/filter/deletion, SSE/WebSocket+HTTP callback transport, deterministic model and embedding mocks, lifecycle crash/restart, sustained-load metrics, frozen-gate scoring, allowlist sanitization, tracked-file privacy scanning and absence of production `get_today()` code.
 
-Target GPU/model/thermal results must be produced separately on the RTX 3050 laptop and cannot be replaced by sandbox QA. See [`../ai/EVALUATION.md`](../ai/EVALUATION.md), [`../ai/ROADMAP.md`](../ai/ROADMAP.md), and the incomplete [`../ai/wave-0/WAVE-0-SELECTION-REPORT.md`](../ai/wave-0/WAVE-0-SELECTION-REPORT.md).
+Target GPU/model/thermal results must be produced separately on the RTX 3050 laptop and cannot be replaced by sandbox QA. See [`../ai/EVALUATION.md`](../ai/EVALUATION.md), [`../ai/ROADMAP.md`](../ai/ROADMAP.md), and the incomplete [`../ai/WAVE-0-REPORT.md`](../ai/WAVE-0-REPORT.md).
 
 ## Historical reports
 

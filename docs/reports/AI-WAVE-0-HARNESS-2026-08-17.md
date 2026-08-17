@@ -24,9 +24,9 @@ The target manifest now records an ASUS TUF Gaming A15 FA506NCR with Ryzen 7 743
 
 Synthetic baselines:
 
-- Revision prototype: 9 assertions
-- Pairing prototype: 7 security assertions
-- Wave 0 harness: 16 checks
+- Revision prototype: 17 assertions
+- Pairing prototype: 13 security assertions
+- Wave 0 harness: 23 checks
 - SQLite FTS5: 20,000 records; p95 approximately 3.96 ms in memory
 - 200-event transport microbenchmark: SSE p95 approximately 5.34 ms; WebSocket p95 approximately 5.66 ms
 

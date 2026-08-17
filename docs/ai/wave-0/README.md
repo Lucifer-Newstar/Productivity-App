@@ -28,9 +28,12 @@
 
 - W0-01 initial mutation-path audit: [`DOMAIN-REVISION-AUDIT.md`](DOMAIN-REVISION-AUDIT.md)
 - Synthetic revision, pairing, retrieval and transport prototypes are available under `ai/wave0/`.
-- Sandbox measurements and unresolved target gates: [`WAVE-0-SELECTION-REPORT.md`](WAVE-0-SELECTION-REPORT.md)
+- Sandbox measurements and unresolved target gates: [`../WAVE-0-REPORT.md`](../WAVE-0-REPORT.md)
 - Target capture status: [`TARGET-HARDWARE-CAPTURE.md`](TARGET-HARDWARE-CAPTURE.md)
+- Frozen pass/fail gates: [`PASS-FAIL-CRITERIA.md`](PASS-FAIL-CRITERIA.md)
+- Frozen candidate inventory: [`CANDIDATE-MATRIX.md`](CANDIDATE-MATRIX.md)
 - Target Windows execution steps: [`TARGET-RUNBOOK.md`](TARGET-RUNBOOK.md)
+- Public/local boundary: [`../PRIVACY.md`](../PRIVACY.md#public-repository-vs-local-only-boundary)
 - No model download, permanent candidate selection or production AI service has started.
 
 ## Artifacts required
@@ -38,7 +41,8 @@
 - [`SPIKE-PLAN.md`](SPIKE-PLAN.md)
 - [`SELECTION-REPORT-TEMPLATE.md`](SELECTION-REPORT-TEMPLATE.md)
 - Reproducible commands and environment manifest
-- Raw machine-readable benchmark results
+- LOCAL-ONLY raw machine-readable benchmark results retained by the owner
+- Public allowlist-sanitized aggregate for review
 - Human-readable comparison
 - Security review of pairing/transport
 - Storage lifecycle test results

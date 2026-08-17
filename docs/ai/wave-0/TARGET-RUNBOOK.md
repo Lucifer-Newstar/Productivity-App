@@ -2,6 +2,8 @@
 
 ## Test device baseline
 
+The following user-supplied specification defines the expected device class only. It is **not** the authoritative benchmark environment. The LOCAL-ONLY machine capture generated immediately before benchmark execution is authoritative.
+
 User-supplied specification:
 
 ```text
@@ -53,20 +55,51 @@ For each power profile and candidate:
 python scripts\run_benchmarks.py `
   --config config\candidates.local.json `
   --output results-local\MODEL-ac-performance.json
+
+python scripts\probe_lifecycle.py `
+  --config config\candidates.local.json `
+  --candidate CANDIDATE_ID `
+  --context 4096 `
+  --output results-local\MODEL-lifecycle.json
 ```
 
-The runner executes native llama-bench when configured, model startup/shutdown, 4K/8K contexts, structured/tool scenarios, concurrency 1/2, and NVIDIA sampling.
+The runner executes native llama-bench when configured, model startup/shutdown, 4K/8K contexts, 20 repetitions of every structured/tool scenario, concurrency 1/2, cancellation/recovery and NVIDIA/RAM/CPU sampling.
 
-Run each finalist for a 30-minute sustained sample while monitoring NVIDIA metrics:
+Run retrieval and protocol baselines on the same profile:
 
 ```powershell
-python scripts\monitor_nvidia.py `
-  --duration 1800 `
-  --interval 1 `
-  --output results-local\MODEL-thermal-30m.csv
+python scripts\benchmark_retrieval.py --output results-local\retrieval-fts.json
+# Only after reviewing the measured lexical paraphrase gap, run a separately launched local embedding candidate:
+python scripts\benchmark_embeddings.py --base-url http://127.0.0.1:18081 --output results-local\embedding-candidate.json
+python scripts\transport_probe.py --messages 200 --runs 50 --output results-local\transport.json
+python prototypes\pairing_server.py --self-test --output results-local\pairing.json
+node prototypes\revision-coordinator.mjs --output results-local\revision.json
 ```
 
-A separate repeated model request/load must run during the same interval; an idle monitor is not a thermal test.
+Run each finalist under continuous synthetic load for at least 30 minutes. The soak runner sends repeated requests while sampling NVIDIA/process resources, avoiding an invalid idle-only thermal test:
+
+```powershell
+python scripts\soak_model.py `
+  --config config\candidates.local.json `
+  --candidate CANDIDATE_ID `
+  --context 4096 `
+  --duration 1800 `
+  --output results-local\MODEL-soak-30m.json
+```
+
+Apply the frozen gates without editing them:
+
+```powershell
+python scripts\score_results.py `
+  --models results-local\MODEL-ac-performance.json `
+  --retrieval results-local\retrieval-fts.json `
+  --embeddings results-local\embedding-candidate.json `
+  --lifecycle results-local\MODEL-lifecycle.json `
+  --pairing results-local\pairing.json `
+  --revision results-local\revision.json `
+  --soak results-local\MODEL-soak-30m.json `
+  --output results-local\MODEL-score.json
+```
 
 ## Required results per candidate
 
@@ -76,17 +109,40 @@ A separate repeated model request/load must run during the same interval; an idl
 - prompt-processing and generation tokens/sec
 - first-token and complete-response latency
 - peak RAM and dedicated VRAM
-- structured response pass rate over five repetitions
+- structured response and tool accuracy over 20 repetitions per scenario
 - tool selection/arguments pass rate
 - 4K versus 8K context behavior
 - concurrency 1 versus 2
-- peak/sustained temperature, power and throttling
+- peak/sustained GPU temperature, power and throttling; CPU temperature only from a trusted local sensor tool and sanitized before review
 - AC profile and Windows/ASUS power mode
 
 ## Stop rules
 
 Stop a candidate when it repeatedly causes out-of-memory behavior, severe system swapping, unresponsive UI, unsafe temperatures, orphan processes, invalid schema/tool behavior below threshold, or requires unreviewed remote execution.
 
+## Phase D — sanitize for public review
+
+Raw files stay in `results-local/`. After local inspection:
+
+```powershell
+python scripts\sanitize_results.py `
+  --hardware results-local\target-hardware-ac-performance.json `
+  --models results-local\MODEL-ac-performance.json `
+  --retrieval results-local\retrieval-fts.json `
+  --embeddings results-local\embedding-candidate.json `
+  --lifecycle results-local\MODEL-lifecycle.json `
+  --pairing results-local\pairing.json `
+  --revision results-local\revision.json `
+  --score results-local\MODEL-score.json `
+  --soak results-local\MODEL-soak-30m.json `
+  --transport results-local\transport.json `
+  --output results-public\wave0-aggregate.json
+
+python scripts\privacy_scan.py --mode staged
+```
+
+Review the sanitized JSON manually before staging. It must contain aggregates only, never raw prompts/responses, local paths, host/user/device identifiers or per-sample logs.
+
 ## Production boundary
 
-These commands produce selection evidence only. They do not start `get_today()`, expose Kaizen records or select a permanent model.
+These commands produce selection evidence only. They do not start `get_today()`, expose Kaizen records or select a permanent model. Stop after updating `docs/ai/WAVE-0-REPORT.md` and wait for explicit review.
