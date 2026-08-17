@@ -68,7 +68,7 @@ CareerState {
   speaking:      SpeakingEngagement[]
   visionBoard:   VisionBoardItem[]
 
-  // Legacy (kept so old components keep compiling)
+  // Legacy migration compatibility (not rendered by current routes)
   tracks:        LegacyTrack[]
   goals:         LegacyGoal[]
   notes:         LegacyNote[]
@@ -234,9 +234,8 @@ actions:
 2. Legacy achievements get `category: "other"` merged in.
 3. Resume bullets from legacy `tracks[].resumeBullets` are lifted into the
    new top-level `bullets[]` without duplicates.
-4. Tracks are preserved so the old components (`Roadmap`, `CareerNotes`,
-   `Posts`, `Goals`, `AchievementVault`, `TrackTabs`) keep rendering
-   (they are no longer routed to by `/career`, but are kept compiling).
+4. Legacy tracks/goals/notes remain in the state contract so old browser data can
+   migrate without loss; the removed pre-sector UI components no longer ship.
 
 ## Design palette
 
@@ -272,4 +271,4 @@ items from the current feature audit are:
 - Per-session focus graph and agenda/time-block planner
 - Vision-board image upload and one WLB aggregate score
 
-See `docs/FEATURES.md` for row-level status.
+See `docs/reference/FEATURES.md` for row-level status.

@@ -11,7 +11,7 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Flag, Calendar, Trash2, Search, Plus } from "lucide-react";
 import Link from "next/link";
-import { useStore, useSpace } from "../lib/store";
+import { useStore } from "../lib/store";
 import { SPACES } from "../lib/types";
 import type { Priority, SpaceId } from "../lib/types";
 
