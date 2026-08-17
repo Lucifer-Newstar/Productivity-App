@@ -72,7 +72,7 @@ export class IntelligenceOrchestrator {
     emit({ type: "tool.requested", request: toolRequest, at: new Date().toISOString() });
     const result = await executeTool(toolRequest, combined);
     if (result.requestId !== requestId || result.callId !== call.id) throw new IntelligenceError("INVALID_TOOL_RESULT", "The browser returned a mismatched tool result.");
-    emit({ type: "tool.completed", result, at: new Date().toISOString() });
+    emit({ type: "tool.completed", result: { requestId: result.requestId, callId: result.callId, status: result.status, error: result.error }, at: new Date().toISOString() });
     if (result.status !== "ok" || !result.snapshot) throw new IntelligenceError(result.error?.code ?? "TOOL_FAILED", result.error?.message ?? "Current-day context was unavailable.", result.error?.retryable ?? false);
     const snapshot = asTodaySnapshot(result.snapshot), toolMessage = JSON.stringify({ snapshot });
     const secondMessages: ProviderMessage[] = [...messages, { role: "assistant", content: "", toolCalls: [call] }, { role: "tool", toolCallId: call.id, content: toolMessage }];

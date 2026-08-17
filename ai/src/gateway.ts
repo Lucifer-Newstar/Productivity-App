@@ -65,6 +65,7 @@ export function createEngineGateway(config: EngineConfig): EngineGateway {
   const providers = new ProviderRegistry(config), pairing = new PairingManager(config.pairingTtlMs, config.sessionTtlMs);
   const orchestrator = new IntelligenceOrchestrator(providers.generation, config.requestTimeoutMs), requests = new RequestManager(orchestrator, config.maximumActiveRequests);
   const limiter = new FixedWindowLimiter(120, 60_000), pairLimiter = new FixedWindowLimiter(8, 60_000);
+  const cleanup = setInterval(() => { pairing.cleanup(); requests.cleanup(); limiter.prune(); pairLimiter.prune(); }, 10 * 60_000); cleanup.unref();
   const server = createServer(async (request, response) => {
     securityHeaders(response);
     const origin = request.headers.origin, allowedOrigin = origin && config.allowedOrigins.has(origin) ? origin : null;
@@ -122,5 +123,6 @@ export function createEngineGateway(config: EngineConfig): EngineGateway {
       json(response, known.code === "BODY_TOO_LARGE" ? 413 : 400, publicError(known.code, known.message, known.retryable));
     }
   });
+  server.once("close", () => clearInterval(cleanup));
   return { server, pairingCode: pairing.pairingCode, requests, providers };
 }
