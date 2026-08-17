@@ -20,13 +20,14 @@
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  ArrowLeft, Volume2, VolumeX, Sun, Moon, Bell, Hand, Minimize2, Crown,
+  ArrowLeft, Volume2, VolumeX, Sun, Moon, Hand, Minimize2, Crown,
   Flame, BookOpen, Target, Dumbbell, Zap, BarChart3, Kanban as KanbanIcon,
   Trophy, Award, Calendar, Sparkles,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { useTheme } from "../../lib/theme";
 import { useStore } from "../../lib/store";
+import NotificationButton from "../NotificationButton";
 
 export type WorkoutSectionId =
   | "overview" | "library" | "calisthenics" | "gym" | "cardio"
@@ -227,14 +228,12 @@ export default function WorkoutShell({ section, battleButton, battleCard, childr
           <Minimize2 size={15} />
         </IconToggle>
 
-        <button aria-label="Notifications"
-          className={`p-2 rounded-xl transition hidden sm:inline-flex relative ${
+        <NotificationButton
+          size={16}
+          className={`p-2 rounded-xl transition hidden sm:inline-grid ${
             isDark ? "hover:bg-amber-200/10 text-gray-300" : "hover:bg-red-900/10 text-gray-600"
-          }`}>
-          <Bell size={16} />
-          <span className="absolute top-1.5 right-1.5 w-1.5 h-1.5 rounded-full"
-            style={{ background: "#b91c1c", boxShadow: "0 0 8px #b91c1c" }} />
-        </button>
+          }`}
+        />
         <button aria-label="Theme" onClick={toggle}
           title={`Switch to ${isDark ? "parchment" : "obsidian"} mode`}
           className={`p-2 rounded-xl transition hidden sm:inline-flex ${

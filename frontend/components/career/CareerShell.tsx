@@ -23,7 +23,7 @@ import Link from "next/link";
 import { useRouter } from "next/router";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  ArrowLeft, Terminal, Sun, Moon, Bell, Map, Brain, Award, Users, Briefcase,
+  ArrowLeft, Terminal, Sun, Moon, Map, Brain, Award, Users, Briefcase,
   Trophy, ClipboardList, Globe, Cpu, FolderKanban,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
@@ -31,6 +31,7 @@ import { useEffect, useState } from "react";
 import { useTheme } from "../../lib/theme";
 import { useStore } from "../../lib/store";
 import { KeyboardArmed } from "./CareerFx";
+import NotificationButton from "../NotificationButton";
 
 export type CareerSectionId =
   | "roadmaps" | "skills" | "certs" | "network" | "jobs"
@@ -484,10 +485,7 @@ export default function CareerShell({ section, commandButton, commandCard, child
 
         <div className="w-px h-6 hidden sm:block" style={{background:T.borderSoft}}/>
 
-        <button aria-label="Alerts" className="hidden sm:inline-flex p-2 rounded-sm transition hover:bg-black/5" style={{color:T.bell}}>
-          <Bell size={14}/>
-          <span className="absolute top-1.5 right-1.5 w-1.5 h-1.5 rounded-full" style={{background:T.bellDot,boxShadow:`0 0 6px ${T.bellDot}`}}/>
-        </button>
+        <NotificationButton size={14} className="hidden sm:inline-grid p-2 rounded-sm transition hover:bg-black/5" style={{color:T.bell}}/>
         <button aria-label="Theme" onClick={toggle} title={`Switch to ${light ? "night HUD" : "blueprint"} mode`}
           className="p-2 rounded-sm transition hover:bg-black/5 hidden sm:inline-flex" style={{color:T.fgMuted}}>
           {light ? <Moon size={14}/> : <Sun size={14}/>}

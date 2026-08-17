@@ -23,6 +23,7 @@ import { useEffect, useState } from "react";
 import { Activity, Heart, Moon, Sun, Home } from "lucide-react";
 import { useTheme } from "../../lib/theme";
 import { HEALTH_SECTIONS, type HealthSectionId } from "../../lib/healthTypes";
+import NotificationButton from "../NotificationButton";
 
 interface Props {
   section: HealthSectionId;
@@ -176,6 +177,7 @@ export default function HealthShell({ section, children }: Props) {
           <div className="hlth-topbar-right">
             <span className="hlth-date">{istDate}</span>
             <Clock light={light} />
+            <NotificationButton size={14} className="hlth-icon-btn"/>
             <button
               onClick={toggle}
               className="hlth-icon-btn"

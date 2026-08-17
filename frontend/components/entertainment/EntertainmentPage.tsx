@@ -19,6 +19,7 @@ import EntertainmentIntelligence from "./EntertainmentIntelligence";
 import EntertainmentStats from "./EntertainmentStats";
 import EntertainmentSocial from "./EntertainmentSocial";
 import EntertainmentStudio from "./EntertainmentStudio";
+import NotificationButton from "../NotificationButton";
 import { ENTERTAINMENT_LANGUAGES, entertainmentCopy, providerLocale, type EntertainmentCopyKey } from "../../lib/entertainmentI18n";
 
 const uid = () => Math.random().toString(36).slice(2,10) + Date.now().toString(36);
@@ -119,6 +120,7 @@ export default function EntertainmentPage() {
       <div className="hidden md:flex flex-1 max-w-xl ml-auto relative"><Search size={15} className="absolute left-3 top-2.5" style={{color:"var(--muted)"}}/><input value={search} onChange={e=>setSearch(e.target.value)} placeholder={t("search")} className="w-full rounded-full border bg-transparent pl-9 pr-4 py-2 text-sm outline-none focus:border-fuchsia-400/60" style={{borderColor:"var(--line)"}}/></div>
       <button onClick={()=>setAddOpen(true)} className="rounded-full px-4 py-2 text-xs font-bold bg-gradient-to-r from-fuchsia-500 to-pink-500 text-white flex items-center gap-2"><Plus size={14}/> {t("quickAdd").toUpperCase()}</button>
       <select aria-label={t("language")} value={entertainment.settings.language} onChange={e=>updateEntertainment(s=>({settings:{...s.settings,language:e.target.value as any}}))} className="hidden sm:block rounded-full border bg-transparent px-3 py-2 text-xs" style={{borderColor:"var(--line)"}}>{ENTERTAINMENT_LANGUAGES.map(l=><option key={l.id} value={l.id}>{l.label}</option>)}</select>
+      <NotificationButton size={15} className="w-9 h-9 rounded-full border" style={{borderColor:"var(--line)"}}/>
       <button aria-label="Providers and credits" onClick={()=>setProviderOpen(true)} title="Providers & credits" className="w-9 h-9 rounded-full border grid place-items-center" style={{borderColor:"var(--line)"}}><Info size={15}/></button>
       <button aria-label="Toggle color theme" onClick={toggle} className="w-9 h-9 rounded-full border grid place-items-center" style={{borderColor:"var(--line)"}}>{theme==="dark"?<Sun size={15}/>:<Moon size={15}/>}</button>
     </header>

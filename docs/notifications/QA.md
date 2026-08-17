@@ -30,7 +30,7 @@ The executable suite verifies:
 - [ ] Health requires explicit confirmation even when seeded defaults are present
 - [ ] Entertainment supports provider-ready or manual-only confirmation
 - [ ] Confirm/reset immediately hides/restores setup alerts
-- [ ] Bell is visible on Home and every full-screen space
+- [x] NotificationButton is mounted in Home and all five full-screen navigation bars
 - [ ] Home shows Global notifications only
 - [ ] Each space shows its own section plus Global, never another section
 - [ ] Unread badge and mark-all-read are scoped to visible context

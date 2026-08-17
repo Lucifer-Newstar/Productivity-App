@@ -22,7 +22,16 @@ const types = read("lib/types.ts"),
   ent = read("components/entertainment/EntertainmentPage.tsx"),
   health = read("components/health/VitalsSection.tsx"),
   cardio = read("components/workout/WorkoutCardio.tsx"),
+  notificationButton = read("components/NotificationButton.tsx"),
   pkg = JSON.parse(read("package.json"));
+const navShells = [
+  "components/TopNav.tsx",
+  "components/workout/WorkoutShell.tsx",
+  "components/career/CareerShell.tsx",
+  "components/forge/ForgeShell.tsx",
+  "components/health/HealthShell.tsx",
+  "components/entertainment/EntertainmentPage.tsx",
+].map(read);
 console.log("\n── UI foundation ──");
 test("space metadata contains no emoji field", !types.includes('emoji: "'));
 test(
@@ -44,6 +53,11 @@ test(
 test(
   "cardio modes use Lucide icons",
   cardio.includes("icon: LucideIcon") && !cardio.includes("emoji:"),
+);
+test(
+  "notification trigger lives in every navigation shell",
+  notificationButton.includes("kaizen:notifications-toggle") &&
+    navShells.every((source) => source.includes("<NotificationButton")),
 );
 test(
   "self-hosted font packages installed",

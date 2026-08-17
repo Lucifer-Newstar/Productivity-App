@@ -8,6 +8,7 @@ import { useTheme } from "../lib/theme";
 import { SPACES } from "../lib/types";
 import { useState } from "react";
 import SpaceIcon from "./SpaceIcon";
+import NotificationButton from "./NotificationButton";
 
 export default function TopNav() {
   const { tasks } = useStore(),
@@ -68,6 +69,7 @@ export default function TopNav() {
               }
             />
           </label>
+          <NotificationButton className="home-theme-toggle" size={16}/>
           <button
             onClick={toggle}
             aria-label="Toggle theme"

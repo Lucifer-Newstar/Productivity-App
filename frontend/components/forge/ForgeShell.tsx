@@ -27,13 +27,14 @@ import Link from "next/link";
 import { useRouter } from "next/router";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  Hammer, Flame, Pickaxe, Archive, LayoutDashboard, Sun, Moon, Bell, Anvil, Gauge, Settings, Volume2, VolumeX,
+  Hammer, Flame, Pickaxe, Archive, LayoutDashboard, Sun, Moon, Anvil, Gauge, Settings, Volume2, VolumeX,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { useEffect, useState, useRef } from "react";
 import { useTheme } from "../../lib/theme";
 import { useStore } from "../../lib/store";
 import { isDoneStatus as isTaskDone } from "./forgeUtils";
+import NotificationButton from "../NotificationButton";
 
 export type ForgeSectionId = "foundry" | "quarry" | "smelter" | "vault";
 
@@ -605,12 +606,7 @@ export default function ForgeShell({ section, actionButton, actionPanel, childre
 
             {actionButton}
 
-            <button aria-label="Alerts" className="hidden sm:inline-flex p-2 rounded-sm transition hover:bg-black/5 relative"
-              style={{color:T.bell}}>
-              <Bell size={14}/>
-              <span className="absolute top-1.5 right-1.5 w-1.5 h-1.5 rounded-full"
-                style={{background:T.bellDot, boxShadow:`0 0 6px ${T.bellDot}`}}/>
-            </button>
+            <NotificationButton size={14} className="hidden sm:inline-grid p-2 rounded-sm transition hover:bg-black/5" style={{color:T.bell}}/>
             <button aria-label="Theme" onClick={toggle}
               title={`Switch to ${light?"foundry":"drafting"} mode`}
               className="p-2 rounded-sm transition hover:bg-black/5 hidden sm:inline-flex"
