@@ -8,7 +8,8 @@
 
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { Flame, Plus, Check, Droplets, Dumbbell, BookOpen, Moon, X, Sprout } from "lucide-react";
+import { Flame, Plus, Check, Droplets, Dumbbell, BookOpen, Moon, X, Sprout, Repeat2, Target, CalendarCheck2 } from "lucide-react";
+import HomeSectionHeader from "./HomeSectionHeader";
 
 interface Habit {
   id: string;
@@ -77,32 +78,17 @@ export default function Habits() {
   const remove = (id: string) => setHabits((prev) => prev.filter((h) => h.id !== id));
 
   return (
-    <div className="space-y-6 max-w-4xl mx-auto">
-      <div className="flex items-center justify-between flex-wrap gap-4">
-        <div>
-          <h2 className="text-3xl font-bold text-gray-900 dark:text-white">Habits</h2>
-          <p className="text-gray-500 dark:text-gray-400 mt-1">Small daily actions compound into big results.</p>
-        </div>
-        <button onClick={() => setShowNew(true)} className="btn-primary flex items-center gap-2">
-          <Plus size={16} /> New habit
-        </button>
-      </div>
-
-      {/* Streak highlight */}
-      <div className="card flex items-center gap-4 bg-gradient-to-r from-amber-500/10 to-pink-500/10 border-amber-500/20">
-        <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-accent-amber to-accent-pink flex items-center justify-center">
-          <Flame size={26} className="text-white" />
-        </div>
-        <div>
-          <p className="text-sm text-gray-500 dark:text-gray-400">Longest active streak</p>
-          <p className="text-2xl font-bold text-gray-900 dark:text-white">
-            {Math.max(0, ...habits.map((h) => h.streak))} days
-          </p>
-        </div>
-      </div>
+    <div className="core-section core-habits">
+      <HomeSectionHeader index="05" eyebrow="Consistency system" title="Rhythm Matrix" description="Measure repeatability, not motivation. Keep the daily standard visible." icon={Repeat2} actions={<button onClick={() => setShowNew(true)} className="home-primary"><Plus size={15}/> Add rhythm</button>}/>
+      <section className="core-metric-rail" aria-label="Habit summary">
+        <div><Target/><span>Active rhythms</span><strong>{habits.length}</strong></div>
+        <div><Flame/><span>Best streak</span><strong>{Math.max(0,...habits.map(h=>h.streak))}d</strong></div>
+        <div><CalendarCheck2/><span>Done today</span><strong>{habits.filter(h=>h.history.includes(today())).length}/{habits.length}</strong></div>
+        <div><Repeat2/><span>7-day marks</span><strong>{habits.reduce((n,h)=>n+h.history.filter(d=>days.includes(d)).length,0)}</strong></div>
+      </section>
 
       {/* Habit rows */}
-      <div className="space-y-3">
+      <div className="habit-matrix">
         {habits.map((h) => {
           const iconDef = ICONS.find((i) => i.id === h.icon) || ICONS[0];
           const Icon = iconDef.Icon;
@@ -112,7 +98,7 @@ export default function Habits() {
               layout
               initial={{ opacity: 0, y: 5 }}
               animate={{ opacity: 1, y: 0 }}
-              className="card flex items-center gap-4 group"
+              className="habit-matrix-row group"
             >
               <div
                 className="w-12 h-12 rounded-xl flex items-center justify-center shrink-0"
@@ -137,6 +123,7 @@ export default function Habits() {
                       <button
                         key={d}
                         onClick={() => toggle(h.id, d)}
+                        aria-label={`${done ? "Clear" : "Mark"} ${h.name} on ${d}`}
                         className="flex-1 flex flex-col items-center gap-1 group/day"
                       >
                         <span className="text-[10px] text-gray-500">{dayLetter}</span>
@@ -160,6 +147,7 @@ export default function Habits() {
 
               <button
                 onClick={() => remove(h.id)}
+                aria-label={`Delete ${h.name}`}
                 className="p-2 rounded-lg text-gray-400 dark:text-gray-500 hover:text-red-500 hover:bg-red-500/10 opacity-0 group-hover:opacity-100 transition"
               >
                 <X size={16} />
@@ -170,7 +158,7 @@ export default function Habits() {
         {habits.length === 0 && (
           <div className="text-center py-12 text-gray-500">
             <Sprout size={34} className="mx-auto mb-3 text-emerald-500" strokeWidth={1.5}/>
-            <p className="text-sm">Start building a habit — it only takes 21 days.</p>
+            <p className="text-sm">Add the first repeatable action to your matrix.</p>
           </div>
         )}
       </div>
@@ -204,6 +192,7 @@ export default function Habits() {
                   <button
                     key={i.id}
                     onClick={() => setIcon(i.id)}
+                    aria-label={`Use ${i.label} icon`}
                     className={`p-3 rounded-lg transition ${
                       icon === i.id
                         ? "bg-accent/20 text-accent border border-accent/40"
@@ -221,6 +210,7 @@ export default function Habits() {
                 <button
                   key={c}
                   onClick={() => setColor(c)}
+                  aria-label={`Use color ${c}`}
                   className={`w-8 h-8 rounded-full transition-transform ${color === c ? "scale-110 ring-2 ring-black/20 dark:ring-white/60" : ""}`}
                   style={{ background: c }}
                 />

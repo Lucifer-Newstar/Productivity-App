@@ -24,6 +24,8 @@ const types = read("lib/types.ts"),
   cardio = read("components/workout/WorkoutCardio.tsx"),
   notificationButton = read("components/NotificationButton.tsx"),
   homeIntelligence = read("lib/homeIntelligence.ts"),
+  homeSectionHeader = read("components/HomeSectionHeader.tsx"),
+  coreSections = ["Tasks", "Pomodoro", "Notes", "Habits", "Calendar"].map((name) => read(`components/${name}.tsx`)),
   pkg = JSON.parse(read("package.json"));
 const navShells = [
   "components/TopNav.tsx",
@@ -126,6 +128,18 @@ test(
 test(
   "reduced-motion guard covers home UI",
   css.includes("@media(prefers-reduced-motion:reduce)"),
+);
+test(
+  "all core sections use the mature shared header",
+  homeSectionHeader.includes("core-section-header") && coreSections.every((source) => source.includes("<HomeSectionHeader")),
+);
+test(
+  "core sections expose useful summary metrics",
+  coreSections.filter((source) => source.includes("core-metric-rail")).length >= 4,
+);
+test(
+  "focus section uses an operational console instead of tutorial filler",
+  coreSections[1].includes("Focus Chamber") && coreSections[1].includes("focus-console") && !coreSections[1].includes("How it works"),
 );
 console.log(`\n${pass} passed, ${fail} failed`);
 if (fail) process.exit(1);

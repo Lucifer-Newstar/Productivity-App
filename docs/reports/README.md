@@ -4,5 +4,6 @@
 - [`CLEANUP-2026-08-17.md`](CLEANUP-2026-08-17.md) — dead-code removal and documentation reorganization.
 - [`UI-REFRESH-2026-08-17.md`](UI-REFRESH-2026-08-17.md) — icon, typography, theme and motion foundation.
 - [`HOME-COMMAND-CENTER-2026-08-17.md`](HOME-COMMAND-CENTER-2026-08-17.md) — cross-space home intelligence redesign.
+- [`HOME-CORE-SECTIONS-2026-08-17.md`](HOME-CORE-SECTIONS-2026-08-17.md) — Tasks, Focus, Notes, Habits, and Calendar interface refresh.
 
 Historical product QA lives under [`../quality/`](../quality/README.md); security audits live under [`../security/`](../security/README.md).

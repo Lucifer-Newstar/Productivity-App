@@ -8,7 +8,8 @@
 
 import { useState, useMemo } from "react";
 import { motion } from "framer-motion";
-import { ChevronLeft, ChevronRight, Plus } from "lucide-react";
+import { ChevronLeft, ChevronRight, CalendarRange, CircleDot, CheckCircle2, Layers3 } from "lucide-react";
+import HomeSectionHeader from "./HomeSectionHeader";
 import { useStore } from "../lib/store";
 import { SPACES } from "../lib/types";
 import SpaceIcon from "./SpaceIcon";
@@ -41,23 +42,26 @@ export default function Calendar() {
     return { monthMatrix: cells, monthName: first.toLocaleString("en-US", { month: "long" }), year };
   }, [cursor]);
 
-  const tasksOnSelected = tasks.filter((t) => new Date(t.createdAt).toISOString().slice(0, 10) === selected);
+  const tasksOnSelected = tasks.filter((t) => (t.dueDate || new Date(t.createdAt).toISOString().slice(0, 10)) === selected);
   const completedOnSelected = tasksOnSelected.filter((t) => t.completed).length;
   const todayIso = new Date().toISOString().slice(0, 10);
 
   const tasksOn = (d: Date) => {
     const iso = d.toISOString().slice(0, 10);
-    return tasks.filter((t) => new Date(t.createdAt).toISOString().slice(0, 10) === iso);
+    return tasks.filter((t) => (t.dueDate || new Date(t.createdAt).toISOString().slice(0, 10)) === iso);
   };
 
   return (
-    <div className="max-w-5xl mx-auto space-y-6">
-      <div>
-        <h2 className="text-3xl font-bold text-gray-900 dark:text-white">Calendar</h2>
-        <p className="text-gray-500 dark:text-gray-400 mt-1">Visualize your tasks across time.</p>
-      </div>
+    <div className="core-section core-calendar">
+      <HomeSectionHeader index="06" eyebrow="Time allocation" title="Commitment Map" description="See where obligations land and inspect the load before the week controls you." icon={CalendarRange} />
+      <section className="core-metric-rail" aria-label="Calendar summary">
+        <div><CircleDot/><span>Open commitments</span><strong>{tasks.filter(t=>!t.completed).length}</strong></div>
+        <div><CheckCircle2/><span>Closed</span><strong>{tasks.filter(t=>t.completed).length}</strong></div>
+        <div><CalendarRange/><span>This month</span><strong>{tasks.filter(t=>{const d=new Date(t.dueDate ? `${t.dueDate}T00:00:00` : t.createdAt);return d.getMonth()===cursor.getMonth()&&d.getFullYear()===cursor.getFullYear()}).length}</strong></div>
+        <div><Layers3/><span>Active spaces</span><strong>{new Set(tasks.filter(t=>!t.completed).map(t=>t.space)).size}</strong></div>
+      </section>
 
-      <div className="card">
+      <div className="calendar-board">
         <div className="flex items-center justify-between mb-6">
           <div>
             <h3 className="text-2xl font-bold text-gray-900 dark:text-white">
@@ -67,6 +71,7 @@ export default function Calendar() {
           <div className="flex gap-2">
             <button
               onClick={() => setCursor(new Date(cursor.getFullYear(), cursor.getMonth() - 1, 1))}
+              aria-label="Previous month"
               className="p-2 rounded-lg bg-black/5 dark:bg-white/5 hover:bg-black/10 dark:hover:bg-white/10 border border-black/5 dark:border-white/5 text-gray-700 dark:text-gray-300"
             >
               <ChevronLeft size={18} />
@@ -79,6 +84,7 @@ export default function Calendar() {
             </button>
             <button
               onClick={() => setCursor(new Date(cursor.getFullYear(), cursor.getMonth() + 1, 1))}
+              aria-label="Next month"
               className="p-2 rounded-lg bg-black/5 dark:bg-white/5 hover:bg-black/10 dark:hover:bg-white/10 border border-black/5 dark:border-white/5 text-gray-700 dark:text-gray-300"
             >
               <ChevronRight size={18} />
@@ -140,7 +146,7 @@ export default function Calendar() {
         </div>
       </div>
 
-      <div className="card">
+      <div className="calendar-agenda">
         <div className="flex items-center justify-between mb-4">
           <div>
             <h3 className="font-semibold text-gray-900 dark:text-white">
@@ -150,9 +156,7 @@ export default function Calendar() {
               {tasksOnSelected.length} tasks · {completedOnSelected} completed
             </p>
           </div>
-          <button className="btn-ghost text-sm flex items-center gap-1">
-            <Plus size={14} /> Add event
-          </button>
+          <span className="calendar-agenda-label">SELECTED DAY</span>
         </div>
         {tasksOnSelected.length === 0 ? (
           <p className="text-sm text-gray-500 py-8 text-center">No tasks scheduled for this day.</p>

@@ -8,7 +8,8 @@
 
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Plus, Pin, PinOff, Trash2, X, StickyNote, Search } from "lucide-react";
+import { Plus, Pin, PinOff, Trash2, X, StickyNote, Search, Library, FileText, Clock3 } from "lucide-react";
+import HomeSectionHeader from "./HomeSectionHeader";
 import { useStore } from "../lib/store";
 
 const COLORS = ["#8b5cf6", "#06b6d4", "#ec4899", "#a3e635", "#f59e0b", "#f43f5e"];
@@ -42,29 +43,16 @@ export default function Notes() {
   };
 
   return (
-    <div className="space-y-6 max-w-6xl mx-auto">
-      <div className="flex items-center justify-between flex-wrap gap-4">
-        <div>
-          <h2 className="text-3xl font-bold text-gray-900 dark:text-white">Notes</h2>
-          <p className="text-gray-500 dark:text-gray-400 mt-1">{notes.length} notes · Capture thoughts fast.</p>
-        </div>
-        <div className="flex gap-3">
-          <div className="relative">
-            <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500" />
-            <input
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              placeholder="Search notes..."
-              className="input-base w-64 pl-10"
-            />
-          </div>
-          <button onClick={() => setShowNew(true)} className="btn-primary flex items-center gap-2">
-            <Plus size={16} /> New note
-          </button>
-        </div>
-      </div>
+    <div className="core-section core-notes">
+      <HomeSectionHeader index="04" eyebrow="Knowledge system" title="Reference Desk" description="Turn fragments into durable context you can find and use again." icon={Library} actions={<button onClick={() => setShowNew(true)} className="home-primary"><Plus size={15}/> New note</button>}/>
+      <section className="core-metric-rail" aria-label="Notes summary">
+        <div><FileText/><span>Total notes</span><strong>{notes.length}</strong></div>
+        <div><Pin/><span>Pinned</span><strong>{notes.filter(n=>n.pinned).length}</strong></div>
+        <div><Clock3/><span>Updated today</span><strong>{notes.filter(n=>new Date(n.updatedAt).toDateString()===new Date().toDateString()).length}</strong></div>
+        <label className="core-metric-search"><Search/><input value={query} onChange={e=>setQuery(e.target.value)} placeholder="Search the desk" aria-label="Search notes"/></label>
+      </section>
 
-      <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="notes-desk-grid">
         {filtered.map((n) => (
           <motion.div
             key={n.id}
@@ -72,7 +60,7 @@ export default function Notes() {
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             onClick={() => setEditing(n.id)}
-            className="group relative rounded-2xl p-5 cursor-pointer transition-all hover:-translate-y-1 hover:shadow-xl overflow-hidden"
+            className="note-desk-card group"
             style={{
               background: `linear-gradient(135deg, ${n.color}22, ${n.color}08)`,
               border: `1px solid ${n.color}30`,
@@ -97,12 +85,14 @@ export default function Notes() {
               <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition">
                 <button
                   onClick={(e) => { e.stopPropagation(); togglePinNote(n.id); }}
+                  aria-label={n.pinned ? "Unpin note" : "Pin note"}
                   className="p-1.5 rounded-md hover:bg-black/10 dark:hover:bg-white/10 text-gray-500 hover:text-gray-900 dark:hover:text-white"
                 >
                   {n.pinned ? <PinOff size={13} /> : <Pin size={13} />}
                 </button>
                 <button
                   onClick={(e) => { e.stopPropagation(); deleteNote(n.id); }}
+                  aria-label="Delete note"
                   className="p-1.5 rounded-md hover:bg-red-500/20 text-gray-500 hover:text-red-500"
                 >
                   <Trash2 size={13} />
@@ -115,7 +105,7 @@ export default function Notes() {
         {filtered.length === 0 && !showNew && (
           <div
             onClick={() => setShowNew(true)}
-            className="sm:col-span-2 lg:col-span-3 rounded-2xl border-2 border-dashed border-black/10 dark:border-white/10 p-12 text-center cursor-pointer hover:border-accent/40 transition-colors"
+            className="notes-empty"
           >
             <Plus size={32} className="text-gray-400 mx-auto mb-2" />
             <p className="text-gray-500">No notes yet — click to create your first note</p>
@@ -177,11 +167,8 @@ export default function Notes() {
               animate={{ scale: 1, y: 0 }}
               exit={{ scale: 0.95, y: 20 }}
               onClick={(e) => e.stopPropagation()}
-              className="w-full max-w-2xl rounded-2xl p-6"
-              style={{
-                background: `linear-gradient(135deg, ${current.color}22, rgba(255,255,255,0.9))`,
-                border: `1px solid ${current.color}40`,
-              }}
+              className="note-editor w-full max-w-2xl rounded-2xl p-6"
+              style={{ border: `1px solid ${current.color}40` }}
             >
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-2 flex-1">
