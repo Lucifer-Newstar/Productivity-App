@@ -490,7 +490,11 @@ function ExerciseCard({ exercise: ex, pr, hovered, onHover, logValue, logReps, s
   onMuscleClick: (m: MuscleGroup) => void;
   onHistory: () => void;
 }) {
-  const mg = ex.muscleGroup ? MUSCLE_GROUPS.find((m) => m.id === MUSCLE_FILTER_GROUP[ex.muscleGroup!] ?? ex.muscleGroup) : null;
+  const mg = ex.muscleGroup
+    ? MUSCLE_GROUPS.find(
+        (m) => m.id === (MUSCLE_FILTER_GROUP[ex.muscleGroup!] ?? ex.muscleGroup),
+      )
+    : null;
   const accent = mg?.color ?? "#64748b";
   const secondary = ex.secondaryMuscles?.slice(0,2) ?? [];
   return (
