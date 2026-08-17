@@ -20,8 +20,9 @@ _Last updated: 2026-08-16, Wave 0 + Wave 1 core._
 - [x] Open Library cover redirect chain — allowlisted proxy returns bounded JPEG 200
 - [x] Unconfigured MAL — bounded 503 with configuration guidance
 - [x] Cross-site search and non-allowlisted image host — rejected 403
-- [x] `node scripts/qa-entertainment.js` — 102/102 structural assertions
-- [x] `npm run qa:entertainment:intelligence` — 9/9 executable algorithm tests
+- [x] `node scripts/qa-entertainment.js` — 117/117 structural assertions
+- [x] `npm run qa:entertainment:intelligence` — 9/9 executable intelligence tests
+- [x] `npm run qa:entertainment:reports` — 11/11 executable report tests
 
 ## Wave 1 functional checklist
 
@@ -81,6 +82,18 @@ _Last updated: 2026-08-16, Wave 0 + Wave 1 core._
 - [x] Creator marathon reports tracked/completed works and average rating
 - [x] Recommendation calculations are pure/local and call no provider endpoint
 - [x] Schema v4 backfills country arrays and editable franchise metadata
+
+## Wave 6 reporting checklist
+
+- [x] Timeline, total count/time and completion KPIs
+- [x] 1–10 rating histogram and average
+- [x] Genre count/rating, creator and decade reports
+- [x] Monthly count/time/rating and satisfaction trend
+- [x] Selectable year-in-review summary
+- [x] Backlog age and dropped-reason analysis
+- [x] 365-day heatmap combines events and deep logs
+- [x] Editable purchase price plus total/cost-per-hour
+- [x] Pure report algorithms covered by executable fixtures
 
 ## Security checklist
 

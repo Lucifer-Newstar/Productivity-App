@@ -8,7 +8,8 @@
     "start": "next start",
     "lint": "eslint . --max-warnings=0",
     "qa:entertainment": "node scripts/qa-entertainment.js",
-    "qa:entertainment:intelligence": "tsx scripts/qa-entertainment-intelligence.ts"
+    "qa:entertainment:intelligence": "tsx scripts/qa-entertainment-intelligence.ts",
+    "qa:entertainment:reports": "tsx scripts/qa-entertainment-reports.ts"
   },
   "keywords": [],
   "author": "",

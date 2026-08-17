@@ -85,12 +85,18 @@ Shipped:
 - Fully local computation: no private library state is sent to recommendation services
 - Entertainment schema v4 migration for country/franchise intelligence
 
-## Wave 6 — analytics
+## Wave 6 — analytics ✅
 
-- Timeline, count/time/rating/genre/creator/decade reports
-- Monthly tracker and year in review
-- Completion, backlog and abandoned analysis
-- Heatmap, mood, cost-per-hour and satisfaction trend
+- Consumption timeline and completed totals by all six media types
+- Total time, rating average/distribution and completion rate
+- Genre count, average rating by genre and mood/tag breakdown
+- Creator ranking and release-decade taste
+- Monthly completion/time/rating tracker and satisfaction line
+- Selectable year-in-review count/time/top-genre/top-rated report
+- Oldest backlog and dropped-reason analysis
+- 365-day activity heatmap merging events, reading sessions and episode logs
+- Purchase-price total and cost per consumed hour
+- Pure report builder with executable algorithm tests
 
 ## Wave 7 — offline social simulation
 

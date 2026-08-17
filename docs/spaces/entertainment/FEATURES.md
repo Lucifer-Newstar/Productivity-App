@@ -37,7 +37,23 @@ The approved specification contains 96 numbered features. Wave 0 and the first W
 | 53 | Exploration score | ✅ genre/creator/decade/country/type breadth |
 | 54 | Blind spots | ✅ low-coverage genre/decade/country callouts |
 | 55 | Creator marathon | ✅ tracked works, completion and average rating |
-| 56–72 | Stats/analytics | 🟡 dashboard totals shipped; Wave 6 reports pending |
+| 56 | Consumption timeline | ✅ completed-title chronology |
+| 57 | Total count | ✅ totals plus six-type breakdown |
+| 58 | Total time | ✅ accumulated minutes/hours |
+| 59 | Rating distribution | ✅ 1–10 histogram |
+| 60 | Genre breakdown | ✅ ranked completion bars |
+| 61 | Creator ranking | ✅ average rating + work count |
+| 62 | Year/decade breakdown | ✅ average rating by release decade |
+| 63 | Monthly consumption | ✅ count, hours and rating |
+| 64 | Year in review | ✅ selectable annual summary |
+| 65 | Completion rate | ✅ completed vs dropped terminal outcomes |
+| 66 | Backlog age | ✅ oldest Plan-to analysis |
+| 67 | Abandoned analysis | ✅ dropped-reason aggregation |
+| 68 | Activity heatmap | ✅ 365-day events/read/episode activity |
+| 69 | Average rating by genre | ✅ |
+| 70 | Mood breakdown | ✅ completed-title tag distribution |
+| 71 | Cost analysis | ✅ total spend + cost/hour |
+| 72 | Satisfaction over time | ✅ monthly average-rating line |
 | 73–78 | Offline social | ❌ Wave 7 |
 | 79–87 | Creation/expression | ❌ Wave 8 |
 | 88 | Unified dashboard | ✅ Wave 1 core |
