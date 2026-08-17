@@ -61,6 +61,8 @@ Productivity-App/
 ├── backend/
 │   ├── src/server.ts                   # Express reference API
 │   └── scripts/security-smoke.mjs
+├── ai/
+│   └── wave0/                          # Disposable validation harness; no production engine
 └── docs/
 ```
 

@@ -1,7 +1,7 @@
 # Wave 0 preparation package
 
-**Status:** preparation authorized; candidate evaluation/prototyping only.  
-**Production AI features:** prohibited.  
+**Status:** preparation authorized; candidate evaluation/prototyping only.<br>
+**Production AI features:** prohibited.<br>
 **Permanent model/vector/transport/runtime selection:** requires a reviewed selection report.
 
 ## Entry conditions
@@ -27,7 +27,10 @@
 ## Current progress
 
 - W0-01 initial mutation-path audit: [`DOMAIN-REVISION-AUDIT.md`](DOMAIN-REVISION-AUDIT.md)
-- No runtime prototype, model download or AI service has started.
+- Synthetic revision, pairing, retrieval and transport prototypes are available under `ai/wave0/`.
+- Sandbox measurements and unresolved target gates: [`WAVE-0-SELECTION-REPORT.md`](WAVE-0-SELECTION-REPORT.md)
+- Target capture instructions: [`TARGET-HARDWARE-CAPTURE.md`](TARGET-HARDWARE-CAPTURE.md)
+- No model download, permanent candidate selection or production AI service has started.
 
 ## Artifacts required
 

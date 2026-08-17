@@ -7,5 +7,6 @@
 - [`HOME-CORE-SECTIONS-2026-08-17.md`](HOME-CORE-SECTIONS-2026-08-17.md) — Tasks, Focus, Notes, Habits, and Calendar interface refresh.
 - [`AI-ARCHITECTURE-GATE-2026-08-17.md`](AI-ARCHITECTURE-GATE-2026-08-17.md) — Intelligence Engine architecture package and deliberate non-implementation boundary.
 - [`AI-ARCHITECTURE-REVIEW-2026-08-17.md`](AI-ARCHITECTURE-REVIEW-2026-08-17.md) — conditional review resolutions and Wave 0 preparation status.
+- [`AI-WAVE-0-HARNESS-2026-08-17.md`](AI-WAVE-0-HARNESS-2026-08-17.md) — validation harness, synthetic measurements and target-hardware blockers.
 
 Historical product QA lives under [`../quality/`](../quality/README.md); security audits live under [`../security/`](../security/README.md).

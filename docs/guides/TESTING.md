@@ -69,11 +69,18 @@ Entertainment also has five dynamic Next.js provider routes. Runtime security sm
 | Backend security | Auth, CORS, unsafe payload, ID, overwrite and CSV attacks |
 | HTTP smoke | Production server route failures |
 
-## Intelligence Engine architecture gate
+## Intelligence Engine Wave 0
 
-There is no runtime AI suite yet. Documentation integrity must cover the AI architecture package, decision labels, link graph and the explicit “no implementation yet” boundary. Future Wave 0 must define contract, provider, retrieval, memory, agent, constitutional, adversarial and hardware benchmark suites before feature implementation.
+Wave 0 has a synthetic validation harness but no production AI feature:
 
-See [`../ai/EVALUATION.md`](../ai/EVALUATION.md) and [`../ai/ROADMAP.md`](../ai/ROADMAP.md).
+```bash
+cd ai/wave0
+python scripts/qa_wave0.py
+```
+
+This gate verifies disabled-by-default model candidates, loopback configuration, no automatic downloads, revision and pairing prototypes, Python syntax, hardware capture, SQLite FTS deletion, SSE/WebSocket probe, deterministic mock model evaluation and absence of production `get_today()` code.
+
+Target GPU/model/thermal results must be produced separately on the RTX 3050 laptop and cannot be replaced by sandbox QA. See [`../ai/EVALUATION.md`](../ai/EVALUATION.md), [`../ai/ROADMAP.md`](../ai/ROADMAP.md), and the incomplete [`../ai/wave-0/WAVE-0-SELECTION-REPORT.md`](../ai/wave-0/WAVE-0-SELECTION-REPORT.md).
 
 ## Historical reports
 

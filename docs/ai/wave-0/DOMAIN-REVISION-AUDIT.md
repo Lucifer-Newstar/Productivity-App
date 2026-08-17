@@ -1,6 +1,6 @@
 # W0-01 domain revision source audit
 
-**Status:** initial source audit complete; prototype not yet implemented.  
+**Status:** initial source audit complete; prototype not yet implemented.<br>
 **Repository baseline:** `fd0cdff` parent architecture review commit.
 
 ## Current persistence topology
