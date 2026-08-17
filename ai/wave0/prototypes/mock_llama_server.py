@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """Deterministic OpenAI-compatible mock used only to verify the benchmark harness."""
-import argparse, json, time
+import argparse, json, sys, time
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
 class H(BaseHTTPRequestHandler):
@@ -25,5 +25,6 @@ class H(BaseHTTPRequestHandler):
         self.wfile.write(b"data: [DONE]\n\n");self.wfile.flush()
 
 def main():
+    if "--version" in sys.argv: print("kaizen-wave0-mock 1"); return
     ap=argparse.ArgumentParser(add_help=False);ap.add_argument("--host",default="127.0.0.1");ap.add_argument("--port",type=int,default=18080);args,_=ap.parse_known_args();ThreadingHTTPServer((args.host,args.port),H).serve_forever()
 if __name__=="__main__":main()

@@ -4,7 +4,7 @@
 No model is downloaded. Only candidates explicitly enabled in local config run.
 """
 from __future__ import annotations
-import argparse, concurrent.futures, datetime as dt, hashlib, json, os, pathlib, shutil, subprocess, sys, threading, time, urllib.error, urllib.request
+import argparse, concurrent.futures, datetime as dt, hashlib, json, os, pathlib, shutil, statistics, subprocess, sys, threading, time, urllib.error, urllib.request
 
 ROOT=pathlib.Path(__file__).resolve().parents[1]
 
@@ -124,6 +124,26 @@ def summarize_nvidia(samples):
     if not samples:return {"available":False,"samples":0}
     def values(k):return [x[k] for x in samples]
     return {"available":True,"samples":len(samples),"peakMemoryUsedMiB":max(values("memoryUsedMiB")),"peakUtilizationPct":max(values("utilizationPct")),"peakPowerW":max(values("powerW")),"peakTemperatureC":max(values("temperatureC")),"startTemperatureC":samples[0]["temperatureC"],"endTemperatureC":samples[-1]["temperatureC"]}
+def start_memory_monitor(pid):
+    samples=[];stop=threading.Event();ps=shutil.which("powershell") or shutil.which("pwsh")
+    def sample():
+        while not stop.is_set():
+            rss=None;available=None
+            try:
+                if sys.platform.startswith("win") and ps:
+                    p=subprocess.run([ps,"-NoProfile","-Command",f"$p=Get-Process -Id {pid};$o=Get-CimInstance Win32_OperatingSystem;Write-Output ($p.WorkingSet64.ToString() + ',' + ($o.FreePhysicalMemory*1024).ToString())"],capture_output=True,text=True,timeout=5)
+                    rss,available=[int(x) for x in p.stdout.strip().split(",")]
+                elif pathlib.Path(f"/proc/{pid}/status").is_file():
+                    fields={line.split(":",1)[0]:line.split(":",1)[1].strip() for line in pathlib.Path(f"/proc/{pid}/status").read_text().splitlines() if ":" in line};rss=int(fields["VmRSS"].split()[0])*1024
+                    mem={line.split(":",1)[0]:line.split(":",1)[1].strip() for line in pathlib.Path("/proc/meminfo").read_text().splitlines() if ":" in line};available=int(mem["MemAvailable"].split()[0])*1024
+                if rss is not None:samples.append({"capturedAt":now(),"processRssBytes":rss,"systemAvailableBytes":available})
+            except Exception:pass
+            stop.wait(1)
+    thread=threading.Thread(target=sample,daemon=True);thread.start();return stop,thread,samples
+def summarize_memory(samples):
+    if not samples:return {"available":False,"samples":0}
+    available=[x["systemAvailableBytes"] for x in samples if x["systemAvailableBytes"] is not None]
+    return {"available":True,"samples":len(samples),"peakProcessRssBytes":max(x["processRssBytes"] for x in samples),"minimumSystemAvailableBytes":min(available) if available else None}
 def native_bench(runtime,defaults,candidate):
     exe=runtime.get("llamaBench")
     if not exe or not pathlib.Path(exe).is_file():return {"status":"unavailable"}
@@ -134,13 +154,27 @@ def native_bench(runtime,defaults,candidate):
         except json.JSONDecodeError:parsed=None
         return {"status":"ok" if p.returncode==0 else "failed","exitCode":p.returncode,"json":parsed,"stdout":p.stdout[-20000:] if parsed is None else None,"stderr":p.stderr[-4000:]}
     except Exception as e:return {"status":"error","error":f"{type(e).__name__}: {e}"}
+def summarize_runs(runs):
+    out=[]
+    for run in runs:
+        scenarios=run.get("scenarios",[]);structured=[x for x in scenarios if x.get("kind")=="structured"];tools=[x for x in scenarios if x.get("kind")=="tool"]
+        numeric=lambda key:[x[key] for x in scenarios if isinstance(x.get(key),(int,float))]
+        ttft=numeric("ttftMs");tps=numeric("tokensPerSecond")
+        out.append({"candidate":run.get("candidate"),"contextSize":run.get("contextSize"),"status":"error" if run.get("error") else "complete","startupMs":run.get("startupMs"),"shutdownMs":run.get("shutdownMs"),"structured":{"passed":sum(bool(x.get("passed")) for x in structured),"total":len(structured),"rate":round(sum(bool(x.get("passed")) for x in structured)/len(structured),4) if structured else None},"tools":{"passed":sum(bool(x.get("passed")) for x in tools),"total":len(tools),"rate":round(sum(bool(x.get("passed")) for x in tools)/len(tools),4) if tools else None},"meanTtftMs":round(statistics.mean(ttft),2) if ttft else None,"meanTokensPerSecond":round(statistics.mean(tps),2) if tps else None,"memory":run.get("memorySummary"),"nvidia":run.get("nvidiaSummary"),"concurrency":run.get("concurrency",[])})
+    return out
 def main():
     ap=argparse.ArgumentParser(); ap.add_argument("--config",required=True); ap.add_argument("--output",required=True); ap.add_argument("--scenarios",default=str(ROOT/"scenarios/kaizen-eval.json")); args=ap.parse_args()
     cfg=json.loads(pathlib.Path(args.config).read_text()); scenarios=json.loads(pathlib.Path(args.scenarios).read_text()); runtime=cfg["runtime"]; defaults=cfg["defaults"]
     enabled=[x for x in cfg["candidates"] if x.get("enabled")]
     if not enabled: raise SystemExit("No candidates enabled. Edit a local config; the harness never downloads models.")
     if not pathlib.Path(runtime["llamaServer"]).is_file():raise SystemExit("llamaServer does not exist")
-    results={"schemaVersion":1,"startedAt":now(),"config":json.loads(json.dumps(cfg)),"nativeBenchmarks":[],"runs":[],"environment":{"platform":sys.platform}}
+    strict=defaults.get("strictArtifactHashes",True);server_hash=sha256(runtime["llamaServer"]);declared_server=runtime.get("runtimeSha256","")
+    if strict and (len(declared_server)!=64 or declared_server.lower()!=server_hash.lower()):raise SystemExit("llamaServer SHA-256 missing or mismatched")
+    bench_hash=sha256(runtime["llamaBench"]) if runtime.get("llamaBench") and pathlib.Path(runtime["llamaBench"]).is_file() else None
+    declared_bench=runtime.get("llamaBenchSha256","")
+    if strict and bench_hash and (len(declared_bench)!=64 or declared_bench.lower()!=bench_hash.lower()):raise SystemExit("llamaBench SHA-256 missing or mismatched")
+    version=subprocess.run([runtime["llamaServer"],"--version"],capture_output=True,text=True,timeout=15)
+    results={"schemaVersion":1,"startedAt":now(),"runtimeMeasured":{"llamaServerSha256":server_hash,"llamaBenchSha256":bench_hash,"versionExitCode":version.returncode,"versionOutput":(version.stdout+version.stderr).strip()[:4000]}, "config":json.loads(json.dumps(cfg)),"nativeBenchmarks":[],"runs":[],"environment":{"platform":sys.platform}}
     # Avoid leaking local model absolute paths in result files.
     results["config"]["runtime"]["llamaServer"]="<local-path-redacted>"
     results["config"]["runtime"]["llamaBench"]="<local-path-redacted>"
@@ -148,7 +182,8 @@ def main():
     for candidate in enabled:
         model=pathlib.Path(candidate["modelPath"])
         if not model.is_file(): results["runs"].append({"candidate":candidate["id"],"error":"model missing"}); continue
-        artifact=sha256(model)
+        artifact=sha256(model);declared_model=candidate.get("artifactSha256","")
+        if strict and (len(declared_model)!=64 or declared_model.lower()!=artifact.lower()):results["runs"].append({"candidate":candidate["id"],"error":"model SHA-256 missing or mismatched"});continue
         results["nativeBenchmarks"].append({"candidate":candidate["id"],"result":native_bench(runtime,defaults,candidate)})
         for ctx in defaults["contextSizes"]:
             cmd=server_command(runtime,defaults,candidate,ctx); log_path=pathlib.Path(args.output).with_suffix(f".{candidate['id']}.{ctx}.server.log")
@@ -160,6 +195,7 @@ def main():
                 monitor_stop.set()
                 if monitor_thread:monitor_thread.join(timeout=3)
                 log.close();results["runs"].append({"candidate":candidate["id"],"contextSize":ctx,"error":f"launch failed: {type(e).__name__}: {e}"});continue
+            memory_stop,memory_thread,memory_samples=start_memory_monitor(proc.pid)
             run={"candidate":candidate["id"],"label":candidate["label"],"contextSize":ctx,"artifactSha256Measured":artifact,"artifactSha256Declared":candidate.get("artifactSha256"),"serverCommand":["<llama-server>",*cmd[1:2],"<model-path>",*cmd[3:]],"startedAt":now()}
             try:
                 base=f"http://{runtime['host']}:{runtime['port']}"; run["startupMs"]=round(wait_ready(base,runtime["startupTimeoutSeconds"]),2); run["scenarios"]=[]
@@ -176,9 +212,10 @@ def main():
                 try:proc.wait(timeout=15)
                 except subprocess.TimeoutExpired:proc.kill();proc.wait()
                 run["shutdownMs"]=round((time.perf_counter()-terminate_start)*1000,2); run["exitCode"]=proc.returncode; run["wallMs"]=round((time.perf_counter()-started)*1000,2)
-                monitor_stop.set()
+                monitor_stop.set();memory_stop.set()
                 if monitor_thread:monitor_thread.join(timeout=3)
-                run["nvidiaSummary"]=summarize_nvidia(monitor_samples);log.close()
+                memory_thread.join(timeout=3)
+                run["nvidiaSummary"]=summarize_nvidia(monitor_samples);run["memorySummary"]=summarize_memory(memory_samples);log.close()
             results["runs"].append(run)
-    results["completedAt"]=now(); out=pathlib.Path(args.output); out.parent.mkdir(parents=True,exist_ok=True); out.write_text(json.dumps(results,indent=2),encoding="utf-8"); print(f"wrote {out}")
+    results["summary"]=summarize_runs(results["runs"]);results["completedAt"]=now(); out=pathlib.Path(args.output); out.parent.mkdir(parents=True,exist_ok=True); out.write_text(json.dumps(results,indent=2),encoding="utf-8"); print(f"wrote {out}")
 if __name__=="__main__":main()

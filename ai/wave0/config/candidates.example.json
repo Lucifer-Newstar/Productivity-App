@@ -8,7 +8,8 @@
     "startupTimeoutSeconds": 180,
     "requestTimeoutSeconds": 120,
     "runtimeVersion": "RECORD_EXACT_BUILD",
-    "runtimeSha256": "RECORD_BINARY_SHA256"
+    "runtimeSha256": "RECORD_SERVER_BINARY_SHA256",
+    "llamaBenchSha256": "RECORD_BENCH_BINARY_SHA256"
   },
   "defaults": {
     "threads": 8,
@@ -19,7 +20,8 @@
     "maxOutputTokens": 256,
     "repetitions": 3,
     "contextSizes": [4096, 8192],
-    "concurrency": [1, 2]
+    "concurrency": [1, 2],
+    "strictArtifactHashes": true
   },
   "candidates": [
     {

@@ -1,0 +1,73 @@
+{
+  "schemaVersion": 1,
+  "status": "benchmark candidates only — no architecture selection",
+  "runtime": {
+    "llamaServer": "C:/tools/llama.cpp/llama-server.exe",
+    "llamaBench": "C:/tools/llama.cpp/llama-bench.exe",
+    "host": "127.0.0.1",
+    "port": 18080,
+    "startupTimeoutSeconds": 180,
+    "requestTimeoutSeconds": 180,
+    "runtimeVersion": "CAPTURE_EXACT_LLAMA_CPP_BUILD",
+    "runtimeSha256": "CAPTURE_SERVER_BINARY_SHA256",
+    "llamaBenchSha256": "CAPTURE_BENCH_BINARY_SHA256"
+  },
+  "defaults": {
+    "threads": 8,
+    "gpuLayers": 99,
+    "batchSize": 256,
+    "ubatchSize": 128,
+    "temperature": 0,
+    "maxOutputTokens": 256,
+    "repetitions": 5,
+    "contextSizes": [4096, 8192],
+    "concurrency": [1, 2],
+    "strictArtifactHashes": true
+  },
+  "candidates": [
+    {
+      "id": "qwen3-4b-instruct-2507-q4km",
+      "label": "Qwen3 4B Instruct 2507 Q4_K_M",
+      "sourcePage": "https://huggingface.co/bartowski/Qwen_Qwen3-4B-Instruct-2507-GGUF",
+      "modelPath": "C:/models/Qwen_Qwen3-4B-Instruct-2507-Q4_K_M.gguf",
+      "artifactSha256": "CAPTURE_MODEL_SHA256",
+      "license": "VERIFY_FROM_UPSTREAM_MODEL_CARD",
+      "role": "primary 4B candidate",
+      "enabled": false,
+      "extraArgs": []
+    },
+    {
+      "id": "gemma-3-4b-it-qat-q4",
+      "label": "Gemma 3 4B IT QAT Q4_0",
+      "sourcePage": "https://huggingface.co/google/gemma-3-4b-it-qat-q4_0-gguf",
+      "modelPath": "C:/models/gemma-3-4b-it-q4_0.gguf",
+      "artifactSha256": "CAPTURE_MODEL_SHA256",
+      "license": "VERIFY_AND_ACCEPT_GEMMA_TERMS",
+      "role": "first-party 4B quantization comparison",
+      "enabled": false,
+      "extraArgs": []
+    },
+    {
+      "id": "phi-4-mini-instruct-q4km",
+      "label": "Phi-4 Mini Instruct Q4_K_M",
+      "sourcePage": "https://huggingface.co/bartowski/microsoft_Phi-4-mini-instruct-GGUF",
+      "modelPath": "C:/models/microsoft_Phi-4-mini-instruct-Q4_K_M.gguf",
+      "artifactSha256": "CAPTURE_MODEL_SHA256",
+      "license": "VERIFY_FROM_MICROSOFT_MODEL_CARD",
+      "role": "compact tool/JSON comparison",
+      "enabled": false,
+      "extraArgs": []
+    },
+    {
+      "id": "larger-spill-control",
+      "label": "7B–8B Q4_K_M spill/control candidate",
+      "sourcePage": "SELECT_ONLY_AFTER_4B_BASELINES",
+      "modelPath": "C:/models/LARGER_CONTROL_Q4_K_M.gguf",
+      "artifactSha256": "CAPTURE_MODEL_SHA256",
+      "license": "VERIFY_LICENSE",
+      "role": "system-RAM spill and quality-control comparison; not expected default",
+      "enabled": false,
+      "extraArgs": []
+    }
+  ]
+}

@@ -1,0 +1,53 @@
+{
+  "schemaVersion": 1,
+  "source": "user-supplied test-device specification",
+  "device": {
+    "manufacturer": "ASUS",
+    "family": "TUF Gaming A15",
+    "model": "FA506NCR"
+  },
+  "cpu": {
+    "model": "AMD Ryzen 7 7435HS",
+    "physicalCores": 8,
+    "logicalCores": 16,
+    "baseGHz": 3.1,
+    "boostGHz": 4.5,
+    "cacheMB": 20
+  },
+  "gpu": {
+    "model": "NVIDIA GeForce RTX 3050 Laptop GPU",
+    "dedicatedVramMiB": 4096,
+    "memoryType": "GDDR6",
+    "baseTgpW": 60,
+    "dynamicBoostMaximumW": 75
+  },
+  "memory": {
+    "installedGiB": 16,
+    "type": "DDR5",
+    "slots": 2,
+    "exactSpeedMTs": null,
+    "captureRequired": true
+  },
+  "storage": {
+    "approximateInstalledTB": 2.5,
+    "drives": null,
+    "captureRequired": true
+  },
+  "os": {
+    "family": "Windows 11",
+    "edition": null,
+    "build": null,
+    "captureRequired": true
+  },
+  "power": {
+    "adapterW": 180,
+    "benchmarkModes": ["AC balanced", "AC performance"],
+    "activeSchemeGuids": null,
+    "captureRequired": true
+  },
+  "constraints": {
+    "dedicatedVramGiB": 4,
+    "systemRamGiB": 16,
+    "noSilentSharedMemoryAssumption": true
+  }
+}
