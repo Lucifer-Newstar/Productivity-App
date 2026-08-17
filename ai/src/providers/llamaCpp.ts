@@ -49,7 +49,12 @@ export class LlamaCppProvider implements GenerationProvider {
   async *stream(request: GenerationRequest, signal: AbortSignal): AsyncIterable<GenerationChunk> {
     const body: Record<string, unknown> = {
       model: this.options.modelId,
-      messages: request.messages.map((message) => ({ role: message.role, content: message.content, ...(message.toolCallId ? { tool_call_id: message.toolCallId } : {}) })),
+      messages: request.messages.map((message) => ({
+        role: message.role,
+        content: message.content,
+        ...(message.toolCallId ? { tool_call_id: message.toolCallId } : {}),
+        ...(message.toolCalls?.length ? { tool_calls: message.toolCalls.map((call) => ({ id: call.id, type: "function", function: { name: call.name, arguments: call.argumentsJson } })) } : {}),
+      })),
       temperature: request.temperature,
       max_tokens: Math.min(request.maxOutputTokens, this.options.maximumOutputTokens),
       stream: true,

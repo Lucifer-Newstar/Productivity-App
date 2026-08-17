@@ -27,6 +27,7 @@ export interface ProviderMessage {
   role: "system" | "user" | "assistant" | "tool";
   content: string;
   toolCallId?: string;
+  toolCalls?: ProviderToolCall[];
 }
 
 export interface ProviderToolDefinition {
