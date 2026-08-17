@@ -1,7 +1,7 @@
 # Wave 0 preparation package
 
-**Status:** preparation authorized; candidate evaluation/prototyping only.<br>
-**Production AI features:** prohibited.<br>
+**Status:** target validation active on persistent `ai` branch; candidate evaluation/prototyping only.<br>
+**Production AI features and Wave 1:** prohibited pending reviewed final Selection Report.<br>
 **Permanent model/vector/transport/runtime selection:** requires a reviewed selection report.
 
 ## Entry conditions
@@ -29,7 +29,8 @@
 - W0-01 initial mutation-path audit: [`DOMAIN-REVISION-AUDIT.md`](DOMAIN-REVISION-AUDIT.md)
 - Synthetic revision, pairing, retrieval and transport prototypes are available under `ai/wave0/`.
 - Sandbox measurements and unresolved target gates: [`WAVE-0-SELECTION-REPORT.md`](WAVE-0-SELECTION-REPORT.md)
-- Target capture instructions: [`TARGET-HARDWARE-CAPTURE.md`](TARGET-HARDWARE-CAPTURE.md)
+- Target capture status: [`TARGET-HARDWARE-CAPTURE.md`](TARGET-HARDWARE-CAPTURE.md)
+- Target Windows execution steps: [`TARGET-RUNBOOK.md`](TARGET-RUNBOOK.md)
 - No model download, permanent candidate selection or production AI service has started.
 
 ## Artifacts required

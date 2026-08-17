@@ -2,45 +2,62 @@
 
 ## Status
 
-**BLOCKED on target laptop execution.** The Arena sandbox is not the Ryzen 7 / RTX 3050 laptop and cannot produce selection evidence.
+**PARTIALLY CAPTURED — USER-SUPPLIED DEVICE SPECIFICATION; LOCAL TELEMETRY PENDING.**
 
-## Sandbox observation — not a target result
+Tracked manifest: `ai/wave0/config/target-fa506ncr.json`.
 
-Captured 2026-08-17:
+## Supplied test-device baseline
 
 ```text
-Environment: Linux KVM sandbox
-CPU: 2 logical Intel Xeon vCPUs @ reported 2.60 GHz
-RAM: approximately 1.9 GiB
-NVIDIA runtime: unavailable; nvidia-smi not installed
+Device: ASUS TUF Gaming A15 FA506NCR
+CPU: AMD Ryzen 7 7435HS, 8C/16T, 3.1–4.5 GHz, 20 MB cache
+GPU: NVIDIA GeForce RTX 3050 Laptop GPU
+Dedicated VRAM: 4 GB GDDR6
+GPU power: 60 W; up to 75 W Dynamic Boost
+RAM: 16 GB DDR5, two SO-DIMM slots
+Storage: approximately 2.5 TB installed
+OS: Windows 11
+Adapter: 180 W
 ```
 
-These numbers are useful only to prove that GPU/model benchmarks must not run here.
+The 4 GB VRAM / 16 GB RAM limit is a hard model/context/concurrency constraint. Windows shared GPU memory must not be reported as dedicated VRAM.
 
-## Required target capture
+## Required local fields
 
-Run from the repository on the target Windows laptop:
+The following still require machine-generated capture:
+
+- exact RAM module speed/configured clock and part numbers
+- physical drive names, bus/media types, capacities and volume layout
+- Windows edition, version and build
+- NVIDIA driver, current/default power limits, p-state and idle temperature
+- Windows active power-scheme GUID
+- ASUS/Armoury Crate thermal profile
+- AC/battery state for each run
+
+## Local capture
+
+Run under AC balanced and AC performance modes:
 
 ```powershell
 cd ai\wave0
-python scripts\capture_hardware.py --output results\target-hardware-ac.json
+python scripts\capture_hardware.py `
+  --expected config\target-fa506ncr.json `
+  --output results\target-hardware-ac-balanced.json
 ```
 
-Repeat under each intended power mode, including AC high-performance and the normal balanced profile. Record manually:
+Repeat with a different output filename after changing the profile. The capture compares detected CPU, threads, RAM, device model, GPU and dedicated VRAM against the supplied manifest.
 
-- exact CPU model
-- installed/available RAM
-- exact GPU name
-- dedicated VRAM
-- NVIDIA driver
-- default and current power limit where exposed
-- OEM GPU TGP
-- Windows active power scheme
-- laptop thermal/fan profile
-- AC or battery state
+## Sandbox observation — not a target result
 
-Use `nvidia-smi`, not aggregated Windows “GPU memory,” for dedicated VRAM.
+```text
+Environment: Linux KVM sandbox
+CPU: 2 logical Intel Xeon vCPUs
+RAM: approximately 1.9 GiB
+NVIDIA runtime: unavailable
+```
+
+Sandbox values validate the harness only and cannot select a local model.
 
 ## Benchmark eligibility
 
-Model and thermal results are eligible for the selection report only when their run references a hardware-capture JSON from the same machine/configuration and records llama.cpp build/hash, model hash, quantization, context, GPU layers and power mode.
+Model and thermal results are eligible only when the same run set includes target hardware JSON and records llama.cpp build/hash, model hash, quantization, context size, GPU layers, power mode and ASUS thermal profile.

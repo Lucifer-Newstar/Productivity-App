@@ -7,19 +7,22 @@
 
 ## Executive decision
 
-Wave 0 infrastructure and synthetic prototypes are viable, but no generation model, quantization, embedding model, vector backend or final transport is selected. The Arena sandbox has no NVIDIA GPU and only approximately 1.9 GiB RAM, so it cannot answer the primary RTX 3050 feasibility questions. Production feature work remains blocked until target-laptop measurements are attached and this report is reviewed.
+Wave 0 infrastructure and synthetic prototypes are viable, but no generation model, quantization, embedding model, vector backend or final transport is selected. The target is now identified as an ASUS TUF Gaming A15 FA506NCR with Ryzen 7 7435HS, RTX 3050 Laptop GPU (4 GB GDDR6, 60 W/75 W Dynamic Boost) and 16 GB DDR5. Machine-generated Windows, driver, memory-speed, storage, model, power and thermal results are still required. Production feature work remains blocked until those measurements are attached and this report is reviewed.
 
-## Measured environment
+## Target environment
 
-| Item | Arena sandbox result | Selection relevance |
-|---|---:|---|
-| CPU | 2 logical Intel Xeon vCPUs | Not target hardware |
-| RAM | ~1.9 GiB | Not target hardware |
-| NVIDIA GPU | unavailable | Cannot benchmark llama.cpp CUDA/model |
-| Python | 3.13.14 | Harness compatibility only |
-| Node | 20.20.2 | Prototype compatibility only |
+| Item | Supplied target | Local confirmation |
+|---|---|---|
+| Device | ASUS TUF Gaming A15 FA506NCR | Pending |
+| CPU | Ryzen 7 7435HS, 8C/16T | Pending |
+| RAM | 16 GB DDR5 | Speed/modules pending |
+| GPU | RTX 3050 Laptop, 4 GB GDDR6 | Driver/telemetry pending |
+| GPU power | 60 W, 75 W Dynamic Boost | Runtime limit pending |
+| Storage | ~2.5 TB | Drive layout pending |
+| OS | Windows 11 | Edition/build pending |
+| Adapter | 180 W | Power-profile capture pending |
 
-See [TARGET-HARDWARE-CAPTURE.md](TARGET-HARDWARE-CAPTURE.md).
+The Arena sandbox remains a non-target 2-vCPU/1.9 GiB environment without NVIDIA. See [TARGET-HARDWARE-CAPTURE.md](TARGET-HARDWARE-CAPTURE.md) and [TARGET-RUNBOOK.md](TARGET-RUNBOOK.md).
 
 ## Measured prototype results
 
@@ -84,7 +87,7 @@ The harness never downloads a model and fails closed when no candidate is enable
 
 ### Model/quantization results
 
-**Not measured.** Exact RTX 3050 dedicated VRAM is unknown, and the target laptop is not accessible from the sandbox. The candidate matrix intentionally uses disabled 4B-class Q4_K_M alternatives plus a 7B–8B Q4_K_M spill comparison. Exact model identities will be recorded only after license/artifact review and hardware capture; no candidate is architecture.
+**Not measured.** Dedicated VRAM is confirmed by the user as 4 GB, but the target laptop is not accessible from the sandbox. The disabled target matrix now includes Qwen3 4B Instruct 2507 Q4_K_M, Gemma 3 4B IT QAT Q4_0 and Phi-4 Mini Instruct Q4_K_M, plus one optional 7B–8B spill/control candidate after the 4B baselines. Sources, licenses and artifact hashes must be verified locally. These are benchmark candidates, not architecture or recommendations.
 
 ## Structured output and tool reliability
 
@@ -134,7 +137,7 @@ These are recommendations, not locked selections:
 3. Retain one-time pairing plus short-lived per-session bearer credentials; design a stronger user-visible pairing channel before real data.
 4. Keep HTTP+SSE as the transport baseline and WebSocket as the comparison candidate.
 5. Keep SQLite FTS5 as the lexical baseline while evaluating a replaceable vector layer separately.
-6. Prioritize 4B-class Q4_K_M candidates on unknown/4 GB VRAM; include one 7B–8B spill comparison only to quantify the cost. This is a benchmark plan, not a model recommendation.
+6. Prioritize three 4B-class 4-bit candidates for the confirmed 4 GB VRAM limit; include one 7B–8B spill comparison only after those baselines to quantify system-RAM/PCIe cost. This is a benchmark plan, not a model recommendation.
 
 ## Remaining selection gates
 
