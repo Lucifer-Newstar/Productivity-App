@@ -54,6 +54,7 @@ Frontend server environment:
 | Variable | Default | Purpose |
 |---|---|---|
 | `KAIZEN_AI_GATEWAY_URL` | `http://127.0.0.1:4317` | Server-side fixed proxy target; loopback HTTP only |
+| `KAIZEN_AI_PROXY_ORIGIN` | `http://localhost:3000` | Fixed trusted origin forwarded after same-host browser validation; include it in engine origin allowlist |
 | `NEXT_PUBLIC_KAIZEN_AI_URL` | `/api/ai` | Optional browser base override; keep same-origin in production |
 
 No model is downloaded automatically. Never put pairing codes/session tokens into environment files, URLs or documentation.
