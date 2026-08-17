@@ -100,7 +100,6 @@ KAIZEN_API_KEY=security-test-key npm run security:test
 
 ## Git state used by these docs
 
-- Stable baseline: `main` / `origin/main` at Health v1.1.
-- Active completed feature branch: `entertainment`; use `git rev-list --count origin/main..HEAD` for the live commit count.
-- Commit author: `Lucifer-Newstar <navin.jairam@gmail.com>`.
-- The branch has not been pushed or merged as of this documentation sync.
+- Stable baseline: `main` / `origin/main`, including AFTERGLOW v1.0, global notifications and security/docs hardening.
+- The `entertainment` feature branch was merged through pull request #2 on 2026-08-17.
+- Feature commit author: `Lucifer-Newstar <navin.jairam@gmail.com>`.

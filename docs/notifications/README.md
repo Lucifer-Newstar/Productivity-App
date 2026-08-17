@@ -1,6 +1,6 @@
 # Kaizen notification system
 
-_Status: foundation + high-value rule set implemented on branch `entertainment`._
+_Status: foundation + high-value rule set merged into `main`._
 
 ## Architecture
 

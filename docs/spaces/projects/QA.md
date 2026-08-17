@@ -1,6 +1,6 @@
 # Projects space — QA
 
-_Current regression baseline (2026-08-16): TypeScript, ESLint and production build pass on `entertainment`; all five Projects routes are included in the 39/39 HTTP smoke. Historical Wave 11 measurements below are retained for traceability._
+_Current regression baseline (2026-08-17): TypeScript, ESLint and production build pass on merged `main`; all five Projects routes are included in the 39/39 HTTP smoke. Historical Wave 11 measurements below are retained for traceability._
 
 ## Build verification
 

@@ -1,6 +1,6 @@
 # Workout space — QA
 
-_Current regression baseline (2026-08-16): TypeScript, ESLint and production build pass on `entertainment`; all Workout routes are included in the 39/39 HTTP smoke. `docs/quality/qa/TEST-REPORT.md` remains the historical dedicated Workout report._
+_Current regression baseline (2026-08-17): TypeScript, ESLint and production build pass on merged `main`; all Workout routes are included in the 39/39 HTTP smoke. `docs/quality/qa/TEST-REPORT.md` remains the historical dedicated Workout report._
 
 ## Build verification
 

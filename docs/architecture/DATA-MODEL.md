@@ -1,6 +1,6 @@
 # Kaizen data-model reference
 
-_Last synchronized: 2026-08-16 on branch `entertainment`._
+_Last synchronized: 2026-08-17 on merged `main`._
 
 ## Root state
 
