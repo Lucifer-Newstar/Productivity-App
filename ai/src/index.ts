@@ -1,6 +1,7 @@
 export * from "./config.js";
 export * from "./contracts/index.js";
 export * from "./gateway.js";
+export * from "./observability/telemetry.js";
 export * from "./providers/llamaCpp.js";
 export * from "./providers/mock.js";
 export * from "./providers/registry.js";

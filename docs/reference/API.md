@@ -20,6 +20,7 @@ The independent engine binds to `127.0.0.1:4317` by default. Browser traffic use
 | GET | `/health` | Public bounded engine/provider status |
 | POST | `/v1/pair` | One-time pairing code → expiring session token |
 | GET | `/v1/status` | Authenticated provider identity/capabilities |
+| GET | `/v1/metrics` | Authenticated aggregate counters/durations/error codes; no prompt content |
 | DELETE | `/v1/session` | Revoke local session |
 | POST | `/v1/requests` | Start read-only Intelligence request |
 | GET | `/v1/requests/:id/events` | Authenticated SSE event stream via fetch |

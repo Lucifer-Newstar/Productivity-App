@@ -47,6 +47,7 @@ test("secure gateway completes the read-only get_today flow", async () => {
     assert.equal(submitted.status, 204);
     const complete = await events.until("response.completed"); assert.equal(complete.response.title, "Ship auth"); assert.equal(complete.response.sources[0].entityId, "t1"); assert.equal(complete.response.model.providerId, "kaizen-mock");
     await events.cancel();
+    const metricsResponse=await fetch(`${base}/v1/metrics`,{headers:auth});const metrics=await metricsResponse.json();assert.equal(metrics.requestsCompleted,1);assert.equal(metrics.toolCalls,1);assert.equal(JSON.stringify(metrics).includes("Ship auth"),false);
     const revoke = await fetch(`${base}/v1/session`, { method: "DELETE", headers: auth }); assert.equal(revoke.status, 204);
     const expired = await fetch(`${base}/v1/status`, { headers: auth }); assert.equal(expired.status, 401);
   } finally { await new Promise<void>((resolve) => gateway.server.close(() => resolve())); }

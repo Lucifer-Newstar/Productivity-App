@@ -95,6 +95,7 @@ export function createEngineGateway(config: EngineConfig): EngineGateway {
       if (request.method === "GET" && url.pathname === "/v1/status") {
         const provider = await providers.generation.health(AbortSignal.timeout(2_000)); json(response, 200, { engine: provider.status === "ready" ? "ready" : "failed", provider, model: providers.generation.identity(), capabilities: providers.generation.capabilities() }); return;
       }
+      if (request.method === "GET" && url.pathname === "/v1/metrics") { json(response, 200, requests.metrics()); return; }
       if (request.method === "DELETE" && url.pathname === "/v1/session") { pairing.revoke(token); response.statusCode = 204; response.end(); return; }
       if (request.method === "POST" && url.pathname === "/v1/requests") {
         const body = await readJson(request, config.maximumBodyBytes) as { prompt?: unknown; intent?: unknown };
