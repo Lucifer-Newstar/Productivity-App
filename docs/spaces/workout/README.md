@@ -15,7 +15,7 @@ for the prior QA pass.
 
 | Path | Mounts |
 |---|---|
-| `/workout` | `WorkoutOverview` |
+| `/workout` | Client redirect to `/workout/overview` |
 | `/workout/overview` | Overview dashboard |
 | `/workout/gym` | Gym tracking (plates/1RM/Wilks/warmup/history/metrics) |
 | `/workout/calisthenics` | Chains / skills / GtG / isometrics / EMOM / AMRAP / flows / mobility |

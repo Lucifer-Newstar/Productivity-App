@@ -1,6 +1,6 @@
 # Kaizen documentation
 
-_Last synchronized with branch `entertainment` at `4475152` on 2026-08-16._
+_Last synchronized on 2026-08-16 from the completed `entertainment` branch._
 
 Kaizen is a local-first productivity and life OS built as one Next.js application with five dedicated spaces. The frontend uses React Context state slices persisted under separate browser-storage keys; the Express service is an optional in-memory reference/sync API and is not required for normal frontend use.
 
@@ -30,6 +30,7 @@ Current production verification: **39/39 user routes return HTTP 200**, five sam
 | [`ALGORITHMS.md`](ALGORITHMS.md) | Workout, Forge and Health formulas |
 | [`SECURITY.md`](SECURITY.md) | Threat model, secure deployment and verification commands |
 | [`SECURITY-AUDIT-2026-08-16.md`](SECURITY-AUDIT-2026-08-16.md) | Latest full-site audit, remediations and residual risks |
+| [`DOCS-SYNC-REPORT-2026-08-16.md`](DOCS-SYNC-REPORT-2026-08-16.md) | Source-vs-doc verification and corrections |
 
 ### Guides
 
@@ -96,6 +97,6 @@ KAIZEN_API_KEY=security-test-key npm run security:test
 ## Git state used by these docs
 
 - Stable baseline: `main` / `origin/main` at Health v1.1.
-- Active completed feature branch: `entertainment` (14 focused commits above `origin/main`).
+- Active completed feature branch: `entertainment`; use `git rev-list --count origin/main..HEAD` for the live commit count.
 - Commit author: `Lucifer-Newstar <navin.jairam@gmail.com>`.
 - The branch has not been pushed or merged as of this documentation sync.
