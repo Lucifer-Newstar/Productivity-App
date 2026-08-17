@@ -13,7 +13,7 @@ test('all persisted domains documented',['kaizen.career','kaizen.workout','kaize
 test('all product route families documented',['/career','/entertainment','/health','/projects','/workout'].every(r=>read('docs/reference/ROUTES.md').includes(r)));
 test('home documentation exists and is indexed',index.includes('spaces/home/README.md'));
 test('security report linked from index',index.includes('security/AUDIT-2026-08-16.md'));
-test('testing guide lists every executable suite',['qa:entertainment:intelligence','qa:entertainment:reports','qa:entertainment:social','qa:entertainment:migration','qa:security','qa:notifications','qa:ui','qa:docs'].every(x=>testing.includes(x)));
+test('testing guide lists every executable suite',['qa:entertainment:intelligence','qa:entertainment:reports','qa:entertainment:social','qa:entertainment:migration','qa:security','qa:notifications','qa:ui','qa:csp','qa:docs'].every(x=>testing.includes(x)));
 test('Entertainment final audit synchronized',read('docs/spaces/entertainment/FEATURES.md').includes('94 / 96')&&index.includes('94✅/2🟡/0❌'));
 test('Health final audit synchronized',index.includes('216✅/2🟡/63'));
 test('provider setup and attribution documented',read('docs/spaces/entertainment/APIS.md').includes('TMDB')&&read('docs/guides/CONFIGURATION.md').includes('MAL_CLIENT_ID'));

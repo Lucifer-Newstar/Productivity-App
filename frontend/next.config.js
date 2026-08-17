@@ -1,21 +1,24 @@
 /** @type {import('next').NextConfig} */
+const isDev = process.env.NODE_ENV !== "production";
+const contentSecurityPolicy = [
+  "default-src 'self'",
+  // React/Turbopack uses eval only for development diagnostics and source maps.
+  // Production remains eval-free.
+  `script-src 'self' 'unsafe-inline'${isDev ? " 'unsafe-eval'" : ""}`,
+  "style-src 'self' 'unsafe-inline'",
+  "font-src 'self' data:",
+  "img-src 'self' data: blob:",
+  "media-src 'self' blob:",
+  `connect-src 'self'${isDev ? " ws: wss:" : ""}`,
+  "object-src 'none'",
+  "base-uri 'self'",
+  "form-action 'self'",
+  "frame-ancestors 'none'",
+  ...(isDev ? [] : ["upgrade-insecure-requests"]),
+].join("; ");
+
 const securityHeaders = [
-  { key: "Content-Security-Policy", value: [
-    "default-src 'self'",
-    // Next's App Router emits inline bootstrap scripts. User content is still
-    // React-escaped and eval remains forbidden.
-    "script-src 'self' 'unsafe-inline'",
-    "style-src 'self' 'unsafe-inline'",
-    "font-src 'self' data:",
-    "img-src 'self' data: blob:",
-    "media-src 'self' blob:",
-    "connect-src 'self'",
-    "object-src 'none'",
-    "base-uri 'self'",
-    "form-action 'self'",
-    "frame-ancestors 'none'",
-    "upgrade-insecure-requests",
-  ].join("; ") },
+  { key: "Content-Security-Policy", value: contentSecurityPolicy },
   { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
   { key: "X-Content-Type-Options", value: "nosniff" },
   { key: "X-Frame-Options", value: "DENY" },
@@ -30,7 +33,6 @@ const securityHeaders = [
 const nextConfig = {
   reactStrictMode: true,
   poweredByHeader: false,
-  // Security and type failures must fail CI/production builds.
   typescript: { ignoreBuildErrors: false },
   async headers() {
     return [{ source: "/(.*)", headers: securityHeaders }];

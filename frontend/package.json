@@ -15,7 +15,8 @@
     "qa:security": "tsx scripts/qa-security.ts",
     "qa:docs": "node scripts/qa-docs.js",
     "qa:notifications": "tsx scripts/qa-notifications.ts",
-    "qa:ui": "node scripts/qa-ui.js"
+    "qa:ui": "node scripts/qa-ui.js",
+    "qa:csp": "node scripts/qa-csp.js"
   },
   "keywords": [],
   "author": "",

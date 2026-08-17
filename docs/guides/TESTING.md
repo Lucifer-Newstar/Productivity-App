@@ -23,6 +23,7 @@ npm run qa:entertainment:migration           # 9 executable tests
 npm run qa:security                          # 8 frontend security tests
 npm run qa:notifications                     # global notification rules/settings
 npm run qa:ui                                # icon/font/theme/motion foundation
+npm run qa:csp                               # dev vs production CSP separation
 npm run qa:docs                              # documentation links/status/contracts
 ```
 

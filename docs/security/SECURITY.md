@@ -70,7 +70,7 @@ The frontend sends:
 - restrictive permissions policy
 - no `X-Powered-By` header
 
-The App Router currently requires inline bootstrap scripts, so CSP allows inline scripts but does **not** allow `eval`. Moving to nonce-based CSP is recommended when the app gets a dynamic request middleware/deployment layer.
+The App Router currently requires inline bootstrap scripts, so CSP allows inline scripts. Development additionally allows `unsafe-eval` and HMR WebSockets because React/Turbopack uses them for diagnostics; production is generated from a separate policy and remains eval-free. Moving to nonce-based production CSP is recommended when the app gets a dynamic request middleware/deployment layer.
 
 ## Verification
 
