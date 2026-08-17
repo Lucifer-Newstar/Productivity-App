@@ -4,6 +4,11 @@ export const MAX_IMAGE_BYTES = 2 * 1024 * 1024;
 export const MAX_IMPORT_BYTES = 5 * 1024 * 1024;
 const SAFE_IMAGE_TYPES = new Set(["image/jpeg", "image/png", "image/webp"]);
 const UNSAFE_KEYS = new Set(["__proto__", "prototype", "constructor"]);
+const SAFE_IMAGE_DATA=/^data:image\/(jpeg|png|webp);base64,[A-Za-z0-9+/=]+$/;
+/** Validate already-persisted/imported image strings before rendering. */
+export function safeImageDataUrl(value:unknown):string|undefined { if(typeof value!=="string"||value.length>Math.ceil(MAX_IMAGE_BYTES*4/3)+128||!SAFE_IMAGE_DATA.test(value))return undefined;return value }
+export function safeProxiedImageUrl(value:unknown):string|undefined { return typeof value==="string"&&value.startsWith("/api/entertainment/image?url=https%3A")&&value.length<=2_048?value:undefined }
+
 
 /** Only allow normal web links. Blocks javascript:, data:, file:, vbscript:, etc. */
 export function safeExternalUrl(value: unknown): string | null {

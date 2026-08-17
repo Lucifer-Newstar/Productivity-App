@@ -23,7 +23,7 @@ _Last updated: 2026-08-16, Wave 0 + Wave 1 core._
 - [x] Production smoke — 39/39 routes HTTP 200
 - [x] `lang=en|ta|hi` plus invalid-locale fallback — normalized provider search 200
 - [x] Provider result caches are language-isolated
-- [x] `node scripts/qa-entertainment.js` — 159/159 structural assertions
+- [x] `node scripts/qa-entertainment.js` — 168/168 structural assertions
 - [x] `npm run qa:entertainment:intelligence` — 9/9 executable intelligence tests
 - [x] `npm run qa:entertainment:reports` — 11/11 executable report tests
 - [x] `npm run qa:entertainment:social` — 5/5 executable social tests
@@ -153,3 +153,10 @@ _Last updated: 2026-08-16, Wave 0 + Wave 1 core._
 - [x] BYOK values are tab-session-only and sent as bounded headers, never URL params/state/export fields
 - [x] Detail refresh validates provider/type/ID and merges catalogue-only fields
 - [x] Approved TMDB logo is stored locally; Credits panel carries required notice
+- [x] Every provider route uses shared bounded same-origin/rate guard
+- [x] Provider JSON and image bodies enforce streaming byte ceilings
+- [x] Gzip decompression cancels while streaming above expanded limit
+- [x] XML DTD/entity declarations are rejected
+- [x] Restored raster/proxy image sources are revalidated
+- [x] Rate/cache maps prune and hard-cap entries
+- [x] Storage quota exceptions surface a global backup warning

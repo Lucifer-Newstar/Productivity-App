@@ -80,6 +80,12 @@ npm audit --omit=dev
 npx tsc --noEmit
 npm run build
 node scripts/qa-health.js
+npm run qa:entertainment
+npm run qa:entertainment:intelligence
+npm run qa:entertainment:reports
+npm run qa:entertainment:social
+npm run qa:entertainment:migration
+npm run qa:security
 
 cd ../backend
 npm audit --omit=dev
@@ -90,9 +96,9 @@ KAIZEN_API_KEY=security-test-key npm run security:test
 
 The security smoke suite checks authentication, CORS, security/rate-limit headers, malformed body rejection, prototype-pollution resistance, unsafe IDs, duplicate overwrite prevention, CSV injection and JSON 404 behavior.
 
-## 2026-08-16 assessment
+## 2026-08-16 assessments
 
-The authorized local assessment exercised dependency, HTTP, storage/import, URL, file-upload, CSV and API trust boundaries.
+The initial assessment and post-AFTERGLOW full-site reassessment exercised dependency, HTTP, storage/import, URL, file-upload, CSV, compressed-input, provider-proxy and persistence boundaries. The detailed final report is [`SECURITY-AUDIT-2026-08-16.md`](SECURITY-AUDIT-2026-08-16.md).
 
 ### Fixed
 
@@ -107,6 +113,12 @@ The authorized local assessment exercised dependency, HTTP, storage/import, URL,
 9. **Medium — missing browser/API hardening headers:** frontend CSP and related headers plus backend Helmet are enabled.
 10. **Low — information/error disclosure:** framework header removed; API errors and unknown routes return bounded JSON.
 11. **Process — builds ignored type/lint failures:** TypeScript build bypass removed.
+12. **High — compressed-import memory exhaustion:** MAL gzip now enforces its expanded cap while streaming.
+13. **Medium — unbounded upstream bodies/caches:** provider JSON, images, route buckets and metadata caches now stream/prune under hard ceilings.
+14. **Medium — unsafe restored image sources:** backup migration revalidates every raster/proxy image source and caps media collections.
+15. **Medium — silent storage quota failure:** persistence exceptions are caught and shown through a global backup/remediation warning.
+16. **Low — XML DTD/entity input:** MAL imports reject document types/entities.
+17. **Low — transport/isolation header gaps:** HSTS, CORP, Origin-Agent-Cluster and cross-domain policy denial added.
 
 ### Accepted / remaining risks
 
@@ -116,7 +128,8 @@ The authorized local assessment exercised dependency, HTTP, storage/import, URL,
 - **No browser E2E security suite:** current tests are HTTP/static/build focused.
 - **Pragmatic CSP:** inline scripts remain allowed for Next bootstrap. A nonce-based policy would be stronger.
 - **Typography fallback:** external Google Font imports were removed to eliminate a third-party CSS/font trust boundary; the configured local/system fallback stacks are used unless fonts are self-hosted later.
-- **Denial of service is mitigated, not eliminated:** in-memory service limits are per process and rate limiting is not distributed. Use a shared store/WAF when scaling.
+- **Denial of service is mitigated, not eliminated:** in-memory service limits are per process and rate limiting is not distributed. Reverse proxies must overwrite forwarded-IP headers; use a shared store/WAF when scaling.
+- **Browser media storage is finite:** valid raster images can still fill localStorage. Individual/restored media are bounded and failures are surfaced, but IndexedDB is the long-term storage target.
 
 ## Reporting
 

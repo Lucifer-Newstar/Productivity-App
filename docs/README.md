@@ -35,7 +35,8 @@ productivity-app/
 | [`FEATURES.md`](FEATURES.md) | Per-space feature audit (✅/🟡/❌) |
 | [`ALGORITHMS.md`](ALGORITHMS.md) | Pure math helpers (1RM/Wilks, plate loading, readiness, velocity regression) |
 | [`API.md`](API.md) | Backend REST reference |
-| [`SECURITY.md`](SECURITY.md) | Threat model, deployment controls, audit findings and security tests |
+| [`SECURITY.md`](SECURITY.md) | Threat model, deployment controls and security tests |
+| [`SECURITY-AUDIT-2026-08-16.md`](SECURITY-AUDIT-2026-08-16.md) | Post-AFTERGLOW full-site audit, remediations and residual risk |
 
 ### Per-space docs (`docs/spaces/<space>/`)
 | Space | Route | Full-screen | Status |

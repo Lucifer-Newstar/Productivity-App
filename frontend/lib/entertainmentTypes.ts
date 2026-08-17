@@ -1,4 +1,5 @@
 import type { EntertainmentLanguage } from "./entertainmentI18n";
+import { safeImageDataUrl, safeProxiedImageUrl } from "./security";
 
 export type MediaType = "book" | "comic" | "manga" | "movie" | "series" | "anime";
 export type MediaStatus = "planned" | "in-progress" | "completed" | "paused" | "dropped";
@@ -208,6 +209,8 @@ export function migrateEntertainment(raw: Partial<EntertainmentState> | null | u
     schemaVersion: 6,
     items: Array.isArray(raw.items) ? raw.items.map((item) => ({
       ...item,
+      coverDataUrl: safeImageDataUrl(item.coverDataUrl),
+      coverUrl: safeProxiedImageUrl(item.coverUrl),
       genres: Array.isArray(item.genres) ? item.genres : [],
       creators: Array.isArray(item.creators) ? item.creators : [],
       cast: Array.isArray(item.cast) ? item.cast : [],
@@ -237,11 +240,11 @@ export function migrateEntertainment(raw: Partial<EntertainmentState> | null | u
     gifts: Array.isArray(raw.gifts) ? raw.gifts : [],
     loans: Array.isArray(raw.loans) ? raw.loans : [],
     reviewDrafts: Array.isArray(raw.reviewDrafts) ? raw.reviewDrafts : [],
-    fanArt: Array.isArray(raw.fanArt) ? raw.fanArt : [],
-    fanFiction: Array.isArray(raw.fanFiction) ? raw.fanFiction : [],
-    cosplay: Array.isArray(raw.cosplay) ? raw.cosplay : [],
-    quotes: Array.isArray(raw.quotes) ? raw.quotes : [],
-    moodBoards: Array.isArray(raw.moodBoards) ? raw.moodBoards : [],
+    fanArt: Array.isArray(raw.fanArt) ? raw.fanArt.map(x=>({...x,imageDataUrl:safeImageDataUrl(x.imageDataUrl)})).filter((x):x is FanArtEntry=>!!x.imageDataUrl).slice(0,500) : [],
+    fanFiction: Array.isArray(raw.fanFiction) ? raw.fanFiction.slice(0,2000) : [],
+    cosplay: Array.isArray(raw.cosplay) ? raw.cosplay.map(x=>({...x,photoDataUrls:(Array.isArray(x.photoDataUrls)?x.photoDataUrls.map(safeImageDataUrl).filter((v):v is string=>!!v).slice(0,6):[])})).slice(0,500) : [],
+    quotes: Array.isArray(raw.quotes) ? raw.quotes.slice(0,5000) : [],
+    moodBoards: Array.isArray(raw.moodBoards) ? raw.moodBoards.map(b=>({...b,tiles:(Array.isArray(b.tiles)?b.tiles.filter(t=>t.type==="quote"||!!safeImageDataUrl(t.content)).map(t=>t.type==="image"?{...t,content:safeImageDataUrl(t.content)!}:t).slice(0,500):[])})).slice(0,500) : [],
     dreamCast: Array.isArray(raw.dreamCast) ? raw.dreamCast : [],
     whatIfs: Array.isArray(raw.whatIfs) ? raw.whatIfs : [],
     settings: { ...SEED_ENTERTAINMENT.settings, ...(raw.settings ?? {}), language: (["en","ta","hi"].includes(String(raw.settings?.language)) ? raw.settings!.language : "en") as EntertainmentLanguage },

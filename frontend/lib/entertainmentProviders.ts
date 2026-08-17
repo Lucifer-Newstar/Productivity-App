@@ -5,6 +5,7 @@ import { providerLocale } from "./entertainmentI18n";
 const TIMEOUT_MS = 12_000;
 const CACHE_TTL = 15 * 60_000;
 const cache = new Map<string, { at:number; data:MediaSearchResult[] }>();
+function cacheResult(key:string,data:MediaSearchResult[]){const now=Date.now();if(cache.size>1_000){for(const [k,v] of Array.from(cache.entries()))if(now-v.at>CACHE_TTL)cache.delete(k);if(cache.size>2_000)cache.clear()}cache.set(key,{at:now,data})}
 export interface ProviderCredentials { malClientId?:string;tmdbAccessToken?:string;googleBooksApiKey?:string;comicVineApiKey?:string;nytBooksApiKey?:string }
 const configured=(override:string|undefined,env:string|undefined)=>override?.trim()||env;
 
@@ -30,7 +31,7 @@ async function jsonFetch(url:string, init:RequestInit={}, provider="provider") {
     const response=await fetch(url,{...init,signal:controller.signal,headers:{Accept:"application/json",...(init.headers??{})},cache:"no-store"});
     if(response.status===429) throw new ProviderError(`${provider} is rate-limiting requests. Try again shortly.`,429,provider);
     if(!response.ok) throw new ProviderError(`${provider} returned ${response.status}.`,response.status>=400&&response.status<500?response.status:502,provider);
-    return await response.json();
+    const declared=Number(response.headers.get("content-length")??0);if(declared>2*1024*1024)throw new ProviderError(`${provider} response is too large.`,502,provider);const reader=response.body?.getReader();if(!reader)throw new ProviderError(`${provider} returned an empty response.`,502,provider);const chunks:Uint8Array[]=[];let total=0;while(true){const {done,value}=await reader.read();if(done)break;if(value){total+=value.byteLength;if(total>2*1024*1024){await reader.cancel();throw new ProviderError(`${provider} response is too large.`,502,provider)}chunks.push(value)}}const bytes=new Uint8Array(total);let offset=0;for(const chunk of chunks){bytes.set(chunk,offset);offset+=chunk.byteLength}try{return JSON.parse(new TextDecoder().decode(bytes))}catch{throw new ProviderError(`${provider} returned invalid JSON.`,502,provider)}
   } catch(error) {
     if(error instanceof ProviderError)throw error;
     if(error instanceof Error&&error.name==="AbortError")throw new ProviderError(`${provider} timed out.`,504,provider);
@@ -144,7 +145,7 @@ export async function trendingEntertainment(type:MediaType,credentials:ProviderC
   const key=`trending:${language}:${type}`,hit=cache.get(key);if(hit&&Date.now()-hit.at<CACHE_TTL)return hit.data;
   let data:MediaSearchResult[];
   if(type==="anime")data=await trendingMal(credentials);else if(type==="manga")data=await trendingAniListManga();else if(type==="movie"||type==="series")data=await trendingTmdb(type,credentials,providerLocale(language));else if(type==="comic")data=await trendingComics(credentials);else data=await trendingBooks(credentials);
-  data=data.slice(0,12);cache.set(key,{at:Date.now(),data});return data;
+  data=data.slice(0,12);cacheResult(key,data);return data;
 }
 
 export async function getEntertainmentDetails(provider:string,providerId:string,type:MediaType,credentials:ProviderCredentials={},language="en"):Promise<MediaSearchResult>{
@@ -186,5 +187,5 @@ export async function searchEntertainment(q:string,type:MediaType,credentials:Pr
   else if(type==="movie"||type==="series")data=await searchTmdb(q,type,credentials,providerLocale(language));
   else if(type==="comic")data=await searchComicVine(q,credentials,language);
   else data=await searchGoogleBooks(q,"book",credentials,language);
-  const clean=data.slice(0,12); cache.set(key,{at:Date.now(),data:clean}); return clean;
+  const clean=data.slice(0,12); cacheResult(key,clean); return clean;
 }

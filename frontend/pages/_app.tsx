@@ -13,6 +13,7 @@ import type { ComponentType } from "react";
 import { StoreProvider } from "../lib/store";
 import { ThemeProvider } from "../lib/theme";
 import TopNav from "../components/TopNav";
+import StorageErrorBanner from "../components/StorageErrorBanner";
 import "../app/globals.css";
 
 // Custom component type so TS knows about our static opt-in flag
@@ -27,6 +28,7 @@ export default function App({ Component, pageProps }: AppProps) {
     return (
       <ThemeProvider>
         <StoreProvider>
+          <StorageErrorBanner />
           {/* min-h-screen + no chrome — page renders its own layout */}
           <div className="min-h-screen w-full">
             <Page {...pageProps} />
@@ -39,6 +41,7 @@ export default function App({ Component, pageProps }: AppProps) {
   return (
     <ThemeProvider>
       <StoreProvider>
+        <StorageErrorBanner />
         <div className="min-h-screen flex flex-col">
           <TopNav />
           <main className="flex-1 w-full max-w-[1600px] mx-auto px-4 md:px-8 py-6 md:py-8 animate-fade-up">

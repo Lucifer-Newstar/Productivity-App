@@ -20,7 +20,8 @@
   - [`FEATURES.md`](./docs/FEATURES.md) — checklist status of all 149 workout
     features.
   - [`API.md`](./docs/API.md) — backend REST reference.
-  - [`SECURITY.md`](./docs/SECURITY.md) — secure deployment, threat model and audit history.
+  - [`SECURITY.md`](./docs/SECURITY.md) — secure deployment and threat model.
+  - [`SECURITY-AUDIT-2026-08-16.md`](./docs/SECURITY-AUDIT-2026-08-16.md) — latest full-site audit and remediation report.
 
 ## Getting started
 

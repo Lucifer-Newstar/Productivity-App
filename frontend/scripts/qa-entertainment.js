@@ -40,6 +40,7 @@ test('backend settings singleton wired',backend.includes('entertainmentSettings'
 const providers=read('lib/entertainmentProviders.ts');
 const searchRoute=read('app/api/entertainment/search/route.ts');
 const imageRoute=read('app/api/entertainment/image/route.ts');
+const requestGuard=read('app/api/entertainment/_guard.ts');
 test('MAL anime adapter wired',providers.includes('searchMal')&&providers.includes('MAL_CLIENT_ID'));
 test('AniList manga adapter wired',providers.includes('searchAniListManga')&&providers.includes('graphql.anilist.co'));
 test('TMDB movie/series adapter wired',providers.includes('searchTmdb')&&providers.includes('TMDB_ACCESS_TOKEN'));
@@ -47,14 +48,14 @@ test('Books fallback chain wired',providers.includes('searchGoogleBooks')&&provi
 test('Comic Vine fallback chain wired',providers.includes('searchComicVine')&&providers.includes('COMICVINE_API_KEY'));
 test('provider credentials are server-only',!providers.includes('NEXT_PUBLIC_'));
 test('search input and media type validated',searchRoute.includes('q.length<2')&&searchRoute.includes('TYPES.has(type)'));
-test('same-origin and rate controls present',searchRoute.includes('cross-site request rejected')&&searchRoute.includes('search rate limit exceeded'));
+test('same-origin and bounded rate controls present',searchRoute.includes('guardEntertainmentRequest')&&requestGuard.includes('cross-site request rejected')&&requestGuard.includes('buckets.size>5_000'));
 test('image proxy uses exact allowlist, timeout and size cap',imageRoute.includes('EXACT=new Set')&&imageRoute.includes('AbortSignal.timeout')&&imageRoute.includes('5*1024*1024'));
 test('manual cover uses safe image reader',page.includes('readSafeImageAsDataUrl'));
 test('review spoiler control present',page.includes('reviewContainsSpoilers'));
 test('manual queue ordering present',page.includes('Queue order')&&page.includes('queueOrder-b.queueOrder'));
 const trendingRoute=read('app/api/entertainment/trending/route.ts');
 test('trending adapters cover six media sections',providers.includes('trendingMal')&&providers.includes('trendingAniListManga')&&providers.includes('trendingTmdb')&&providers.includes('trendingBooks')&&providers.includes('trendingComics'));
-test('trending route validates type and rate limits',trendingRoute.includes('TYPES.has(type)')&&trendingRoute.includes('discovery rate limit exceeded'));
+test('trending route validates type and shares rate guard',trendingRoute.includes('TYPES.has(type)')&&trendingRoute.includes('guardEntertainmentRequest(request,"discovery",20)'));
 test('Discover screen is enabled',page.includes('label:"Discover",icon:Compass,ready:true')&&page.includes('function Discover'));
 test('Discover prevents duplicate provider imports',page.includes('IN YOUR LIBRARY')&&page.includes('providerId'));
 test('TMDB attribution notice present',page.includes('not endorsed or certified by TMDB'));
@@ -181,4 +182,13 @@ test('Escape closes overlays and details',page.includes('e.key!=="Escape"')&&pag
 test('reduced motion preference is honored',page.includes('prefers-reduced-motion:reduce'));
 test('migration has executable legacy fixture',fs.existsSync(path.join(root,'scripts/qa-entertainment-migration.ts')));
 test('schema v6 validates language and backfills every wave',types.includes('["en","ta","hi"]')&&types.includes('reviewDrafts: Array.isArray'));
+test('all catalogue endpoints share bounded request guard',requestGuard.includes('buckets.size>5_000')&&imageRoute.includes('guardEntertainmentRequest(request,"image",120)')&&detailsRoute.includes('guardEntertainmentRequest(request,"details",40)'));
+test('image proxy streams with a hard byte ceiling',imageRoute.includes('response.body?.getReader()')&&imageRoute.includes('reader.cancel()'));
+test('provider JSON responses stream under 2 MB',providers.includes('total>2*1024*1024')&&providers.includes('returned invalid JSON'));
+test('provider cache prunes and caps entries',providers.includes('cache.size>1_000')&&providers.includes('cache.size>2_000'));
+test('MAL XML rejects DTD and entity declarations',importer.includes('/<!DOCTYPE|<!ENTITY/i'));
+test('gzip import enforces cap while streaming',importer.includes('pipeThrough(new DecompressionStream')&&importer.includes('await reader.cancel()'));
+test('restored image sources are sanitized',types.includes('safeImageDataUrl(item.coverDataUrl)')&&types.includes('safeProxiedImageUrl(item.coverUrl)'));
+test('storage quota failures are caught and surfaced',store.includes('kaizen:storage-error')&&fs.existsSync(path.join(root,'components/StorageErrorBanner.tsx')));
+test('additional transport isolation headers configured',read('next.config.js').includes('Strict-Transport-Security')&&read('next.config.js').includes('Cross-Origin-Resource-Policy'));
 console.log(`\n${pass} passed, ${fail} failed`); if(fail)process.exit(1);

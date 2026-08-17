@@ -783,7 +783,7 @@ function useLocalState<T>(key: string, seed: T, migrate?: (raw: any) => T): [T, 
     hydrated.current = true;
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [key]);
-  useEffect(() => { if (hydrated.current) localStorage.setItem(key, JSON.stringify(v)); }, [key, v]);
+  useEffect(() => { if (!hydrated.current) return; try { localStorage.setItem(key, JSON.stringify(v)); } catch (error) { window.dispatchEvent(new CustomEvent("kaizen:storage-error", { detail: { key, reason: error instanceof Error ? error.name : "storage-error" } })); } }, [key, v]);
   return [v, setV];
 }
 
