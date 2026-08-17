@@ -23,6 +23,7 @@ const types = read("lib/types.ts"),
   health = read("components/health/VitalsSection.tsx"),
   cardio = read("components/workout/WorkoutCardio.tsx"),
   notificationButton = read("components/NotificationButton.tsx"),
+  homeIntelligence = read("lib/homeIntelligence.ts"),
   pkg = JSON.parse(read("package.json"));
 const navShells = [
   "components/TopNav.tsx",
@@ -85,7 +86,23 @@ test(
 );
 test(
   "dashboard has staggered interactive motion",
-  dash.includes("staggerChildren") && dash.includes("whileHover={{ y: -7"),
+  dash.includes("staggerChildren") && dash.includes("whileHover={{ y: -6"),
+);
+test(
+  "home command center answers the seven operating questions",
+  ["NEXT ACTION","Your day","Life pulse","What is happening now","Needs attention","Recent growth","Seven-day momentum","12-week activity arc"].every((x)=>dash.includes(x)),
+);
+test(
+  "life pulse formulas are explicit",
+  homeIntelligence.includes("45% project health") && homeIntelligence.includes("35% sleep") && homeIntelligence.includes("55% roadmap"),
+);
+test(
+  "next action ranks cross-space candidates",
+  homeIntelligence.includes("actions: CommandAction[]") && homeIntelligence.includes("Follow up with") && homeIntelligence.includes("Scheduled for today"),
+);
+test(
+  "attention uses high-priority notification data",
+  homeIntelligence.includes('["high", "critical"].includes'),
 );
 test(
   "Entertainment modules have keyed transitions",

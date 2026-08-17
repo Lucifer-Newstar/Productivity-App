@@ -35,6 +35,20 @@ The dashboard links to Workout, Projects/Forge, Career, Health/VITAL-SIGN and En
 
 Storage quota errors are caught and surfaced by `StorageErrorBanner`.
 
+## Cross-space command center
+
+The Overview is organized around seven questions:
+
+1. Where am I? — five explainable Life Pulse dimensions.
+2. What happened? — normalized recent growth timeline.
+3. What matters today? — dated tasks, meetings, workouts and media plans.
+4. What needs attention? — high/critical notifications from every space.
+5. What should I do next? — ranked cross-space Next Action.
+6. Am I improving? — seven-day momentum.
+7. Where am I going? — twelve-week activity trajectory.
+
+`lib/homeIntelligence.ts` contains deterministic formulas and ranking rules. No AI service is required and every Pulse row exposes its formula in the UI.
+
 ## Theme and motion
 
 - Dark **Control System:** Space Grotesk, midnight command deck and telemetry lighting.

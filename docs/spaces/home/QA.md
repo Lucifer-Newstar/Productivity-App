@@ -15,5 +15,10 @@ _Current baseline: 2026-08-16._
 - [x] Control System dark and Daily Edition light themes are structurally distinct
 - [x] Direction-aware transitions and reduced-motion fallback are present
 - [x] Self-hosted font families load without a runtime CDN
+- [x] Life Pulse exposes five deterministic formulas
+- [x] Next Action ranks Forge, Career, Workout and core candidates
+- [x] Today, attention, timeline, momentum and 12-week arc are present
+- [x] Notification triggers are embedded in every product navigation bar
+- [x] Home intelligence executable fixtures pass
 
 Home is covered by the global TypeScript, ESLint, build, dependency audit and route-smoke gates in [`../../guides/TESTING.md`](../../guides/TESTING.md).

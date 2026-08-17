@@ -2,71 +2,186 @@
 import Link from "next/link";
 import { motion, type Variants } from "framer-motion";
 import {
+  AlertTriangle,
   ArrowRight,
+  CalendarClock,
   Check,
+  ChevronRight,
   CircleDot,
   Clock3,
   Crosshair,
   Focus,
+  Gauge,
+  Minus,
+  Route,
   Sparkles,
+  TrendingDown,
   TrendingUp,
 } from "lucide-react";
 import { useStore } from "../lib/store";
 import { useTheme } from "../lib/theme";
-import { SPACES } from "../lib/types";
-import { useEffect, useState } from "react";
+import { SPACES, type SpaceId } from "../lib/types";
+import { useEffect, useMemo, useState } from "react";
 import SpaceIcon from "./SpaceIcon";
+import { buildHomeIntelligence } from "../lib/homeIntelligence";
+
 const container: Variants = {
   hidden: { opacity: 0 },
   show: { opacity: 1, transition: { staggerChildren: 0.055 } },
 };
-const item: Variants = {
+const reveal: Variants = {
   hidden: { opacity: 0, y: 14 },
   show: {
     opacity: 1,
     y: 0,
-    transition: { duration: 0.42, ease: [0.22, 1, 0.36, 1] as const },
+    transition: { duration: 0.42, ease: [0.22, 1, 0.36, 1] },
   },
 };
+const sectionSpace = (section: string): SpaceId | null =>
+  section === "projects"
+    ? "projects"
+    : section === "workout" ||
+        section === "career" ||
+        section === "health" ||
+        section === "entertainment"
+      ? section
+      : null;
+
 export default function Dashboard({
   onNavigateView,
 }: {
   onNavigateView?: (v: "tasks" | "pomodoro") => void;
 }) {
-  const { tasks } = useStore(),
-    { theme } = useTheme(),
-    [time, setTime] = useState(new Date());
+  const store = useStore();
+  const { theme } = useTheme();
+  const [time, setTime] = useState(new Date());
+  const [habits, setHabits] = useState<any[]>([]);
   useEffect(() => {
     const id = setInterval(() => setTime(new Date()), 30_000);
+    try {
+      setHabits(JSON.parse(localStorage.getItem("kaizen.habits") || "[]"));
+    } catch {}
     return () => clearInterval(id);
   }, []);
-  const done = tasks.filter((t) => t.completed).length,
-    open = tasks.length - done,
-    priority = tasks.filter(
-      (t) => !t.completed && t.priority === "high",
-    ).length,
-    pct = tasks.length ? Math.round((done / tasks.length) * 100) : 0,
-    recent = tasks.slice(0, 5),
-    dark = theme === "dark",
-    date = time.toLocaleDateString("en-IN", {
-      weekday: "long",
-      day: "numeric",
-      month: "long",
-    });
-  const stats = [
-    { label: "Completed", value: done, Icon: Check },
-    { label: "Open", value: open, Icon: CircleDot },
-    { label: "Priority", value: priority, Icon: Crosshair },
-    { label: "Spaces", value: SPACES.length, Icon: Sparkles },
+  const intel = useMemo(
+    () => buildHomeIntelligence({ ...store, habits }, time),
+    [
+      store.tasks,
+      store.career,
+      store.workout,
+      store.forge,
+      store.health,
+      store.entertainment,
+      store.notifications,
+      habits,
+      time,
+    ],
+  );
+  const dark = theme === "dark";
+  const date = time.toLocaleDateString("en-IN", {
+    weekday: "long",
+    day: "numeric",
+    month: "long",
+  });
+  const greeting =
+    time.getHours() < 12
+      ? "Good morning"
+      : time.getHours() < 18
+        ? "Good afternoon"
+        : "Good evening";
+  const activeProjects = store.forge.projects.filter(
+    (p) => !p.archived && !["done", "dead"].includes(p.status),
+  );
+  const activeRoadmap = store.career.roadmaps.find(
+    (r) => r.status === "active",
+  );
+  const roadmapMilestones =
+    activeRoadmap?.phases.flatMap((p) => p.milestones) ?? [];
+  const roadmapPct = roadmapMilestones.length
+    ? Math.round(
+        (roadmapMilestones.filter((m) => m.done).length /
+          roadmapMilestones.length) *
+          100,
+      )
+    : 0;
+  const routine = store.workout.routines.find(
+    (r) => r.dayOfWeek === time.getDay(),
+  );
+  const readiness = [...store.workout.readiness].sort((a, b) =>
+    b.date.localeCompare(a.date),
+  )[0]?.score;
+  const latestSleep = [...store.health.sleep].sort((a, b) =>
+    b.date.localeCompare(a.date),
+  )[0];
+  const water = store.health.water
+    .filter((w) => w.date === time.toISOString().slice(0, 10))
+    .reduce((n, w) => n + w.ml, 0);
+  const queue = store.entertainment.items.filter(
+    (i) => i.status === "planned" && !i.archived,
+  );
+  const continuing = store.entertainment.items.find(
+    (i) => i.status === "in-progress" && !i.archived,
+  );
+  const spaceCards = [
+    {
+      id: "projects" as const,
+      title: "Forge",
+      headline: `${activeProjects.length} active project${activeProjects.length === 1 ? "" : "s"}`,
+      meta: `${activeProjects.filter((p) => p.status === "blocked").length} blocked · ${store.forge.tasks.filter((t) => !t.completedAt).length} open tasks`,
+      next:
+        store.forge.tasks.find((t) => t.nextAction)?.title ||
+        store.forge.tasks.find((t) => !t.completedAt)?.title ||
+        "Create the next action",
+      href: "/projects",
+    },
+    {
+      id: "career" as const,
+      title: "Career",
+      headline: activeRoadmap?.name || "Set your primary roadmap",
+      meta: `${roadmapPct}% roadmap · ${store.career.contacts.filter((c) => c.nextFollowUpAt && c.nextFollowUpAt <= time.getTime()).length} follow-ups`,
+      next:
+        roadmapMilestones.find((m) => !m.done)?.title ||
+        "Review career direction",
+      href: "/career/projects",
+    },
+    {
+      id: "workout" as const,
+      title: "Workout",
+      headline: routine?.name || "No session scheduled",
+      meta: `Readiness ${readiness != null ? Math.round(readiness) : "—"} · ${store.workout.sessions.filter((s) => s.endedAt && Date.now() - s.startedAt < 7 * 86400000).length} sessions this week`,
+      next: store.workout.prs[0]
+        ? `Latest PR · ${store.workout.exercises.find((e) => e.id === store.workout.prs[0].exerciseId)?.name || "Training"}`
+        : "Log the next session",
+      href: "/workout/overview",
+    },
+    {
+      id: "health" as const,
+      title: "Health",
+      headline: `Sleep ${latestSleep?.durationHours?.toFixed(1) || "—"}h`,
+      meta: `${water}ml water · stress ${[...store.health.mind].sort((a, b) => b.date.localeCompare(a.date))[0]?.stress ?? "—"}/10`,
+      next:
+        intel.pulse.find((p) => p.key === "health")?.detail ||
+        "Review today's signals",
+      href: "/health",
+    },
+    {
+      id: "entertainment" as const,
+      title: "Afterglow",
+      headline: `${queue.length} queued`,
+      meta: `${store.entertainment.items.filter((i) => i.status === "in-progress").length} continuing · ${store.entertainment.items.filter((i) => i.status === "completed").length} completed`,
+      next: continuing?.title || queue[0]?.title || "Discover something new",
+      href: "/entertainment",
+    },
   ];
+
   return (
     <motion.div
       variants={container}
       initial="hidden"
       animate="show"
-      className="home-dashboard"
+      className="home-dashboard home-command-dashboard"
     >
-      <motion.section variants={item} className="home-hero">
+      <motion.section variants={reveal} className="home-hero command-hero">
         <div className="home-hero-copy">
           <span className="home-eyebrow">
             {date.toUpperCase()} ·{" "}
@@ -76,191 +191,331 @@ export default function Dashboard({
             })}
           </span>
           <h1>
-            {dark ? (
-              <>
-                Move with <em>precision.</em>
-              </>
-            ) : (
-              <>
-                Make room for <em>what matters.</em>
-              </>
-            )}
+            {greeting}.<br />
+            <em>
+              {dark
+                ? "Here’s the state of your system."
+                : "Here’s what matters today."}
+            </em>
           </h1>
-          <p>
-            {dark
-              ? `One command surface for ${open} open commitments across ${SPACES.length} focused systems.`
-              : `A calmer editorial view of today — ${open} open items, ${priority} asking for your attention.`}
+          <p className="command-brief">
+            <Sparkles size={15} />
+            {intel.brief}
           </p>
-          <div className="home-hero-actions">
-            <button
-              onClick={() => onNavigateView?.("tasks")}
-              className="home-primary"
-            >
-              Open task queue <ArrowRight size={15} />
-            </button>
-            <button
-              onClick={() => onNavigateView?.("pomodoro")}
-              className="home-secondary"
-            >
-              <Focus size={15} /> Start focus
-            </button>
-          </div>
         </div>
-        <div className="home-completion-orbit">
-          <svg viewBox="0 0 120 120">
-            <circle cx="60" cy="60" r="49" pathLength="100" />
-            <motion.circle
-              cx="60"
-              cy="60"
-              r="49"
-              pathLength="100"
-              initial={{ strokeDashoffset: 100 }}
-              animate={{ strokeDashoffset: 100 - pct }}
-              transition={{ duration: 1, ease: [0.22, 1, 0.36, 1] }}
-            />
-          </svg>
+        <div className="command-metrics">
           <div>
-            <strong>{pct}%</strong>
-            <span>resolved</span>
+            <small>TODAY’S LOAD</small>
+            <strong>{intel.today.length + intel.attention.length}</strong>
+            <span>signals</span>
+          </div>
+          <div>
+            <small>LIFE PULSE</small>
+            <strong>{intel.overall}</strong>
+            <span>/ 100</span>
           </div>
         </div>
         <div className="home-hero-grid" aria-hidden />
       </motion.section>
-      <motion.div variants={item} className="home-stat-grid">
-        {stats.map(({ label, value, Icon }, i) => (
-          <motion.article
-            key={label}
-            whileHover={{ y: -5, rotateX: 2 }}
-            transition={{ type: "spring", stiffness: 320, damping: 22 }}
-            className="home-stat"
-          >
-            <span>
-              <Icon size={16} />
-            </span>
-            <strong>{String(value).padStart(2, "0")}</strong>
-            <small>{label}</small>
-            <i>0{i + 1}</i>
-          </motion.article>
-        ))}
-      </motion.div>
-      <motion.section variants={item} className="home-section">
+
+      <motion.section variants={reveal} className="next-action-card">
+        <div className="next-action-label">
+          <Crosshair size={15} /> NEXT ACTION
+        </div>
+        {intel.next ? (
+          <>
+            <div className="next-action-copy">
+              <span>{intel.next.space}</span>
+              <h2>{intel.next.title}</h2>
+              <p>
+                {intel.next.reason}
+                {intel.next.minutes
+                  ? ` · ${intel.next.minutes} min estimated`
+                  : ""}
+              </p>
+            </div>
+            <div className="next-action-buttons">
+              <button onClick={() => onNavigateView?.("pomodoro")}>
+                <Focus size={14} /> Start focus
+              </button>
+              <Link href={intel.next.href}>
+                Open source <ArrowRight size={13} />
+              </Link>
+            </div>
+          </>
+        ) : (
+          <div className="next-action-copy">
+            <h2>Your immediate queue is clear.</h2>
+            <p>Choose one meaningful direction and create its next action.</p>
+          </div>
+        )}
+      </motion.section>
+
+      <motion.section variants={reveal} className="today-strip home-panel">
+        <div className="home-section-head compact">
+          <div>
+            <span className="home-eyebrow">TODAY</span>
+            <h2>Your day</h2>
+          </div>
+          <CalendarClock size={18} />
+        </div>
+        <div className="today-grid">
+          {intel.today.length ? (
+            intel.today.map((entry, i) => (
+              <Link
+                href={entry.href}
+                key={`${entry.title}-${i}`}
+                className={`today-item priority-${entry.priority}`}
+              >
+                <time>{entry.time || "—"}</time>
+                <div>
+                  <strong>{entry.title}</strong>
+                  <span>{entry.space}</span>
+                </div>
+                <ChevronRight size={13} />
+              </Link>
+            ))
+          ) : (
+            <p className="home-empty">
+              No dated commitments found. Use the calendar or section planners
+              to shape today.
+            </p>
+          )}
+        </div>
+      </motion.section>
+
+      <motion.section variants={reveal} className="life-pulse home-panel">
         <div className="home-section-head">
           <div>
-            <span className="home-eyebrow">SYSTEMS</span>
-            <h2>Your spaces</h2>
+            <span className="home-eyebrow">WHERE AM I?</span>
+            <h2>Life pulse</h2>
           </div>
-          <p>Each system has its own visual language, data model and rhythm.</p>
+          <p>
+            Every score is derived from visible data. Hover a row to see its
+            formula.
+          </p>
         </div>
-        <div className="home-space-grid">
-          {SPACES.map((space, i) => {
-            const list = tasks.filter((t) => t.space === space.id),
-              active = list.filter((t) => !t.completed).length,
-              complete = list.length - active,
-              progress = list.length
-                ? Math.round((complete / list.length) * 100)
-                : 0;
+        <div className="pulse-list">
+          {intel.pulse.map((pulse) => (
+            <div className="pulse-row" key={pulse.key} title={pulse.formula}>
+              <div>
+                <strong>{pulse.label}</strong>
+                <span>{pulse.detail}</span>
+              </div>
+              <div className="pulse-track">
+                <motion.span
+                  initial={{ width: 0 }}
+                  animate={{ width: `${pulse.score}%` }}
+                  transition={{ duration: 0.8 }}
+                />
+              </div>
+              <b>{pulse.score}</b>
+            </div>
+          ))}
+        </div>
+      </motion.section>
+
+      <motion.section variants={reveal} className="home-section">
+        <div className="home-section-head">
+          <div>
+            <span className="home-eyebrow">FIVE SYSTEMS</span>
+            <h2>What is happening now</h2>
+          </div>
+          <p>One useful state, one next move — no duplicate dashboards.</p>
+        </div>
+        <div className="intelligent-space-grid">
+          {spaceCards.map((card, i) => {
+            const meta = SPACES.find((s) => s.id === card.id)!;
             return (
-              <Link href={`/${space.id}`} key={space.id}>
+              <Link href={card.href} key={card.id}>
                 <motion.article
-                  whileHover={{ y: -7, scale: 1.015 }}
-                  whileTap={{ scale: 0.985 }}
-                  className="home-space-card"
-                  style={
-                    { "--space-color": space.color } as React.CSSProperties
-                  }
+                  whileHover={{ y: -6 }}
+                  className="intelligent-space-card"
+                  style={{ "--space-color": meta.color } as React.CSSProperties}
                 >
-                  <div className="home-space-card-top">
-                    <span className="home-space-icon">
-                      <SpaceIcon space={space.id} size={20} />
+                  <header>
+                    <span>
+                      <SpaceIcon space={card.id} size={19} />
                     </span>
-                    <span className="home-space-number">0{i + 1}</span>
-                  </div>
-                  <h3>{space.name}</h3>
-                  <p>
-                    {active} active · {complete} complete
-                  </p>
-                  <div className="home-space-progress">
-                    <motion.span
-                      initial={{ width: 0 }}
-                      animate={{ width: `${progress}%` }}
-                      transition={{ delay: 0.2 + i * 0.08, duration: 0.65 }}
-                    />
-                  </div>
-                  <div className="home-space-enter">
-                    Enter system <ArrowRight size={12} />
-                  </div>
+                    <i>0{i + 1}</i>
+                  </header>
+                  <h3>{card.title}</h3>
+                  <strong>{card.headline}</strong>
+                  <p>{card.meta}</p>
+                  <footer>
+                    <span>{card.next}</span>
+                    <ArrowRight size={13} />
+                  </footer>
                 </motion.article>
               </Link>
             );
           })}
         </div>
       </motion.section>
-      <div className="home-lower-grid">
-        <motion.section variants={item} className="home-panel">
+
+      <div className="command-two-column">
+        <motion.section
+          variants={reveal}
+          className="home-panel attention-panel"
+        >
           <div className="home-section-head compact">
             <div>
-              <span className="home-eyebrow">RECENT</span>
-              <h2>Latest activity</h2>
+              <span className="home-eyebrow">WHAT NEEDS ATTENTION?</span>
+              <h2>Needs attention</h2>
             </div>
-            <Clock3 size={18} />
+            <AlertTriangle size={18} />
           </div>
-          <div className="home-task-list">
-            {recent.map((task, i) => {
-              const meta = SPACES.find((s) => s.id === task.space)!;
-              return (
-                <motion.div
-                  key={task.id}
-                  initial={{ opacity: 0, x: -8 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 0.24 + i * 0.04 }}
-                  className="home-task-row"
-                >
-                  <span className={task.completed ? "is-done" : ""}>
-                    {task.completed ? (
-                      <Check size={12} />
-                    ) : (
-                      <CircleDot size={12} />
-                    )}
-                  </span>
-                  <div>
-                    <strong>{task.title}</strong>
-                    <small>
-                      <SpaceIcon space={meta.id} size={10} />
-                      {meta.name}
-                    </small>
-                  </div>
-                  <i>{task.priority}</i>
-                </motion.div>
-              );
-            })}
-            {!recent.length && (
+          <div>
+            {intel.attention.length ? (
+              intel.attention.map((alert: any) => {
+                const sid = sectionSpace(alert.section);
+                return (
+                  <Link
+                    href={alert.actionHref || "/"}
+                    key={alert.id}
+                    className={`attention-row ${alert.priority}`}
+                  >
+                    <span>
+                      {sid ? (
+                        <SpaceIcon space={sid} size={14} />
+                      ) : (
+                        <AlertTriangle size={14} />
+                      )}
+                    </span>
+                    <div>
+                      <small>
+                        {alert.section} · {alert.priority}
+                      </small>
+                      <strong>{alert.title}</strong>
+                      <p>{alert.body}</p>
+                    </div>
+                    <ArrowRight size={13} />
+                  </Link>
+                );
+              })
+            ) : (
               <p className="home-empty">
-                No activity yet. Add one clear next action.
+                No high-priority alerts. The system is stable.
               </p>
             )}
           </div>
         </motion.section>
-        <motion.section variants={item} className="home-panel home-focus-card">
-          <span className="home-eyebrow">FOCUS SIGNAL</span>
-          <TrendingUp size={25} />
-          <h2>
-            {priority
-              ? `${priority} priority item${priority > 1 ? "s" : ""} need a decision.`
-              : "Your priority lane is clear."}
-          </h2>
-          <p>
-            {priority
-              ? "Choose the smallest meaningful next step, then protect twenty-five minutes for it."
-              : "Use the space to move one important project forward without interruption."}
-          </p>
-          <button
-            onClick={() => onNavigateView?.(priority ? "tasks" : "pomodoro")}
-          >
-            {priority ? "Review priorities" : "Begin focus block"}
-            <ArrowRight size={13} />
-          </button>
+        <motion.section variants={reveal} className="home-panel timeline-panel">
+          <div className="home-section-head compact">
+            <div>
+              <span className="home-eyebrow">WHAT HAPPENED?</span>
+              <h2>Recent growth</h2>
+            </div>
+            <Clock3 size={18} />
+          </div>
+          <div>
+            {intel.timeline.length ? (
+              intel.timeline.slice(0, 6).map((event, i) => (
+                <Link
+                  href={event.href}
+                  key={`${event.title}-${i}`}
+                  className="timeline-row"
+                >
+                  <span />
+                  <div>
+                    <strong>{event.title}</strong>
+                    <small>
+                      {event.space} ·{" "}
+                      {new Date(event.date).toLocaleDateString("en-IN", {
+                        day: "numeric",
+                        month: "short",
+                      })}
+                    </small>
+                  </div>
+                </Link>
+              ))
+            ) : (
+              <p className="home-empty">
+                Significant events will appear as you use the spaces.
+              </p>
+            )}
+          </div>
+        </motion.section>
+      </div>
+
+      <div className="command-two-column">
+        <motion.section variants={reveal} className="home-panel momentum-panel">
+          <div className="home-section-head compact">
+            <div>
+              <span className="home-eyebrow">AM I ACCELERATING?</span>
+              <h2>Seven-day momentum</h2>
+            </div>
+            <Gauge size={18} />
+          </div>
+          {intel.momentum.map((m) => (
+            <div className="momentum-row" key={m.label}>
+              <span>{m.label}</span>
+              {m.direction === "up" ? (
+                <TrendingUp />
+              ) : m.direction === "down" ? (
+                <TrendingDown />
+              ) : (
+                <Minus />
+              )}
+              <strong>
+                {m.value > 0 ? "+" : ""}
+                {m.value}%
+              </strong>
+            </div>
+          ))}
+        </motion.section>
+        <motion.section variants={reveal} className="home-panel journey-panel">
+          <div className="home-section-head compact">
+            <div>
+              <span className="home-eyebrow">WHERE AM I GOING?</span>
+              <h2>12-week activity arc</h2>
+            </div>
+            <Route size={18} />
+          </div>
+          <Trajectory rows={intel.trajectory} />
         </motion.section>
       </div>
     </motion.div>
+  );
+}
+
+function Trajectory({ rows }: { rows: { label: string; values: number[] }[] }) {
+  const colors = ["#38bdf8", "#a78bfa", "#bef264", "#fb7185"];
+  return (
+    <div className="trajectory">
+      <svg viewBox="0 0 600 180" preserveAspectRatio="none">
+        {rows.map((row, ri) => {
+          const max = Math.max(1, ...row.values);
+          const points = row.values
+            .map(
+              (v, i) =>
+                `${(i / 11) * 590 + 5},${155 - (v / max) * 110 - ri * 5}`,
+            )
+            .join(" ");
+          return (
+            <motion.polyline
+              key={row.label}
+              points={points}
+              fill="none"
+              stroke={colors[ri]}
+              strokeWidth="3"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              initial={{ pathLength: 0, opacity: 0 }}
+              animate={{ pathLength: 1, opacity: 1 }}
+              transition={{ delay: ri * 0.1, duration: 0.8 }}
+            />
+          );
+        })}
+      </svg>
+      <div>
+        {rows.map((r, i) => (
+          <span key={r.label} style={{ color: colors[i] }}>
+            <i />
+            {r.label}
+          </span>
+        ))}
+      </div>
+    </div>
   );
 }

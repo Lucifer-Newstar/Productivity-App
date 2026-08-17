@@ -16,7 +16,8 @@
     "qa:docs": "node scripts/qa-docs.js",
     "qa:notifications": "tsx scripts/qa-notifications.ts",
     "qa:ui": "node scripts/qa-ui.js",
-    "qa:csp": "node scripts/qa-csp.js"
+    "qa:csp": "node scripts/qa-csp.js",
+    "qa:home": "tsx scripts/qa-home-intelligence.ts"
   },
   "keywords": [],
   "author": "",

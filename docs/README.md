@@ -35,6 +35,7 @@ Current production verification: **39/39 user routes return HTTP 200**, five sam
 | [`reports/DOCS-SYNC-2026-08-16.md`](reports/DOCS-SYNC-2026-08-16.md) | Source-vs-doc verification and corrections |
 | [`reports/CLEANUP-2026-08-17.md`](reports/CLEANUP-2026-08-17.md) | Dead-code removal and documentation reorganization |
 | [`reports/UI-REFRESH-2026-08-17.md`](reports/UI-REFRESH-2026-08-17.md) | Icon, typography, theme and motion foundation |
+| [`reports/HOME-COMMAND-CENTER-2026-08-17.md`](reports/HOME-COMMAND-CENTER-2026-08-17.md) | Cross-space home intelligence redesign |
 | [`notifications/README.md`](notifications/README.md) | Global inbox, rule catalog, settings and scope decisions |
 
 ### Design
