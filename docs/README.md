@@ -43,7 +43,8 @@ Current production verification: **39/39 user routes return HTTP 200**, five Ent
 
 ### Kaizen Intelligence Engine — architecture gate
 
-- [`ai/README.md`](ai/README.md) — architecture-gate index and 24-deliverable coverage matrix.
+- [`ai/MASTER-SPECIFICATION.md`](ai/MASTER-SPECIFICATION.md) — canonical product, architecture, privacy, MLOps and phase specification.
+- [`ai/README.md`](ai/README.md) — architecture and implementation index.
 - [`ai/CONSTITUTION.md`](ai/CONSTITUTION.md) — versioned behavioral and authority rules.
 - [`ai/ARCHITECTURE.md`](ai/ARCHITECTURE.md) — independent engine and client-mediated Domain Bridge boundary.
 - [`ai/DECISION-REGISTER.md`](ai/DECISION-REGISTER.md) — locked, proposed, spike-required and deferred decisions.

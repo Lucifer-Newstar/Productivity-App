@@ -76,7 +76,7 @@ python scripts\probe_lifecycle.py `
   --output results-local\MODEL-lifecycle.json
 ```
 
-The runner executes native llama-bench when configured, model startup/shutdown, 4K/8K contexts, 20 repetitions of every structured/tool scenario, concurrency 1/2, cancellation/recovery and NVIDIA/RAM/CPU sampling.
+The runner executes native llama-bench when configured, model startup/shutdown, 2K/4K/8K/12K/16K contexts, 20 repetitions of every structured/tool scenario, concurrency 1/2, cancellation/recovery and NVIDIA/RAM/CPU sampling.
 
 Run retrieval and protocol baselines on the same profile:
 
@@ -124,7 +124,7 @@ python scripts\score_results.py `
 - peak RAM and dedicated VRAM
 - structured response and tool accuracy over 20 repetitions per scenario
 - tool selection/arguments pass rate
-- 4K versus 8K context behavior
+- 2K/4K/8K/12K/16K context behavior
 - concurrency 1 versus 2
 - peak/sustained GPU temperature, power and throttling; CPU temperature only from a trusted local sensor tool and sanitized before review
 - AC profile and Windows/ASUS power mode

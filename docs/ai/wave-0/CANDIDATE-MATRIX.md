@@ -10,7 +10,7 @@ All model files are manually obtained, locally hashed and kept outside Git. The 
 |---|---|
 | Runtime candidate | Current verified Windows CUDA `llama.cpp` build |
 | Quantization class | 4-bit baseline |
-| Contexts | 4,096 mandatory; 8,192 comparison |
+| Contexts | 2,048 / 4,096 / 8,192 / 12,288 / 16,384; 4K mandatory capability, others measured variables |
 | Output cap | 256 tokens for standard scenarios |
 | Temperature | 0 |
 | Repetitions | 20 per structured/tool scenario |
@@ -28,7 +28,7 @@ All model files are manually obtained, locally hashed and kept outside Git. The 
 | Quantization | Q4_K_M |
 | Public GGUF source page | `bartowski/Qwen_Qwen3-4B-Instruct-2507-GGUF` |
 | Upstream context | 262,144 native; local GGUF/runtime metadata must confirm |
-| Context under test | 4K / 8K because target memory, not advertised maximum, controls selection |
+| Context under test | 2K / 4K / 8K / 12K / 16K; target measurements control selection |
 | Estimated model-file band | **ESTIMATE:** approximately 2.4–3.0 GiB |
 | Estimated target VRAM | **ESTIMATE:** likely near 4 GB after KV/runtime overhead; measure full/partial offload |
 | Estimated process RAM | **ESTIMATE:** 4–8 GiB depending on offload/context |
@@ -42,7 +42,7 @@ All model files are manually obtained, locally hashed and kept outside Git. The 
 | Quantization | QAT Q4_0 |
 | Public GGUF source page | `google/gemma-3-4b-it-qat-q4_0-gguf` |
 | Upstream context | 128K for Gemma 3 models above 1B per [Google](https://developers.googleblog.com/gemma-explained-whats-new-in-gemma-3/) |
-| Context under test | 4K / 8K because target memory controls selection |
+| Context under test | 2K / 4K / 8K / 12K / 16K; target measurements control selection |
 | Estimated model-file band | **ESTIMATE:** approximately 2.4–3.0 GiB |
 | Estimated target VRAM | **ESTIMATE:** likely near 4 GB with context/KV pressure |
 | Estimated process RAM | **ESTIMATE:** 4–8 GiB depending on offload/context |
@@ -56,7 +56,7 @@ All model files are manually obtained, locally hashed and kept outside Git. The 
 | Quantization | Q4_K_M |
 | Public GGUF source page | `bartowski/microsoft_Phi-4-mini-instruct-GGUF` |
 | Upstream context | 128K; local GGUF/runtime metadata must confirm |
-| Context under test | 4K / 8K because target memory controls selection |
+| Context under test | 2K / 4K / 8K / 12K / 16K; target measurements control selection |
 | Estimated model-file band | **ESTIMATE:** approximately 2.4–3.0 GiB |
 | Estimated target VRAM | **ESTIMATE:** likely near 4 GB after overhead |
 | Estimated process RAM | **ESTIMATE:** 4–8 GiB depending on offload/context |
@@ -68,7 +68,7 @@ All model files are manually obtained, locally hashed and kept outside Git. The 
 |---|---|
 | Parameters | 7B–8B; exact family selected only after C1–C3 baselines |
 | Quantization | Q4_K_M |
-| Context under test | 4K first; 8K only if safe |
+| Context under test | Start 2K/4K; attempt 8K/12K/16K only while safety gates permit |
 | Estimated model-file band | **ESTIMATE:** approximately 4.5–5.5 GiB |
 | Estimated target VRAM | **ESTIMATE:** cannot fully fit 4 GB dedicated VRAM; partial offload required |
 | Estimated process RAM | **ESTIMATE:** 8–12 GiB with system-RAM/PCIe spill |

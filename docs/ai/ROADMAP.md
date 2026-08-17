@@ -30,6 +30,8 @@ Architecture review has authorized Wave 0 preparation and controlled feasibility
 
 **Exit status:** executable mock-backed end-to-end flow uses current browser state and deterministic Next Action with verified sources and no state mutation. Real candidate quality/performance remains gated by the incomplete Wave 0 report.
 
+**Integration freeze:** do not start v0.2 tools, memory, retrieval, Health or cross-domain work until [`V0.1-INTEGRATION-VALIDATION.md`](V0.1-INTEGRATION-VALIDATION.md) and the Wave 0 Selection Report are reviewed.
+
 ## v0.2 — Kaizen Understands
 
 - read-only domain tools

@@ -4,6 +4,8 @@
 **Architecture package version:** 0.3-implementation<br>
 **Intelligence permissions:** READ / ANALYZE / SUGGEST only
 
+The canonical future-development authority is [`MASTER-SPECIFICATION.md`](MASTER-SPECIFICATION.md), interpreted together with KAC-1, locked ADRs, versioned contracts and the current `ai` branch. Fragmented later instructions do not silently replace it.
+
 The Kaizen Intelligence Engine is an independent, local-first intelligence layer above Kaizen's deterministic domains. Kaizen data and algorithms remain authoritative; models interpret, plan and propose through controlled tools; the user remains the final authority.
 
 ## Decision labels
@@ -57,8 +59,9 @@ Every design choice in this package uses one of four labels:
 7. Controls: agent, security, privacy and actions
 8. Evaluation, [observability](OBSERVABILITY.md), domain intelligence, roadmap and [OPEN-QUESTIONS.md](OPEN-QUESTIONS.md)
 
-## Active Wave 0 review
+## Active integration milestone
 
+- [`V0.1-INTEGRATION-VALIDATION.md`](V0.1-INTEGRATION-VALIDATION.md) — frozen foundation verification and real-model gate.
 - [`WAVE-0-REPORT.md`](WAVE-0-REPORT.md) — canonical incomplete/final Selection Report.
 - [`wave-0/PASS-FAIL-CRITERIA.md`](wave-0/PASS-FAIL-CRITERIA.md) — frozen pre-measurement gates.
 - [`wave-0/CANDIDATE-MATRIX.md`](wave-0/CANDIDATE-MATRIX.md) — candidate identities, estimates and rationale.

@@ -31,7 +31,7 @@ New independent TypeScript workspace under `ai/`:
 
 ## Quality
 
-- Engine: 10 executable tests
+- Engine: 14 executable tests, including task/notification/scheduled-content injection, tool escalation and llama.cpp SSE/tool parsing
 - Frontend AI foundation: 11 checks
 - Existing CSP/UI/Home suites unchanged and passing
 - AI and frontend TypeScript clean

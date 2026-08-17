@@ -147,7 +147,7 @@ The public synthetic evaluation dataset now checks:
 
 ## Context, thermal and concurrency status
 
-- Harness matrix supports 4K/8K contexts and concurrency 1/2 by default.
+- Harness matrix supports 2K/4K/8K/12K/16K contexts and concurrency 1/2 by default.
 - Exact limits remain unselected.
 - NVIDIA sample logger records VRAM, utilization, power, temperature and p-state.
 - Thermal soak, AC/battery power modes, KV-cache pressure, cancellation memory release and two-client behavior are pending target execution.
@@ -156,7 +156,7 @@ The public synthetic evaluation dataset now checks:
 
 All cells remain `PENDING` until sanitized target exports are reviewed.
 
-| Candidate | Quant | Load p95 | TTFT p50/p95 | tok/s p50 | Total p95 | RAM peak | VRAM peak | GPU util | CPU util | Temp p95/max | Structured | Tools | Hallucination | Injection critical | 4K/8K | C1/C2 | Verdict |
+| Candidate | Quant | Load p95 | TTFT p50/p95 | tok/s p50 | Total p95 | RAM peak | VRAM peak | GPU util | CPU util | Temp p95/max | Structured | Tools | Hallucination | Injection critical | 2K→16K | C1/C2 | Verdict |
 |---|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---|---|---|
 | Qwen3 4B Instruct 2507 | Q4_K_M | PENDING | PENDING | PENDING | PENDING | PENDING | PENDING | PENDING | PENDING | PENDING | PENDING | PENDING | PENDING | PENDING | PENDING | PENDING | PENDING |
 | Gemma 3 4B IT QAT | Q4_0 | PENDING | PENDING | PENDING | PENDING | PENDING | PENDING | PENDING | PENDING | PENDING | PENDING | PENDING | PENDING | PENDING | PENDING | PENDING | PENDING |
@@ -208,20 +208,20 @@ These are recommendations, not locked selections:
 - Windows disk/corruption/deletion/backup tests
 - authenticated browser transport/reconnect test
 - React/localStorage revision integration prototype
-- context 4K/8K reliability and memory curves
+- context 2K/4K/8K/12K/16K reliability and memory curves
 - 20–30 minute thermal soak per finalist
 - concurrency 1/2 and cancellation resource release
 
 ## Final selection fields
 
-These remain unresolved until target evidence passes `W0-GATE-1`:
+These remain unresolved until target evidence passes `W0-GATE-2`:
 
 | Decision | Current value |
 |---|---|
 | Recommended model | No selection |
 | Recommended quantization | No selection |
 | Recommended runtime/build | llama.cpp is a candidate; no build selected |
-| Recommended context budget | No selection; 4K mandatory test, 8K comparison |
+| Recommended context budget | No selection; 2K/4K/8K/12K/16K are measured variables under W0-GATE-2 |
 | Recommended concurrency | No selection; single client baseline |
 | Retrieval | FTS5 baseline under evaluation; vector layer unproven |
 | Transport | HTTP+SSE provisional baseline; no selection |

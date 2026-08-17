@@ -1,6 +1,6 @@
 # Wave 0 pass/fail criteria
 
-**Frozen before target-model measurements — criteria version `W0-GATE-1`.** Any change requires a dated amendment explaining why; results must also be scored against this original version so the winner cannot move the goalposts.
+**Frozen before target-model measurements — criteria version `W0-GATE-2`.** This supersedes `W0-GATE-1` before any target model results were recorded, solely to add the canonical 2K/12K/16K context measurements. Quality, safety, latency, resource and thermal thresholds did not move. Any later change requires a dated amendment and dual scoring so the winner cannot move the goalposts.
 
 The machine-generated LOCAL-ONLY capture taken for each power profile is the authoritative environment. Marketing/model specifications are expectations only and cannot fill missing measured fields.
 
@@ -50,9 +50,11 @@ Target constraint: 4 GB dedicated VRAM / 16 GB system RAM.
 
 ## Context gates
 
-- **4,096 tokens is mandatory:** all model, reliability and resource hard gates must pass.
-- **8,192 tokens is optional:** recommend only if hard reliability/resource gates pass and median TTFT/throughput degradation is no worse than 2× the 4K baseline.
-- Longer contexts are out of Wave 0 unless both sizes pass with substantial headroom.
+- Measure **2,048 / 4,096 / 8,192 / 12,288 / 16,384** for every candidate/profile unless a lower context already triggers a documented safety/resource stop.
+- **4,096 tokens is the mandatory v0.1 capability:** all reliability and resource hard gates must pass.
+- 2K is a fallback/resource diagnostic, not the default assumption.
+- 8K/12K/16K may be recommended only when hard gates pass and median TTFT/throughput degradation remains within the declared comparison threshold.
+- A safe failed/OOM startup is a measured rejection at that context, not permission to omit it silently.
 - Context claims use actual prompt token counts where the runtime reports them.
 
 ## Concurrency gates
