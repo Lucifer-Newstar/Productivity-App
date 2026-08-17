@@ -34,7 +34,7 @@ productivity-app/
 │   │   │   ├── mind.tsx           # → MindSection
 │   │   │   ├── sync.tsx           # → SyncLabSection (bridge + profile)
 │   │   │   └── reports.tsx        # → ReportsSection
-│   │   └── entertainment/         # AFTERGLOW media OS (full-screen, Wave 1 core)
+│   │   └── entertainment/         # AFTERGLOW media OS (full-screen, v1.0 Waves 0–9)
 │   ├── components/
 │   │   ├── TopNav.tsx             # Cross-space top nav (Spaces, search, theme, avatar)
 │   │   ├── SideNav.tsx            # Home-only left nav (Dashboard/Tasks/Pomodoro/...)

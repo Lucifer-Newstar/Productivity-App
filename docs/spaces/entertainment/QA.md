@@ -20,10 +20,14 @@ _Last updated: 2026-08-16, Wave 0 + Wave 1 core._
 - [x] Open Library cover redirect chain — allowlisted proxy returns bounded JPEG 200
 - [x] Unconfigured MAL — bounded 503 with configuration guidance
 - [x] Cross-site search and non-allowlisted image host — rejected 403
-- [x] `node scripts/qa-entertainment.js` — 146/146 structural assertions
+- [x] Production smoke — 39/39 routes HTTP 200
+- [x] `lang=en|ta|hi` plus invalid-locale fallback — normalized provider search 200
+- [x] Provider result caches are language-isolated
+- [x] `node scripts/qa-entertainment.js` — 159/159 structural assertions
 - [x] `npm run qa:entertainment:intelligence` — 9/9 executable intelligence tests
 - [x] `npm run qa:entertainment:reports` — 11/11 executable report tests
 - [x] `npm run qa:entertainment:social` — 5/5 executable social tests
+- [x] `npm run qa:entertainment:migration` — 9/9 executable migration tests
 
 ## Wave 1 functional checklist
 
@@ -120,6 +124,19 @@ _Last updated: 2026-08-16, Wave 0 + Wave 1 core._
 - [x] Mood-board quote/image tiles and drag reorder
 - [x] Schema v6 backfills all eight creation collections
 - [x] Backend exposes matching generic CRUD resources
+
+## Wave 9 accessibility/i18n/migration checklist
+
+- [x] English, Tamil and Hindi shell dictionaries
+- [x] Persisted language selector with invalid-locale fallback
+- [x] Provider requests validate and consume locale
+- [x] Mobile horizontal navigation exposes every shipped section
+- [x] Skip link and focusable main landmark
+- [x] Modal `dialog`/`aria-modal` semantics and labelled icon controls
+- [x] Global Escape closes overlays/details
+- [x] Reduced-motion preference disables decorative motion
+- [x] Schema-v1 fixture migrates through all Wave 6 collections without losing personal fields
+- [x] Final feature audit: 94 ✅ / 2 🟡 / 0 ❌
 
 ## Security checklist
 

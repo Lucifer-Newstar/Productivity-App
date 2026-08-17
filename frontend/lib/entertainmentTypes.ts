@@ -1,3 +1,5 @@
+import type { EntertainmentLanguage } from "./entertainmentI18n";
+
 export type MediaType = "book" | "comic" | "manga" | "movie" | "series" | "anime";
 export type MediaStatus = "planned" | "in-progress" | "completed" | "paused" | "dropped";
 export type MediaPriority = "high" | "medium" | "low";
@@ -143,7 +145,7 @@ export interface WhatIfEntry { id:string;itemId:string;title:string;kind:"what-i
 
 export interface EntertainmentSettings {
   ratingScale: RatingScale;
-  language: string;
+  language: EntertainmentLanguage;
   monthlyRollover: boolean;
   defaultView: EntertainmentView;
 }
@@ -242,7 +244,7 @@ export function migrateEntertainment(raw: Partial<EntertainmentState> | null | u
     moodBoards: Array.isArray(raw.moodBoards) ? raw.moodBoards : [],
     dreamCast: Array.isArray(raw.dreamCast) ? raw.dreamCast : [],
     whatIfs: Array.isArray(raw.whatIfs) ? raw.whatIfs : [],
-    settings: { ...SEED_ENTERTAINMENT.settings, ...(raw.settings ?? {}) },
+    settings: { ...SEED_ENTERTAINMENT.settings, ...(raw.settings ?? {}), language: (["en","ta","hi"].includes(String(raw.settings?.language)) ? raw.settings!.language : "en") as EntertainmentLanguage },
     lastRolloverMonth: raw.lastRolloverMonth,
   };
 }

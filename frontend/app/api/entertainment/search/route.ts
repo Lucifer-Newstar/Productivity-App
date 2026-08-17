@@ -18,10 +18,11 @@ export async function GET(request:NextRequest) {
 
   const q=(request.nextUrl.searchParams.get("q")??"").trim();
   const type=request.nextUrl.searchParams.get("type") as MediaType;
+  const lang=["en","ta","hi"].includes(request.nextUrl.searchParams.get("lang")??"")?request.nextUrl.searchParams.get("lang")!:"en";
   if(q.length<2||q.length>120)return NextResponse.json({error:"query must be 2–120 characters"},{status:400});
   if(!TYPES.has(type))return NextResponse.json({error:"invalid media type"},{status:400});
   try {
-    const results=await searchEntertainment(q,type,requestCredentials(request));
+    const results=await searchEntertainment(q,type,requestCredentials(request),lang);
     return NextResponse.json({results},{headers:{"Cache-Control":"private, max-age=60"}});
   } catch(error) {
     const status=error instanceof ProviderError?error.status:500;

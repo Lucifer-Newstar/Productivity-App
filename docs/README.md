@@ -44,7 +44,7 @@ productivity-app/
 | **workout** | `/workout/*` | ✅ | Battle-tested — see [`spaces/workout/README.md`](spaces/workout/README.md) |
 | **career** | `/career/*` | ✅ | Night HUD / Blueprint — see [`spaces/career/README.md`](spaces/career/README.md) |
 | **health** | `/health/*` | ✅ | VITAL-SIGN OS v1.1 shipped (216 ✅ of 281 spec rows, waves 1-9) — see [`spaces/health/README.md`](spaces/health/README.md) / [`FEATURES.md`](spaces/health/FEATURES.md) / [`WAVES.md`](spaces/health/WAVES.md) |
-| **entertainment** | `/entertainment` | ✅ | AFTERGLOW Wave 1 core — see [`spaces/entertainment/README.md`](spaces/entertainment/README.md) |
+| **entertainment** | `/entertainment` | ✅ | AFTERGLOW v1.0 — Waves 0–9, 94✅/2🟡/0❌ — see [`spaces/entertainment/README.md`](spaces/entertainment/README.md) |
 
 Each space folder holds:
 - `README.md` — routes, theme tokens, architecture, file map.

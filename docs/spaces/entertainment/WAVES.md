@@ -124,11 +124,16 @@ Shipped:
 - Backend mirror collections for all eight creation domains
 - Entertainment schema v6 migration
 
-## Wave 9 — i18n, migration and QA
+## Wave 9 — i18n, migration and QA ✅
 
-- UI translations and localized provider search
-- Accessibility/responsive/security sweep
-- Migration and analytics tests, route smoke and final docs audit
+- English, Tamil and Hindi shell/navigation/KPI/hero dictionary with persisted selector
+- Validated `en`/`ta`/`hi` query locale; TMDB regional locale and Google Books language restriction
+- Desktop sidebar plus horizontally scrollable mobile navigation for every shipped section
+- Skip link, focusable main target, modal semantics, icon labels and global Escape close
+- Reduced-motion media query across AFTERGLOW transitions/animations
+- Executable schema-v1→v6 migration fixtures covering personal-data preservation and every wave collection
+- Full TypeScript/ESLint/build/audit, algorithm suites, route/provider smoke and final docs audit
+- v1.0 status: 94 complete, 2 intentional partials, 0 missing
 
 ## Ground rules
 

@@ -10,7 +10,8 @@
     "qa:entertainment": "node scripts/qa-entertainment.js",
     "qa:entertainment:intelligence": "tsx scripts/qa-entertainment-intelligence.ts",
     "qa:entertainment:reports": "tsx scripts/qa-entertainment-reports.ts",
-    "qa:entertainment:social": "tsx scripts/qa-entertainment-social.ts"
+    "qa:entertainment:social": "tsx scripts/qa-entertainment-social.ts",
+    "qa:entertainment:migration": "tsx scripts/qa-entertainment-migration.ts"
   },
   "keywords": [],
   "author": "",

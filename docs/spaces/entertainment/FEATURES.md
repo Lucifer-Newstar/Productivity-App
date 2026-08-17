@@ -14,7 +14,7 @@ The approved specification contains 96 numbered features. Wave 0 and the first W
 | 6 | Start/end dates | ✅ |
 | 7 | Repeats | ✅ |
 | 8 | Notes/reviews/privacy | 🟡 notes/reviews shipped; sharing privacy Wave 7 |
-| 9 | Priority/manual queue | 🟡 priority shipped; drag-order pending |
+| 9 | Priority/manual queue | ✅ priority plus explicit manual queue order |
 | 10 | Tags/custom labels | ✅ |
 | 11 | Personal collections | ✅ cross-media shelves + membership management |
 | 12 | Favorites | ✅ dedicated item flag and filtering-ready state |
@@ -77,4 +77,10 @@ The approved specification contains 96 numbered features. Wave 0 and the first W
 | 93 | Bulk import/export | ✅ CSV export + MAL/AniList/Trakt/Simkl/Kitsu import |
 | 94 | Backup/restore | ✅ bounded JSON backup + safe migrated restore |
 | 95 | Dark/light mode | ✅ |
-| 96 | Multi-language | ❌ Wave 9 |
+| 96 | Multi-language | 🟡 English/Tamil/Hindi shell + provider locale; deep-form copy remains English |
+
+## v1.0 audit
+
+- ✅ Complete: **94 / 96**
+- 🟡 Partial by explicit offline/i18n scope: **2 / 96** — #8 public sharing mode; #96 full deep-form translation
+- ❌ Missing: **0 / 96**

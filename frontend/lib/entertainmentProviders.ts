@@ -1,5 +1,6 @@
 import "server-only";
 import type { MediaSearchResult, MediaType } from "./entertainmentTypes";
+import { providerLocale } from "./entertainmentI18n";
 
 const TIMEOUT_MS = 12_000;
 const CACHE_TTL = 15 * 60_000;
@@ -63,11 +64,11 @@ async function searchAniListManga(q:string):Promise<MediaSearchResult[]> {
   }));
 }
 
-async function searchTmdb(q:string,type:"movie"|"series",credentials:ProviderCredentials={}):Promise<MediaSearchResult[]> {
+async function searchTmdb(q:string,type:"movie"|"series",credentials:ProviderCredentials={},locale="en-US"):Promise<MediaSearchResult[]> {
   const token=configured(credentials.tmdbAccessToken,process.env.TMDB_ACCESS_TOKEN);
   if(!token)throw new ProviderError("TMDB search is not configured. Add TMDB_ACCESS_TOKEN on the server.",503,"tmdb");
   const kind=type==="series"?"tv":"movie";
-  const data=await jsonFetch(`https://api.themoviedb.org/3/search/${kind}?query=${encodeURIComponent(q)}&include_adult=false&language=en-US&page=1`,{headers:{Authorization:`Bearer ${token}`}},"TMDB");
+  const data=await jsonFetch(`https://api.themoviedb.org/3/search/${kind}?query=${encodeURIComponent(q)}&include_adult=false&language=${encodeURIComponent(locale)}&page=1`,{headers:{Authorization:`Bearer ${token}`}},"TMDB");
   return (data.results??[]).slice(0,12).map((n:any)=>({
     provider:"tmdb",providerId:`${kind}:${n.id}`,mediaType:type,title:text(n.title??n.name,300)??"Untitled",originalTitle:text(n.original_title??n.original_name,300),alternateTitles:[],description:text(n.overview),
     coverUrl:n.poster_path?imageProxy(`https://image.tmdb.org/t/p/w500${n.poster_path}`):undefined,backdropUrl:n.backdrop_path?imageProxy(`https://image.tmdb.org/t/p/w780${n.backdrop_path}`):undefined,
@@ -76,10 +77,10 @@ async function searchTmdb(q:string,type:"movie"|"series",credentials:ProviderCre
   }));
 }
 
-async function searchGoogleBooks(q:string, mediaType:MediaType="book",credentials:ProviderCredentials={}):Promise<MediaSearchResult[]> {
+async function searchGoogleBooks(q:string, mediaType:MediaType="book",credentials:ProviderCredentials={},language="en"):Promise<MediaSearchResult[]> {
   const key=configured(credentials.googleBooksApiKey,process.env.GOOGLE_BOOKS_API_KEY);
   if(!key)return searchOpenLibrary(q,mediaType);
-  const data=await jsonFetch(`https://www.googleapis.com/books/v1/volumes?q=${encodeURIComponent(q)}&maxResults=12&projection=full&key=${encodeURIComponent(key)}`,{},"Google Books");
+  const data=await jsonFetch(`https://www.googleapis.com/books/v1/volumes?q=${encodeURIComponent(q)}&maxResults=12&projection=full&langRestrict=${encodeURIComponent(language)}&key=${encodeURIComponent(key)}`,{},"Google Books");
   return (data.items??[]).map((n:any)=>{const v=n.volumeInfo??{};return {
     provider:"google-books",providerId:String(n.id),mediaType,title:text(v.title,300)??"Untitled",originalTitle:undefined,alternateTitles:v.subtitle?[text(v.subtitle,300)].filter((x:any):x is string=>typeof x==="string"&&x.length>0):[],description:text(v.description),
     coverUrl:imageProxy(String(v.imageLinks?.thumbnail??v.imageLinks?.smallThumbnail??"").replace(/^http:/,"https:")),releaseDate:text(v.publishedDate,20),releaseYear:year(v.publishedDate),
@@ -99,9 +100,9 @@ async function searchOpenLibrary(q:string,mediaType:MediaType="book"):Promise<Me
   }));
 }
 
-async function searchComicVine(q:string,credentials:ProviderCredentials={}):Promise<MediaSearchResult[]> {
+async function searchComicVine(q:string,credentials:ProviderCredentials={},language="en"):Promise<MediaSearchResult[]> {
   const key=configured(credentials.comicVineApiKey,process.env.COMICVINE_API_KEY);
-  if(!key)return searchGoogleBooks(q,"comic",credentials);
+  if(!key)return searchGoogleBooks(q,"comic",credentials,language);
   const fields="id,name,deck,description,image,date_added,cover_date,publisher,site_detail_url,resource_type";
   const data=await jsonFetch(`https://comicvine.gamespot.com/api/search/?api_key=${encodeURIComponent(key)}&format=json&query=${encodeURIComponent(q)}&resources=volume,issue&limit=12&field_list=${fields}`,{headers:{"User-Agent":"Kaizen-AFTERGLOW/1.0"}},"Comic Vine");
   return (data.results??[]).map((n:any)=>({
@@ -121,9 +122,9 @@ async function trendingAniListManga():Promise<MediaSearchResult[]> {
   const data=await jsonFetch("https://graphql.anilist.co",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({query})},"AniList");
   return (data.data?.Page?.media??[]).map((n:any)=>({provider:"anilist",providerId:String(n.id),mediaType:"manga",title:text(n.title?.english??n.title?.romaji,300)??"Untitled",originalTitle:text(n.title?.native,300),alternateTitles:[n.title?.romaji,n.title?.english,n.title?.native].map((x:any)=>text(x,300)).filter((x:any):x is string=>typeof x==="string"&&x.length>0),description:text(n.description),coverUrl:imageProxy(n.coverImage?.extraLarge??n.coverImage?.large),releaseYear:n.startDate?.year,genres:(n.genres??[]).map((x:any)=>text(x,80)).filter((x:any):x is string=>typeof x==="string"&&x.length>0),creators:(n.staff?.nodes??[]).map((s:any)=>text(s.name?.full,100)).filter((x:any):x is string=>typeof x==="string"&&x.length>0),cast:[],studios:[],countries:n.countryOfOrigin?[String(n.countryOfOrigin)]:[],totalChapters:Number(n.chapters)||undefined,totalVolumes:Number(n.volumes)||undefined,sourceMaterial:text(n.source,80),externalUrl:text(n.siteUrl,500)}));
 }
-async function trendingTmdb(type:"movie"|"series",credentials:ProviderCredentials={}):Promise<MediaSearchResult[]> {
+async function trendingTmdb(type:"movie"|"series",credentials:ProviderCredentials={},locale="en-US"):Promise<MediaSearchResult[]> {
   const token=configured(credentials.tmdbAccessToken,process.env.TMDB_ACCESS_TOKEN);if(!token)throw new ProviderError("TMDB trending is not configured. Add TMDB_ACCESS_TOKEN on the server.",503,"tmdb");
-  const kind=type==="series"?"tv":"movie",data=await jsonFetch(`https://api.themoviedb.org/3/trending/${kind}/week?language=en-US`,{headers:{Authorization:`Bearer ${token}`}},"TMDB");
+  const kind=type==="series"?"tv":"movie",data=await jsonFetch(`https://api.themoviedb.org/3/trending/${kind}/week?language=${encodeURIComponent(locale)}`,{headers:{Authorization:`Bearer ${token}`}},"TMDB");
   return (data.results??[]).slice(0,12).map((n:any)=>({provider:"tmdb",providerId:`${kind}:${n.id}`,mediaType:type,title:text(n.title??n.name,300)??"Untitled",originalTitle:text(n.original_title??n.original_name,300),alternateTitles:[],description:text(n.overview),coverUrl:n.poster_path?imageProxy(`https://image.tmdb.org/t/p/w500${n.poster_path}`):undefined,releaseDate:text(n.release_date??n.first_air_date,20),releaseYear:year(n.release_date??n.first_air_date),genres:[],creators:[],cast:[],studios:[],countries:(n.origin_country??[]).map(String),language:text(n.original_language,20),externalUrl:`https://www.themoviedb.org/${kind}/${n.id}`}));
 }
 async function trendingBooks(credentials:ProviderCredentials={}):Promise<MediaSearchResult[]> {
@@ -139,14 +140,14 @@ async function trendingComics(credentials:ProviderCredentials={}):Promise<MediaS
   return (data.results??[]).map((n:any)=>({provider:"comic-vine",providerId:String(n.id),mediaType:"comic",title:text(n.name,300)??"Untitled",alternateTitles:[],description:text(n.deck??n.description),coverUrl:imageProxy(n.image?.original_url??n.image?.super_url),releaseDate:text(n.cover_date,20),releaseYear:year(n.cover_date),genres:[],creators:[],cast:[],studios:[],countries:[],externalUrl:text(n.site_detail_url,500)}));
 }
 
-export async function trendingEntertainment(type:MediaType,credentials:ProviderCredentials={}):Promise<MediaSearchResult[]> {
-  const key=`trending:${type}`,hit=cache.get(key);if(hit&&Date.now()-hit.at<CACHE_TTL)return hit.data;
+export async function trendingEntertainment(type:MediaType,credentials:ProviderCredentials={},language="en"):Promise<MediaSearchResult[]> {
+  const key=`trending:${language}:${type}`,hit=cache.get(key);if(hit&&Date.now()-hit.at<CACHE_TTL)return hit.data;
   let data:MediaSearchResult[];
-  if(type==="anime")data=await trendingMal(credentials);else if(type==="manga")data=await trendingAniListManga();else if(type==="movie"||type==="series")data=await trendingTmdb(type,credentials);else if(type==="comic")data=await trendingComics(credentials);else data=await trendingBooks(credentials);
+  if(type==="anime")data=await trendingMal(credentials);else if(type==="manga")data=await trendingAniListManga();else if(type==="movie"||type==="series")data=await trendingTmdb(type,credentials,providerLocale(language));else if(type==="comic")data=await trendingComics(credentials);else data=await trendingBooks(credentials);
   data=data.slice(0,12);cache.set(key,{at:Date.now(),data});return data;
 }
 
-export async function getEntertainmentDetails(provider:string,providerId:string,type:MediaType,credentials:ProviderCredentials={}):Promise<MediaSearchResult>{
+export async function getEntertainmentDetails(provider:string,providerId:string,type:MediaType,credentials:ProviderCredentials={},language="en"):Promise<MediaSearchResult>{
  if(provider==="mal"){
   const key=configured(credentials.malClientId,process.env.MAL_CLIENT_ID);if(!key)throw new ProviderError("MyAnimeList is not configured.",503,"mal");
   const fields="id,title,main_picture,alternative_titles,start_date,end_date,synopsis,genres,num_episodes,media_type,status,studios,source";
@@ -159,7 +160,7 @@ export async function getEntertainmentDetails(provider:string,providerId:string,
  }
  if(provider==="tmdb"){
   const token=configured(credentials.tmdbAccessToken,process.env.TMDB_ACCESS_TOKEN);if(!token)throw new ProviderError("TMDB is not configured.",503,"tmdb");const [rawKind,rawId]=providerId.split(":"),kind=rawKind==="tv"||type==="series"?"tv":"movie",id=rawId??rawKind;
-  const n=await jsonFetch(`https://api.themoviedb.org/3/${kind}/${encodeURIComponent(id)}?append_to_response=credits&language=en-US`,{headers:{Authorization:`Bearer ${token}`}},"TMDB");const crew=n.credits?.crew??[],directors=crew.filter((x:any)=>x.job==="Director"||x.job==="Creator").map((x:any)=>text(x.name,100)).filter((x:any):x is string=>typeof x==="string"&&x.length>0);
+  const n=await jsonFetch(`https://api.themoviedb.org/3/${kind}/${encodeURIComponent(id)}?append_to_response=credits&language=${encodeURIComponent(providerLocale(language))}`,{headers:{Authorization:`Bearer ${token}`}},"TMDB");const crew=n.credits?.crew??[],directors=crew.filter((x:any)=>x.job==="Director"||x.job==="Creator").map((x:any)=>text(x.name,100)).filter((x:any):x is string=>typeof x==="string"&&x.length>0);
   return {provider:"tmdb",providerId:`${kind}:${n.id}`,mediaType:kind==="tv"?"series":"movie",title:text(n.title??n.name,300)??"Untitled",originalTitle:text(n.original_title??n.original_name,300),alternateTitles:[],description:text(n.overview),coverUrl:n.poster_path?imageProxy(`https://image.tmdb.org/t/p/w500${n.poster_path}`):undefined,backdropUrl:n.backdrop_path?imageProxy(`https://image.tmdb.org/t/p/w780${n.backdrop_path}`):undefined,releaseDate:text(n.release_date??n.first_air_date,20),releaseYear:year(n.release_date??n.first_air_date),genres:(n.genres??[]).map((x:any)=>text(x.name,80)).filter((x:any):x is string=>typeof x==="string"&&x.length>0),creators:[...(n.created_by??[]).map((x:any)=>text(x.name,100)).filter((x:any):x is string=>typeof x==="string"&&x.length>0),...directors],cast:(n.credits?.cast??[]).slice(0,12).map((x:any)=>text(x.name,100)).filter((x:any):x is string=>typeof x==="string"&&x.length>0),studios:(n.production_companies??[]).map((x:any)=>text(x.name,100)).filter((x:any):x is string=>typeof x==="string"&&x.length>0),countries:(n.production_countries??[]).map((x:any)=>text(x.name,80)).filter((x:any):x is string=>typeof x==="string"&&x.length>0),language:text(n.original_language,20),runtimeMinutes:Number(n.runtime??n.episode_run_time?.[0])||undefined,totalEpisodes:Number(n.number_of_episodes)||undefined,totalSeasons:Number(n.number_of_seasons)||undefined,externalUrl:`https://www.themoviedb.org/${kind}/${n.id}`};
  }
  if(provider==="google-books"){
@@ -177,13 +178,13 @@ export function providerStatus() {
   return { mal:!!process.env.MAL_CLIENT_ID, anilist:true, tmdb:!!process.env.TMDB_ACCESS_TOKEN, googleBooks:!!process.env.GOOGLE_BOOKS_API_KEY, openLibrary:true, comicVine:!!process.env.COMICVINE_API_KEY, nytBooks:!!process.env.NYT_BOOKS_API_KEY };
 }
 
-export async function searchEntertainment(q:string,type:MediaType,credentials:ProviderCredentials={}):Promise<MediaSearchResult[]> {
-  const key=`${type}:${q.toLowerCase()}`; const hit=cache.get(key); if(hit&&Date.now()-hit.at<CACHE_TTL)return hit.data;
+export async function searchEntertainment(q:string,type:MediaType,credentials:ProviderCredentials={},language="en"):Promise<MediaSearchResult[]> {
+  const key=`${language}:${type}:${q.toLowerCase()}`; const hit=cache.get(key); if(hit&&Date.now()-hit.at<CACHE_TTL)return hit.data;
   let data:MediaSearchResult[];
   if(type==="anime")data=await searchMal(q,credentials);
   else if(type==="manga")data=await searchAniListManga(q);
-  else if(type==="movie"||type==="series")data=await searchTmdb(q,type,credentials);
-  else if(type==="comic")data=await searchComicVine(q,credentials);
-  else data=await searchGoogleBooks(q,"book",credentials);
+  else if(type==="movie"||type==="series")data=await searchTmdb(q,type,credentials,providerLocale(language));
+  else if(type==="comic")data=await searchComicVine(q,credentials,language);
+  else data=await searchGoogleBooks(q,"book",credentials,language);
   const clean=data.slice(0,12); cache.set(key,{at:Date.now(),data:clean}); return clean;
 }

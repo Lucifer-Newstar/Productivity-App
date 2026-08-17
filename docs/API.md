@@ -75,7 +75,7 @@ The Next.js frontend also exposes same-origin Wave 2 catalogue routes (separate 
 | GET | `/api/entertainment/details?provider=&id=&type=` | Refresh normalized provider metadata for a library item |
 | GET | `/api/entertainment/image?url=` | Internal HTTPS allowlisted image proxy |
 
-See `spaces/entertainment/APIS.md` for provider, credential, caching and attribution contracts.
+Search, trending and detail routes accept optional `lang=en|ta|hi`; invalid values fall back to English. TMDB receives the corresponding regional locale and Google Books receives `langRestrict`. See `spaces/entertainment/APIS.md` for provider, credential, caching and attribution contracts.
 
 ## Workout space
 

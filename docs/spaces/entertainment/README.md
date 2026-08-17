@@ -13,7 +13,7 @@ AFTERGLOW is Kaizen's local-first media tracker for books, comics, manga, movies
 - 96-feature audit: [`FEATURES.md`](FEATURES.md)
 - QA: [`QA.md`](QA.md)
 
-## Current implementation — Wave 0 + Wave 1 core
+## Current implementation — v1.0, Waves 0–9 complete
 
 - AFTERGLOW dark/light full-screen shell
 - Dashboard with active, queued, completed and consumed-time KPIs
@@ -34,7 +34,10 @@ AFTERGLOW is Kaizen's local-first media tracker for books, comics, manga, movies
 - Full stats suite: timeline, heatmap, rating/genre/creator/decade/month/year, backlog, abandonment, cost and satisfaction
 - Offline social circle: friend taste, recommendations, groups/prompts, gifts and loans
 - Creation Studio: review drafts, art/fiction/cosplay, quotes, mood boards, dream casts and what-ifs
+- English/Tamil/Hindi shell localization, localized provider requests and complete mobile navigation
+- Accessibility/reduced-motion/keyboard foundations
 - Defensive schema-v6 persistence migration and first-run seed
+- Feature audit: **94 complete / 2 intentional partial / 0 missing**
 
 Wave 2 is complete: Quick Add searches/imports through same-origin MAL, AniList, TMDB, Google Books/Open Library and Comic Vine adapters. Discover provides live anime, manga, film, TV, book and comic charts. Imported records can safely refresh provider metadata without clobbering personal tracking. A Providers & Credits panel supplies session-only BYOK fields, provider status, approved TMDB logo/notice and source links. Remote covers are fetched only through an allowlisted, bounded image proxy.
 

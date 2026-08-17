@@ -1,12 +1,10 @@
 # Kaizen Feature Status
 
-Last audited against code on `main` (session: 2026-08-14, v1.0 pass, health `health` branch opened).
-Three spaces fully ship today: **Workout** (imperial Japanese/obsidian, battle-tested),
-**Career** (Night HUD / Blueprint dual themes), and **Projects** (Foundry / Drafting-Room dual themes
-— branded "Forge" in the UI; full project/task OS with 16 strategy canvases).
-**Health** is in active construction on branch `health` (257-feature spec approved, 9-wave plan,
-deep Workout bridge documented). **Entertainment / AFTERGLOW** has entered Wave 1 with a
-full-screen cinema shell, local media library and core tracking; Wave 2 catalogue search now ships same-origin MAL/AniList/TMDB/Books/Comic Vine adapters with secure image proxying.
+Last audited on the `entertainment` branch on 2026-08-16.
+All five spaces now have dedicated implementations: **Workout** (battle-tested),
+**Career** (Night HUD / Blueprint), **Projects / Forge** (full PM OS), **Health / VITAL-SIGN**
+(v1.1 Waves 1–9), and **Entertainment / AFTERGLOW** (v1.0 Waves 0–9; 94 complete,
+2 intentional partials, 0 missing from its approved 96-feature specification).
 
 Per-space deep dives: [`spaces/workout`](spaces/workout/README.md) ·
 [`spaces/career`](spaces/career/README.md) ·

@@ -76,6 +76,8 @@ interface MediaSearchResult {
 
 Personal ratings, progress, reviews, notes, favorites, repeats and collections are never overwritten by a metadata refresh.
 
+`lang=en|ta|hi` is validated by the same-origin routes. TMDB receives `en-US`, `ta-IN` or `hi-IN`; Google Books receives the matching language restriction. Providers without equivalent localized fields retain their normal title fallback order.
+
 ## Official references
 
 - MAL: https://myanimelist.net/apiconfig/references/api/v2
