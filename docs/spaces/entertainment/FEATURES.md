@@ -29,9 +29,14 @@ The approved specification contains 96 numbered features. Wave 0 and the first W
 | 31–36 | Series depth | ✅ seasons, episodes/ratings, binge, alerts, platform, audio |
 | 37–41 | Movie depth | ✅ venue/version, cinematography/acting and director favorites |
 | 42–47 | Anime depth | ✅ audio, studio/source, seasons, seiyuu and OP/ED |
-| 48–50 | Local recommendations/mood/surprise | ❌ Wave 5 |
+| 48 | If-you-liked recommendations | ✅ local weighted overlap against high-rated/favorites |
+| 49 | Mood-based random pick | ✅ Plan-to tag matching |
+| 50 | Surprise Me | ✅ non-archived library randomizer |
 | 51 | Trending lists | ✅ Discover screen; live provider charts |
-| 52–55 | Gap/exploration/blind-spots/marathons | ❌ Wave 5 |
+| 52 | Franchise gap finder | ✅ editable sequence + missing-order detector |
+| 53 | Exploration score | ✅ genre/creator/decade/country/type breadth |
+| 54 | Blind spots | ✅ low-coverage genre/decade/country callouts |
+| 55 | Creator marathon | ✅ tracked works, completion and average rating |
 | 56–72 | Stats/analytics | 🟡 dashboard totals shipped; Wave 6 reports pending |
 | 73–78 | Offline social | ❌ Wave 7 |
 | 79–87 | Creation/expression | ❌ Wave 8 |

@@ -20,7 +20,8 @@ _Last updated: 2026-08-16, Wave 0 + Wave 1 core._
 - [x] Open Library cover redirect chain — allowlisted proxy returns bounded JPEG 200
 - [x] Unconfigured MAL — bounded 503 with configuration guidance
 - [x] Cross-site search and non-allowlisted image host — rejected 403
-- [x] `node scripts/qa-entertainment.js` — 89/89 assertions
+- [x] `node scripts/qa-entertainment.js` — 102/102 structural assertions
+- [x] `npm run qa:entertainment:intelligence` — 9/9 executable algorithm tests
 
 ## Wave 1 functional checklist
 
@@ -69,6 +70,17 @@ _Last updated: 2026-08-16, Wave 0 + Wave 1 core._
 - [x] Anime source, studio, seiyuu and OP/ED markers
 - [x] Favorite creator/studio toggles
 - [x] Schema v3 deep-array migration defaults
+
+## Wave 5 local-intelligence checklist
+
+- [x] Weighted If-you-liked recommendations only target active Plan-to items
+- [x] Mood picker uses normalized tags; Surprise Me excludes archive
+- [x] Exploration score spans genre/creator/decade/country/media type
+- [x] Blind spots detect low-coverage genres, decades and countries
+- [x] Franchise gaps require explicit franchise/order and report missing positions
+- [x] Creator marathon reports tracked/completed works and average rating
+- [x] Recommendation calculations are pure/local and call no provider endpoint
+- [x] Schema v4 backfills country arrays and editable franchise metadata
 
 ## Security checklist
 

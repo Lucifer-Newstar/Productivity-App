@@ -7,7 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint . --max-warnings=0",
-    "qa:entertainment": "node scripts/qa-entertainment.js"
+    "qa:entertainment": "node scripts/qa-entertainment.js",
+    "qa:entertainment:intelligence": "tsx scripts/qa-entertainment-intelligence.ts"
   },
   "keywords": [],
   "author": "",
@@ -29,6 +30,7 @@
     "eslint-config-next": "^16.3.1",
     "postcss": "^8.5.26",
     "tailwindcss": "^3.4.19",
+    "tsx": "^4.23.12",
     "typescript": "^5.4.5"
   }
 }

@@ -15,7 +15,7 @@ test('rating, review and notes fields',types.includes('rating?:')&&types.include
 test('dates and repeats fields',types.includes('startedAt?:')&&types.includes('completedAt?:')&&types.includes('repeats:'));
 test('priority, queue and tags fields',types.includes('priority:')&&types.includes('queueOrder:')&&types.includes('tags:'));
 test('favorites and archive fields',types.includes('favorite:')&&types.includes('archived:'));
-test('schema version is explicit',types.includes('schemaVersion: 3'));
+test('schema version is explicit',types.includes('schemaVersion: 4'));
 test('defensive migration exists',types.includes('migrateEntertainment'));
 test('first-run seed covers all sections',Array.from(types.matchAll(/type:"(book|comic|manga|movie|series|anime)"/g)).length>=5);
 test('store persists dedicated key',store.includes('"kaizen.entertainment"'));
@@ -88,7 +88,7 @@ test('advanced genre/tag/priority filters exist',page.includes('All genres')&&pa
 test('rating, backlog-age and favorites filters exist',page.includes('Any rating')&&page.includes('Planned 90+ days')&&page.includes('Favorites only'));
 test('smart filters can be reset',page.includes('RESET SMART FILTERS'));
 const deep=read('components/entertainment/EntertainmentMediaDetails.tsx');
-test('schema v3 carries media-specific detail contracts',types.includes('schemaVersion: 3')&&types.includes('BookDetails')&&types.includes('SeriesDetails'));
+test('schema v4 carries media-specific detail contracts',types.includes('schemaVersion: 4')&&types.includes('BookDetails')&&types.includes('SeriesDetails'));
 test('migration backfills all deep-tracking arrays',types.includes('readingLogs: []')&&types.includes('volumes: []')&&types.includes('episodeLogs: []')&&types.includes('voiceActors: []'));
 test('book format and edition tracking exist',deep.includes('Reading format')&&deep.includes('Collector\'s'));
 test('book reading speed and ETA are calculated',deep.includes('PACE')&&deep.includes('EST. LEFT')&&deep.includes('pages/(totals.minutes/60)'));
@@ -106,4 +106,18 @@ test('movie acting and cinematography scores exist',deep.includes('Cinematograph
 test('anime source, studio and seiyuu fields exist',deep.includes('Source material')&&deep.includes('Voice actors / seiyuu')&&deep.includes('Studios'));
 test('anime OP and ED favorites exist',deep.includes('Opening song')&&deep.includes('Ending song')&&deep.includes('Loved the OP')&&deep.includes('Loved the ED'));
 test('favorite creator/studio toggles exist',deep.includes('FAVORITE TALENT')&&types.includes('favoriteCreatorNames')&&types.includes('favoriteStudioNames'));
+const intelligence=read('components/entertainment/EntertainmentIntelligence.tsx');const analytics=read('lib/entertainmentAnalytics.ts');
+test('schema v4 stores countries and franchise order',types.includes('schemaVersion: 4')&&types.includes('franchiseOrder')&&types.includes('countries?:'));
+test('recommendations weight genre/tag/creator/studio overlap',analytics.includes('g*3')&&analytics.includes('t*2')&&analytics.includes('c*5')&&analytics.includes('s*4'));
+test('recommendations only target active Plan-to queue',analytics.includes('i.status==="planned"&&!i.archived'));
+test('mood picker filters Plan-to tags',analytics.includes('moodPick')&&analytics.includes('norm(t)===norm(mood)'));
+test('Surprise Me samples non-archived library',analytics.includes('surprisePick')&&analytics.includes('!i.archived'));
+test('exploration score covers genre/creator/decade/country/type',analytics.includes('explorationScore')&&analytics.includes('genres.size/12')&&analytics.includes('countries.size/6'));
+test('blind spots cover genres decades and countries',analytics.includes('blindSpots')&&analytics.includes('decades.slice')&&analytics.includes('countryCounts'));
+test('franchise gap finder detects missing sequence numbers',analytics.includes('franchiseGaps')&&analytics.includes('missing.push'));
+test('creator marathon aggregates completion and rating',analytics.includes('creatorMarathons')&&analytics.includes('avgRating'));
+test('local intelligence dashboard is mounted',page.includes('EntertainmentIntelligence')&&intelligence.includes('LOCAL INTELLIGENCE'));
+test('mood and surprise controls are present',intelligence.includes('MOOD')&&intelligence.includes('SURPRISE'));
+test('franchise and country fields are editable',page.includes('Franchise order')&&page.includes('Countries'));
+test('provider import and refresh preserve countries',page.includes('countries:r.countries'));
 console.log(`\n${pass} passed, ${fail} failed`); if(fail)process.exit(1);

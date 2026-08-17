@@ -73,12 +73,17 @@ Shipped:
 - Anime: sub/dub, source, studio/seiyuu favorites, seasons/episodes and OP/ED song markers
 - Entertainment schema v3 migration for every deep-tracking collection
 
-## Wave 5 — discovery intelligence
+## Wave 5 — discovery intelligence ✅
 
-- Local if-you-liked engine, mood pick and Surprise Me
-- Provider trending panels
-- Franchise gap finder
-- Exploration score, blind spots and creator marathons
+- Local If-you-liked scoring from 8+/favorites against queued genre/tag/creator/studio overlap
+- Mood-based random Plan-to pick and full-library Surprise Me
+- Six provider trending panels (shipped in Wave 2)
+- Editable franchise name/order and missing-sequence gap detector
+- 0–100 exploration score across genres, creators, decades, countries and media types
+- Genre/decade/country blind-spot detector
+- Creator/author/director marathon completion and average-rating view
+- Fully local computation: no private library state is sent to recommendation services
+- Entertainment schema v4 migration for country/franchise intelligence
 
 ## Wave 6 — analytics
 
