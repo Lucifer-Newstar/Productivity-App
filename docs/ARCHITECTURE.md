@@ -10,13 +10,14 @@ Browser
  │    ├── App Router: / and /api/entertainment/*
  │    ├── Pages Router: all five full product spaces
  │    ├── React Context root store
+ │    ├── global NotificationCenter + pure rule engine
  │    └── localStorage/sessionStorage persistence
  └── optional same-origin provider calls
       └── fixed Next.js server adapters → MAL/AniList/TMDB/Books/Comic Vine/NYT
 
 Optional Express reference API (127.0.0.1:4000)
- ├── 137 in-memory collection tables
- ├── 11 singleton documents
+ ├── 138 in-memory collection tables
+ ├── 12 singleton documents
  ├── generic CRUD + sync + analytics + CSV
  └── optional service API key; not called by the normal frontend
 ```
@@ -95,7 +96,7 @@ Full-screen spaces:
 
 The actual implementation is **React Context plus `useState`/functional updaters**, not Zustand.
 
-`StoreProvider` owns six persisted domains:
+`StoreProvider` owns seven persisted domains:
 
 ```text
 Core:          tasks, notes
@@ -104,6 +105,7 @@ Workout:       WorkoutState
 Forge:         ForgeState
 Health:        HealthState
 Entertainment: EntertainmentState (schema v6)
+Notifications: NotificationState (schema v1)
 ```
 
 High-growth domains expose generic functional mutators:
@@ -128,6 +130,7 @@ Persistence is local-first and slice-specific:
 | `kaizen.forge` | Projects / Forge |
 | `kaizen.health` | Health |
 | `kaizen.entertainment` | Entertainment |
+| `kaizen.notifications` | Global notification inbox/settings |
 | `kaizen.habits` | Home Habits component |
 | `kaizen.theme` | Global theme |
 

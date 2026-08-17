@@ -15,6 +15,8 @@ Kaizen is a local-first productivity and life OS built as one Next.js applicatio
 | Health / VITAL-SIGN | `/health/*` | Full-screen medical OS | v1.1 shipped; 10 routes, 216✅/2🟡/63 deferred |
 | Entertainment / AFTERGLOW | `/entertainment` | Full-screen cinema OS | v1.0 Waves 0–9; 94✅/2🟡/0❌ |
 
+A global local-first NotificationCenter is mounted across Home and every full-screen space, with section/category controls and an initial high-value rule catalog.
+
 Current production verification: **39/39 user routes return HTTP 200**, five same-origin Entertainment provider routes are dynamic, all remaining pages are statically prerendered, TypeScript and ESLint pass, and both dependency audits are clean.
 
 ## Documentation map
@@ -31,6 +33,7 @@ Current production verification: **39/39 user routes return HTTP 200**, five sam
 | [`SECURITY.md`](SECURITY.md) | Threat model, secure deployment and verification commands |
 | [`SECURITY-AUDIT-2026-08-16.md`](SECURITY-AUDIT-2026-08-16.md) | Latest full-site audit, remediations and residual risks |
 | [`DOCS-SYNC-REPORT-2026-08-16.md`](DOCS-SYNC-REPORT-2026-08-16.md) | Source-vs-doc verification and corrections |
+| [`notifications/README.md`](notifications/README.md) | Global inbox, rule catalog, settings and scope decisions |
 
 ### Guides
 

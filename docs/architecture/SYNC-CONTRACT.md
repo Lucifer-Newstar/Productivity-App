@@ -29,8 +29,9 @@ The Express API mirrors browser domains but is not called automatically by the f
 | Forge | projects, tasks, ideation, strategy canvases, sprints, reviews, audit | `forgeStreak`, `forgeSettings` |
 | Health | meals, water, sleep, measurements, supplements, vitals, mind, symptoms, goals | profile/settings/routines/meta |
 | Entertainment | items, collections, events, social records and creation studio | `entertainmentSettings` |
+| Notifications | `notifications` | `notificationSettings` |
 
-Current server total: **137 tables and 11 singletons**.
+Current server total: **138 tables and 12 singletons**.
 
 ## Sync invariants
 

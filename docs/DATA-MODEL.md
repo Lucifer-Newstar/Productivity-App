@@ -12,7 +12,8 @@ StoreState
  ├── workout: WorkoutState
  ├── forge: ForgeState
  ├── health: HealthState
- └── entertainment: EntertainmentState
+ ├── entertainment: EntertainmentState
+ └── notifications: NotificationState
 ```
 
 Types are split by domain:
@@ -207,6 +208,21 @@ Offline social records use item/friend IDs. Creation records use item IDs and lo
 
 Persistence: `kaizen.entertainment`. Detailed model: [`spaces/entertainment/DATA-MODEL.md`](spaces/entertainment/DATA-MODEL.md).
 
+## Notifications
+
+```text
+NotificationState (schema v1)
+ ├── items: KaizenNotification[]
+ ├── settings: NotificationSettings
+ └── lastEvaluatedAt
+```
+
+Notifications have stable `sourceKey` deduplication, section/kind/priority, title/body, optional action route, read/dismiss/browser-delivery timestamps and schedule metadata. Settings own global enablement, frequency, quiet hours, DND/snooze, browser/sound channels and per-section category toggles.
+
+Persistence: `kaizen.notifications`. Migration: `migrateNotifications()`.
+
+Detailed rules/settings: [`notifications/README.md`](notifications/README.md).
+
 ## Migrations and compatibility
 
 Every persisted domain must supply defaults for new arrays/scalars. Migration rules:
@@ -220,4 +236,4 @@ Every persisted domain must supply defaults for new arrays/scalars. Migration ru
 
 ## Backend mapping
 
-The Express API mirrors frontend domains as **137 collection tables and 11 singleton documents**. It does not import frontend TypeScript types at runtime; `docs/API.md` and `docs/architecture/SYNC-CONTRACT.md` define the mapping contract.
+The Express API mirrors frontend domains as **138 collection tables and 12 singleton documents**. It does not import frontend TypeScript types at runtime; `docs/API.md` and `docs/architecture/SYNC-CONTRACT.md` define the mapping contract.

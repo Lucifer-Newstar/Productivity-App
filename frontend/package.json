@@ -13,7 +13,8 @@
     "qa:entertainment:social": "tsx scripts/qa-entertainment-social.ts",
     "qa:entertainment:migration": "tsx scripts/qa-entertainment-migration.ts",
     "qa:security": "tsx scripts/qa-security.ts",
-    "qa:docs": "node scripts/qa-docs.js"
+    "qa:docs": "node scripts/qa-docs.js",
+    "qa:notifications": "tsx scripts/qa-notifications.ts"
   },
   "keywords": [],
   "author": "",

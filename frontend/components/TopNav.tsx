@@ -10,7 +10,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { motion } from "framer-motion";
-import { Crown, Bell, Search, Sun, Moon, Swords } from "lucide-react";
+import { Crown, Search, Sun, Moon, Swords } from "lucide-react";
 import { useStore } from "../lib/store";
 import { useTheme } from "../lib/theme";
 import { SPACES } from "../lib/types";
@@ -164,19 +164,7 @@ export default function TopNav() {
             {isDark ? <Sun size={17} /> : <Moon size={17} />}
           </button>
 
-          <button
-            aria-label="Notifications"
-            className="relative p-2 rounded-xl transition"
-            style={{
-              background: isDark ? "rgba(253,230,138,0.05)" : "rgba(26,15,10,0.04)",
-              border: `1px solid ${isDark ? "rgba(212,175,55,0.22)" : "rgba(26,15,10,0.12)"}`,
-              color: isDark ? "#f3e9d2" : "#1a0f0a",
-            }}
-          >
-            <Bell size={17} />
-            <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full"
-              style={{ background: "#b91c1c", boxShadow: "0 0 8px #b91c1c" }} />
-          </button>
+
 
           {/* K seal */}
           <button className="relative w-9 h-9 rounded-lg flex items-center justify-center text-sm font-imperial font-black text-amber-50 shrink-0 transition hover:scale-105 hover:rotate-[-3deg]"

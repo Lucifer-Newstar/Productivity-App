@@ -107,6 +107,7 @@ const db: Record<string, Record<string, Row>> = {
   // Core (home dashboard)
   tasks: {},
   notes: {},
+  notifications: {},
   // Workout domain
   exercises: {},
   prs: {},
@@ -262,6 +263,7 @@ const singletons: Record<string, Row | null> = {
   workoutMeta: null,       // WorkoutState scalars: activeSessionId, lastWorkoutDate, currentStreak, longestStreak
   careerMeta: null,        // CareerState scalars/objects: retirement plan, linkedin url
   entertainmentSettings: null, // EntertainmentState.settings
+  notificationSettings: null, // NotificationState.settings
 };
 
 const uid = () => Math.random().toString(36).slice(2, 10) + Date.now().toString(36);
@@ -664,6 +666,7 @@ const CRUD: [string, string][] = [
   // Core
   ["tasks", "/core/tasks"],
   ["notes", "/core/notes"],
+  ["notifications", "/notifications"],
   // Workout
   ["exercises", "/exercises"],
   ["prs", "/prs"],
@@ -826,6 +829,7 @@ const SINGLETONS: [string, string][] = [
   ["workoutMeta",     "/workout/meta"],
   ["careerMeta",      "/career/meta"],
   ["entertainmentSettings", "/entertainment/settings"],
+  ["notificationSettings", "/notifications/settings"],
 ];
 for (const [key, path] of SINGLETONS) {
   const full = `/api${path}`;

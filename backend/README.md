@@ -35,8 +35,8 @@ Do not expose the API without an API key and TLS reverse proxy. See
 - Explicit CORS origin allowlist
 - Optional API-key authentication for every data route
 - Helmet, read/write rate limits, strict bounded JSON and unsafe-key rejection
-- **137 collections** with generic CRUD (list/create/get/patch/delete) +
-  **11 singleton documents** (GET/PUT):
+- **138 collections** with generic CRUD (list/create/get/patch/delete) +
+  **12 singleton documents** (GET/PUT):
   - **Core** — tasks, notes (`/api/core/*`)
   - **Workout** — 25 collections (exercises, PRs, routines, sessions,
     calisthenics chains/skills/flows/GtG/isometrics/intervals/mobility/planche,

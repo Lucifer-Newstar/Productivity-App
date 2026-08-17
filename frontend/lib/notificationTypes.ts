@@ -1,0 +1,12 @@
+export type NotificationSection="workout"|"career"|"projects"|"health"|"entertainment"|"system";
+export type NotificationKind="reminder"|"progress"|"alert"|"celebration"|"digest";
+export type NotificationPriority="low"|"normal"|"high"|"critical";
+export type NotificationFrequency="realtime"|"daily"|"weekly"|"smart";
+export interface KaizenNotification {id:string;sourceKey:string;section:NotificationSection;kind:NotificationKind;priority:NotificationPriority;title:string;body:string;createdAt:number;scheduledFor?:number;actionHref?:string;readAt?:number;dismissedAt?:number;browserDeliveredAt?:number}
+export interface SectionNotificationSettings {enabled:boolean;reminder:boolean;progress:boolean;alert:boolean;celebration:boolean}
+export interface NotificationSettings {enabled:boolean;frequency:NotificationFrequency;quietStart:number;quietEnd:number;dnd:boolean;snoozedUntil?:number;browser:boolean;sound:boolean;digestTime:string;weeklyDay:number;sections:Record<Exclude<NotificationSection,"system">,SectionNotificationSettings>}
+export interface NotificationState {schemaVersion:1;items:KaizenNotification[];settings:NotificationSettings;lastEvaluatedAt?:number}
+const section=():SectionNotificationSettings=>({enabled:true,reminder:true,progress:true,alert:true,celebration:true});
+export const DEFAULT_NOTIFICATION_SETTINGS:NotificationSettings={enabled:true,frequency:"smart",quietStart:22,quietEnd:8,dnd:false,browser:false,sound:false,digestTime:"20:00",weeklyDay:0,sections:{workout:section(),career:section(),projects:section(),health:section(),entertainment:section()}};
+export const EMPTY_NOTIFICATION_STATE:NotificationState={schemaVersion:1,items:[],settings:DEFAULT_NOTIFICATION_SETTINGS};
+export function migrateNotifications(raw:Partial<NotificationState>|null|undefined):NotificationState{if(!raw||typeof raw!=="object")return EMPTY_NOTIFICATION_STATE;const settings={...DEFAULT_NOTIFICATION_SETTINGS,...(raw.settings??{}),sections:{workout:{...section(),...raw.settings?.sections?.workout},career:{...section(),...raw.settings?.sections?.career},projects:{...section(),...raw.settings?.sections?.projects},health:{...section(),...raw.settings?.sections?.health},entertainment:{...section(),...raw.settings?.sections?.entertainment}}};return{schemaVersion:1,items:Array.isArray(raw.items)?raw.items.filter(x=>x&&typeof x.id==="string"&&typeof x.sourceKey==="string").slice(0,2000):[],settings,lastEvaluatedAt:raw.lastEvaluatedAt}}

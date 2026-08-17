@@ -17,6 +17,7 @@ _Last synchronized: 2026-08-16 on branch `entertainment`._
 | Health QA | 458/458 |
 | Entertainment structural/security | 168/168 |
 | Entertainment executable suites | 42/42 |
+| Notification rules/settings | 10/10 |
 | Documentation integrity | 14/14 |
 
 ## Commands
@@ -33,6 +34,7 @@ npm run qa:entertainment:reports
 npm run qa:entertainment:social
 npm run qa:entertainment:migration
 npm run qa:security
+npm run qa:notifications
 npm run qa:docs
 npm audit --omit=dev
 npm run build

@@ -9,7 +9,7 @@ future production implementation (Postgres/Prisma and per-user auth).
 
 Base URL: `http://127.0.0.1:4000/api` (loopback-only by default)
 
-Current model surface: **137 collection tables and 11 singleton documents** across Core, Workout, Career, Forge, Health and Entertainment.
+Current model surface: **138 collection tables and 12 singleton documents** across Core, Workout, Career, Forge, Health and Entertainment.
 
 ## Common
 
@@ -44,6 +44,9 @@ Current model surface: **137 collection tables and 11 singleton documents** acro
 |------------|----------------|
 | tasks      | `/core/tasks`  |
 | notes      | `/core/notes`  |
+| notifications | `/notifications` |
+
+Notification settings use singleton GET/PUT at `/notifications/settings`.
 
 ## Entertainment / AFTERGLOW
 

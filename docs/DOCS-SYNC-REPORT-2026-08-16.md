@@ -14,8 +14,8 @@ The complete `docs/` tree was checked against source on branch `entertainment` a
 | State implementation | React Context + functional updates | Matched |
 | User routes | 39 production routes | Matched |
 | Entertainment server routes | 5 dynamic same-origin routes | Matched |
-| Express collections | 137 | Matched in Architecture, API, Data Model and Sync Contract |
-| Express singletons | 11 | Matched |
+| Express collections | 138 | Matched in Architecture, API, Data Model and Sync Contract |
+| Express singletons | 12 | Matched |
 | Entertainment schema | v6 | Matched |
 | Health audit | 216✅ / 2🟡 / 63 deferred | Matched |
 | Entertainment audit | 94✅ / 2🟡 / 0❌ | Matched |
@@ -41,7 +41,7 @@ The complete `docs/` tree was checked against source on branch `entertainment` a
 - Replaced Zustand claims with the actual React Context implementation.
 - Updated Health from “under construction” to merged v1.1.
 - Updated Entertainment from placeholder/Wave 1 to AFTERGLOW v1.0 Waves 0–9.
-- Updated backend model totals to 137 tables / 11 singletons.
+- Updated backend model totals; the notification foundation now brings the live contract to 138 tables / 12 singletons.
 - Updated Health food-library references to the current 130-entry database.
 - Marked old route counts/package versions explicitly historical.
 - Replaced stale Career backlog items with current incomplete rows.

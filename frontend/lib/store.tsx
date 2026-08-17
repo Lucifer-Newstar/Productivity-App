@@ -50,6 +50,8 @@ import type {
 import { emptyHealthState, DEFAULT_BEDTIME_ROUTINE, DEFAULT_WAKE_ROUTINE, SEED_SUPPLEMENT_DEFS } from "./healthTypes";
 import type { EntertainmentState } from "./entertainmentTypes";
 import { SEED_ENTERTAINMENT, migrateEntertainment } from "./entertainmentTypes";
+import type { NotificationState, KaizenNotification } from "./notificationTypes";
+import { EMPTY_NOTIFICATION_STATE, migrateNotifications } from "./notificationTypes";
 import { isDoneStatus as isTaskDone } from "../components/forge/forgeUtils";
 
 // Generate ids for runtime-created entities.
@@ -664,6 +666,12 @@ interface StoreState {
   // entertainment (cinema/media OS)
   entertainment: EntertainmentState;
   updateEntertainment: (updater: (e: EntertainmentState) => Partial<EntertainmentState> | EntertainmentState) => void;
+  notifications: NotificationState;
+  updateNotifications: (updater: (n: NotificationState) => Partial<NotificationState> | NotificationState) => void;
+  addNotification: (n: Omit<KaizenNotification,"id"|"createdAt"> & {createdAt?:number}) => void;
+  markNotificationRead: (id:string) => void;
+  dismissNotification: (id:string) => void;
+  markAllNotificationsRead: () => void;
   addTrack: (name: string, color: string) => void;
   updateTrack: (id: string, patch: Partial<CareerTrack>) => void; deleteTrack: (id: string) => void;
   addConcept: (trackId: string, title: string) => void;
@@ -900,6 +908,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
   const [forge, setForge]     = useLocalState<ForgeState>("kaizen.forge", SEED_FORGE, migrateForge);
   const [health, setHealth]   = useLocalState<HealthState>("kaizen.health", SEED_HEALTH, migrateHealth);
   const [entertainment, setEntertainment] = useLocalState<EntertainmentState>("kaizen.entertainment", SEED_ENTERTAINMENT, migrateEntertainment);
+  const [notifications, setNotifications] = useLocalState<NotificationState>("kaizen.notifications", EMPTY_NOTIFICATION_STATE, migrateNotifications);
 
   useEffect(() => {
     ["prod.tasks","prod.notes","prod.projects","prod.habits"].forEach((k) => localStorage.removeItem(k));
@@ -1035,6 +1044,11 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
       const patch = updater(state);
       return { ...state, ...patch };
     }), [setEntertainment]);
+  const updateNotifications = useCallback<StoreState["updateNotifications"]>((updater)=>setNotifications(state=>({...state,...updater(state)})),[setNotifications]);
+  const addNotification = useCallback<StoreState["addNotification"]>((entry)=>setNotifications(state=>state.items.some(x=>x.sourceKey===entry.sourceKey)?state:{...state,items:[{...entry,id:uid(),createdAt:entry.createdAt??Date.now()},...state.items].slice(0,2000)}),[setNotifications]);
+  const markNotificationRead=useCallback((id:string)=>setNotifications(s=>({...s,items:s.items.map(x=>x.id===id?{...x,readAt:x.readAt??Date.now()}:x)})),[setNotifications]);
+  const dismissNotification=useCallback((id:string)=>setNotifications(s=>({...s,items:s.items.map(x=>x.id===id?{...x,dismissedAt:Date.now(),readAt:x.readAt??Date.now()}:x)})),[setNotifications]);
+  const markAllNotificationsRead=useCallback(()=>setNotifications(s=>({...s,items:s.items.map(x=>x.readAt?x:{...x,readAt:Date.now()})})),[setNotifications]);
 
   const addRoadmapFromTemplate = useCallback<StoreState["addRoadmapFromTemplate"]>((templateId, name) => {
     setCareer((c) => {
@@ -1627,6 +1641,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     forge, updateForge, seedForgeDemo, logForgeAction,
     health, updateHealth,
     entertainment, updateEntertainment,
+    notifications, updateNotifications, addNotification, markNotificationRead, dismissNotification, markAllNotificationsRead,
     workout, addExercise, updateExercise, deleteExercise,
     logPR, deletePR, addSkill, deleteSkill, addProgression, toggleProgressionDone, updateProgression, deleteProgression,
     addRoutine, updateRoutine, deleteRoutine, addBlock, updateBlock, deleteBlock, reorderBlocks,

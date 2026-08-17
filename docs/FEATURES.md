@@ -559,3 +559,18 @@ AFTERGLOW v1.0 completed Waves 0–9 on the `entertainment` branch. The authorit
 - Structural/security assertions: **168/168**
 - Executable domain/security tests: **42/42** (9 intelligence, 11 reports, 5 social, 9 migration, 8 frontend security)
 - Route: `/entertainment` plus five same-origin provider API routes
+
+# Global Notification System
+
+The local-first notification foundation is active across Home and every full-screen space.
+
+- Global inbox with read/dismiss/mark-all-read and action links ✅
+- `kaizen.notifications` schema-v1 persistence and migration ✅
+- Global enable, DND, quiet hours and 30m/4h/24h snooze ✅
+- Real-time, Smart, Daily and Weekly frequency contracts ✅
+- Per-space Reminder/Progress/Alert/Celebration toggles ✅
+- Opt-in browser delivery while Kaizen is open + optional sound ✅
+- Workout/Career/Forge/Health/Entertainment/System high-value rule foundation ✅
+- Closed-app push, vibration, badge count and true scheduled digests ❌ deferred until PWA/service-worker/push infrastructure
+
+See [`notifications/README.md`](notifications/README.md) and [`notifications/SCOPE-DECISIONS.md`](notifications/SCOPE-DECISIONS.md).

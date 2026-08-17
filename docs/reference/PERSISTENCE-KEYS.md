@@ -11,6 +11,7 @@
 | `kaizen.forge` | Forge state | `migrateForge` |
 | `kaizen.health` | Health state | `migrateHealth` |
 | `kaizen.entertainment` | Entertainment schema v6 | `migrateEntertainment` |
+| `kaizen.notifications` | Global inbox/settings schema v1 | `migrateNotifications` |
 | `kaizen.habits` | Home habits | Component seed fallback |
 | `kaizen.theme` | `dark` or `light` | Preference validation |
 | `kaizen.bw.ack` | Workout bodyweight prompt acknowledgement | Date string |
