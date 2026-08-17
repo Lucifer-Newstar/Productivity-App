@@ -27,6 +27,18 @@ def recv_frame(s):
     if masked:
         for i in range(n):data[i]^=mask[i%4]
     return bytes(data)
+def recv_frame_buffered(s,buffer):
+    def need(n):
+        nonlocal buffer
+        while len(buffer)<n:buffer+=s.recv(max(4096,n-len(buffer)))
+        out,buffer=buffer[:n],buffer[n:];return out
+    h=need(2);n=h[1]&127;masked=bool(h[1]&128)
+    if n==126:n=struct.unpack("!H",need(2))[0]
+    elif n==127:n=struct.unpack("!Q",need(8))[0]
+    mask=need(4) if masked else b"";data=bytearray(need(n))
+    if masked:
+        for i in range(n):data[i]^=mask[i%4]
+    return bytes(data),buffer
 def client_frame(payload):
     data=payload.encode();mask=os.urandom(4);n=len(data);head=bytes([0x81,0x80|n]);masked=bytes(b^mask[i%4] for i,b in enumerate(data));return head+mask+masked
 class WSHandler(socketserver.BaseRequestHandler):
@@ -57,8 +69,9 @@ def main():
             assert seen==args.messages;sse_ms.append((time.perf_counter()-t)*1000)
             sock=socket.create_connection(("127.0.0.1",ws.server_address[1]));key=base64.b64encode(os.urandom(16)).decode();request=(f"GET / HTTP/1.1\r\nHost: 127.0.0.1\r\nUpgrade: websocket\r\nConnection: Upgrade\r\nSec-WebSocket-Key: {key}\r\nSec-WebSocket-Version: 13\r\n\r\n").encode();t=time.perf_counter();sock.sendall(request);resp=b""
             while b"\r\n\r\n" not in resp:resp+=sock.recv(4096)
-            for _ in range(args.messages):recv_frame(sock)
-            ws_ms.append((time.perf_counter()-t)*1000);rt=time.perf_counter();sock.sendall(client_frame('{"toolResult":true}'));recv_frame(sock);ws_round.append((time.perf_counter()-rt)*1000);sock.close()
+            _,buffer=resp.split(b"\r\n\r\n",1)
+            for _ in range(args.messages):_,buffer=recv_frame_buffered(sock,buffer)
+            ws_ms.append((time.perf_counter()-t)*1000);rt=time.perf_counter();sock.sendall(client_frame('{"toolResult":true}'));_,buffer=recv_frame_buffered(sock,buffer);ws_round.append((time.perf_counter()-rt)*1000);sock.close()
     finally:sse.shutdown();sse.server_close();ws.shutdown();ws.server_close()
     def stats(x):return {"mean":round(statistics.mean(x),3),"p50":round(pctl(x,.5),3),"p95":round(pctl(x,.95),3)}
     out={"schemaVersion":1,"messagesPerRun":args.messages,"runs":args.runs,"sseDeliveryMs":stats(sse_ms),"webSocketDeliveryMs":stats(ws_ms),"webSocketBidirectionalRoundTripMs":stats(ws_round),"limitations":["Loopback mock payloads only","No TLS/proxy/browser/CSP behavior","SSE tool callback uses separate HTTP and is not measured","Protocol microbenchmark cannot decide maintainability/reconnect semantics"]}
