@@ -116,6 +116,9 @@ $sanitizeArgs = @(
 if ($soakPath) { $sanitizeArgs += @("--soak", $soakPath) }
 if ($embeddingPath) { $sanitizeArgs += @("--embeddings", $embeddingPath) }
 Invoke-Step "Allowlist public sanitization" { python @sanitizeArgs }
+Invoke-Step "Public review bundle coverage" {
+  python scripts/build_review_bundle.py --input-dir results-public --output results-public/wave0-review-bundle.json
+}
 
 Write-Host "`nTARGET RUN COMPLETE" -ForegroundColor Green
 Write-Host "Raw results remain LOCAL-ONLY: $local"

@@ -69,6 +69,7 @@ Use an explicit, verified `llama-server`/`llama-bench` build. Record version and
 - `scripts/monitor_nvidia.py` — LOCAL-ONLY standalone VRAM/power/thermal log
 - `scripts/soak_model.py` — sustained request load with thermal/resource drift
 - `scripts/score_results.py` — applies frozen `W0-GATE-1` thresholds
+- `scripts/build_review_bundle.py` — checks candidate/profile/context/soak coverage
 - `scripts/sanitize_results.py` — allowlist aggregate exporter
 - `scripts/privacy_scan.py` — staged/tracked privacy and secret gate
 - `prototypes/` — isolated revision, pairing and mock-runtime tests

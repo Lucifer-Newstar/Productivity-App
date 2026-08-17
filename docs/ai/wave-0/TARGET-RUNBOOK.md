@@ -27,7 +27,7 @@ cd ai\wave0
 .\run_target_wave0.ps1 -ProfileLabel "AC performance"
 ```
 
-The orchestrator requires confirmation, executes capture/retrieval/transport/pairing/revision/model/lifecycle/soak/scoring, keeps raw files in a candidate/profile-specific `results-local/` directory, and creates one allowlist-sanitized public aggregate for manual review. Run it again for AC balanced and for each candidate. It never downloads a model or stages a file.
+The orchestrator requires confirmation, executes capture/retrieval/transport/pairing/revision/model/lifecycle/soak/scoring, keeps raw files in a candidate/profile-specific `results-local/` directory, creates one allowlist-sanitized aggregate, and rebuilds a public coverage bundle. Run it again for AC balanced and for each candidate. It never downloads a model, selects architecture, or stages a file.
 
 Use `-EmbeddingBaseUrl http://127.0.0.1:18081` only after starting a verified local embedding candidate. `-SkipSoak` is for harness troubleshooting only and leaves final gates incomplete.
 
