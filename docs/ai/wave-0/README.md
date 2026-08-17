@@ -24,6 +24,11 @@
 7. Run schema/tool/context/adversarial evaluations.
 8. Produce selection report with explicit rejected alternatives.
 
+## Current progress
+
+- W0-01 initial mutation-path audit: [`DOMAIN-REVISION-AUDIT.md`](DOMAIN-REVISION-AUDIT.md)
+- No runtime prototype, model download or AI service has started.
+
 ## Artifacts required
 
 - [`SPIKE-PLAN.md`](SPIKE-PLAN.md)
