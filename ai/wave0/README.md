@@ -22,8 +22,11 @@ See [`../../docs/ai/PRIVACY.md`](../../docs/ai/PRIVACY.md).
 cd ai\wave0
 Copy-Item config\hardware.local.example.json config\hardware.local.json
 Copy-Item config\candidates.local.example.json config\candidates.local.json
-# Fill both LOCAL-ONLY files; never commit them.
+# Fill both LOCAL-ONLY files; enable exactly one candidate; never commit them.
+# Set the requested Windows/ASUS profile first, then run the complete pipeline:
+.\run_target_wave0.ps1 -ProfileLabel "AC performance"
 
+# Individual commands remain available for debugging:
 python scripts\capture_hardware.py `
   --expected config\hardware.local.json `
   --profile-label "AC performance" `
@@ -56,6 +59,7 @@ Use an explicit, verified `llama-server`/`llama-bench` build. Record version and
 
 ## Contents
 
+- `run_target_wave0.ps1` — complete target profile/candidate pipeline
 - `config/*.local.example.json` — public placeholder templates
 - `scripts/capture_hardware.py` — LOCAL-ONLY hardware/NVIDIA/power capture
 - `scripts/run_benchmarks.py` — latency, resource, structured/tool, concurrency and cancellation runs

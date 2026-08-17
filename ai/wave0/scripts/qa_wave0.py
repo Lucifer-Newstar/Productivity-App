@@ -22,6 +22,7 @@ def main():
     source=(ROOT/"scripts/run_benchmarks.py").read_text()
     check("benchmark has no downloader",all(x not in source for x in ["urlretrieve(","huggingface_hub","requests.get("]))
     check("benchmark redacts model paths",'"<local-path-redacted>"' in source)
+    orchestrator=(ROOT/"run_target_wave0.ps1").read_text();check("target orchestrator preserves Wave 0 boundary",all(x in orchestrator for x in ["results-local","sanitize_results.py","score_results.py","Exactly one candidate","Do not start Wave 1"]) and "get_today" not in orchestrator)
     run(["node","prototypes/revision-coordinator.mjs"]);check("revision prototype passes",True)
     run([sys.executable,"prototypes/pairing_server.py","--self-test"]);check("pairing prototype passes",True)
     for p in list((ROOT/"scripts").glob("*.py"))+list((ROOT/"prototypes").glob("*.py")):py_compile.compile(str(p),doraise=True)
