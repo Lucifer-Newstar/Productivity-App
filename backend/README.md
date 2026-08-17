@@ -27,7 +27,7 @@ npm start
 ```
 
 Do not expose the API without an API key and TLS reverse proxy. See
-`docs/SECURITY.md` for all controls and accepted limitations.
+`docs/security/SECURITY.md` for all controls and accepted limitations.
 
 ## What's included
 
@@ -64,8 +64,8 @@ Do not expose the API without an API key and TLS reverse proxy. See
   (wrapped `{ tables, singletons }` shape; legacy flat shape still accepted)
 - Service liveness: `GET /api/health-check` (legacy alias `GET /api/health`)
 
-See `docs/API.md` in the repo root for the full route reference, and
-`docs/ALGORITHMS.md` for the math used by the analytics endpoints
+See `docs/reference/API.md` for the full route reference, and
+`docs/reference/ALGORITHMS.md` for the math used by the analytics endpoints
 (Health formulas are §H1–H30).
 
 ## Future work

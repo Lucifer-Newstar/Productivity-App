@@ -2,7 +2,7 @@
 
 The **Workout** space lives at `/workout/*` and ships as a full-screen imperial
 Japanese obsidian-themed app. It's battle-tested on `main` — see
-`docs/FEATURES.md` for the 149-feature checklist and `docs/qa/TEST-REPORT.md`
+`docs/reference/FEATURES.md` for the 149-feature checklist and `docs/quality/qa/TEST-REPORT.md`
 for the prior QA pass.
 
 ## Theme
@@ -40,7 +40,7 @@ frontend/
 ```
 
 ## Data model
-See `docs/DATA-MODEL.md` — `WorkoutState` includes exercises, prs, skills,
+See `docs/architecture/DATA-MODEL.md` — `WorkoutState` includes exercises, prs, skills,
 routines, sessions (with rich WorkoutSetLog metadata), readiness, badges,
 bodyweight, settings, caliChains/skills/flows, gtg, isometricLogs, intervalLogs,
 mobility, planche entries, cardioLogs, programs, goals, customMetrics,

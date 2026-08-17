@@ -164,7 +164,7 @@ Cross-space reads occur through root-store selectors/updaters. Avoid circular im
 - User URLs are restricted to HTTP(S); image data is raster-only and bounded.
 - Express binds to loopback by default and requires explicit configuration for network exposure.
 
-See [`SECURITY.md`](SECURITY.md) and [`SECURITY-AUDIT-2026-08-16.md`](SECURITY-AUDIT-2026-08-16.md).
+See [`SECURITY.md`](../security/SECURITY.md) and [`SECURITY-AUDIT-2026-08-16.md`](../security/AUDIT-2026-08-16.md).
 
 ## Backend boundary
 
@@ -175,7 +175,7 @@ The Express API is a development/reference contract, not the active frontend dat
 - Whole-state `/api/sync`
 - Workout, Forge and Health analytics mirrors
 - Workout/Health CSV exports
-- Security controls described in `docs/SECURITY.md`
+- Security controls described in `docs/security/SECURITY.md`
 
 It is in-memory, has no user accounts and must not be presented as a public multi-user API.
 
@@ -187,4 +187,4 @@ It is in-memory, has no user accounts and must not be presented as a public mult
 - TypeScript clean
 - ESLint clean
 - Frontend/backend dependency audits: zero known vulnerabilities
-- See [`guides/TESTING.md`](guides/TESTING.md) for all gates.
+- See [`guides/TESTING.md`](../guides/TESTING.md) for all gates.

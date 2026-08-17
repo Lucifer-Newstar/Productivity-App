@@ -29,7 +29,7 @@ Current model surface: **138 collection tables and 12 singleton documents** acro
   instead — `PUT` merges the body into the stored object.
 - Errors use standard HTTP status codes; body is `{ "error": "message" }`.
 - Default CORS origins are `http://localhost:3000` and `http://127.0.0.1:3000`.
-- See [`SECURITY.md`](SECURITY.md) for environment variables and deployment requirements.
+- See [`SECURITY.md`](../security/SECURITY.md) for environment variables and deployment requirements.
 
 ## Service health
 
@@ -295,7 +295,7 @@ Generic CRUD under `/health/*` — mirrors `HealthState` collections
 ### Health analytics
 
 Server-side mirrors of `frontend/lib/healthAnalytics.ts`
-(formulas documented in `docs/ALGORITHMS.md` §H1–H23):
+(formulas documented in `docs/reference/ALGORITHMS.md` §H1–H23):
 
 | Method | Path                                | Query params | Returns |
 |--------|-------------------------------------|--------------|---------|

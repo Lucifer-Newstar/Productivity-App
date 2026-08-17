@@ -11,7 +11,7 @@ exercise data from the Workout space (read-only join) and pushes derived metrics
 (readiness/hydration/TDEE adjustments) back into Workout for smarter logging. Two-way
 but governed: Health owns `nutrition/sleep/body/vitals/mind/biometrics`; Workout owns
 `sets/PRs/sessions/volume`. A documented bridge contract appears in
-[`ALGORITHMS.md`](#algorithms-contract-summary) and in `docs/ALGORITHMS.md`.
+[`ALGORITHMS.md`](#algorithms-contract-summary) and in `docs/reference/ALGORITHMS.md`.
 
 ---
 
@@ -329,7 +329,7 @@ Cross-links with Career daily mood/stress and Workout readiness.
 # §8 — SYNC LAB (Bridge &amp; Settings) `/health/sync`
 
 This is where Health and Workout connect. User explicitly configures what syncs. The
-**Health ↔ Workout contract** is documented in `docs/ALGORITHMS.md` — see the
+**Health ↔ Workout contract** is documented in `docs/reference/ALGORITHMS.md` — see the
 "Health-Workout Bridge Contract" section.
 
 | #  | Feature                                                                                 | Status |
@@ -411,7 +411,7 @@ This is where Health and Workout connect. User explicitly configures what syncs.
 
 ---
 
-# Algorithms contract summary (also in `docs/ALGORITHMS.md`)
+# Algorithms contract summary (also in `docs/reference/ALGORITHMS.md`)
 
 | Algorithm | Formula | Source |
 |---|---|---|

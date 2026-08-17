@@ -96,7 +96,7 @@ ForgeState
 
 ### Strategy canvases
 
-Canvas rows are independent collections so each method can evolve without creating one untyped mega-object. See [`spaces/projects/CANVASES.md`](spaces/projects/CANVASES.md).
+Canvas rows are independent collections so each method can evolve without creating one untyped mega-object. See [`spaces/projects/CANVASES.md`](../spaces/projects/CANVASES.md).
 
 Persistence: `kaizen.forge`. Migration: `migrateForge()`.
 
@@ -163,7 +163,7 @@ Vitals contain heart rate, blood pressure, temperature, SpO₂, respiration and 
 
 Persistence: `kaizen.health`. Migration: `migrateHealth()`.
 
-Detailed health specification: [`spaces/health/FEATURES.md`](spaces/health/FEATURES.md).
+Detailed health specification: [`spaces/health/FEATURES.md`](../spaces/health/FEATURES.md).
 
 ## Entertainment / AFTERGLOW
 
@@ -206,7 +206,7 @@ Collections own item IDs. Events form the local activity timeline and include ad
 
 Offline social records use item/friend IDs. Creation records use item IDs and local bounded raster images. Backups pass through safe JSON parsing and `migrateEntertainment()` revalidates restored image sources.
 
-Persistence: `kaizen.entertainment`. Detailed model: [`spaces/entertainment/DATA-MODEL.md`](spaces/entertainment/DATA-MODEL.md).
+Persistence: `kaizen.entertainment`. Detailed model: [`spaces/entertainment/DATA-MODEL.md`](../spaces/entertainment/DATA-MODEL.md).
 
 ## Notifications
 
@@ -221,7 +221,7 @@ Notifications have stable `sourceKey` deduplication, section/kind/priority, titl
 
 Persistence: `kaizen.notifications`. Migration: `migrateNotifications()`.
 
-Detailed rules/settings: [`notifications/README.md`](notifications/README.md).
+Detailed rules/settings: [`notifications/README.md`](../notifications/README.md).
 
 ## Migrations and compatibility
 
@@ -236,4 +236,4 @@ Every persisted domain must supply defaults for new arrays/scalars. Migration ru
 
 ## Backend mapping
 
-The Express API mirrors frontend domains as **138 collection tables and 12 singleton documents**. It does not import frontend TypeScript types at runtime; `docs/API.md` and `docs/architecture/SYNC-CONTRACT.md` define the mapping contract.
+The Express API mirrors frontend domains as **138 collection tables and 12 singleton documents**. It does not import frontend TypeScript types at runtime; `docs/reference/API.md` and `docs/architecture/SYNC-CONTRACT.md` define the mapping contract.

@@ -16,7 +16,7 @@
  * whole state (`/api/sync`) during local development and serves as the
  * reference for a future production implementation (Postgres/Prisma, JWT).
  *
- * See docs/API.md for the full route reference.
+ * See docs/reference/API.md for the full route reference.
  */
 
 import express, { Request, Response, NextFunction } from "express";
@@ -477,7 +477,7 @@ app.get("/api/analytics/streak", (_req, res) => {
 });
 
 // ---------------- Health analytics (mirror of frontend/lib/healthAnalytics.ts) ----------------
-// Pure formulas re-implemented server-side. Docs: docs/ALGORITHMS.md §H1-H23.
+// Pure formulas re-implemented server-side. Docs: docs/reference/ALGORITHMS.md §H1-H23.
 
 const bmrMifflin = (weightKg: number, heightCm: number, ageYears: number, gender = "male") =>
   10 * weightKg + 6.25 * heightCm - 5 * ageYears + (gender === "male" ? 5 : -161);

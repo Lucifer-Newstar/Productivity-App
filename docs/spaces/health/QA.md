@@ -53,7 +53,7 @@ Each wave must satisfy before commit:
   - Permanent medical disclaimer in footer, IST/Asia-Kolkata date display
   - Sync lab uses updateHealth and exposes bridge toggles + profile fields
   - No console.log/debug in health components
-- [x] Bugs found and fixed (4) — see `docs/bugs/BUGS.md` BUG-H01..H04:
+- [x] Bugs found and fixed (4) — see `docs/quality/bugs/BUGS.md` BUG-H01..H04:
   - H01 quick-add tiles now set active beverage for custom LOG
   - H02 beverage lookup memoized with safe fallback (no `!` assertion crash)
   - H03 Repeat-Yesterday spread bug fixed (was corrupting meals array)
@@ -67,7 +67,7 @@ Each wave must satisfy before commit:
 - [x] Smoke test: **38/38 PASS, 0 FAIL** (sleep + supplements no-longer-placeholder routes)
 - [x] Unit QA (`scripts/qa-health.js`): **148 assertions ALL GREEN** (50 new for wave 3: duration math, sleep bank edges/perfect/short/capped, sleep score, hygiene score, avg sleep, routine adherence, supplement streaks/adherence, new types, seed stacks, migrations, component presence, analytics exports, triage KPIs)
 - [x] Mock-data scenario tests (`/tmp/wave3-mock.mjs`, 29 scenarios): empty-state deficiency badges, ideal-week badges (fish+D3+sun clears D3/omega3 risk), sleep bank edges (empty/short/14-day/caps at ±20/+10), recovery score (empty/good/bad), deload hint trigger, duration across midnight, seed shapes, adherence/hygiene math, streak calc, bank floor at -20h.
-- [x] Bugs found and fixed (2) — see `docs/bugs/BUGS.md` BUG-H05..H06:
+- [x] Bugs found and fixed (2) — see `docs/quality/bugs/BUGS.md` BUG-H05..H06:
   - H05 recoveryScore returned inflated 0.5 with zero sleep history → added early return 0 on empty.
   - H06 datetime-local round-trip logic verified (works in IST browsers; UTC-offset edge case documented for v1.2).
 - [x] `migrateHealth()` updated to handle new collections (circadian, sunlight, bedtimeRoutine, wakeRoutine) and merge seed supplement defs with any user-added defs (no data loss on pre-wave3 localStorage).

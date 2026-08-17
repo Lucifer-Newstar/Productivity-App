@@ -69,4 +69,4 @@ Same-origin dynamic routes:
 
 ## Express
 
-Express uses base URL `http://127.0.0.1:4000/api`. Its complete resource list is in [`../API.md`](../API.md). Liveness routes are `/api/health-check` and legacy `/api/health`.
+Express uses base URL `http://127.0.0.1:4000/api`. Its complete resource list is in [`API.md`](API.md). Liveness routes are `/api/health-check` and legacy `/api/health`.

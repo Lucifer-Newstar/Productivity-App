@@ -6,11 +6,11 @@ All five spaces now have dedicated implementations: **Workout** (battle-tested),
 (v1.1 Waves 1–9), and **Entertainment / AFTERGLOW** (v1.0 Waves 0–9; 94 complete,
 2 intentional partials, 0 missing from its approved 96-feature specification).
 
-Per-space deep dives: [`spaces/workout`](spaces/workout/README.md) ·
-[`spaces/career`](spaces/career/README.md) ·
-[`spaces/projects`](spaces/projects/README.md) ·
-[`spaces/health`](spaces/health/README.md) ·
-[`spaces/entertainment`](spaces/entertainment/README.md). Bug log: [`bugs/BUGS.md`](bugs/BUGS.md).
+Per-space deep dives: [`spaces/workout`](../spaces/workout/README.md) ·
+[`spaces/career`](../spaces/career/README.md) ·
+[`spaces/projects`](../spaces/projects/README.md) ·
+[`spaces/health`](../spaces/health/README.md) ·
+[`spaces/entertainment`](../spaces/entertainment/README.md). Bug log: [`bugs/BUGS.md`](../quality/bugs/BUGS.md).
 
 Legend:
 
@@ -540,7 +540,7 @@ columns, HTML5-dnd polish on Kanban cards.
 
 # Health (VITAL-SIGN) Feature Status
 
-Health v1.1 is merged into the stable baseline and completed Waves 1–9. The authoritative 281-row audit lives in [`spaces/health/FEATURES.md`](spaces/health/FEATURES.md).
+Health v1.1 is merged into the stable baseline and completed Waves 1–9. The authoritative 281-row audit lives in [`spaces/health/FEATURES.md`](../spaces/health/FEATURES.md).
 
 - ✅ Complete: **216**
 - 🟡 Partial: **2**
@@ -551,7 +551,7 @@ Health v1.1 is merged into the stable baseline and completed Waves 1–9. The au
 
 # Entertainment (AFTERGLOW) Feature Status
 
-AFTERGLOW v1.0 completed Waves 0–9 on the `entertainment` branch. The authoritative 96-feature audit lives in [`spaces/entertainment/FEATURES.md`](spaces/entertainment/FEATURES.md).
+AFTERGLOW v1.0 completed Waves 0–9 on the `entertainment` branch. The authoritative 96-feature audit lives in [`spaces/entertainment/FEATURES.md`](../spaces/entertainment/FEATURES.md).
 
 - ✅ Complete: **94**
 - 🟡 Intentional partials: **2** — public sharing mode and full deep-form translation
@@ -573,4 +573,4 @@ The local-first notification foundation is active across Home and every full-scr
 - Workout/Career/Forge/Health/Entertainment/System high-value rule foundation ✅
 - Closed-app push, vibration, badge count and true scheduled digests ❌ deferred until PWA/service-worker/push infrastructure
 
-See [`notifications/README.md`](notifications/README.md) and [`notifications/SCOPE-DECISIONS.md`](notifications/SCOPE-DECISIONS.md).
+See [`notifications/README.md`](../notifications/README.md) and [`notifications/SCOPE-DECISIONS.md`](../notifications/SCOPE-DECISIONS.md).

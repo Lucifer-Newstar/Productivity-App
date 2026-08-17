@@ -1,6 +1,6 @@
 # Bugs & Fixes Log
 
-> Chronological historical record. Route counts and placeholder descriptions inside dated entries intentionally describe the repository at that time. Current baseline: 39/39 user routes HTTP 200; Health v1.1 and AFTERGLOW v1.0 are complete. Security findings are tracked in [`../SECURITY-AUDIT-2026-08-16.md`](../SECURITY-AUDIT-2026-08-16.md).
+> Chronological historical record. Route counts and placeholder descriptions inside dated entries intentionally describe the repository at that time. Current baseline: 39/39 user routes HTTP 200; Health v1.1 and AFTERGLOW v1.0 are complete. Security findings are tracked in [`security/AUDIT-2026-08-16.md`](../../security/AUDIT-2026-08-16.md).
 
 Each entry captures a bug found during QA sweeps, the root cause, the fix, and the date.
 

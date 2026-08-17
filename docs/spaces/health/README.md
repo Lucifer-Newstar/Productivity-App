@@ -54,7 +54,7 @@ implemented as the full-bleed **VITAL-SIGN** OS with a deep two-way bridge to Wo
 
 Full per-wave plan and completion notes: [`WAVES.md`](WAVES.md). QA: 458 unit
 assertions green, 43/43 routes static, bugs H13/H14 found+fixed in the wave-9
-sweep (see `docs/bugs/BUGS.md`).
+sweep (see `docs/quality/bugs/BUGS.md`).
 
 ## Status at a glance (post-Wave 3, historical)
 
@@ -90,7 +90,7 @@ sweep (see `docs/bugs/BUGS.md`).
 | Health **advises** Workout | hydration %, sleep debt, recovery score, injury flags, deload hints, TDEE cal target, supp markers | Advisory props/flags surfaced in Workout UI |
 | Forbidden | Health mutating Workout collections directly; circular imports between healthAnalytics and workoutAnalytics | Enforced via code review |
 
-Full contract table and all algorithms live in [`docs/ALGORITHMS.md`](../../ALGORITHMS.md).
+Full contract table and all algorithms live in [`docs/reference/ALGORITHMS.md`](../../reference/ALGORITHMS.md).
 
 ## Theme detail — VITAL-SIGN (dark, default)
 
@@ -125,7 +125,7 @@ to diagnose or treat any condition.
 
 ## Sub-pages
 
-- [FEATURES.md](./FEATURES.md) — full 257-feature spec (the build checklist)
-- [QA.md](./QA.md) — per-wave QA checklist + known gaps
-- [`docs/bugs/BUGS.md`](../../bugs/BUGS.md) — bugs found & fixed
-- [`docs/ALGORITHMS.md`](../../ALGORITHMS.md) — all formulas + bridge contract
+- [FEATURES.md](FEATURES.md) — full 257-feature spec (the build checklist)
+- [QA.md](QA.md) — per-wave QA checklist + known gaps
+- [`docs/quality/bugs/BUGS.md`](../../quality/bugs/BUGS.md) — bugs found & fixed
+- [`docs/reference/ALGORITHMS.md`](../../reference/ALGORITHMS.md) — all formulas + bridge contract

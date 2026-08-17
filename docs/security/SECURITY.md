@@ -98,7 +98,7 @@ The security smoke suite checks authentication, CORS, security/rate-limit header
 
 ## 2026-08-16 assessments
 
-The initial assessment and post-AFTERGLOW full-site reassessment exercised dependency, HTTP, storage/import, URL, file-upload, CSV, compressed-input, provider-proxy and persistence boundaries. The detailed final report is [`SECURITY-AUDIT-2026-08-16.md`](SECURITY-AUDIT-2026-08-16.md).
+The initial assessment and post-AFTERGLOW full-site reassessment exercised dependency, HTTP, storage/import, URL, file-upload, CSV, compressed-input, provider-proxy and persistence boundaries. The detailed final report is [`SECURITY-AUDIT-2026-08-16.md`](AUDIT-2026-08-16.md).
 
 ### Fixed
 

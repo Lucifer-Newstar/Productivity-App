@@ -56,4 +56,4 @@ All routes ○ static. `tsc --noEmit` clean.
 No error boundaries triggered. Redirect from `/career` → `/career/projects` is a client-side `useRouter` push (renders command landing briefly; harmless).
 
 ## Feature status
-See `docs/FEATURES.md` § "Career Feature Status" for the per-sector checklist. All 9 sectors are shipped; remaining TODOs are niceties (drag-rank priority, global resources library, decay recommendation text, mind-map/force-graph).
+See `docs/reference/FEATURES.md` § "Career Feature Status" for the per-sector checklist. All 9 sectors are shipped; remaining TODOs are niceties (drag-rank priority, global resources library, decay recommendation text, mind-map/force-graph).

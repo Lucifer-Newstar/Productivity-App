@@ -2,7 +2,7 @@
  * Gym math helpers — plate math, Wilks 2020, DB↔BB equivalence, strength ratio.
  *
  * These are pure functions used by the Gym tab and ActiveWorkout.
- * See docs/ALGORITHMS.md for formulas and references.
+ * See docs/reference/ALGORITHMS.md for formulas and references.
  */
 
 // ---------- Training Max ----------

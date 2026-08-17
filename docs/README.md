@@ -25,14 +25,15 @@ Current production verification: **39/39 user routes return HTTP 200**, five sam
 
 | Document | Purpose |
 |---|---|
-| [`ARCHITECTURE.md`](ARCHITECTURE.md) | Routers, providers, shells, state, rendering and system boundaries |
-| [`DATA-MODEL.md`](DATA-MODEL.md) | State slices, major entities, relationships and migrations |
-| [`API.md`](API.md) | Express resources and Next.js Entertainment provider routes |
-| [`FEATURES.md`](FEATURES.md) | Cross-space feature audit and links to detailed specifications |
-| [`ALGORITHMS.md`](ALGORITHMS.md) | Workout, Forge and Health formulas |
-| [`SECURITY.md`](SECURITY.md) | Threat model, secure deployment and verification commands |
-| [`SECURITY-AUDIT-2026-08-16.md`](SECURITY-AUDIT-2026-08-16.md) | Latest full-site audit, remediations and residual risks |
-| [`DOCS-SYNC-REPORT-2026-08-16.md`](DOCS-SYNC-REPORT-2026-08-16.md) | Source-vs-doc verification and corrections |
+| [`architecture/ARCHITECTURE.md`](architecture/ARCHITECTURE.md) | Routers, providers, shells, state, rendering and system boundaries |
+| [`architecture/DATA-MODEL.md`](architecture/DATA-MODEL.md) | State slices, major entities, relationships and migrations |
+| [`reference/API.md`](reference/API.md) | Express resources and Next.js Entertainment provider routes |
+| [`reference/FEATURES.md`](reference/FEATURES.md) | Cross-space feature audit and links to detailed specifications |
+| [`reference/ALGORITHMS.md`](reference/ALGORITHMS.md) | Workout, Forge and Health formulas |
+| [`security/SECURITY.md`](security/SECURITY.md) | Threat model, secure deployment and verification commands |
+| [`security/AUDIT-2026-08-16.md`](security/AUDIT-2026-08-16.md) | Latest full-site audit, remediations and residual risks |
+| [`reports/DOCS-SYNC-2026-08-16.md`](reports/DOCS-SYNC-2026-08-16.md) | Source-vs-doc verification and corrections |
+| [`reports/CLEANUP-2026-08-17.md`](reports/CLEANUP-2026-08-17.md) | Dead-code removal and documentation reorganization |
 | [`notifications/README.md`](notifications/README.md) | Global inbox, rule catalog, settings and scope decisions |
 
 ### Guides
@@ -68,9 +69,9 @@ Current production verification: **39/39 user routes return HTTP 200**, five sam
 
 ### Quality history
 
-- [`qa/README.md`](qa/README.md) — current QA index.
-- [`qa/TEST-REPORT.md`](qa/TEST-REPORT.md) — historical pre-Entertainment baseline.
-- [`bugs/BUGS.md`](bugs/BUGS.md) — chronological root-cause/fix record; historical counts remain intentionally unchanged.
+- [`quality/qa/README.md`](quality/qa/README.md) — current QA index.
+- [`quality/qa/TEST-REPORT.md`](quality/qa/TEST-REPORT.md) — historical pre-Entertainment baseline.
+- [`quality/bugs/BUGS.md`](quality/bugs/BUGS.md) — chronological root-cause/fix record; historical counts remain intentionally unchanged.
 
 ## Quick verification
 

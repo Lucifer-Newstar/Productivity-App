@@ -17,7 +17,7 @@ npm run build      # ✅ current Next 16 build; projects/* routes all ○
 | BUG-004 | Column delete mishandled shipped-column tasks — correctly remaps to new final col, clears `completedAt` when un-shipping |
 | BUG-005 | Kanban/swimlane/TaskPanel grids hardcoded `grid-cols-5` — switched to `repeat(auto-fit, minmax(240px,1fr))` |
 
-See [`../../bugs/BUGS.md`](../../bugs/BUGS.md) for full root-cause notes.
+See [`../../bugs/BUGS.md`](../../quality/bugs/BUGS.md) for full root-cause notes.
 
 Route sizes:
 
@@ -150,4 +150,4 @@ back link — no exception.
 - [x] Ignored while typing in `input/textarea/select/contenteditable`
 
 ## Known v1.2 items (not regressions)
-See [`../../bugs/BUGS.md`](../../bugs/BUGS.md) "Deferred" list.
+See [`../../bugs/BUGS.md`](../../quality/bugs/BUGS.md) "Deferred" list.

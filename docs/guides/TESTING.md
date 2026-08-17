@@ -68,4 +68,4 @@ Entertainment also has five dynamic Next.js provider routes. Runtime security sm
 
 ## Historical reports
 
-Older route counts and bundle sizes in `docs/qa/TEST-REPORT.md`, dated per-space QA sections and the bug log are preserved as historical evidence. Current release claims must come from this document and the latest per-space QA file.
+Older route counts and bundle sizes in `docs/quality/qa/TEST-REPORT.md`, dated per-space QA sections and the bug log are preserved as historical evidence. Current release claims must come from this document and the latest per-space QA file.

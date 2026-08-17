@@ -1,7 +1,7 @@
 /**
  * Workout analytics — pure helpers used across the workout page.
  *
- * Algorithms implemented here (documented in docs/ALGORITHMS.md):
+ * Algorithms implemented here (documented in docs/reference/ALGORITHMS.md):
  *  - 1RM estimates (Epley + Brzycki)
  *  - Training Max (90% of 1RM) for 5/3/1-style programming
  *  - Weekly muscle volume for the anatomical heatmap (secondary muscles @ 40%)

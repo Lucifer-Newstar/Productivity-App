@@ -50,11 +50,11 @@ KAIZEN_API_KEY=security-test-key npm run security:test
 
 ## Per-space QA
 
-- [`../spaces/workout/QA.md`](../spaces/workout/QA.md)
-- [`../spaces/projects/QA.md`](../spaces/projects/QA.md)
-- [`../spaces/career/QA.md`](../spaces/career/QA.md)
-- [`../spaces/health/QA.md`](../spaces/health/QA.md)
-- [`../spaces/entertainment/QA.md`](../spaces/entertainment/QA.md)
+- [`../spaces/workout/QA.md`](../../spaces/workout/QA.md)
+- [`../spaces/projects/QA.md`](../../spaces/projects/QA.md)
+- [`../spaces/career/QA.md`](../../spaces/career/QA.md)
+- [`../spaces/health/QA.md`](../../spaces/health/QA.md)
+- [`../spaces/entertainment/QA.md`](../../spaces/entertainment/QA.md)
 
 ## Historical report
 
@@ -62,5 +62,5 @@ KAIZEN_API_KEY=security-test-key npm run security:test
 
 ## Security evidence
 
-- [`../SECURITY.md`](../SECURITY.md)
-- [`../SECURITY-AUDIT-2026-08-16.md`](../SECURITY-AUDIT-2026-08-16.md)
+- [`security/SECURITY.md`](../../security/SECURITY.md)
+- [`security/AUDIT-2026-08-16.md`](../../security/AUDIT-2026-08-16.md)

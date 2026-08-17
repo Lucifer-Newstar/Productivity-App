@@ -12,15 +12,15 @@
     `/entertainment`, `/health`); all five use dedicated full-screen shells.
   - Global local-first notification inbox/settings mounted across Home and every space.
 - **Backend** — Express 4 REST API under `backend/`, in-memory store, port 4000.
-- **Docs** — see [`docs/`](./docs):
-  - [`ARCHITECTURE.md`](./docs/ARCHITECTURE.md) — layout, state model, rendering.
-  - [`ALGORITHMS.md`](./docs/ALGORITHMS.md) — every formula (1RM, Wilks, Epley,
+- **Docs** — see [`docs/`](docs):
+  - [`architecture/ARCHITECTURE.md`](docs/architecture/ARCHITECTURE.md) — layout, state model, rendering.
+  - [`reference/ALGORITHMS.md`](docs/reference/ALGORITHMS.md) — every formula (1RM, Wilks, Epley,
     readiness, HR zones, VO2, plates, etc.)
-  - [`FEATURES.md`](./docs/FEATURES.md) — cross-space feature status and audits.
-  - [`notifications/`](./docs/notifications/) — global notification rules, settings and scope.
-  - [`API.md`](./docs/API.md) — backend REST reference.
-  - [`SECURITY.md`](./docs/SECURITY.md) — secure deployment and threat model.
-  - [`SECURITY-AUDIT-2026-08-16.md`](./docs/SECURITY-AUDIT-2026-08-16.md) — latest full-site audit and remediation report.
+  - [`reference/FEATURES.md`](docs/reference/FEATURES.md) — cross-space feature status and audits.
+  - [`notifications/`](docs/notifications) — global notification rules, settings and scope.
+  - [`reference/API.md`](docs/reference/API.md) — backend REST reference.
+  - [`security/SECURITY.md`](docs/security/SECURITY.md) — secure deployment and threat model.
+  - [`security/AUDIT-2026-08-16.md`](docs/security/AUDIT-2026-08-16.md) — latest full-site audit and remediation report.
 
 ## Getting started
 
@@ -52,4 +52,4 @@ cd backend  && npm audit --omit=dev
 
 The API binds to `127.0.0.1` by default. Before intentionally exposing it on a
 network, set `KAIZEN_API_KEY` and an explicit `CORS_ORIGINS` allowlist; see
-[`docs/SECURITY.md`](./docs/SECURITY.md).
+[`docs/security/SECURITY.md`](docs/security/SECURITY.md).
