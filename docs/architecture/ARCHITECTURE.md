@@ -153,7 +153,7 @@ Cross-space reads occur through root-store selectors/updaters. Avoid circular im
 - Tailwind 3 supplies shared utility classes and base tokens.
 - Space shells layer local CSS variables and inline React styles for their branded systems.
 - Global dark/light preference is stored once in `kaizen.theme`.
-- External fonts were removed; system/local fallback stacks avoid a third-party CSS/font trust boundary.
+- Space-specific font packages are self-hosted from npm; no runtime font CDN is used.
 - AFTERGLOW honors `prefers-reduced-motion`.
 
 ## Security boundaries
@@ -178,6 +178,20 @@ The Express API is a development/reference contract, not the active frontend dat
 - Security controls described in `docs/security/SECURITY.md`
 
 It is in-memory, has no user accounts and must not be presented as a public multi-user API.
+
+## Proposed Intelligence Engine boundary
+
+The Kaizen Intelligence Engine is in architecture documentation only; no runtime service exists yet. The approved V1 boundary keeps browser state authoritative and introduces an independently runnable engine through a client-mediated, versioned Domain Bridge:
+
+```text
+React Context/local persistence
+ → plain Domain Adapters
+ → client Tool Executor
+ → independent Intelligence Engine
+ → local inference runtime
+```
+
+AI tools must never import React Context or Next.js UI internals. No current Express or Next.js route is implicitly an AI route, and deterministic Kaizen analytics remain authoritative. See [`../ai/README.md`](../ai/README.md) and the decision labels in [`../ai/DECISION-REGISTER.md`](../ai/DECISION-REGISTER.md).
 
 ## Current build baseline
 

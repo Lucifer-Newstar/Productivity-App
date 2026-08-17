@@ -5,5 +5,6 @@
 - [`UI-REFRESH-2026-08-17.md`](UI-REFRESH-2026-08-17.md) — icon, typography, theme and motion foundation.
 - [`HOME-COMMAND-CENTER-2026-08-17.md`](HOME-COMMAND-CENTER-2026-08-17.md) — cross-space home intelligence redesign.
 - [`HOME-CORE-SECTIONS-2026-08-17.md`](HOME-CORE-SECTIONS-2026-08-17.md) — Tasks, Focus, Notes, Habits, and Calendar interface refresh.
+- [`AI-ARCHITECTURE-GATE-2026-08-17.md`](AI-ARCHITECTURE-GATE-2026-08-17.md) — Intelligence Engine architecture package and deliberate non-implementation boundary.
 
 Historical product QA lives under [`../quality/`](../quality/README.md); security audits live under [`../security/`](../security/README.md).

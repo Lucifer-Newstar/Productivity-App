@@ -19,6 +19,10 @@
 
 Legacy `prod.*` keys are removed by the root store migration effect.
 
+## Intelligence Engine status
+
+No AI persistence key exists yet. The architecture gate requires AI memory/retrieval data to remain separate from authoritative Kaizen slices, but its local storage technology and backup behavior require a technical spike. Do not introduce or document `kaizen.ai` as an active key until implementation and migration contracts are approved. See [`../ai/MEMORY.md`](../ai/MEMORY.md) and [`../ai/OPEN-QUESTIONS.md`](../ai/OPEN-QUESTIONS.md).
+
 ## sessionStorage
 
 | Key | Purpose |

@@ -11,6 +11,10 @@ Base URL: `http://127.0.0.1:4000/api` (loopback-only by default)
 
 Current model surface: **138 collection tables and 12 singleton documents** across Core, Workout, Career, Forge, Health and Entertainment.
 
+## Intelligence Engine status
+
+There are currently **no AI API routes**. The architecture package proposes an independently runnable loopback service and a client-mediated Domain Bridge, but transport remains a technical spike and Wave 0 is not authorized. Do not treat the existing Express sync API as the AI's source of truth. See [`../ai/ARCHITECTURE.md`](../ai/ARCHITECTURE.md) and [`../ai/DOMAIN-BRIDGE.md`](../ai/DOMAIN-BRIDGE.md).
+
 ## Common
 
 - All request/response bodies are strict JSON (`express.json`, 5 MB default limit).

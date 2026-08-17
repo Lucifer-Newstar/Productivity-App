@@ -57,3 +57,11 @@ Concise records of decisions that affect multiple spaces.
 **Decision:** Each full-screen space owns visual variables, motion and navigation while sharing base utilities and the global theme preference.
 
 **Why:** Product identity matters, but common providers/security/persistence must remain centralized.
+
+## ADR-010 — Intelligence architecture gate
+
+**Decision:** The proposed Kaizen Intelligence Engine remains an independently runnable subsystem and uses a client-mediated Domain Bridge while browser state is authoritative. Documentation must distinguish locked, proposed, spike-required and deferred choices before implementation.
+
+**Why:** An AI service cannot safely infer current browser-owned state, and premature model/vector/runtime choices would create accidental coupling. Tools use versioned plain contracts rather than React imports; deterministic analytics remain the source of truth.
+
+**Status:** Architecture documentation approved; Wave 0 and runtime implementation are not yet authorized. Detailed AI decisions live in [`../ai/DECISION-REGISTER.md`](../ai/DECISION-REGISTER.md).

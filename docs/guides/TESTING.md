@@ -69,6 +69,12 @@ Entertainment also has five dynamic Next.js provider routes. Runtime security sm
 | Backend security | Auth, CORS, unsafe payload, ID, overwrite and CSV attacks |
 | HTTP smoke | Production server route failures |
 
+## Intelligence Engine architecture gate
+
+There is no runtime AI suite yet. Documentation integrity must cover the AI architecture package, decision labels, link graph and the explicit “no implementation yet” boundary. Future Wave 0 must define contract, provider, retrieval, memory, agent, constitutional, adversarial and hardware benchmark suites before feature implementation.
+
+See [`../ai/EVALUATION.md`](../ai/EVALUATION.md) and [`../ai/ROADMAP.md`](../ai/ROADMAP.md).
+
 ## Historical reports
 
 Older route counts and bundle sizes in `docs/quality/qa/TEST-REPORT.md`, dated per-space QA sections and the bug log are preserved as historical evidence. Current release claims must come from this document and the latest per-space QA file.

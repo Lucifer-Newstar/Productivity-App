@@ -224,6 +224,18 @@ Persistence: `kaizen.notifications`. Migration: `migrateNotifications()`.
 
 Detailed rules/settings: [`notifications/README.md`](../notifications/README.md).
 
+## Proposed Intelligence Engine contracts
+
+No AI state is implemented or persisted today. The architecture gate defines future data contracts without adding them to `StoreState`:
+
+- `DomainSnapshot<T>` — versioned, immutable browser projection with snapshot ID, domain revision, freshness, sensitivity, deterministic analytics and redactions.
+- `IntelligenceResponse` — validated answer/brief/recommendation/plan/proposal with evidence, uncertainty and freshness.
+- `AIMemory` — separate semantic, episodic or pattern memory with evidence, confidence, lifecycle and sensitivity.
+- `ActionProposal` / `AIActionAudit` — future approval-bound action and verification records.
+- Career–Forge evidence claims — recorded fact, user-confirmed fact, AI-suggested wording or missing evidence.
+
+These types remain architecture contracts until Wave 0/implementation approval. They do not imply a new `localStorage` key, backend table or authoritative-state migration. See [`../ai/DOMAIN-BRIDGE.md`](../ai/DOMAIN-BRIDGE.md), [`../ai/MEMORY.md`](../ai/MEMORY.md), and [`../ai/ACTION-CENTER.md`](../ai/ACTION-CENTER.md).
+
 ## Migrations and compatibility
 
 Every persisted domain must supply defaults for new arrays/scalars. Migration rules:

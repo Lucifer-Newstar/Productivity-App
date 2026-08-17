@@ -1,6 +1,6 @@
 # Kaizen documentation
 
-_Last synchronized on 2026-08-16 from the completed `entertainment` branch._
+_Last synchronized on 2026-08-17 from `main`._
 
 Kaizen is a local-first productivity and life OS built as one Next.js application with five dedicated spaces. The frontend uses React Context state slices persisted under separate browser-storage keys; the Express service is an optional in-memory reference/sync API and is not required for normal frontend use.
 
@@ -16,6 +16,8 @@ Kaizen is a local-first productivity and life OS built as one Next.js applicatio
 | Entertainment / AFTERGLOW | `/entertainment` | Full-screen cinema OS | v1.0 Waves 0–9; 94✅/2🟡/0❌ |
 
 A global local-first NotificationCenter is mounted across Home and every full-screen space, with section/category controls and an initial high-value rule catalog.
+
+The proposed **Kaizen Intelligence Engine** is currently at the architecture-documentation gate. No runtime AI implementation, permanent model, vector backend or AI route exists yet. See [`ai/README.md`](ai/README.md) for the consolidated architecture package and review status.
 
 Current production verification: **39/39 user routes return HTTP 200**, five same-origin Entertainment provider routes are dynamic, all remaining pages are statically prerendered, TypeScript and ESLint pass, and both dependency audits are clean.
 
@@ -36,7 +38,19 @@ Current production verification: **39/39 user routes return HTTP 200**, five sam
 | [`reports/CLEANUP-2026-08-17.md`](reports/CLEANUP-2026-08-17.md) | Dead-code removal and documentation reorganization |
 | [`reports/UI-REFRESH-2026-08-17.md`](reports/UI-REFRESH-2026-08-17.md) | Icon, typography, theme and motion foundation |
 | [`reports/HOME-COMMAND-CENTER-2026-08-17.md`](reports/HOME-COMMAND-CENTER-2026-08-17.md) | Cross-space home intelligence redesign |
+| [`reports/AI-ARCHITECTURE-GATE-2026-08-17.md`](reports/AI-ARCHITECTURE-GATE-2026-08-17.md) | Intelligence Engine architecture package and review boundary |
 | [`notifications/README.md`](notifications/README.md) | Global inbox, rule catalog, settings and scope decisions |
+
+### Kaizen Intelligence Engine — architecture gate
+
+- [`ai/README.md`](ai/README.md) — architecture-gate index and 24-deliverable coverage matrix.
+- [`ai/CONSTITUTION.md`](ai/CONSTITUTION.md) — versioned behavioral and authority rules.
+- [`ai/ARCHITECTURE.md`](ai/ARCHITECTURE.md) — independent engine and client-mediated Domain Bridge boundary.
+- [`ai/DECISION-REGISTER.md`](ai/DECISION-REGISTER.md) — locked, proposed, spike-required and deferred decisions.
+- [`ai/OPEN-QUESTIONS.md`](ai/OPEN-QUESTIONS.md) — unresolved choices that must not be guessed.
+- [`ai/ROADMAP.md`](ai/ROADMAP.md) — documentation gate through v1.0 acceptance criteria.
+
+This package is documentation only and does not authorize Wave 0.
 
 ### Design
 
