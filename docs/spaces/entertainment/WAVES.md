@@ -110,10 +110,19 @@ Shipped:
 - Backend mirror collections for friends, recommendations, groups, gifts and loans
 - Entertainment schema v5 migration and executable social-algorithm QA
 
-## Wave 8 — creation studio
+## Wave 8 — creation studio ✅
 
-- Review editor/templates, fan art and fan-fiction logs
-- Cosplay projects, quotes, mood boards, dream casts and what-if writing
+- Review drafts with short/long/spoiler-free/bullet templates, plain-text formatting toolbar and safe preview
+- Draft/published lifecycle and spoiler marker
+- Fan-art storage with validated JPEG/PNG/WebP uploads
+- Fan-fiction title/genre/word-count/status/notes logger
+- Cosplay progress, notes and up to six validated progress photos
+- Quotes vault with title/speaker association
+- Book dream-cast character→actor board
+- What-if and alternate-path scenario writing
+- Per-title mood boards with quote/image tiles and drag reorder
+- Backend mirror collections for all eight creation domains
+- Entertainment schema v6 migration
 
 ## Wave 9 — i18n, migration and QA
 

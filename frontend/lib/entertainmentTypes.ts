@@ -131,6 +131,16 @@ export interface SharedMediaGroup { id:string;name:string;memberNames:string[];i
 export interface MediaGift { id:string;itemId:string;person:string;giftedAt:string;liked?:boolean;note?:string }
 export interface MediaLoan { id:string;itemId:string;person:string;direction:"lent"|"borrowed";loanedAt:string;dueAt?:string;returnedAt?:string }
 
+export interface ReviewDraft { id:string;itemId:string;title:string;body:string;template:"short"|"long"|"spoiler-free"|"bullets";spoiler:boolean;status:"draft"|"published";updatedAt:number }
+export interface FanArtEntry { id:string;itemId:string;title:string;imageDataUrl:string;notes?:string;createdAt:number }
+export interface FanFictionEntry { id:string;itemId:string;title:string;wordCount:number;genre?:string;status:"idea"|"drafting"|"complete";notes?:string;updatedAt:number }
+export interface CosplayEntry { id:string;itemId:string;character:string;progress:number;photoDataUrls:string[];notes?:string;updatedAt:number }
+export interface QuoteEntry { id:string;itemId:string;text:string;speaker?:string;tags:string[];createdAt:number }
+export interface MoodBoardTile { id:string;type:"image"|"quote";content:string;createdAt:number }
+export interface MoodBoard { id:string;itemId:string;title:string;tiles:MoodBoardTile[];createdAt:number }
+export interface DreamCastEntry { id:string;itemId:string;character:string;actor:string;note?:string }
+export interface WhatIfEntry { id:string;itemId:string;title:string;kind:"what-if"|"alternate-ending";scenario:string;updatedAt:number }
+
 export interface EntertainmentSettings {
   ratingScale: RatingScale;
   language: string;
@@ -139,7 +149,7 @@ export interface EntertainmentSettings {
 }
 
 export interface EntertainmentState {
-  schemaVersion: 5;
+  schemaVersion: 6;
   items: EntertainmentItem[];
   collections: EntertainmentCollection[];
   events: EntertainmentEvent[];
@@ -148,6 +158,14 @@ export interface EntertainmentState {
   groups: SharedMediaGroup[];
   gifts: MediaGift[];
   loans: MediaLoan[];
+  reviewDrafts: ReviewDraft[];
+  fanArt: FanArtEntry[];
+  fanFiction: FanFictionEntry[];
+  cosplay: CosplayEntry[];
+  quotes: QuoteEntry[];
+  moodBoards: MoodBoard[];
+  dreamCast: DreamCastEntry[];
+  whatIfs: WhatIfEntry[];
   settings: EntertainmentSettings;
   lastRolloverMonth?: string;
 }
@@ -155,7 +173,7 @@ export interface EntertainmentState {
 const now = Date.now();
 const day = 86_400_000;
 export const SEED_ENTERTAINMENT: EntertainmentState = {
-  schemaVersion: 5,
+  schemaVersion: 6,
   items: [
     { id:"ent-dune",provider:"manual",type:"book",title:"Dune",description:"Politics, ecology and prophecy on Arrakis.",releaseYear:1965,genres:["Science Fiction"],creators:["Frank Herbert"],cast:[],studios:[],status:"in-progress",progress:{currentPage:286,totalPages:688},rating:9,startedAt:new Date(now-12*day).toISOString().slice(0,10),repeats:0,priority:"high",queueOrder:1,tags:["epic","desert","thoughtful"],format:"Paperback",language:"English",favorite:true,archived:false,minutesConsumed:420,createdAt:now-18*day,updatedAt:now-day},
     { id:"ent-shogun",provider:"manual",type:"series",title:"Shōgun",description:"Power and survival in feudal Japan.",releaseYear:2024,genres:["Drama","History"],creators:["Rachel Kondo","Justin Marks"],cast:[],studios:["FX"],status:"in-progress",progress:{currentEpisode:6,totalEpisodes:10,currentSeason:1,totalSeasons:1},rating:9,startedAt:new Date(now-8*day).toISOString().slice(0,10),repeats:0,priority:"medium",queueOrder:2,tags:["samurai","political","weekend"],format:"Streaming",language:"Japanese / English",favorite:false,archived:false,minutesConsumed:360,createdAt:now-10*day,updatedAt:now-2*day},
@@ -171,13 +189,21 @@ export const SEED_ENTERTAINMENT: EntertainmentState = {
   groups: [],
   gifts: [],
   loans: [],
+  reviewDrafts: [],
+  fanArt: [],
+  fanFiction: [],
+  cosplay: [],
+  quotes: [],
+  moodBoards: [],
+  dreamCast: [],
+  whatIfs: [],
   settings: { ratingScale:"ten", language:"en", monthlyRollover:true, defaultView:"dashboard" },
 };
 
 export function migrateEntertainment(raw: Partial<EntertainmentState> | null | undefined): EntertainmentState {
   if (!raw || typeof raw !== "object") return SEED_ENTERTAINMENT;
   return {
-    schemaVersion: 5,
+    schemaVersion: 6,
     items: Array.isArray(raw.items) ? raw.items.map((item) => ({
       ...item,
       genres: Array.isArray(item.genres) ? item.genres : [],
@@ -208,6 +234,14 @@ export function migrateEntertainment(raw: Partial<EntertainmentState> | null | u
     groups: Array.isArray(raw.groups) ? raw.groups : [],
     gifts: Array.isArray(raw.gifts) ? raw.gifts : [],
     loans: Array.isArray(raw.loans) ? raw.loans : [],
+    reviewDrafts: Array.isArray(raw.reviewDrafts) ? raw.reviewDrafts : [],
+    fanArt: Array.isArray(raw.fanArt) ? raw.fanArt : [],
+    fanFiction: Array.isArray(raw.fanFiction) ? raw.fanFiction : [],
+    cosplay: Array.isArray(raw.cosplay) ? raw.cosplay : [],
+    quotes: Array.isArray(raw.quotes) ? raw.quotes : [],
+    moodBoards: Array.isArray(raw.moodBoards) ? raw.moodBoards : [],
+    dreamCast: Array.isArray(raw.dreamCast) ? raw.dreamCast : [],
+    whatIfs: Array.isArray(raw.whatIfs) ? raw.whatIfs : [],
     settings: { ...SEED_ENTERTAINMENT.settings, ...(raw.settings ?? {}) },
     lastRolloverMonth: raw.lastRolloverMonth,
   };

@@ -60,7 +60,15 @@ The approved specification contains 96 numbered features. Wave 0 and the first W
 | 76 | Discussion prompts | ✅ deterministic title/creator/genre prompts |
 | 77 | Gift tracker | ✅ recipient/date/note/reaction |
 | 78 | Borrow/loan tracker | ✅ direction/due/overdue/return |
-| 79–87 | Creation/expression | ❌ Wave 8 |
+| 79 | Review writing | ✅ local draft editor + safe preview |
+| 80 | Review templates | ✅ short/long/spoiler-free/bullets |
+| 81 | Fan art storage | ✅ validated local images + media tags |
+| 82 | Fan fiction logger | ✅ words/genre/status/notes |
+| 83 | Cosplay logger | ✅ character/progress/photos/notes |
+| 84 | Quotes vault | ✅ text/speaker/media association |
+| 85 | Mood board | ✅ quote/image tiles + drag reorder |
+| 86 | Dream cast | ✅ book character→actor board |
+| 87 | What-if scenarios | ✅ alternate-path writing log |
 | 88 | Unified dashboard | ✅ Wave 1 core |
 | 89 | Quick Add | ✅ catalogue search + manual modes |
 | 90 | Full-text search | ✅ local library |

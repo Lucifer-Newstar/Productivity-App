@@ -20,7 +20,7 @@ _Last updated: 2026-08-16, Wave 0 + Wave 1 core._
 - [x] Open Library cover redirect chain — allowlisted proxy returns bounded JPEG 200
 - [x] Unconfigured MAL — bounded 503 with configuration guidance
 - [x] Cross-site search and non-allowlisted image host — rejected 403
-- [x] `node scripts/qa-entertainment.js` — 130/130 structural assertions
+- [x] `node scripts/qa-entertainment.js` — 146/146 structural assertions
 - [x] `npm run qa:entertainment:intelligence` — 9/9 executable intelligence tests
 - [x] `npm run qa:entertainment:reports` — 11/11 executable report tests
 - [x] `npm run qa:entertainment:social` — 5/5 executable social tests
@@ -107,6 +107,18 @@ _Last updated: 2026-08-16, Wave 0 + Wave 1 core._
 - [x] Lent/borrowed due/overdue/returned lifecycle
 - [x] Deleting a friend cleans their recommendations
 - [x] Schema v5 backfills every social collection
+- [x] Backend exposes matching generic CRUD resources
+
+## Wave 8 creation-studio checklist
+
+- [x] Four review templates, formatting toolbar and local lifecycle
+- [x] Plain-text preview; no raw HTML rendering
+- [x] Fan-art and cosplay uploads reuse bounded image validation
+- [x] Fan-fiction word/genre/status tracking
+- [x] Cosplay progress and six-photo cap
+- [x] Quotes, dream casts and what-if logs
+- [x] Mood-board quote/image tiles and drag reorder
+- [x] Schema v6 backfills all eight creation collections
 - [x] Backend exposes matching generic CRUD resources
 
 ## Security checklist

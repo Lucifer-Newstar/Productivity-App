@@ -15,7 +15,7 @@ test('rating, review and notes fields',types.includes('rating?:')&&types.include
 test('dates and repeats fields',types.includes('startedAt?:')&&types.includes('completedAt?:')&&types.includes('repeats:'));
 test('priority, queue and tags fields',types.includes('priority:')&&types.includes('queueOrder:')&&types.includes('tags:'));
 test('favorites and archive fields',types.includes('favorite:')&&types.includes('archived:'));
-test('schema version is explicit',types.includes('schemaVersion: 5'));
+test('schema version is explicit',types.includes('schemaVersion: 6'));
 test('defensive migration exists',types.includes('migrateEntertainment'));
 test('first-run seed covers all sections',Array.from(types.matchAll(/type:"(book|comic|manga|movie|series|anime)"/g)).length>=5);
 test('store persists dedicated key',store.includes('"kaizen.entertainment"'));
@@ -88,7 +88,7 @@ test('advanced genre/tag/priority filters exist',page.includes('All genres')&&pa
 test('rating, backlog-age and favorites filters exist',page.includes('Any rating')&&page.includes('Planned 90+ days')&&page.includes('Favorites only'));
 test('smart filters can be reset',page.includes('RESET SMART FILTERS'));
 const deep=read('components/entertainment/EntertainmentMediaDetails.tsx');
-test('schema v5 carries media-specific detail contracts',types.includes('schemaVersion: 5')&&types.includes('BookDetails')&&types.includes('SeriesDetails'));
+test('schema v6 carries media-specific detail contracts',types.includes('schemaVersion: 6')&&types.includes('BookDetails')&&types.includes('SeriesDetails'));
 test('migration backfills all deep-tracking arrays',types.includes('readingLogs: []')&&types.includes('volumes: []')&&types.includes('episodeLogs: []')&&types.includes('voiceActors: []'));
 test('book format and edition tracking exist',deep.includes('Reading format')&&deep.includes('Collector\'s'));
 test('book reading speed and ETA are calculated',deep.includes('PACE')&&deep.includes('EST. LEFT')&&deep.includes('pages/(totals.minutes/60)'));
@@ -107,7 +107,7 @@ test('anime source, studio and seiyuu fields exist',deep.includes('Source materi
 test('anime OP and ED favorites exist',deep.includes('Opening song')&&deep.includes('Ending song')&&deep.includes('Loved the OP')&&deep.includes('Loved the ED'));
 test('favorite creator/studio toggles exist',deep.includes('FAVORITE TALENT')&&types.includes('favoriteCreatorNames')&&types.includes('favoriteStudioNames'));
 const intelligence=read('components/entertainment/EntertainmentIntelligence.tsx');const analytics=read('lib/entertainmentAnalytics.ts');
-test('schema v5 stores countries and franchise order',types.includes('schemaVersion: 5')&&types.includes('franchiseOrder')&&types.includes('countries?:'));
+test('schema v6 stores countries and franchise order',types.includes('schemaVersion: 6')&&types.includes('franchiseOrder')&&types.includes('countries?:'));
 test('recommendations weight genre/tag/creator/studio overlap',analytics.includes('g*3')&&analytics.includes('t*2')&&analytics.includes('c*5')&&analytics.includes('s*4'));
 test('recommendations only target active Plan-to queue',analytics.includes('i.status==="planned"&&!i.archived'));
 test('mood picker filters Plan-to tags',analytics.includes('moodPick')&&analytics.includes('norm(t)===norm(mood)'));
@@ -137,7 +137,7 @@ test('purchase price is editable in details',page.includes('Purchase price (₹)
 test('satisfaction trend uses monthly average ratings',reports.includes('satisfaction:monthly.map')&&stats.includes('Satisfaction over time'));
 test('report algorithms have executable QA',fs.existsSync(path.join(root,'scripts/qa-entertainment-reports.ts')));
 const social=read('components/entertainment/EntertainmentSocial.tsx');const socialMath=read('lib/entertainmentSocial.ts');
-test('schema v5 includes offline social collections',types.includes('schemaVersion: 5')&&types.includes('EntertainmentFriend')&&types.includes('MediaLoan'));
+test('schema v6 includes offline social collections',types.includes('schemaVersion: 6')&&types.includes('EntertainmentFriend')&&types.includes('MediaLoan'));
 test('migration backfills all social arrays',types.includes('friends: Array.isArray')&&types.includes('recommendations: Array.isArray')&&types.includes('loans: Array.isArray'));
 test('Social route is enabled',page.includes('label:"Social",icon:Users,ready:true')&&page.includes('EntertainmentSocial'));
 test('friend CRUD and manual ratings exist',social.includes('Friend name')&&social.includes("friend.ratings[i.id]"));
@@ -150,4 +150,21 @@ test('loan tracker supports both directions and returns',social.includes('I lent
 test('overdue loans receive warning state',social.includes('dueAt<today()')&&social.includes('text-red-300'));
 test('backend mirrors social collections',backend.includes('entertainmentFriends')&&backend.includes('entertainmentLoans'));
 test('social algorithms have executable QA',fs.existsSync(path.join(root,'scripts/qa-entertainment-social.ts')));
+const studio=read('components/entertainment/EntertainmentStudio.tsx');
+test('schema v6 includes all creation collections',types.includes('schemaVersion: 6')&&types.includes('ReviewDraft')&&types.includes('MoodBoard')&&types.includes('WhatIfEntry'));
+test('migration backfills all creation arrays',types.includes('reviewDrafts: Array.isArray')&&types.includes('fanArt: Array.isArray')&&types.includes('whatIfs: Array.isArray'));
+test('Studio route is enabled',page.includes('label:"Studio",icon:Sparkles,ready:true')&&page.includes('EntertainmentStudio'));
+test('review editor has four templates',studio.includes('Short review')&&studio.includes('Long-form')&&studio.includes('Spoiler-free')&&studio.includes('Bullet points'));
+test('review formatting toolbar and drafts exist',studio.includes('wrap("**")')&&studio.includes('MARK PUBLISHED')&&studio.includes('SAFE PLAIN-TEXT PREVIEW'));
+test('review preview renders no raw HTML',!studio.includes('dangerouslySetInnerHTML'));
+test('fan art uses safe bounded image reader',studio.includes('Fan art storage')&&studio.includes('readSafeImageAsDataUrl'));
+test('fan fiction logs words genre and status',studio.includes('Fan fiction logger')&&studio.includes('wordCount')&&studio.includes('drafting'));
+test('cosplay tracks progress and bounded photos',studio.includes('Cosplay project')&&studio.includes('photoDataUrls')&&studio.includes('.slice(-6)'));
+test('quotes vault captures speaker and media',studio.includes('Quotes vault')&&studio.includes('speaker'));
+test('dream cast is limited to books in picker',studio.includes('Dream cast')&&studio.includes('i.type==="book"'));
+test('what-if scenario logger exists',studio.includes('What if…')&&studio.includes('Alternate path'));
+test('mood boards accept quote and safe image tiles',studio.includes('Add quote tile')&&studio.includes('Add image'));
+test('mood board drag reorder is wired',studio.includes('draggable')&&studio.includes('onDrop={()=>move(i)}'));
+test('creation image inputs reject SVG',studio.includes('accept="image/jpeg,image/png,image/webp"'));
+test('backend mirrors creation collections',backend.includes('entertainmentReviewDrafts')&&backend.includes('entertainmentWhatIfs'));
 console.log(`\n${pass} passed, ${fail} failed`); if(fail)process.exit(1);

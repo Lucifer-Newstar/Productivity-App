@@ -55,6 +55,14 @@ Base URL: `http://127.0.0.1:4000/api` (loopback-only by default)
 | Groups | `/entertainment/groups` | Generic CRUD |
 | Gifts | `/entertainment/gifts` | Generic CRUD |
 | Loans | `/entertainment/loans` | Generic CRUD |
+| Review drafts | `/entertainment/review-drafts` | Generic CRUD |
+| Fan art | `/entertainment/fan-art` | Generic CRUD |
+| Fan fiction | `/entertainment/fan-fiction` | Generic CRUD |
+| Cosplay | `/entertainment/cosplay` | Generic CRUD |
+| Quotes | `/entertainment/quotes` | Generic CRUD |
+| Mood boards | `/entertainment/mood-boards` | Generic CRUD |
+| Dream cast | `/entertainment/dream-cast` | Generic CRUD |
+| What-ifs | `/entertainment/what-ifs` | Generic CRUD |
 | Settings | `/entertainment/settings` | Singleton GET/PUT |
 
 The Next.js frontend also exposes same-origin Wave 2 catalogue routes (separate from the Express base URL):

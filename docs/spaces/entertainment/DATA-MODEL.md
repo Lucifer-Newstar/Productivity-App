@@ -2,7 +2,7 @@
 
 ```text
 EntertainmentState
- ├── schemaVersion: 5
+ ├── schemaVersion: 6
  ├── items: EntertainmentItem[]
  │    ├── provider identity + normalized catalogue metadata
  │    ├── type/status/progress/rating/review
@@ -21,12 +21,20 @@ EntertainmentState
  ├── groups: SharedMediaGroup[]
  ├── gifts: MediaGift[]
  ├── loans: MediaLoan[]
+ ├── reviewDrafts: ReviewDraft[]
+ ├── fanArt: FanArtEntry[]
+ ├── fanFiction: FanFictionEntry[]
+ ├── cosplay: CosplayEntry[]
+ ├── quotes: QuoteEntry[]
+ ├── moodBoards: MoodBoard[]
+ ├── dreamCast: DreamCastEntry[]
+ ├── whatIfs: WhatIfEntry[]
  ├── settings: EntertainmentSettings
  └── lastRolloverMonth?: YYYY-MM       # idempotency guard
 ```
 
 `MediaProgress` is a single sparse type with media-specific pairs: pages for books, chapters/volumes for comics and manga, episodes/seasons for series and anime, and a watched boolean for movies.
 
-State persists under `kaizen.entertainment`. Schema v5 retains media/discovery defaults and adds offline-social arrays for friends, recommendations, groups, gifts and loans. `migrateEntertainment()` supplies every array/default and caps loaded event history. All writes use functional `updateEntertainment()` patches.
+State persists under `kaizen.entertainment`. Schema v6 retains media/discovery/social defaults and adds creation-studio arrays for reviews, art, fiction, cosplay, quotes, boards, casts and scenarios. `migrateEntertainment()` supplies every array/default and caps loaded event history. All writes use functional `updateEntertainment()` patches.
 
 Provider metadata is copied into an item at import time. It is not a live foreign object and is never allowed to overwrite personal fields during refresh.
