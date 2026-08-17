@@ -4,7 +4,7 @@
 
 **PARTIALLY CAPTURED — USER-SUPPLIED DEVICE SPECIFICATION; LOCAL TELEMETRY PENDING.**
 
-Tracked manifest: `ai/wave0/config/target-fa506ncr.json`.
+The supplied specification is documented here as a sanitized baseline. Machine-specific expectation files and raw captures remain LOCAL-ONLY.
 
 ## Supplied test-device baseline
 
@@ -41,8 +41,9 @@ Run under AC balanced and AC performance modes:
 ```powershell
 cd ai\wave0
 python scripts\capture_hardware.py `
-  --expected config\target-fa506ncr.json `
-  --output results\target-hardware-ac-balanced.json
+  --expected config\hardware.local.json `
+  --profile-label "AC balanced" `
+  --output results-local\target-hardware-ac-balanced.json
 ```
 
 Repeat with a different output filename after changing the profile. The capture compares detected CPU, threads, RAM, device model, GPU and dedicated VRAM against the supplied manifest.

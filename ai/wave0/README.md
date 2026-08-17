@@ -2,44 +2,72 @@
 
 This directory contains disposable technical-validation tools. It is **not** the production Intelligence Engine and does not implement `get_today()`.
 
-## Safety boundary
+## Public/local safety boundary
 
 - No Kaizen domain state is read or written.
 - No model is downloaded automatically.
-- All model paths are supplied explicitly.
-- All servers must bind to loopback.
-- Benchmark candidates remain candidates until the Wave 0 Selection Report is approved.
-- Outputs belong under `results/`; model files do not belong in this repository.
+- All model/runtime paths are supplied through ignored local configuration.
+- All servers bind to loopback.
+- Benchmark candidates remain candidates until the final Wave 0 report is approved.
+- Raw captures, logs, outputs and machine configuration belong under ignored `results-local/` and `*.local.json` files.
+- Only allowlist-sanitized aggregates may enter `results-public/`.
+- Model files never belong in this repository.
+- If a file might identify a person or machine, keep it local.
+
+See [`../../docs/ai/PRIVACY.md`](../../docs/ai/PRIVACY.md).
 
 ## Quick start on the target Windows laptop
 
 ```powershell
 cd ai\wave0
-python scripts\capture_hardware.py --output results\hardware.json
-Copy-Item config\candidates.example.json config\candidates.local.json
-# Edit model paths and llama-server path in candidates.local.json
-python scripts\run_benchmarks.py --config config\candidates.local.json --output results\model-benchmark.json
-python scripts\benchmark_retrieval.py --output results\retrieval-fts.json
+Copy-Item config\hardware.local.example.json config\hardware.local.json
+Copy-Item config\candidates.local.example.json config\candidates.local.json
+# Fill both LOCAL-ONLY files; never commit them.
+
+python scripts\capture_hardware.py `
+  --expected config\hardware.local.json `
+  --profile-label "AC performance" `
+  --output results-local\hardware-ac-performance.json
+
+python scripts\run_benchmarks.py `
+  --config config\candidates.local.json `
+  --output results-local\model-benchmark.json
+
+python scripts\benchmark_retrieval.py --output results-local\retrieval-fts.json
 node prototypes\revision-coordinator.mjs
 python prototypes\pairing_server.py --self-test
 ```
 
+After review, create a minimal public aggregate:
+
+```powershell
+python scripts\sanitize_results.py `
+  --hardware results-local\hardware-ac-performance.json `
+  --models results-local\model-benchmark.json `
+  --retrieval results-local\retrieval-fts.json `
+  --output results-public\wave0-aggregate.json
+
+python scripts\privacy_scan.py --mode staged
+```
+
 ## Required external runtime
 
-Use an explicit, verified `llama-server`/`llama-bench` build. Record its version/hash in local configuration. The harness communicates through loopback OpenAI-compatible endpoints and does not link Kaizen to a particular llama.cpp build.
+Use an explicit, verified `llama-server`/`llama-bench` build. Record version and SHA-256 locally. The harness communicates through loopback OpenAI-compatible endpoints and does not link Kaizen to a permanent llama.cpp build.
 
 ## Contents
 
-- `config/candidates.example.json` — candidate matrix template
-- `scripts/capture_hardware.py` — hardware, NVIDIA and power-mode capture
-- `scripts/run_benchmarks.py` — lifecycle, latency, structured JSON, tool-call and concurrency runs
-- `scripts/benchmark_retrieval.py` — SQLite FTS5 latency and ranking baseline
-- `scripts/monitor_nvidia.py` — sampled VRAM/utilization/power/temperature log
-- `prototypes/revision-coordinator.mjs` — revision/epoch/snapshot prototype tests
-- `prototypes/pairing_server.py` — isolated pairing/session/origin security prototype
-- `scenarios/kaizen-eval.json` — model evaluation cases
-- `results/` — ignored measured outputs
+- `config/*.local.example.json` — public placeholder templates
+- `scripts/capture_hardware.py` — LOCAL-ONLY hardware/NVIDIA/power capture
+- `scripts/run_benchmarks.py` — lifecycle, latency, resource, structured/tool and concurrency runs
+- `scripts/benchmark_retrieval.py` — SQLite FTS5 baseline
+- `scripts/monitor_nvidia.py` — LOCAL-ONLY sampled VRAM/power/thermal log
+- `scripts/sanitize_results.py` — allowlist aggregate exporter
+- `scripts/privacy_scan.py` — staged/tracked privacy and secret gate
+- `prototypes/` — isolated revision, pairing and mock-runtime tests
+- `scenarios/kaizen-eval.json` — synthetic Kaizen workloads
+- `results-local/` — ignored raw artifacts; remains on owner machine
+- `results-public/` — reviewed sanitized aggregates only
 
 ## Target-machine requirement
 
-Results measured in the Arena sandbox are not valid RTX 3050 selection evidence. Final hardware/model/thermal results must be generated on the target laptop and attached to the selection report.
+Arena sandbox measurements cannot select a model. Final hardware/model/thermal results must be generated locally, sanitized for review, and incorporated into `docs/ai/WAVE-0-REPORT.md`.

@@ -78,10 +78,17 @@ desktop.ini
 tmp/
 temp/
 
-# Wave 0 local AI artifacts (never commit models, private paths, or raw runs)
-ai/wave0/config/candidates.local.json
+# Wave 0 LOCAL-ONLY artifacts — never commit
+ai/wave0/results-local/
+ai/wave0/results/
 ai/wave0/models/
-ai/wave0/results/*
-!ai/wave0/results/.gitignore
+ai/wave0/config/*.local.json
+ai/wave0/config/*.local.yaml
+ai/wave0/config/*.local.yml
+!ai/wave0/config/candidates.local.example.json
+!ai/wave0/config/hardware.local.example.json
 *.gguf
 *.server.log
+*.thermal.csv
+*.hardware.json
+*.benchmark.json

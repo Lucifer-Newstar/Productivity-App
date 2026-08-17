@@ -54,14 +54,7 @@ KAIZEN_API_KEY=development-only-secret npm start
 
 ## Git identity
 
-Repository commits use:
-
-```bash
-git config user.name "Lucifer-Newstar"
-git config user.email "navin.jairam@gmail.com"
-```
-
-The sandbox does not persist `.git/config` between every environment restoration, so verify identity before committing.
+Configure the repository-owner identity locally and verify it before committing. Do not place personal email addresses, tokens or credentials in tracked setup documentation.
 
 ## Common problems
 

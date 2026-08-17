@@ -12,6 +12,45 @@
 - Memory is visible and deletable.
 - Secrets never enter normal frontend persistence or AI context.
 
+## Public repository vs LOCAL-ONLY boundary
+
+**LOCKED DECISION:** the `ai` branch and repository are public. Wave 0 uses an allowlist publication model: raw artifacts are private unless a sanitizer explicitly projects approved aggregate fields.
+
+### Public repository may contain
+
+- architecture, interfaces, schemas and source code,
+- synthetic evaluation fixtures containing no real user records,
+- benchmark methodology and placeholder configuration examples,
+- sanitized aggregate measurements,
+- sanitized recommendations and rejected-candidate reasoning.
+
+### LOCAL-ONLY — never commit
+
+- personal identity/contact/education identifiers,
+- secrets, tokens, passwords, credentials and private keys,
+- usernames, home paths, hostnames, serials, MAC addresses, GPU UUIDs, BIOS/device/license identifiers,
+- raw hardware captures, per-sample telemetry, thermal CSVs, server logs and machine-specific configuration,
+- model files,
+- Kaizen state exports or real tasks, notes, habits, career/resume, health/workout, calendar or entertainment data,
+- AI conversations, memory, embeddings/vector indexes and personal documents,
+- personal benchmark prompts or raw model outputs.
+
+### Wave 0 filesystem contract
+
+```text
+ai/wave0/results-local/   LOCAL-ONLY, gitignored; raw captures and outputs
+ai/wave0/config/*.local.json  LOCAL-ONLY, gitignored machine configuration
+ai/wave0/results-public/  PUBLIC only after allowlist sanitization and review
+```
+
+`sanitize_results.py` copies only approved aggregate fields; it never copies raw prompts/responses, paths, IDs or sample logs. `privacy_scan.py` blocks sensitive staged paths and common secret/identifier patterns. The tracked pre-commit hook invokes the staged scan. Contributors enable it with:
+
+```bash
+git config core.hooksPath .githooks
+```
+
+The hook is defense in depth, not permission to commit questionable data. If uncertain, keep the file under `results-local/`.
+
 ## Consent model
 
 Consent is explicit, revocable and scoped by:

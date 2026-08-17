@@ -14,7 +14,7 @@ Windows 11 — edition/build pending local capture
 180 W adapter
 ```
 
-Tracked machine manifest: `ai/wave0/config/target-fa506ncr.json`.
+The public repository stores only a generic `hardware.local.example.json`. Copy it to ignored `hardware.local.json` and fill the supplied target expectations locally. Raw machine data never enters Git.
 
 ## Phase A — capture
 
@@ -23,8 +23,9 @@ In PowerShell:
 ```powershell
 cd <repo>\ai\wave0
 python scripts\capture_hardware.py `
-  --expected config\target-fa506ncr.json `
-  --output results\target-hardware-ac-balanced.json
+  --expected config\hardware.local.json `
+  --profile-label "AC balanced" `
+  --output results-local\target-hardware-ac-balanced.json
 ```
 
 Record the ASUS/Armoury Crate profile and active Windows power scheme. Repeat as `target-hardware-ac-performance.json` after selecting the intended performance profile.
@@ -42,7 +43,7 @@ Get-FileHash C:\tools\llama.cpp\llama-server.exe -Algorithm SHA256
 Get-FileHash C:\models\MODEL.gguf -Algorithm SHA256
 ```
 
-6. Copy `config\candidates.fa506ncr.template.json` to ignored `config\candidates.local.json`, update paths/hashes/licenses, and enable one candidate at a time.
+6. Copy `config\candidates.local.example.json` to ignored `config\candidates.local.json`, update paths/hashes/licenses, and enable one candidate at a time.
 
 ## Phase C — baseline and inference
 
@@ -51,7 +52,7 @@ For each power profile and candidate:
 ```powershell
 python scripts\run_benchmarks.py `
   --config config\candidates.local.json `
-  --output results\MODEL-ac-performance.json
+  --output results-local\MODEL-ac-performance.json
 ```
 
 The runner executes native llama-bench when configured, model startup/shutdown, 4K/8K contexts, structured/tool scenarios, concurrency 1/2, and NVIDIA sampling.
@@ -62,7 +63,7 @@ Run each finalist for a 30-minute sustained sample while monitoring NVIDIA metri
 python scripts\monitor_nvidia.py `
   --duration 1800 `
   --interval 1 `
-  --output results\MODEL-thermal-30m.csv
+  --output results-local\MODEL-thermal-30m.csv
 ```
 
 A separate repeated model request/load must run during the same interval; an idle monitor is not a thermal test.

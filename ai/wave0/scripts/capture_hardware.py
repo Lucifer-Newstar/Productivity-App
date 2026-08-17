@@ -32,12 +32,15 @@ def total_memory_bytes() -> int | None:
 def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--output", required=True)
-    ap.add_argument("--expected", help="Optional tracked target manifest to compare against")
+    ap.add_argument("--expected", help="Optional LOCAL-ONLY expectation manifest to compare against")
+    ap.add_argument("--profile-label", required=True, help="Non-identifying label such as 'AC performance'")
     args = ap.parse_args()
     nvidia = shutil.which("nvidia-smi")
     data = {
         "schemaVersion": 1,
         "capturedAt": dt.datetime.now(dt.timezone.utc).isoformat(),
+        "classification": "LOCAL-ONLY-RAW",
+        "benchmarkProfileLabel": args.profile_label,
         "platform": {"system": platform.system(), "release": platform.release(), "version": platform.version(), "machine": platform.machine()},
         "cpu": {"label": platform.processor(), "logicalCores": os.cpu_count()},
         "memory": {"totalBytes": total_memory_bytes()},
@@ -57,12 +60,12 @@ def main() -> None:
         data["power"]["activeScheme"] = run(["powercfg", "/getactivescheme"])
         data["commands"]["battery"] = powershell("Get-CimInstance Win32_Battery | Select-Object BatteryStatus,EstimatedChargeRemaining | ConvertTo-Json -Compress")
     else:
-        for name, cmd in {"lscpu": ["lscpu"], "memory": ["free", "-b"], "uname": ["uname", "-a"]}.items():
+        for name, cmd in {"lscpu": ["lscpu"], "memory": ["free", "-b"]}.items():
             if shutil.which(cmd[0]): data["commands"][name] = run(cmd)
     if nvidia:
-        query = "name,uuid,memory.total,memory.free,driver_version,power.limit,power.default_limit,temperature.gpu,pstate"
+        query = "name,memory.total,memory.free,driver_version,power.limit,power.default_limit,temperature.gpu,pstate"
         data["nvidia"]["query"] = run([nvidia, f"--query-gpu={query}", "--format=csv,noheader,nounits"])
-        data["nvidia"]["full"] = run([nvidia, "-q"])
+        data["nvidia"]["summary"] = run([nvidia])
     else:
         data["requiredManualFields"].append("Exact RTX 3050 Laptop GPU VRAM cannot be captured: nvidia-smi unavailable")
     data["requiredManualFields"].extend([
@@ -89,7 +92,7 @@ def main() -> None:
         add("GPU model", "pass" if exp_gpu and exp_gpu.lower() in blob else "unknown", exp_gpu)
         exp_vram=expected.get("gpu",{}).get("dedicatedVramMiB");query=data.get("nvidia",{}).get("query",{}).get("stdout","")
         detected_vram=None
-        try: detected_vram=float(query.split(",")[2].strip())
+        try: detected_vram=float(query.split(",")[1].strip())
         except (ValueError,IndexError): pass
         add("dedicated VRAM", "pass" if detected_vram and abs(detected_vram-exp_vram)<128 else "unknown", f"{exp_vram} MiB", detected_vram)
         data["expectedManifest"]={"path":str(expected_path),"checks":checks,"allDetectedChecksPass":all(x["status"]=="pass" for x in checks)}

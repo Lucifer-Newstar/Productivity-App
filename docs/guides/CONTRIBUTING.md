@@ -9,12 +9,7 @@
 
 ## Commit identity
 
-```bash
-git config user.name "Lucifer-Newstar"
-git config user.email "navin.jairam@gmail.com"
-```
-
-Verify with `git log -1 --format='%an <%ae>'`.
+Use the repository-owner identity configured outside tracked files. Verify it before every commit; never document personal email addresses or credentials in this public repository.
 
 ## Commit style
 

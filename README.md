@@ -36,10 +36,6 @@ npm ci
 npm run dev          # http://localhost:4000
 ```
 
-Git credentials for this repo are configured as
-`Lucifer-Newstar <navin.jairam@gmail.com>`. When pushing rewritten history
-(after `filter-branch`), use `--force-with-lease`.
-
 ## Scripts
 
 ```bash

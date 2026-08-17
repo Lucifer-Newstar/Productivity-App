@@ -124,4 +124,4 @@ KAIZEN_API_KEY=security-test-key npm run security:test
 
 - Stable baseline: `main` / `origin/main`, including AFTERGLOW v1.0, global notifications and security/docs hardening.
 - The `entertainment` feature branch was merged through pull request #2 on 2026-08-17.
-- Feature commit author: `Lucifer-Newstar <navin.jairam@gmail.com>`.
+- Feature commits use the repository-owner identity configured outside tracked documentation.
