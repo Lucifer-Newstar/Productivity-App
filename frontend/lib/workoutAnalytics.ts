@@ -1,7 +1,7 @@
 /**
  * Workout analytics — pure helpers used across the workout page.
  *
- * Algorithms implemented here (documented in docs/ALGORITHMS.md):
+ * Algorithms implemented here (documented in docs/reference/ALGORITHMS.md):
  *  - 1RM estimates (Epley + Brzycki)
  *  - Training Max (90% of 1RM) for 5/3/1-style programming
  *  - Weekly muscle volume for the anatomical heatmap (secondary muscles @ 40%)
@@ -33,6 +33,7 @@ import type {
   CaliFail, CalisthenicsSkill,
 } from "./types";
 import { MUSCLE_FILTER_GROUP } from "./types";
+import { csvCell } from "./security";
 
 // ---------- 1RM estimates ----------
 
@@ -289,7 +290,7 @@ export function exportCSV(
       [c.routeName, c.fuel, c.notes].filter(Boolean).join(" · "),
     ]);
   }
-  return rows.map((r) => r.map((cell) => `"${String(cell).replace(/"/g, '""')}"`).join(",")).join("\n");
+  return rows.map((r) => r.map(csvCell).join(",")).join("\n");
 }
 
 // ---------- Beep ----------

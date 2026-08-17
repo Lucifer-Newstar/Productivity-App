@@ -48,7 +48,7 @@ export default function Habits() {
   const [icon, setIcon] = useState("flame");
   const [color, setColor] = useState(COLORS[0]);
 
-  useEffect(() => { localStorage.setItem("kaizen.habits", JSON.stringify(habits)); }, [habits]);
+  useEffect(() => { try { localStorage.setItem("kaizen.habits", JSON.stringify(habits)); } catch { window.dispatchEvent(new CustomEvent("kaizen:storage-error", { detail: { key: "kaizen.habits", reason: "quota" } })); } }, [habits]);
 
   const days = Array.from({ length: 7 }, (_, i) => {
     const d = new Date();

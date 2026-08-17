@@ -18,6 +18,7 @@ import type {
   JournalEntry, OrthostaticTest,
 } from "./healthTypes";
 import { INDIAN_DEFICIENCY_CONTEXT } from "./healthTypes";
+import { csvCell } from "./security";
 
 // ---------------- BMR / TDEE / BMI ----------------
 
@@ -862,7 +863,7 @@ export function weeklyReport(summaries: DailyHealthSummary[]) {
 /** Flat CSV export of daily summaries. */
 export function exportHealthCSV(summaries: DailyHealthSummary[]): string {
   const header = ["date","sleep_hours","sleep_score","kcal","protein_g","water_ml","hydration_pct","workout","volume_kg","workout_min","rhr","bp_sys","bp_dia","mood","stress","energy","meditation_min","gratitude_count","supps_taken","supps_total","completion_pct"];
-  const rows = [header.join(",")];
+  const rows = [header.map(csvCell).join(",")];
   for (const s of summaries) {
     rows.push([
       s.date, s.sleepHours.toFixed(1), s.sleepScore,
@@ -871,7 +872,7 @@ export function exportHealthCSV(summaries: DailyHealthSummary[]): string {
       s.restingHr??"", s.systolic??"", s.diastolic??"",
       s.mood??"", s.stress??"", s.energy??"",
       s.meditatedMin, s.gratitudeCount, s.suppsTaken, s.suppsTotal, s.completed,
-    ].join(","));
+    ].map(csvCell).join(","));
   }
   return rows.join("\n");
 }

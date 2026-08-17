@@ -18,9 +18,8 @@
 
 import React, { createContext, useContext, useEffect, useRef, useState, useCallback } from "react";
   import type {
-  Task, Note, SpaceId,
-  CareerState, CareerTrack, CareerConcept, CareerSubConcept,
-  CareerNote, CareerBullet, CareerGoal, CareerAchievement,
+  Task, Note,
+  CareerState, CareerTrack, CareerConcept,
   WorkoutState, WorkoutExercise, WorkoutPR, WorkoutPRAttempt, WorkoutSkill, WorkoutProgression,
   WorkoutRoutine, WorkoutBlock, WorkoutSession, WorkoutSetLog,
   WorkoutUnit, WorkoutReadiness, WorkoutBadge, WorkoutBodyweight,
@@ -33,8 +32,8 @@ import React, { createContext, useContext, useEffect, useRef, useState, useCallb
   CareerRoadmap, CareerSkill, CareerCourse, NetworkContact, JobApplication,
   CompanyDossier, PortfolioProject, WorkDayEntry, TimelineEvent,
 } from "./types";
-import { SPACES } from "./types";
 import { evaluateBadges, epley1RM, readinessScore as computeReadiness } from "./workoutAnalytics";
+import { csvCell } from "./security";
 import { DEFAULT_EXERCISES } from "./exerciseLibrary";
 import { TEMPLATE_LIST, cloneTemplate } from "./careerRoadmaps";
 import type {
@@ -47,6 +46,10 @@ import type {
   HealthState, HealthProfile, HealthSettings,
 } from "./healthTypes";
 import { emptyHealthState, DEFAULT_BEDTIME_ROUTINE, DEFAULT_WAKE_ROUTINE, SEED_SUPPLEMENT_DEFS } from "./healthTypes";
+import type { EntertainmentState } from "./entertainmentTypes";
+import { SEED_ENTERTAINMENT, migrateEntertainment } from "./entertainmentTypes";
+import type { NotificationState, KaizenNotification } from "./notificationTypes";
+import { EMPTY_NOTIFICATION_STATE, migrateNotifications } from "./notificationTypes";
 import { isDoneStatus as isTaskDone } from "../components/forge/forgeUtils";
 
 // Generate ids for runtime-created entities.
@@ -658,26 +661,14 @@ interface StoreState {
   // health (VITAL-SIGN OS)
   health: HealthState;
   updateHealth: (updater: (h: HealthState) => Partial<HealthState> | HealthState) => void;
-  addTrack: (name: string, color: string) => void;
-  updateTrack: (id: string, patch: Partial<CareerTrack>) => void; deleteTrack: (id: string) => void;
-  addConcept: (trackId: string, title: string) => void;
-  updateConcept: (trackId: string, conceptId: string, patch: Partial<CareerConcept>) => void;
-  deleteConcept: (trackId: string, conceptId: string) => void;
-  addSubConcept: (trackId: string, conceptId: string, title: string) => void;
-  toggleSubConcept: (trackId: string, conceptId: string, subId: string) => void;
-  updateSubConcept: (trackId: string, conceptId: string, subId: string, patch: Partial<CareerSubConcept>) => void;
-  deleteSubConcept: (trackId: string, conceptId: string, subId: string) => void;
-  addCareerNote: (trackId: string, title: string, content?: string) => void;
-  updateCareerNote: (trackId: string, id: string, patch: Partial<CareerNote>) => void;
-  deleteCareerNote: (trackId: string, id: string) => void;
-  addResumeBullet: (trackId: string, text: string) => void;
-  updateResumeBullet: (trackId: string, id: string, text: string) => void;
-  deleteResumeBullet: (trackId: string, id: string) => void;
-  addGoal: (title: string) => void; toggleGoal: (id: string) => void;
-  updateGoal: (id: string, patch: Partial<CareerGoal>) => void;
-  deleteGoal: (id: string) => void;
-  addAchievement: (a: Omit<CareerAchievement, "id">) => void; deleteAchievement: (id: string) => void;
-  setLinkedin: (v: string) => void;
+  // entertainment (cinema/media OS)
+  entertainment: EntertainmentState;
+  updateEntertainment: (updater: (e: EntertainmentState) => Partial<EntertainmentState> | EntertainmentState) => void;
+  notifications: NotificationState;
+  updateNotifications: (updater: (n: NotificationState) => Partial<NotificationState> | NotificationState) => void;
+  addNotification: (n: Omit<KaizenNotification,"id"|"createdAt"> & {createdAt?:number}) => void;
+  markNotificationRead: (id:string) => void;
+  dismissNotification: (id:string) => void;
   // Generic mutator for new career domain (roadmaps/skills/courses/etc). Accepts
   // an updater that returns a patch to the CareerState (or the whole new state).
   updateCareer: (updater: (c: CareerState) => Partial<CareerState> | CareerState) => void;
@@ -777,7 +768,7 @@ function useLocalState<T>(key: string, seed: T, migrate?: (raw: any) => T): [T, 
     hydrated.current = true;
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [key]);
-  useEffect(() => { if (hydrated.current) localStorage.setItem(key, JSON.stringify(v)); }, [key, v]);
+  useEffect(() => { if (!hydrated.current) return; try { localStorage.setItem(key, JSON.stringify(v)); } catch (error) { window.dispatchEvent(new CustomEvent("kaizen:storage-error", { detail: { key, reason: error instanceof Error ? error.name : "storage-error" } })); } }, [key, v]);
   return [v, setV];
 }
 
@@ -893,6 +884,8 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
   const [workout, setWorkout] = useLocalState<WorkoutState>("kaizen.workout", SEED_WORKOUT, migrateWorkout);
   const [forge, setForge]     = useLocalState<ForgeState>("kaizen.forge", SEED_FORGE, migrateForge);
   const [health, setHealth]   = useLocalState<HealthState>("kaizen.health", SEED_HEALTH, migrateHealth);
+  const [entertainment, setEntertainment] = useLocalState<EntertainmentState>("kaizen.entertainment", SEED_ENTERTAINMENT, migrateEntertainment);
+  const [notifications, setNotifications] = useLocalState<NotificationState>("kaizen.notifications", EMPTY_NOTIFICATION_STATE, migrateNotifications);
 
   useEffect(() => {
     ["prod.tasks","prod.notes","prod.projects","prod.habits"].forEach((k) => localStorage.removeItem(k));
@@ -916,64 +909,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
   const togglePinNote = useCallback((id: string) =>
     setNotes((p) => p.map((n) => n.id === id ? { ...n, pinned: !n.pinned } : n)), [setNotes]);
 
-  // ---- Career ----
-  const addTrack: StoreState["addTrack"] = useCallback((name, color) =>
-    setCareer((c) => ({ ...c, tracks: [...c.tracks, { id: uid(), name, color, concepts: [], notes: [], resumeBullets: [] }] })), [setCareer]);
-  const updateTrack = useCallback((id: string, patch: Partial<CareerTrack>) =>
-    setCareer((c) => ({ ...c, tracks: c.tracks.map((t) => t.id === id ? { ...t, ...patch } : t) })), [setCareer]);
-  const deleteTrack = useCallback((id: string) =>
-    setCareer((c) => ({ ...c, tracks: c.tracks.filter((t) => t.id !== id),
-      goals: c.goals.map((g) => g.trackId === id ? { ...g, trackId: undefined } : g),
-      achievements: c.achievements.map((a) => a.trackId === id ? { ...a, trackId: undefined } : a) })), [setCareer]);
-  const addConcept = useCallback((tid: string, title: string) =>
-    setCareer((c) => ({ ...c, tracks: c.tracks.map((t) => t.id === tid ? { ...t, concepts: [...t.concepts, { id: uid(), title, subConcepts: [] }] } : t) })), [setCareer]);
-  const updateConcept = useCallback((tid: string, cid: string, patch: Partial<CareerConcept>) =>
-    setCareer((c) => ({ ...c, tracks: c.tracks.map((t) => t.id === tid ? { ...t, concepts: t.concepts.map((cc) => cc.id === cid ? { ...cc, ...patch } : cc) } : t) })), [setCareer]);
-  const deleteConcept = useCallback((tid: string, cid: string) =>
-    setCareer((c) => ({ ...c, tracks: c.tracks.map((t) => t.id === tid ? { ...t, concepts: t.concepts.filter((cc) => cc.id !== cid) } : t) })), [setCareer]);
-  const addSubConcept = useCallback((tid: string, cid: string, title: string) =>
-    setCareer((c) => ({ ...c, tracks: c.tracks.map((t) => t.id === tid ? { ...t, concepts: t.concepts.map((cc) => cc.id === cid ? { ...cc, subConcepts: [...cc.subConcepts, { id: uid(), title, done: false }] } : cc) } : t) })), [setCareer]);
-  const toggleSubConcept = useCallback((tid: string, cid: string, sid: string) =>
-    setCareer((c) => ({ ...c, tracks: c.tracks.map((t) => t.id === tid ? { ...t, concepts: t.concepts.map((cc) => cc.id === cid ? { ...cc, subConcepts: cc.subConcepts.map((sc) => sc.id === sid ? { ...sc, done: !sc.done } : sc) } : cc) } : t) })), [setCareer]);
-  const updateSubConcept = useCallback((tid: string, cid: string, sid: string, patch: Partial<CareerSubConcept>) =>
-    setCareer((c) => ({ ...c, tracks: c.tracks.map((t) => t.id === tid ? { ...t, concepts: t.concepts.map((cc) => cc.id === cid ? { ...cc, subConcepts: cc.subConcepts.map((sc) => sc.id === sid ? { ...sc, ...patch } : sc) } : cc) } : t) })), [setCareer]);
-  const deleteSubConcept = useCallback((tid: string, cid: string, sid: string) =>
-    setCareer((c) => ({ ...c, tracks: c.tracks.map((t) => t.id === tid ? { ...t, concepts: t.concepts.map((cc) => cc.id === cid ? { ...cc, subConcepts: cc.subConcepts.filter((sc) => sc.id !== sid) } : cc) } : t) })), [setCareer]);
-  const addCareerNote = useCallback((tid: string, title: string, content = "") =>
-    setCareer((c) => ({ ...c, tracks: c.tracks.map((t) => t.id === tid ? { ...t, notes: [{ id: uid(), title, content, updatedAt: Date.now() }, ...t.notes] } : t) })), [setCareer]);
-  const updateCareerNote = useCallback((tid: string, id: string, patch: Partial<CareerNote>) =>
-    setCareer((c) => ({ ...c, tracks: c.tracks.map((t) => t.id === tid ? { ...t, notes: t.notes.map((n) => n.id === id ? { ...n, ...patch, updatedAt: Date.now() } : n) } : t) })), [setCareer]);
-  const deleteCareerNote = useCallback((tid: string, id: string) =>
-    setCareer((c) => ({ ...c, tracks: c.tracks.map((t) => t.id === tid ? { ...t, notes: t.notes.filter((n) => n.id !== id) } : t) })), [setCareer]);
-  const addResumeBullet = useCallback((tid: string, text: string) =>
-    setCareer((c) => ({ ...c, tracks: c.tracks.map((t) => t.id === tid ? { ...t, resumeBullets: [...t.resumeBullets, { id: uid(), text }] } : t) })), [setCareer]);
-  const updateResumeBullet = useCallback((tid: string, id: string, text: string) =>
-    setCareer((c) => ({ ...c, tracks: c.tracks.map((t) => t.id === tid ? { ...t, resumeBullets: t.resumeBullets.map((b) => b.id === id ? { ...b, text } : b) } : t) })), [setCareer]);
-  const deleteResumeBullet = useCallback((tid: string, id: string) =>
-    setCareer((c) => ({ ...c, tracks: c.tracks.map((t) => t.id === tid ? { ...t, resumeBullets: t.resumeBullets.filter((b) => b.id !== id) } : t) })), [setCareer]);
-  const addGoal = useCallback((title: string) =>
-    setCareer((c) => ({ ...c, goals: [{ id: uid(), title, done: false }, ...c.goals] })), [setCareer]);
-  const toggleGoal = useCallback((id: string) =>
-    setCareer((c) => ({ ...c, goals: c.goals.map((g) => g.id === id ? { ...g, done: !g.done } : g) })), [setCareer]);
-  const updateGoal = useCallback((id: string, patch: Partial<CareerGoal>) =>
-    setCareer((c) => ({ ...c, goals: c.goals.map((g) => g.id === id ? { ...g, ...patch } : g) })), [setCareer]);
-  const deleteGoal = useCallback((id: string) =>
-    setCareer((c) => ({ ...c, goals: c.goals.filter((g) => g.id !== id) })), [setCareer]);
-  const addAchievement = useCallback((a: Omit<CareerAchievement, "id">) =>
-    setCareer((c) => ({ ...c, achievements: [{
-      id: uid(),
-      title: a.title,
-      date: a.date ?? new Date().toISOString().slice(0,10),
-      category: "other" as const,
-      description: a.description,
-      icon: a.icon,
-      trackId: a.trackId,
-    }, ...c.achievements] })), [setCareer]);
-  const deleteAchievement = useCallback((id: string) =>
-    setCareer((c) => ({ ...c, achievements: c.achievements.filter((a) => a.id !== id) })), [setCareer]);
-  const setLinkedin = useCallback((v: string) => setCareer((c) => ({ ...c, linkedin: v })), [setCareer]);
-
-  // ---- New career domain ----
+  // ---- Career domain ----
   const updateCareer = useCallback<StoreState["updateCareer"]>((updater) =>
     setCareer((c) => {
       const patch = updater(c);
@@ -1022,6 +958,16 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
       const patch = updater(h);
       return { ...h, ...patch };
     }), [setHealth]);
+
+  const updateEntertainment = useCallback<StoreState["updateEntertainment"]>((updater) =>
+    setEntertainment((state) => {
+      const patch = updater(state);
+      return { ...state, ...patch };
+    }), [setEntertainment]);
+  const updateNotifications = useCallback<StoreState["updateNotifications"]>((updater)=>setNotifications(state=>({...state,...updater(state)})),[setNotifications]);
+  const addNotification = useCallback<StoreState["addNotification"]>((entry)=>setNotifications(state=>state.items.some(x=>x.sourceKey===entry.sourceKey)?state:{...state,items:[{...entry,id:uid(),createdAt:entry.createdAt??Date.now()},...state.items].slice(0,2000)}),[setNotifications]);
+  const markNotificationRead=useCallback((id:string)=>setNotifications(s=>({...s,items:s.items.map(x=>x.id===id?{...x,readAt:x.readAt??Date.now()}:x)})),[setNotifications]);
+  const dismissNotification=useCallback((id:string)=>setNotifications(s=>({...s,items:s.items.map(x=>x.id===id?{...x,dismissedAt:Date.now(),readAt:x.readAt??Date.now()}:x)})),[setNotifications]);
 
   const addRoadmapFromTemplate = useCallback<StoreState["addRoadmapFromTemplate"]>((templateId, name) => {
     setCareer((c) => {
@@ -1330,7 +1276,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
       rows.push(["cardio", c.date, c.type, "", c.distanceMeters != null ? String(c.distanceMeters) : "", "m",
         "", "", "", String(c.durationSec), "", c.notes ?? ""]);
     }
-    return rows.map((r) => r.map((c) => `"${String(c).replace(/"/g,'""')}"`).join(",")).join("\n");
+    return rows.map((r) => r.map(csvCell).join(",")).join("\n");
   }, [workout, getExerciseForBlock]);
 
   // ---- Calisthenics ----
@@ -1603,16 +1549,13 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
   const value: StoreState = {
     tasks, notes, addTask, toggleTask, deleteTask, updateTask,
     addNote, updateNote, deleteNote, togglePinNote,
-    career, addTrack, updateTrack, deleteTrack, addConcept, updateConcept, deleteConcept,
-    addSubConcept, toggleSubConcept, updateSubConcept, deleteSubConcept,
-    addCareerNote, updateCareerNote, deleteCareerNote, addResumeBullet, updateResumeBullet, deleteResumeBullet,
-    addGoal, toggleGoal, updateGoal, deleteGoal,
-    addAchievement, deleteAchievement, setLinkedin,
-    updateCareer, addRoadmapFromTemplate, toggleMilestoneDone, updateMilestone,
+    career, updateCareer, addRoadmapFromTemplate, toggleMilestoneDone, updateMilestone,
     toggleLabItem, toggleResourceComplete, toggleProjectComplete, setQuizAnswer, logMilestoneHours,
     archiveRoadmap, deleteRoadmap, seedCareerDemo,
     forge, updateForge, seedForgeDemo, logForgeAction,
     health, updateHealth,
+    entertainment, updateEntertainment,
+    notifications, updateNotifications, addNotification, markNotificationRead, dismissNotification,
     workout, addExercise, updateExercise, deleteExercise,
     logPR, deletePR, addSkill, deleteSkill, addProgression, toggleProgressionDone, updateProgression, deleteProgression,
     addRoutine, updateRoutine, deleteRoutine, addBlock, updateBlock, deleteBlock, reorderBlocks,
@@ -1638,8 +1581,4 @@ export function useStore() {
   const ctx = useContext(StoreContext);
   if (!ctx) throw new Error("useStore must be used within StoreProvider");
   return ctx;
-}
-
-export function useSpace(spaceId: SpaceId) {
-  return SPACES.find((s) => s.id === spaceId)!;
 }

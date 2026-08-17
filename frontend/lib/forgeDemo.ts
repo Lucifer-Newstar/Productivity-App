@@ -113,7 +113,7 @@ export function buildForgeDemo(): ForgeState {
     ],
     costBenefit: { oneTimeCost: 0, ongoingCost: 0, projectedBenefit: 9999 },
     fileLinks: [
-      { label: "spec", path: "docs/FEATURES.md" },
+      { label: "spec", path: "docs/reference/FEATURES.md" },
       { label: "figma", path: "local://forge-board" },
     ],
     risks: [

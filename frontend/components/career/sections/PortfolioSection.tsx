@@ -10,6 +10,7 @@ import { useMemo, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Plus, Trophy, Trash2, ExternalLink, Eye, EyeOff, Sparkles, Star, Terminal, Copy, CheckCircle2, Target } from "lucide-react";
 import { useStore } from "../../../lib/store";
+import { safeExternalUrl } from "../../../lib/security";
 import type { Achievement, AchievementCategory, PortfolioProject, ResumeBullet, Testimonial } from "../../../lib/careerTypes";
 
 // HUD palette — portfolio = yellow primary
@@ -446,7 +447,7 @@ export default function PortfolioSection() {
                           <EyeOff size={9}/> PRIVATE
                         </span>
                       )}
-                      {p.url && <a href={p.url} target="_blank" rel="noopener" className="transition hover:scale-110" style={{ color: CYAN }}><ExternalLink size={11}/></a>}
+                      {safeExternalUrl(p.url) && <a href={safeExternalUrl(p.url)!} target="_blank" rel="noopener noreferrer" className="transition hover:scale-110" style={{ color: CYAN }}><ExternalLink size={11}/></a>}
                     </div>
                     {p.role && <p className="text-[11px] font-mono mt-0.5" style={{ color: YELLOW }}>&#8227; {p.role}</p>}
                   </div>

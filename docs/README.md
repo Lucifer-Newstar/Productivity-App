@@ -1,78 +1,106 @@
-# Kaizen — Docs index
+# Kaizen documentation
 
-Kaizen is a **5-space productivity monorepo** built on Next.js 14 (Pages Router + an App Router `/` dashboard). All spaces live in one frontend, one Zustand store, and one `localStorage` persistence root — there is no standalone "Forge app".
+_Last synchronized on 2026-08-16 from the completed `entertainment` branch._
 
-```
-productivity-app/
-├── frontend/
-│   ├── pages/                # Pages Router routes (one folder per space)
-│   │   ├── _app.tsx          # Providers + TopNav vs FULLSCREEN switch
-│   │   ├── projects/         # Projects space (a.k.a. "Forge")
-│   │   ├── workout/          # Workout space
-│   │   ├── career/           # Career space
-│   │   ├── health/           # Health space (VITAL-SIGN OS, 10 FULLSCREEN routes, v1.1)
-│   │   └── entertainment/    # Entertainment space (placeholder)
-│   ├── app/                  # App Router home "/" (dashboard)
-│   ├── components/           # UI (TopNav, SideNav, SpaceTasks, Dashboard, Notes, Habits, Pomodoro, Calendar, Tasks)
-│   │   ├── forge/            # Projects space (internal codename — routes live at /projects/*)
-│   │   ├── workout/          # Workout space
-│   │   ├── career/           # Career space
-│   │   └── health/           # Health space (VITAL-SIGN shell + 20 section components)
-│   └── lib/                  # Shared store, types, themes, algorithms, demo seeds
-├── backend/                  # Express skeleton (offline-first; frontend does not call it)
-└── docs/                     # You are here
-```
+Kaizen is a local-first productivity and life OS built as one Next.js application with five dedicated spaces. The frontend uses React Context state slices persisted under separate browser-storage keys; the Express service is an optional in-memory reference/sync API and is not required for normal frontend use.
 
-> **Note on the "Forge" codename:** the Projects space is branded **"Forge"** in the UI (⚒️ in the top nav, "THE FORGE" wordmark in the full-screen shell, "the forge" / "anvil" / "heat" / "quarry" / "smelter" / "vault" / "foundry" nomenclature inside the space). That is **display branding only** — it is not a standalone app or separate product. Code lives under `components/forge/` because that was the internal module name when the shell was built out; routes live at `/projects/*` per the space architecture.
+## Product status
 
-## Where to look
-
-### Top-level references
-| File | Covers |
-|---|---|
-| [`ARCHITECTURE.md`](ARCHITECTURE.md) | Monorepo layout, rendering model, state, themes, persistence, build |
-| [`DATA-MODEL.md`](DATA-MODEL.md) | Entity shapes for Workout, Projects, Career (root store) |
-| [`FEATURES.md`](FEATURES.md) | Per-space feature audit (✅/🟡/❌) |
-| [`ALGORITHMS.md`](ALGORITHMS.md) | Pure math helpers (1RM/Wilks, plate loading, readiness, velocity regression) |
-| [`API.md`](API.md) | Backend REST reference |
-
-### Per-space docs (`docs/spaces/<space>/`)
-| Space | Route | Full-screen | Status |
+| Space | Routes | Shell | Current status |
 |---|---|---|---|
-| **projects** (Forge) | `/projects/*` | ✅ | v1.0 shipped — see [`spaces/projects/README.md`](spaces/projects/README.md) |
-| **workout** | `/workout/*` | ✅ | Battle-tested — see [`spaces/workout/README.md`](spaces/workout/README.md) |
-| **career** | `/career/*` | ✅ | Night HUD / Blueprint — see [`spaces/career/README.md`](spaces/career/README.md) |
-| **health** | `/health/*` | ✅ | VITAL-SIGN OS v1.1 shipped (216 ✅ of 281 spec rows, waves 1-9) — see [`spaces/health/README.md`](spaces/health/README.md) / [`FEATURES.md`](spaces/health/FEATURES.md) / [`WAVES.md`](spaces/health/WAVES.md) |
-| **entertainment** | `/entertainment` | ❌ | `SpaceTasks` stub — awaiting full-bleed cinema theme |
+| Home | `/` | App Router + SideNav | Dashboard, tasks, notes, habits, Pomodoro and calendar |
+| Workout | `/workout/*` | Full-screen imperial training OS | Shipped; 12 routes |
+| Projects / Forge | `/projects/*` | Full-screen Foundry/Drafting Room | v1.0 shipped; 5 routes, 31 Smelter tabs |
+| Career | `/career/*` | Full-screen Night HUD/Blueprint | Shipped; 10 routes including redirect |
+| Health / VITAL-SIGN | `/health/*` | Full-screen medical OS | v1.1 shipped; 10 routes, 216✅/2🟡/63 deferred |
+| Entertainment / AFTERGLOW | `/entertainment` | Full-screen cinema OS | v1.0 Waves 0–9; 94✅/2🟡/0❌ |
 
-Each space folder holds:
-- `README.md` — routes, theme tokens, architecture, file map.
-- `FEATURES.md` (where applicable) — detailed per-feature checklist.
-- `QA.md` — smoke-test checklist + per-route pass/fail for the last QA sweep.
+A global local-first NotificationCenter is mounted across Home and every full-screen space, with section/category controls and an initial high-value rule catalog.
 
-### Quality & bugs
-| Folder | Contents |
+Current production verification: **39/39 user routes return HTTP 200**, five same-origin Entertainment provider routes are dynamic, all remaining pages are statically prerendered, TypeScript and ESLint pass, and both dependency audits are clean.
+
+## Documentation map
+
+### Core reference
+
+| Document | Purpose |
 |---|---|
-| [`qa/`](qa/) | Cross-space QA test plans (workout QA report lives there historically) |
-| [`bugs/`](bugs/) | `BUGS.md` — root-cause log of every bug found and fixed, dated |
+| [`architecture/ARCHITECTURE.md`](architecture/ARCHITECTURE.md) | Routers, providers, shells, state, rendering and system boundaries |
+| [`architecture/DATA-MODEL.md`](architecture/DATA-MODEL.md) | State slices, major entities, relationships and migrations |
+| [`reference/API.md`](reference/API.md) | Express resources and Next.js Entertainment provider routes |
+| [`reference/FEATURES.md`](reference/FEATURES.md) | Cross-space feature audit and links to detailed specifications |
+| [`reference/ALGORITHMS.md`](reference/ALGORITHMS.md) | Workout, Forge and Health formulas |
+| [`security/SECURITY.md`](security/SECURITY.md) | Threat model, secure deployment and verification commands |
+| [`security/AUDIT-2026-08-16.md`](security/AUDIT-2026-08-16.md) | Latest full-site audit, remediations and residual risks |
+| [`reports/DOCS-SYNC-2026-08-16.md`](reports/DOCS-SYNC-2026-08-16.md) | Source-vs-doc verification and corrections |
+| [`reports/CLEANUP-2026-08-17.md`](reports/CLEANUP-2026-08-17.md) | Dead-code removal and documentation reorganization |
+| [`notifications/README.md`](notifications/README.md) | Global inbox, rule catalog, settings and scope decisions |
 
-## Build & verify
+### Guides
+
+- [`guides/LOCAL-DEVELOPMENT.md`](guides/LOCAL-DEVELOPMENT.md) — install, run and troubleshoot.
+- [`guides/CONFIGURATION.md`](guides/CONFIGURATION.md) — environment variables and provider credentials.
+- [`guides/DEPLOYMENT.md`](guides/DEPLOYMENT.md) — production topology and security requirements.
+- [`guides/DATA-BACKUP-RESTORE.md`](guides/DATA-BACKUP-RESTORE.md) — browser data, exports and recovery.
+- [`guides/TESTING.md`](guides/TESTING.md) — every automated and runtime QA gate.
+- [`guides/CONTRIBUTING.md`](guides/CONTRIBUTING.md) — branches, commits, migrations and review expectations.
+
+### Architecture notes
+
+- [`architecture/DECISIONS.md`](architecture/DECISIONS.md) — key architectural decisions and trade-offs.
+- [`architecture/SYNC-CONTRACT.md`](architecture/SYNC-CONTRACT.md) — frontend slices ↔ Express tables/singletons.
+
+### Reference indexes
+
+- [`reference/ROUTES.md`](reference/ROUTES.md) — user and API route inventory.
+- [`reference/PERSISTENCE-KEYS.md`](reference/PERSISTENCE-KEYS.md) — local/session storage ownership.
+- [`reference/GLOSSARY.md`](reference/GLOSSARY.md) — Kaizen product names and internal terminology.
+
+### Per-space documentation
+
+| Space | Documentation |
+|---|---|
+| Home | [`spaces/home/README.md`](spaces/home/README.md), [`QA.md`](spaces/home/QA.md) |
+| Workout | [`spaces/workout/README.md`](spaces/workout/README.md), [`QA.md`](spaces/workout/QA.md) |
+| Projects / Forge | [`spaces/projects/README.md`](spaces/projects/README.md), [`CANVASES.md`](spaces/projects/CANVASES.md), [`QA.md`](spaces/projects/QA.md) |
+| Career | [`spaces/career/README.md`](spaces/career/README.md), [`QA.md`](spaces/career/QA.md) |
+| Health | [`spaces/health/README.md`](spaces/health/README.md), [`FEATURES.md`](spaces/health/FEATURES.md), [`WAVES.md`](spaces/health/WAVES.md), [`QA.md`](spaces/health/QA.md) |
+| Entertainment | [`spaces/entertainment/README.md`](spaces/entertainment/README.md), [`APIS.md`](spaces/entertainment/APIS.md), [`DATA-MODEL.md`](spaces/entertainment/DATA-MODEL.md), [`FEATURES.md`](spaces/entertainment/FEATURES.md), [`WAVES.md`](spaces/entertainment/WAVES.md), [`QA.md`](spaces/entertainment/QA.md) |
+
+### Quality history
+
+- [`quality/qa/README.md`](quality/qa/README.md) — current QA index.
+- [`quality/qa/TEST-REPORT.md`](quality/qa/TEST-REPORT.md) — historical pre-Entertainment baseline.
+- [`quality/bugs/BUGS.md`](quality/bugs/BUGS.md) — chronological root-cause/fix record; historical counts remain intentionally unchanged.
+
+## Quick verification
 
 ```bash
 cd frontend
-npx tsc --noEmit      # must be clean
-npx next build        # all routes should be ○ (static prerender)
+npm ci
+npx tsc --noEmit
+npm run lint
+npm run qa:entertainment
+npm run qa:entertainment:intelligence
+npm run qa:entertainment:reports
+npm run qa:entertainment:social
+npm run qa:entertainment:migration
+npm run qa:security
+npm run qa:docs
+node scripts/qa-health.js
+npm run build
+
+cd ../backend
+npm ci
+npm run build
+KAIZEN_API_KEY=security-test-key npm start
+# second terminal
+KAIZEN_API_KEY=security-test-key npm run security:test
 ```
 
-Last known good build (2026-08-14 v1.0):
-- 33/33 routes static (○)
-- Shared CSS 14.7 kB
-- Smelter (heaviest Projects page) First Load JS 210 kB
-- 0 TypeScript errors
-- 29/29 HTTP 200 on production smoke test
+## Git state used by these docs
 
-## Git conventions
-
-- `main` — stable. Feature branches merge in after explicit approval; old branches (`projects`, `career`, `workout`) have been merged and deleted. The `health` branch merged into main (v1.1, 2026-08-15) and was deleted per convention.
-- Author: `Lucifer-Newstar <navin.jairam@gmail.com>` (pass via `git -c user.name=... -c user.email=... commit`).
-- No remote is configured (`fatal: 'origin' does not appear`); the repo is local-only by design.
+- Stable baseline: `main` / `origin/main` at Health v1.1.
+- Active completed feature branch: `entertainment`; use `git rev-list --count origin/main..HEAD` for the live commit count.
+- Commit author: `Lucifer-Newstar <navin.jairam@gmail.com>`.
+- The branch has not been pushed or merged as of this documentation sync.

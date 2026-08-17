@@ -1,6 +1,6 @@
 # Career space — QA
 
-_Last run: 2026-08-14 sanity re-verification; see `docs/FEATURES.md` → "Career Feature Status" for the full per-feature audit._
+_Current regression baseline (2026-08-16): TypeScript, ESLint and production build pass on `entertainment`; all Career routes are included in the 39/39 HTTP smoke. Historical module/build details below retain their original measurements._
 
 ## Theme
 - **Night HUD (dark, default):** deep navy→black radial `#0a1624→#05080d→#02050a`, animated cyan grid, scanlines, sweep beam, vignette; cyan `#22d3ee` / violet `#a78bfa` / acid-green `#34d399` / pink `#f472b6` / orange `#fb923c` / yellow `#facc15` accents; JetBrains Mono; `> cmd_` terminal prompt; `USR::K` seal; HudFlash horizontal cyan transition.
@@ -56,4 +56,4 @@ All routes ○ static. `tsc --noEmit` clean.
 No error boundaries triggered. Redirect from `/career` → `/career/projects` is a client-side `useRouter` push (renders command landing briefly; harmless).
 
 ## Feature status
-See `docs/FEATURES.md` § "Career Feature Status" for the per-sector checklist. All 9 sectors are shipped; remaining TODOs are niceties (drag-rank priority, global resources library, decay recommendation text, mind-map/force-graph).
+See `docs/reference/FEATURES.md` § "Career Feature Status" for the per-sector checklist. All 9 sectors are shipped; remaining TODOs are niceties (drag-rank priority, global resources library, decay recommendation text, mind-map/force-graph).

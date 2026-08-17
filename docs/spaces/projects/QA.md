@@ -1,13 +1,13 @@
 # Projects space — QA
 
-_Last run: 2026-08-14 against commit on `main` (post wave 11 + BUG-001 fix)._
+_Current regression baseline (2026-08-16): TypeScript, ESLint and production build pass on `entertainment`; all five Projects routes are included in the 39/39 HTTP smoke. Historical Wave 11 measurements below are retained for traceability._
 
 ## Build verification
 
 ```bash
 cd frontend
 npx tsc --noEmit   # ✅ zero errors (post BUG-001..005 fixes)
-npx next build     # ✅ 33/33 static (○); projects/* routes all ○
+npm run build      # ✅ current Next 16 build; projects/* routes all ○
 ```
 
 | Bug | Summary |
@@ -17,7 +17,7 @@ npx next build     # ✅ 33/33 static (○); projects/* routes all ○
 | BUG-004 | Column delete mishandled shipped-column tasks — correctly remaps to new final col, clears `completedAt` when un-shipping |
 | BUG-005 | Kanban/swimlane/TaskPanel grids hardcoded `grid-cols-5` — switched to `repeat(auto-fit, minmax(240px,1fr))` |
 
-See [`../../bugs/BUGS.md`](../../bugs/BUGS.md) for full root-cause notes.
+See [`../../bugs/BUGS.md`](../../quality/bugs/BUGS.md) for full root-cause notes.
 
 Route sizes:
 
@@ -150,4 +150,4 @@ back link — no exception.
 - [x] Ignored while typing in `input/textarea/select/contenteditable`
 
 ## Known v1.2 items (not regressions)
-See [`../../bugs/BUGS.md`](../../bugs/BUGS.md) "Deferred" list.
+See [`../../bugs/BUGS.md`](../../quality/bugs/BUGS.md) "Deferred" list.

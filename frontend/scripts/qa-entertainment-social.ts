@@ -1,0 +1,12 @@
+import assert from "node:assert/strict";
+import type { EntertainmentFriend,EntertainmentItem } from "../lib/entertainmentTypes";
+import { discussionPrompts,tasteMatch } from "../lib/entertainmentSocial";
+let passed=0;const test=(name:string,fn:()=>void)=>{fn();passed++;console.log(`  ✓ ${name}`)};const item=(id:string,rating?:number):EntertainmentItem=>({id,type:"movie",title:id,description:"A story",genres:["Drama"],creators:["Director"],cast:[],studios:[],status:"completed",progress:{},rating,repeats:0,priority:"medium",queueOrder:1,tags:[],favorite:false,archived:false,createdAt:1,updatedAt:1});
+const items=[item("a",10),item("b",7),item("c")],friend:EntertainmentFriend={id:"f",name:"Friend",ratings:{a:9,b:4,c:8},createdAt:1};
+console.log("\n── Entertainment social algorithms ──");
+test("taste match only compares shared ratings",()=>assert.equal(tasteMatch(friend,items).shared,2));
+test("taste score uses average 1–10 distance",()=>{const m=tasteMatch(friend,items);assert.ok(m.score>70&&m.score<90);assert.equal(m.averageDifference,2)});
+test("no shared ratings returns zero safely",()=>assert.deepEqual(tasteMatch({...friend,ratings:{}},items),{score:0,shared:0,averageDifference:0}));
+test("discussion prompts include title creator and genre",()=>{const p=discussionPrompts(items[0]);assert.equal(p.length,6);assert.ok(p.join(" ").includes("a")&&p.join(" ").includes("Director")&&p.join(" ").includes("Drama"))});
+test("spoiler-marked reviews add ending prompt",()=>assert.equal(discussionPrompts({...items[0],reviewContainsSpoilers:true}).length,7));
+console.log(`\n${passed} social tests passed.`);

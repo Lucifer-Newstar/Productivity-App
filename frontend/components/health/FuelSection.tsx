@@ -22,6 +22,7 @@
 import { useMemo, useRef, useState } from "react";
 import { Repeat, Plus, Trash2, Search, Utensils, Coffee, Moon, Sun, Cookie, Users, Pizza, Camera, X, Pin, Star } from "lucide-react";
 import { useStore } from "../../lib/store";
+import { readSafeImageAsDataUrl } from "../../lib/security";
 import { FOOD_DB, searchFoods, type FoodEntry } from "../../lib/healthFoodDb";
 import {
   formatKcal, tdee, rebalanceMacros, macroGramTargets, frequentFoods, sugarSpikeRisk,
@@ -411,12 +412,12 @@ export default function FuelSection() {
     persist(next);
   };
 
-  const attachPhoto = (slot: Slot, file: File) => {
-    const reader = new FileReader();
-    reader.onload = () => {
-      if (typeof reader.result === "string") patchMeal(slot, { photoDataUrl: reader.result });
-    };
-    reader.readAsDataURL(file);
+  const attachPhoto = async (slot: Slot, file: File) => {
+    try {
+      patchMeal(slot, { photoDataUrl: await readSafeImageAsDataUrl(file) });
+    } catch (error) {
+      window.alert(error instanceof Error ? error.message : "Invalid image.");
+    }
   };
 
   const logFrequent = (name: string, kcal: number, c: number, p: number, f: number) => {

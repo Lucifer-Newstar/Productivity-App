@@ -11,7 +11,7 @@ exercise data from the Workout space (read-only join) and pushes derived metrics
 (readiness/hydration/TDEE adjustments) back into Workout for smarter logging. Two-way
 but governed: Health owns `nutrition/sleep/body/vitals/mind/biometrics`; Workout owns
 `sets/PRs/sessions/volume`. A documented bridge contract appears in
-[`ALGORITHMS.md`](#algorithms-contract-summary) and in `docs/ALGORITHMS.md`.
+[`ALGORITHMS.md`](#algorithms-contract-summary) and in `docs/reference/ALGORITHMS.md`.
 
 ---
 
@@ -20,7 +20,7 @@ but governed: Health owns `nutrition/sleep/body/vitals/mind/biometrics`; Workout
 | § | Codename     | Route                       | Status | Domain covered                                              |
 |---|--------------|-----------------------------|--------|-------------------------------------------------------------|
 | 0 | TRIAGE       | `/health`                   | ✅     | Daily triage dashboard — live BMR/TDEE/water/protein/sleep/recovery/supp KPI tiles; deep score+quick-log+timeline waves 6+ |
-| 1 | FUEL         | `/health/nutrition`         | ✅     | Meals timeline, macro donut, 90-dish Indian food DB, repeat-yesterday, manual add; micros/recipes/planner wave 8 |
+| 1 | FUEL         | `/health/nutrition`         | ✅     | Meals timeline, macro donut, 130-entry Indian food DB, repeat-yesterday, manual add; micros/recipes/planner wave 8 |
 | 2 | HYDRATION    | `/health/hydration`         | ✅     | 8-glass grid, 11 beverages, caffeine tally, electrolytes, undo; urine color/sweat-estimator wave 4-8 |
 | 3 | SOMNIUM      | `/health/sleep`             | ✅     | Sleep log, bank, hygiene checklist, circadian anchors, bed/wake routines, dream, 7d history; naps/procrastination/social-jetlag waves 8 |
 | 4 | SOMA         | `/health/physique`          | ✅     | Navy BF%, 24-site tape, S:W tiering for 5 lifts, asymmetry flag, webcam/file progress photos, BF% sparkline |
@@ -329,7 +329,7 @@ Cross-links with Career daily mood/stress and Workout readiness.
 # §8 — SYNC LAB (Bridge &amp; Settings) `/health/sync`
 
 This is where Health and Workout connect. User explicitly configures what syncs. The
-**Health ↔ Workout contract** is documented in `docs/ALGORITHMS.md` — see the
+**Health ↔ Workout contract** is documented in `docs/reference/ALGORITHMS.md` — see the
 "Health-Workout Bridge Contract" section.
 
 | #  | Feature                                                                                 | Status |
@@ -404,14 +404,14 @@ This is where Health and Workout connect. User explicitly configures what syncs.
 | Soundscape toggle | Hospital-monitor subtle blip (optional, off by default) |
 | Offline-first | 100% — no backend required for v1; CRUD routes `/api/health/*` stubbed for future |
 | All routes static-prerendered | ✅ Target (like other fullscreen spaces) |
-| **🇮🇳 India/Chennai specifics baked in everywhere** | Hydration +10% climate multiplier, pre-seeded Indian food DB (80+ dishes), restaurant mode for local eateries, coconut water as default electrolyte drink, ICMR micronutrient RDA targets, Vit D/B12/Iron/Zinc deficiency risk badges, Chennai mosquito coil sleep-environment tag, Fitzpatrick skin type for Vit D synthesis, Indian crisis helplines, IST timezone for reset, filter coffee/chai caffeine presets, turmeric/curd rice/kanji pre-seeded as probiotic/antioxidant foods |
+| **🇮🇳 India/Chennai specifics baked in everywhere** | Hydration +10% climate multiplier, pre-seeded Indian food DB (130 dishes), restaurant mode for local eateries, coconut water as default electrolyte drink, ICMR micronutrient RDA targets, Vit D/B12/Iron/Zinc deficiency risk badges, Chennai mosquito coil sleep-environment tag, Fitzpatrick skin type for Vit D synthesis, Indian crisis helplines, IST timezone for reset, filter coffee/chai caffeine presets, turmeric/curd rice/kanji pre-seeded as probiotic/antioxidant foods |
 | Medical disclaimer | Footer/settings permanent link: "Educational tool. Not medical advice. Consult qualified professionals for medical concerns." Not a diagnostic device. |
 | Workout bridge | Bidirectional, governed. See §8. All cross-space reads done via selectors over root state. No circular imports. |
 | Male 20yo defaults | Default protein ~130g/day for ~70kg, BMR ~1650 kcal, TDEE ~2500 (moderate), sleep goal 8h, water ~2.75L (with Chennai mult), Vit D sun exposure 10-15min arms+face mid-morning, no menstrual module visible. |
 
 ---
 
-# Algorithms contract summary (also in `docs/ALGORITHMS.md`)
+# Algorithms contract summary (also in `docs/reference/ALGORITHMS.md`)
 
 | Algorithm | Formula | Source |
 |---|---|---|
@@ -467,7 +467,7 @@ incremental commit to the `health` branch, merge to `main` only after user appro
 |---|---|---|---|
 | 0 (docs) | Spec, research, arch/algorithms/data-model docs | ✅ | `9ac7369`, `de125c5` |
 | 1 (shell) | types, store slice, HealthShell, 10 FULLSCREEN routes, EkgFlash, HealthHotkeys, Triage live-KPIs, Lab profile editor | ✅ | `c8f0b10` |
-| 2 (core food+water) | meals timeline, macros donut, 90-dish Indian food lib, repeat-yesterday, 8-glass hydration, dynamic water goal | ✅ | `8090f10` |
+| 2 (core food+water) | meals timeline, macros donut, 130-entry Indian food library, repeat-yesterday, 8-glass hydration, dynamic water goal | ✅ | `8090f10` |
 | 3 (sleep+supps) | sleep log, sleep bank, routines, supp log, 🇮🇳 deficiency badges, sunlight log | ✅ | `dbbbb14` |
 | 4 (physique core) | Navy BF%, tape measurements, photo capture | ✅ | `cdbae4f` |
 | 5 (vitals+mind) | HR/BP, symptom log, mood/stress, burnout flag, India crisis helplines | ✅ | `58cff67` |

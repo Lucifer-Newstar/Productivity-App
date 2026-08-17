@@ -1,10 +1,10 @@
 # Career Space — Data Model & Features
 
-Last updated: 2026-08-13.
+Last synchronized with the current route/state architecture: 2026-08-16.
 
 ## Overview
 
-The **Career** space (`/career`) is an 8-section life-OS for professional
+The **Career** space (`/career`) is a 9-module life-OS for professional
 growth. All data is persisted to `localStorage` under the key `kaizen.career`
 (the backend Express stub in `backend/` is not wired to the frontend, matching
 the architecture used by the Workout space).
@@ -26,7 +26,7 @@ the architecture used by the Workout space).
   staggered entrance, hover gold-shimmer sweep, active-dot with `layoutId`.
 - Escape closes the card; clicking a tile routes instantly.
 
-## Sections (8)
+## Modules (9)
 
 | Sigil | ID         | Label     | Color      | Domain                                                      |
 |------:|------------|-----------|------------|-------------------------------------------------------------|
@@ -68,7 +68,7 @@ CareerState {
   speaking:      SpeakingEngagement[]
   visionBoard:   VisionBoardItem[]
 
-  // Legacy (kept so old components keep compiling)
+  // Legacy migration compatibility (not rendered by current routes)
   tracks:        LegacyTrack[]
   goals:         LegacyGoal[]
   notes:         LegacyNote[]
@@ -234,9 +234,8 @@ actions:
 2. Legacy achievements get `category: "other"` merged in.
 3. Resume bullets from legacy `tracks[].resumeBullets` are lifted into the
    new top-level `bullets[]` without duplicates.
-4. Tracks are preserved so the old components (`Roadmap`, `CareerNotes`,
-   `Posts`, `Goals`, `AchievementVault`, `TrackTabs`) keep rendering
-   (they are no longer routed to by `/career`, but are kept compiling).
+4. Legacy tracks/goals/notes remain in the state contract so old browser data can
+   migrate without loss; the removed pre-sector UI components no longer ship.
 
 ## Design palette
 
@@ -258,12 +257,18 @@ attempt Kubernetes before Docker, etc.). The drilldown UI respects
 `milestone.dependsOn[]` when present: locked milestones show a lock icon,
 explain which prereqs block them, and their checkbox is disabled.
 
-## Outstanding / next up
+## Intentional next-up scope
 
-- Skill radar/SVG mind-map + growth line chart
-- Meeting minutes template editor + ROI slider in Daily
-- Interview question bank + weighted decision matrix in Jobs
-- Resume versioning + ATS keyword score in Portfolio
-- Relationship graph visualization in Network
-- Side-hustle, IP, speaking engagement UI in Global
-- Live deep-work timer (currently a minute counter)
+The routed modules now include the previously planned radar/growth, interview bank,
+decision matrix, resume/ATS, relationship graph and Global-domain UIs. Remaining
+items from the current feature audit are:
+
+- Roadmap dependency SVG edges (lock/blocker semantics already ship)
+- True drag-ranking and a global learning-resource library
+- Skill force/mind-map view and explicit decay recommendation copy
+- Deep-link UI for skill cert/project references
+- Automatic portfolio case-study generation and hero-image upload
+- Per-session focus graph and agenda/time-block planner
+- Vision-board image upload and one WLB aggregate score
+
+See `docs/reference/FEATURES.md` for row-level status.

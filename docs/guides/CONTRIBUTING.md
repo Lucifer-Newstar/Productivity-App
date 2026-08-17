@@ -1,0 +1,73 @@
+# Contributing
+
+## Branches
+
+- `main` is the stable integration branch.
+- Build substantial spaces/waves on a dedicated branch.
+- Current completed feature branch: `entertainment`.
+- Rebase or merge only after release gates pass and documentation is synchronized.
+
+## Commit identity
+
+```bash
+git config user.name "Lucifer-Newstar"
+git config user.email "navin.jairam@gmail.com"
+```
+
+Verify with `git log -1 --format='%an <%ae>'`.
+
+## Commit style
+
+Use focused conventional messages:
+
+```text
+feat(entertainment): ship wave 6 analytics suite
+fix(health): preserve concurrent profile patches
+security: harden full site after v1.0 audit
+docs: synchronize architecture and operator guides
+```
+
+Keep feature, QA and docs changes together when they describe one coherent wave. Avoid mixing unrelated spaces in a feature commit.
+
+## State-model changes
+
+For every persisted field:
+
+1. Update the domain type.
+2. Add a migration default.
+3. Preserve existing personal data.
+4. Use functional store updates.
+5. Add structural and, where practical, executable migration tests.
+6. Update `DATA-MODEL.md`, per-space docs and backend mapping.
+
+Never trust restored URLs, images or arbitrary object keys.
+
+## Provider changes
+
+- Use fixed server adapters; never accept an arbitrary upstream URL.
+- Keep secrets server-side or explicit session-only headers.
+- Validate query/type/locale.
+- Apply route, cache, timeout and response-size limits.
+- Revalidate every redirect.
+- Document attribution and commercial terms.
+
+## UI changes
+
+- Preserve full-screen shell contracts.
+- Verify desktop and mobile navigation.
+- Add labels to icon-only controls.
+- Honor reduced motion.
+- Do not render user HTML.
+- Avoid external fonts/scripts/CDNs unless the security policy and offline preview are deliberately updated.
+
+## Pull-request checklist
+
+- [ ] Focused branch and commit history
+- [ ] Correct author identity
+- [ ] Clean working tree
+- [ ] TypeScript/ESLint/build pass
+- [ ] Dependency audits clean
+- [ ] Relevant domain/security tests pass
+- [ ] Persistence migration included
+- [ ] Docs and route/reference indexes updated
+- [ ] No credentials or real personal exports committed

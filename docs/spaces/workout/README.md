@@ -2,7 +2,7 @@
 
 The **Workout** space lives at `/workout/*` and ships as a full-screen imperial
 Japanese obsidian-themed app. It's battle-tested on `main` — see
-`docs/FEATURES.md` for the 149-feature checklist and `docs/qa/TEST-REPORT.md`
+`docs/reference/FEATURES.md` for the 149-feature checklist and `docs/quality/qa/TEST-REPORT.md`
 for the prior QA pass.
 
 ## Theme
@@ -15,7 +15,7 @@ for the prior QA pass.
 
 | Path | Mounts |
 |---|---|
-| `/workout` | `WorkoutOverview` |
+| `/workout` | Client redirect to `/workout/overview` |
 | `/workout/overview` | Overview dashboard |
 | `/workout/gym` | Gym tracking (plates/1RM/Wilks/warmup/history/metrics) |
 | `/workout/calisthenics` | Chains / skills / GtG / isometrics / EMOM / AMRAP / flows / mobility |
@@ -40,11 +40,11 @@ frontend/
 ```
 
 ## Data model
-See `docs/DATA-MODEL.md` — `WorkoutState` includes exercises, prs, skills,
+See `docs/architecture/DATA-MODEL.md` — `WorkoutState` includes exercises, prs, skills,
 routines, sessions (with rich WorkoutSetLog metadata), readiness, badges,
 bodyweight, settings, caliChains/skills/flows, gtg, isometricLogs, intervalLogs,
 mobility, planche entries, cardioLogs, programs, goals, customMetrics,
-challenges, journal, board, restDays, etc. Persisted to `localStorage["kaizen.root"]`.
+challenges, journal, board, restDays, etc. Persisted to `localStorage["kaizen.workout"]`.
 
 ## Key features shipped
 - One-thumb in-session UI with superset/giant-set auto-skip

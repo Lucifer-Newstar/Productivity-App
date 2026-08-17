@@ -2,7 +2,7 @@
 
 > **STATUS: ALL WAVES COMPLETE (2026-08-15).** 8A→8G shipped one commit each;
 > wave 9 QA sweep fixed BUG-H13/H14, flipped all stale FEATURES.md statuses,
-> and verified 458/458 QA assertions + 43/43 static routes. Spec status:
+> and verified 458/458 QA assertions. The current Next.js 16 production build and 39/39 user-route smoke also pass. Spec status:
 > **216 ✅ / 2 🟡 / 63 ❌** — the remaining ❌ are v1.1+ nice-to-haves
 > (EKG animation, quick-log row, digestive/hunger logs, bloodwork storage,
 > restaurant sweat-estimator etc.) deliberately deferred.

@@ -165,7 +165,7 @@ export default function LabPage() {
             Bodyweight is owned by the Workout space (log it from /workout/tools
             or after sessions). Health consumes it for BMR/TDEE/BFI calculations
             but does not duplicate entries — one source of truth. This matches
-            the contract in <code style={{color:"var(--hlth-accent-glow)"}}>docs/ALGORITHMS.md</code>.
+            the contract in <code style={{color:"var(--hlth-accent-glow)"}}>docs/reference/ALGORITHMS.md</code>.
           </p>
         </div>
       </div>

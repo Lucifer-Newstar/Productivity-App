@@ -298,7 +298,6 @@ export default function ForgeShell({ section, actionButton, actionPanel, childre
       style={{ color: T.fg, background: T.bg, fontFamily: "var(--font-condensed,'Oswald','Impact',sans-serif)" }}>
 
       <style jsx global>{`
-        @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Oswald:wght@400;500;600;700&family=Special+Elite&family=JetBrains+Mono:wght@400;600;800&display=swap');
         @keyframes f-blink { 0%,49%{opacity:1} 50%,100%{opacity:0} }
         @keyframes f-pulse-rivet {
           0%,100% { box-shadow: 0 0 6px currentColor, inset 0 -1px 1px rgba(0,0,0,0.7); }
