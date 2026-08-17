@@ -62,7 +62,9 @@ Productivity-App/
 │   ├── src/server.ts                   # Express reference API
 │   └── scripts/security-smoke.mjs
 ├── ai/
-│   └── wave0/                          # Disposable validation harness; no production engine
+│   ├── src/                            # Independent Intelligence Engine v0.1
+│   ├── test/                           # Contracts, gateway, security and orchestration tests
+│   └── wave0/                          # Benchmark/selection and LOCAL-ONLY harness
 └── docs/
 ```
 
@@ -181,9 +183,9 @@ The Express API is a development/reference contract, not the active frontend dat
 
 It is in-memory, has no user accounts and must not be presented as a public multi-user API.
 
-## Proposed Intelligence Engine boundary
+## Intelligence Engine v0.1 boundary
 
-The Kaizen Intelligence Engine is in architecture documentation only; no runtime service exists yet. The approved V1 boundary keeps browser state authoritative and introduces an independently runnable engine through a client-mediated, versioned Domain Bridge:
+The independently runnable Intelligence Engine now implements the approved browser-authoritative boundary:
 
 ```text
 React Context/local persistence
@@ -193,13 +195,14 @@ React Context/local persistence
  → local inference runtime
 ```
 
-AI tools must never import React Context or Next.js UI internals. No current Express or Next.js route is implicitly an AI route, and deterministic Kaizen analytics remain authoritative. See [`../ai/README.md`](../ai/README.md) and the decision labels in [`../ai/DECISION-REGISTER.md`](../ai/DECISION-REGISTER.md).
+AI tools do not import React Context or Next.js UI internals. The browser adapter projects `core.today@1.0`; a fixed same-origin `/api/ai/[...path]` route proxies to the loopback engine; the engine performs paired, read-only, bounded tool orchestration. Deterministic Kaizen analytics remain authoritative. No write tool, memory system, Health context or selected model exists in v0.1. See [`../ai/README.md`](../ai/README.md) and [`../ai/DECISION-REGISTER.md`](../ai/DECISION-REGISTER.md).
 
 ## Current build baseline
 
 - Next.js 16.3.1 / React 19.2.8
 - 39/39 user routes HTTP 200
 - Five dynamic same-origin Entertainment API routes
+- One dynamic fixed-target Intelligence Engine proxy route
 - TypeScript clean
 - ESLint clean
 - Frontend/backend dependency audits: zero known vulnerabilities

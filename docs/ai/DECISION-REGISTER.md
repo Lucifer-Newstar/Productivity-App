@@ -23,6 +23,7 @@ This register prevents exploratory choices from becoming accidental architecture
 | AI-ADR-015 | Career–Forge evidence graph is formal | Project work becomes verified career evidence without invented outcomes. |
 | AI-ADR-016 | Constitution is versioned and provider-independent | Shared behavior cannot live only in mutable prompts. |
 | AI-ADR-017 | Source-of-truth precedence is explicit | Memory and model inference can never override current authoritative records or deterministic analytics. |
+| AI-ADR-018 | v0.1 may ship provider-neutral before model selection | Explicit user authorization allows contracts/gateway/read-only vertical slice; no model candidate becomes architecture and all writes remain prohibited. |
 
 ## Source-of-truth precedence
 

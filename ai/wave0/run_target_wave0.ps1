@@ -123,4 +123,4 @@ Invoke-Step "Public review bundle coverage" {
 Write-Host "`nTARGET RUN COMPLETE" -ForegroundColor Green
 Write-Host "Raw results remain LOCAL-ONLY: $local"
 Write-Host "Review this sanitized aggregate manually before staging: $public"
-Write-Host "Do not start Wave 1. Update docs/ai/WAVE-0-REPORT.md and stop for review."
+Write-Host "Update docs/ai/WAVE-0-REPORT.md and stop before selecting a default model or starting v0.2."

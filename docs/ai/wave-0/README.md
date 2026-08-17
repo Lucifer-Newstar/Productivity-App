@@ -1,7 +1,7 @@
 # Wave 0 preparation package
 
 **Status:** target validation active on persistent `ai` branch; candidate evaluation/prototyping only.<br>
-**Production AI features and Wave 1:** prohibited pending reviewed final Selection Report.<br>
+**Model selection:** prohibited pending reviewed final Selection Report; provider-neutral read-only v0.1 proceeded under explicit authorization.<br>
 **Permanent model/vector/transport/runtime selection:** requires a reviewed selection report.
 
 ## Entry conditions

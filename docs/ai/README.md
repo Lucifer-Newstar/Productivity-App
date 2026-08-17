@@ -1,8 +1,8 @@
 # Kaizen Intelligence Engine — architecture gate
 
-**Status:** architecture approved with review conditions resolved; Wave 0 preparation active<br>
-**Architecture package version:** 0.2-review<br>
-**Production AI implementation:** not started
+**Status:** v0.1 Foundation implemented on persistent `ai` branch; Wave 0 model selection remains incomplete<br>
+**Architecture package version:** 0.3-implementation<br>
+**Intelligence permissions:** READ / ANALYZE / SUGGEST only
 
 The Kaizen Intelligence Engine is an independent, local-first intelligence layer above Kaizen's deterministic domains. Kaizen data and algorithms remain authoritative; models interpret, plan and propose through controlled tools; the user remains the final authority.
 
@@ -64,6 +64,6 @@ Every design choice in this package uses one of four labels:
 - [`wave-0/CANDIDATE-MATRIX.md`](wave-0/CANDIDATE-MATRIX.md) — candidate identities, estimates and rationale.
 - [`PRIVACY.md`](PRIVACY.md#public-repository-vs-local-only-boundary) — PUBLIC vs LOCAL-ONLY contract.
 
-## Gate rule
+## Active implementation boundary
 
-Architecture review authorizes **Wave 0 preparation and controlled benchmark/prototype spikes only** under [`wave-0/README.md`](wave-0/README.md). It does not authorize production AI features, user-state mutation, permanent model/vector/transport/runtime selection, or changes to authoritative application architecture. Any candidate selection requires a reviewed selection report and ADR before production implementation.
+The user explicitly authorized full Wave 1 foundation work while Wave 0 target measurements remain incomplete. This authorizes provider-neutral engine, gateway, read-only `get_today`, Domain Bridge and UI implementation; it does **not** select a permanent model/vector backend, enable Health data, allow writes or enable automation. Wave 0 selection still requires its measured report and ADR.

@@ -31,6 +31,12 @@ Same-origin dynamic routes:
 - `/api/entertainment/providers`
 - `/api/entertainment/image?url=`
 
+## Intelligence Engine proxy
+
+- `/api/ai/[...path]` — dynamic fixed loopback proxy for paired engine status, request, SSE, tool-result and cancellation traffic
+
+The browser cannot supply an upstream AI URL. Engine-native routes are documented in [`API.md`](API.md).
+
 ## Health
 
 - `/health`

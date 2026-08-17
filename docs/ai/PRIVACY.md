@@ -51,6 +51,12 @@ git config core.hooksPath .githooks
 
 The hook is defense in depth, not permission to commit questionable data. If uncertain, keep the file under `results-local/`.
 
+## v0.1 data handling
+
+The active `core.today@1.0` adapter sends at most bounded active task metadata, derived scheduled-item labels, high/critical notification labels, deterministic Next Action provenance, timestamps and revision metadata. It explicitly excludes Note content and all Health state. Tool snapshots, prompts and responses remain in process/session memory only. The browser stores only a session bearer token and non-reversible revision fingerprints.
+
+The local model still receives the permitted prompt and snapshot during inference; local processing is not encryption. Disconnecting removes the browser token, while restarting the engine invalidates its in-memory sessions.
+
 ## Consent model
 
 Consent is explicit, revocable and scoped by:

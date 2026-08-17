@@ -19,9 +19,16 @@
 
 Legacy `prod.*` keys are removed by the root store migration effect.
 
-## Intelligence Engine status
+## Intelligence Engine v0.1 metadata
 
-No AI persistence key exists yet. The architecture gate requires AI memory/retrieval data to remain separate from authoritative Kaizen slices, but its local storage technology and backup behavior require a technical spike. Do not introduce or document `kaizen.ai` as an active key until implementation and migration contracts are approved. See [`../ai/MEMORY.md`](../ai/MEMORY.md) and [`../ai/OPEN-QUESTIONS.md`](../ai/OPEN-QUESTIONS.md).
+| Storage | Key | Contents |
+|---|---|---|
+| localStorage | `kaizen.ai.bridge-revisions` | Installation epoch, per-domain counters and non-reversible fingerprints; no domain records |
+| localStorage | `kaizen.ai.bridge-writer` | Short single-writer lease owner/expiry |
+| sessionStorage | `kaizen.ai.bridge-owner` | Random tab/session bridge owner ID |
+| sessionStorage | `kaizen.ai.session` | Expiring local engine bearer token |
+
+These keys are transport/revision metadata, not AI memory. No conversation, prompt, response, model secret, Health record or domain snapshot is persisted. The planned AI memory store remains unimplemented and separate.
 
 ## sessionStorage
 

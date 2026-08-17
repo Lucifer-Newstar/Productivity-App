@@ -3,7 +3,8 @@
 **Status:** `INCOMPLETE — TARGET HARDWARE AND MODEL RESULTS REQUIRED`<br>
 **Report version:** 0.2 — privacy boundary and frozen gates<br>
 **Date:** 2026-08-17<br>
-**Production `get_today()` authorization:** **BLOCKED**
+**Permanent model selection:** **BLOCKED**<br>
+**Implementation note:** the user later explicitly authorized provider-neutral v0.1 foundation and read-only `get_today`; this does not complete Wave 0 or approve a model.
 
 ## Executive decision
 
@@ -231,4 +232,4 @@ These remain unresolved until target evidence passes `W0-GATE-1`:
 
 ## Final status
 
-**NO SELECTION APPROVAL.** The report records measured synthetic results and the exact blocked gates. Production `get_today()` must not begin until target-machine results complete this report and the resulting recommendations/ADRs receive explicit review.
+**NO MODEL SELECTION APPROVAL.** The report records measured synthetic results and blocked target gates. Provider-neutral v0.1 implementation exists under explicit user authorization, but no candidate may become the default/recommended runtime until target results complete this report and receive review.

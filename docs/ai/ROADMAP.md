@@ -15,18 +15,20 @@ Architecture review has authorized Wave 0 preparation and controlled feasibility
 
 **Exit:** feasibility evidence resolves the required spikes; locked architecture is updated by ADR; no permanent model/backend is chosen without results.
 
-## v0.1 — Local foundation
+## v0.1 — Local foundation — implemented
 
-- independent engine service
-- provider registry and capability negotiation
-- streaming, cancellation and structured validation
-- prompt/Constitution versioning
-- minimal Intelligence UI
-- `get_today@1.0` Domain Bridge tool
-- source-linked “What should I focus on?” response
-- baseline evaluation harness
+- [x] independent engine service
+- [x] provider registry and capability negotiation
+- [x] streaming, cancellation and structured validation
+- [x] prompt/Constitution versioning
+- [x] paired local Intelligence UI
+- [x] `get_today@1.0` Domain Bridge tool
+- [x] source-linked “What should I focus on?” response
+- [x] baseline and Wave 0 evaluation harnesses
+- [x] fixed same-origin Next.js transport proxy
+- [x] loopback pairing/session/origin security
 
-**Exit:** one useful end-to-end local answer uses current browser state and deterministic Next Action, with valid evidence and no state mutation.
+**Exit status:** executable mock-backed end-to-end flow uses current browser state and deterministic Next Action with verified sources and no state mutation. Real candidate quality/performance remains gated by the incomplete Wave 0 report.
 
 ## v0.2 — Kaizen Understands
 

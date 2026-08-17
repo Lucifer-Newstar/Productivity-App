@@ -69,6 +69,22 @@ Entertainment also has five dynamic Next.js provider routes. Runtime security sm
 | Backend security | Auth, CORS, unsafe payload, ID, overwrite and CSV attacks |
 | HTTP smoke | Production server route failures |
 
+## Intelligence Engine v0.1
+
+```bash
+cd ai
+npm ci
+npm run typecheck
+npm test
+npm run build
+npm audit --omit=dev
+
+cd ../frontend
+npm run qa:ai
+```
+
+Engine tests cover contracts, schema rejection, provider configuration, mock tool rounds, one-time pairing, session expiry, unsafe JSON, rate limits, bounded orchestration, source grounding and a real loopback HTTP/SSE/tool-result flow. Frontend QA covers revision behavior, minimum-context snapshots, source IDs, session-only tokens, fixed same-origin proxying and read-only UI copy.
+
 ## Intelligence Engine Wave 0
 
 Wave 0 has a synthetic validation harness but no production AI feature:

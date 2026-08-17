@@ -40,6 +40,18 @@ The API is in-memory and resets when the process restarts. Set `KAIZEN_API_KEY` 
 KAIZEN_API_KEY=development-only-secret npm run dev
 ```
 
+## Run the Intelligence Engine v0.1
+
+For a deterministic end-to-end development flow:
+
+```bash
+cd ai
+npm ci
+KAIZEN_AI_PROVIDER=mock npm run dev
+```
+
+The local console prints a one-time pairing code. Enter it in the Home dashboard's Kaizen Intelligence panel. For a verified llama.cpp candidate, configure the loopback variables in [`CONFIGURATION.md`](CONFIGURATION.md); Kaizen never downloads a model.
+
 ## Production-mode local run
 
 ```bash

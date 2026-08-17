@@ -158,4 +158,4 @@ Review the sanitized JSON manually before staging. It must contain aggregates on
 
 ## Production boundary
 
-These commands produce selection evidence only. They do not start `get_today()`, expose Kaizen records or select a permanent model. Stop after updating `docs/ai/WAVE-0-REPORT.md` and wait for explicit review.
+These commands produce selection evidence only. They do not expose Kaizen records or select a permanent model. Provider-neutral v0.1 exists separately; stop after updating `docs/ai/WAVE-0-REPORT.md` and wait for explicit review before selecting a default model or starting v0.2.

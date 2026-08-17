@@ -12,6 +12,7 @@
     `/entertainment`, `/health`); all five use dedicated full-screen shells.
   - Global local-first notification inbox/settings mounted across Home and every space.
 - **Backend** — Express 4 REST API under `backend/`, in-memory store, port 4000.
+- **Intelligence** — independent local-first TypeScript engine under `ai/`, paired loopback gateway and read-only `get_today@1.0` vertical slice.
 - **Docs** — see [`docs/`](docs):
   - [`architecture/ARCHITECTURE.md`](docs/architecture/ARCHITECTURE.md) — layout, state model, rendering.
   - [`reference/ALGORITHMS.md`](docs/reference/ALGORITHMS.md) — every formula (1RM, Wilks, Epley,
@@ -34,6 +35,11 @@ npm run dev          # http://localhost:3000
 cd backend
 npm ci
 npm run dev          # http://localhost:4000
+
+# optional local Intelligence Engine (mock provider)
+cd ../ai
+npm ci
+KAIZEN_AI_PROVIDER=mock npm run dev  # http://127.0.0.1:4317
 ```
 
 ## Scripts
