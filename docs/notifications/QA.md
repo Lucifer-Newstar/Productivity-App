@@ -18,10 +18,17 @@ The executable suite verifies:
 - Unique source keys
 - Critical stress priority
 - Settings migration/defaults
+- Route-to-section mapping
+- Cross-section visibility isolation
+- Global visibility across every context
 
 ## Manual checklist
 
 - [ ] Bell is visible on Home and every full-screen space
+- [ ] Home shows Global notifications only
+- [ ] Each space shows its own section plus Global, never another section
+- [ ] Unread badge and mark-all-read are scoped to visible context
+- [ ] Browser delivery is scoped to visible context
 - [ ] Unread count updates
 - [ ] Hover/read and dismiss work
 - [ ] Mark-all-read works

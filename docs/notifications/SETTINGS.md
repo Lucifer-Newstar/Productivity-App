@@ -1,5 +1,9 @@
 # Notification settings
 
+## Context behavior
+
+A space sees only its own notifications plus Global entries. Home sees Global entries only. This applies to the inbox badge, list, mark-all-read and browser delivery.
+
 ## Global
 
 - Enable/disable all notifications

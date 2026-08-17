@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { evaluateNotificationRules } from "../lib/notificationRules";
-import { migrateNotifications } from "../lib/notificationTypes";
+import { migrateNotifications,notificationSectionForPath,notificationVisibleInContext } from "../lib/notificationTypes";
 const now=new Date(2026,7,17,20,30,0),today="2026-08-17";
 const snapshot:any={tasks:[{id:"t",completed:true,createdAt:now.getTime()}],workout:{routines:[{id:"r",name:"Push Day",dayOfWeek:now.getDay()}],sessions:[],bodyweight:[],prs:[{id:"pr",exerciseId:"bench",value:100,reps:5,date:today}],exercises:[{id:"bench",name:"Bench Press",unit:"kg"}]},career:{courses:[{id:"c",name:"AWS",expiryDate:"2026-09-01"}],contacts:[{id:"n",name:"Alex",lastContactAt:now.getTime()-100*86400000,favorsGiven:0,favorsReceived:0}],applications:[{id:"a",role:"SRE",appliedAt:"2026-07-20",stage:"applied"}],skills:[]},forge:{projects:[{id:"p",title:"Launch",status:"blocked",archived:false,deadline:"2026-08-20",budget:{estimated:100,actual:90}}],tasks:[{id:"ft",title:"Deploy",createdAt:"2026-07-01",dueDate:"2026-08-16",stuck:true}]},health:{profile:{idealSleepHours:8},meals:[],water:[{date:today,ml:100,caffeineMg:450}],sleep:[{date:today,durationHours:5}],mind:[{date:"2026-08-17",stress:8},{date:"2026-08-16",stress:7},{date:"2026-08-15",stress:9}]},entertainment:{items:[{id:"e",title:"Show",type:"series",status:"completed",completedAt:"2026-08-15",createdAt:1,updatedAt:1,archived:false}],recommendations:[],loans:[]}};
 const rules=evaluateNotificationRules(snapshot,now);let passed=0;const test=(name:string,fn:()=>void)=>{fn();passed++;console.log(`  ✓ ${name}`)};const has=(prefix:string)=>rules.some(x=>x.sourceKey.startsWith(prefix));
@@ -15,4 +15,7 @@ test("daily pulse generated after 8pm",()=>assert.ok(has("system:daily-pulse")))
 test("source keys are unique",()=>assert.equal(new Set(rules.map(x=>x.sourceKey)).size,rules.length));
 test("critical sustained stress priority",()=>assert.equal(rules.find(x=>x.sourceKey.startsWith("health:stress"))?.priority,"critical"));
 test("settings migration restores all sections",()=>{const n=migrateNotifications({settings:{enabled:false} as any});assert.equal(n.settings.enabled,false);assert.equal(n.settings.sections.workout.enabled,true);assert.equal(n.schemaVersion,1)});
+test("route maps to exactly one notification section",()=>{assert.equal(notificationSectionForPath("/workout/overview"),"workout");assert.equal(notificationSectionForPath("/projects/quarry"),"projects");assert.equal(notificationSectionForPath("/"),null)});
+test("section notifications are hidden outside their section",()=>{assert.equal(notificationVisibleInContext("workout","career"),false);assert.equal(notificationVisibleInContext("career","career"),true)});
+test("global notifications are visible everywhere",()=>{assert.equal(notificationVisibleInContext("system",null),true);assert.equal(notificationVisibleInContext("system","health"),true)});
 console.log(`\n${passed} notification tests passed.`);

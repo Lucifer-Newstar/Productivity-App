@@ -12,8 +12,9 @@ Root StoreProvider
 
 NotificationCenter (mounted in App + Pages layouts)
  ├── evaluates pure rules on state changes and every 5 minutes
- ├── displays inbox on every route/full-screen shell
- ├── optionally delivers browser notifications while Kaizen is open
+ ├── maps the current URL to one section
+ ├── displays only that section plus Global notifications
+ ├── optionally delivers only context-visible browser notifications while open
  └── routes actions back to the relevant space
 ```
 
@@ -29,6 +30,17 @@ The system is local-first. No push service, account or remote notification datab
 - System: evening daily pulse.
 
 See [`RULE-CATALOG.md`](RULE-CATALOG.md) for exact behavior and [`SCOPE-DECISIONS.md`](SCOPE-DECISIONS.md) for pruned/deferred requests.
+
+## Section visibility
+
+- `/workout/*` → Workout + Global
+- `/career/*` → Career + Global
+- `/projects/*` → Projects + Global
+- `/health/*` → Health + Global
+- `/entertainment` → Entertainment + Global
+- `/` and unknown routes → Global only
+
+Notifications remain in one persisted inbox, but section-specific entries and browser delivery are hidden outside their owning space. Mark-all-read affects only the currently visible context. Settings can still configure every section from any route.
 
 ## Notification lifecycle
 
