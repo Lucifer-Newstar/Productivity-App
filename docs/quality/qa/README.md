@@ -17,7 +17,7 @@ _Last synchronized: 2026-08-16 on branch `entertainment`._
 | Health QA | 458/458 |
 | Entertainment structural/security | 168/168 |
 | Entertainment executable suites | 42/42 |
-| Notification rules/settings/context | 13/13 |
+| Notification rules/settings/setup/context | 16/16 |
 | Documentation integrity | 14/14 |
 
 ## Commands

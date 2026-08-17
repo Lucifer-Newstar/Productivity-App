@@ -1,5 +1,9 @@
 # Notification settings
 
+## Data Setup checklist
+
+The clipboard-check control is separate from notification preferences. It shows required personal data/integrations, opens the owning section, allows explicit confirmation and supports reset. Confirmation suppresses the corresponding setup notification; it does not disable ordinary section alerts.
+
 ## Context behavior
 
 A space sees only its own notifications plus Global entries. Home sees Global entries only. This applies to the inbox badge, list, mark-all-read and browser delivery.

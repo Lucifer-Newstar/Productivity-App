@@ -211,13 +211,14 @@ Persistence: `kaizen.entertainment`. Detailed model: [`spaces/entertainment/DATA
 ## Notifications
 
 ```text
-NotificationState (schema v1)
+NotificationState (schema v2)
  ├── items: KaizenNotification[]
  ├── settings: NotificationSettings
+ ├── setup: NotificationSetupState
  └── lastEvaluatedAt
 ```
 
-Notifications have stable `sourceKey` deduplication, section/kind/priority, title/body, optional action route, read/dismiss/browser-delivery timestamps and schedule metadata. Settings own global enablement, frequency, quiet hours, DND/snooze, browser/sound channels and per-section category toggles.
+Notifications have stable `sourceKey` deduplication, section/kind/priority, title/body, optional action route, read/dismiss/browser-delivery timestamps and schedule metadata. Settings own global enablement, frequency, quiet hours, DND/snooze, browser/sound channels and per-section category toggles. `NotificationSetupState` records explicit per-section confirmation and Entertainment manual-mode acceptance so seeded defaults are never mistaken for real user data.
 
 Persistence: `kaizen.notifications`. Migration: `migrateNotifications()`.
 

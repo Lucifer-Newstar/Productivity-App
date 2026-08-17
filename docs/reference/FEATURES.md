@@ -565,7 +565,8 @@ AFTERGLOW v1.0 completed Waves 0–9 on the `entertainment` branch. The authorit
 The local-first notification foundation is active across Home and every full-screen space.
 
 - Global inbox with read/dismiss/mark-all-read and action links ✅
-- `kaizen.notifications` schema-v1 persistence and migration ✅
+- Priority Data Setup checklist and per-section confirmation alerts ✅
+- `kaizen.notifications` schema-v2 persistence and migration ✅
 - Global enable, DND, quiet hours and 30m/4h/24h snooze ✅
 - Real-time, Smart, Daily and Weekly frequency contracts ✅
 - Per-space Reminder/Progress/Alert/Celebration toggles ✅

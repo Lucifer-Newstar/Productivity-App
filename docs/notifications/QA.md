@@ -17,13 +17,19 @@ The executable suite verifies:
 - Evening daily pulse
 - Unique source keys
 - Critical stress priority
-- Settings migration/defaults
+- Settings/setup schema migration defaults
+- Priority setup candidates for all five sections + Global
+- Setup relevance after explicit confirmation
 - Route-to-section mapping
 - Cross-section visibility isolation
 - Global visibility across every context
 
 ## Manual checklist
 
+- [ ] Data Setup lists all five sections and current readiness
+- [ ] Health requires explicit confirmation even when seeded defaults are present
+- [ ] Entertainment supports provider-ready or manual-only confirmation
+- [ ] Confirm/reset immediately hides/restores setup alerts
 - [ ] Bell is visible on Home and every full-screen space
 - [ ] Home shows Global notifications only
 - [ ] Each space shows its own section plus Global, never another section

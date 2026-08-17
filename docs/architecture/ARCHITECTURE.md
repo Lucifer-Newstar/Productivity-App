@@ -105,7 +105,7 @@ Workout:       WorkoutState
 Forge:         ForgeState
 Health:        HealthState
 Entertainment: EntertainmentState (schema v6)
-Notifications: NotificationState (schema v1)
+Notifications: NotificationState (schema v2)
 ```
 
 High-growth domains expose generic functional mutators:

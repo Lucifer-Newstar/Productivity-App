@@ -42,6 +42,18 @@ See [`RULE-CATALOG.md`](RULE-CATALOG.md) for exact behavior and [`SCOPE-DECISION
 
 Notifications remain in one persisted inbox, but section-specific entries and browser delivery are hidden outside their owning space. Mark-all-read affects only the currently visible context. Settings can still configure every section from any route.
 
+## Data Setup assistant
+
+The clipboard-check button opens a cross-space readiness checklist. Each section gets a priority notification until its minimum personal data is present and the user explicitly confirms it.
+
+- Workout: bodyweight and at least one routine.
+- Career: roadmap plus a skill or career goal.
+- Projects: at least one real project.
+- Health: explicit confirmation of age, height, gender, city and sleep target because seeded defaults affect formulas.
+- Entertainment: at least one configured provider or explicit manual-only acceptance.
+
+A Global setup alert reports how many sections remain. Confirmed setup alerts become irrelevant immediately without deleting notification history. Users can reset confirmation when their profile changes.
+
 ## Notification lifecycle
 
 1. A pure rule returns a candidate with a deterministic `sourceKey`.

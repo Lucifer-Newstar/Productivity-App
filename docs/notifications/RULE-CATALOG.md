@@ -2,6 +2,19 @@
 
 Rules evaluate on application load, relevant state changes and a five-minute interval. Browser delivery still obeys quiet/DND/channel settings.
 
+## Data readiness / onboarding
+
+| Rule | Trigger | Priority |
+|---|---|---|
+| Workout data | Bodyweight/routine not confirmed | High |
+| Career data | Roadmap + skill/goal not confirmed | High |
+| Projects data | Active workspace not confirmed | High |
+| Health profile | Demographics/targets not explicitly confirmed | Critical |
+| Entertainment source | Provider or manual mode not confirmed | Normal |
+| Global setup summary | One or more sections unconfirmed | High |
+
+These rules are intentionally confirmation-based because several domains contain seed/demo values that look valid but do not belong to the user.
+
 ## Workout
 
 | Rule | Trigger | Action |

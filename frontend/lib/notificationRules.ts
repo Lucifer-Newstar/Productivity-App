@@ -1,13 +1,20 @@
 import type { NotificationKind,NotificationPriority,NotificationSection } from "./notificationTypes";
 export interface NotificationCandidate {sourceKey:string;section:NotificationSection;kind:NotificationKind;priority:NotificationPriority;title:string;body:string;actionHref?:string;scheduledFor?:number}
-export interface NotificationSnapshot {workout:any;career:any;forge:any;health:any;entertainment:any;tasks:any[]}
+export interface NotificationSnapshot {workout:any;career:any;forge:any;health:any;entertainment:any;tasks:any[];setup?:any}
 const DAY=86_400_000;
 const localDate=(d=new Date())=>{const y=d.getFullYear(),m=String(d.getMonth()+1).padStart(2,"0"),day=String(d.getDate()).padStart(2,"0");return `${y}-${m}-${day}`};
 const dateAt=(iso:string)=>{const n=new Date(`${iso}T12:00:00`).getTime();return Number.isFinite(n)?n:0};
 const daysFrom=(iso:string,now:number)=>Math.floor((now-dateAt(iso))/DAY);
 const daysUntil=(iso:string,now:number)=>Math.ceil((dateAt(iso)-now)/DAY);
 const C=(sourceKey:string,section:NotificationSection,kind:NotificationKind,priority:NotificationPriority,title:string,body:string,actionHref?:string):NotificationCandidate=>({sourceKey,section,kind,priority,title,body,actionHref});
-export function evaluateNotificationRules(s:NotificationSnapshot,nowDate=new Date()):NotificationCandidate[]{const now=nowDate.getTime(),today=localDate(nowDate),hour=nowDate.getHours(),out:NotificationCandidate[]=[];
+export function evaluateNotificationRules(s:NotificationSnapshot,nowDate=new Date()):NotificationCandidate[]{const now=nowDate.getTime(),today=localDate(nowDate),hour=nowDate.getHours(),out:NotificationCandidate[]=[],confirmed=s.setup?.confirmed??{};
+ // Section setup — explicit confirmation prevents seeded/default values being mistaken for user data.
+ if(!confirmed.workout){const missing=[!(s.workout.bodyweight??[]).length&&"bodyweight",!(s.workout.routines??[]).length&&"a routine"].filter(Boolean);out.push(C("setup:workout:v1","workout","alert","high","Workout setup needs your data",`Add ${missing.length?missing.join(" and "):"your training preferences"}, then confirm Workout setup in the notification checklist.`,"/workout/overview"))}
+ if(!confirmed.career){const missing=[!(s.career.skills??[]).length&&"skills",!(s.career.goals??[]).length&&"career goals"].filter(Boolean);out.push(C("setup:career:v1","career","alert","high","Career setup is incomplete",`Review your roadmap and add ${missing.length?missing.join(" and "):"your current career targets"}.`,"/career/projects"))}
+ if(!confirmed.projects)out.push(C("setup:projects:v1","projects","alert","high","Create your first real project","Demo/empty workspace data is not a personal project. Add or confirm your active Forge workspace.","/projects"));
+ if(!confirmed.health)out.push(C("setup:health:v1","health","alert","critical","Confirm your Health profile","Age, height, gender, city, sleep target and goals drive health calculations. Review them before trusting recommendations.","/health/sync"));
+ if(!confirmed.entertainment)out.push(C("setup:entertainment:v1","entertainment","alert","normal","Choose Entertainment data sources","Configure MAL/TMDB/Books providers or confirm that you will use manual entries.","/entertainment"));
+ const missingSetup=(["workout","career","projects","health","entertainment"] as const).filter(x=>!confirmed[x]);if(missingSetup.length)out.push(C(`setup:global:${missingSetup.join("-")}`,"system","alert","high","Profile setup needs attention",`${missingSetup.length} section${missingSetup.length===1?"":"s"} still need personal data or confirmation. Open Data Setup in notifications.`));
  // Workout — schedule, missed sessions, weigh-in and PRs.
  const todayRoutines=(s.workout.routines??[]).filter((r:any)=>r.dayOfWeek===nowDate.getDay());for(const r of todayRoutines)out.push(C(`workout:schedule:${r.id}:${today}`,"workout","reminder","normal","Workout scheduled",`${r.name} is on today's plan. Warm up and equipment ready?`,"/workout/schedule"));
  const yesterday=new Date(now-DAY),yday=localDate(yesterday),yRoutines=(s.workout.routines??[]).filter((r:any)=>r.dayOfWeek===yesterday.getDay()),trainedYesterday=(s.workout.sessions??[]).some((x:any)=>x.date===yday&&x.endedAt);for(const r of yRoutines)if(!trainedYesterday)out.push(C(`workout:missed:${r.id}:${yday}`,"workout","alert","high","Missed workout",`You missed yesterday's ${r.name}. Reschedule it or adjust the plan.`,"/workout/schedule"));

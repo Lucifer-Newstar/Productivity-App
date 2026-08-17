@@ -24,6 +24,7 @@
 | BYOK | Bring your own provider key; AFTERGLOW stores overrides for one tab session only |
 | FULLSCREEN | Page static flag that bypasses shared `TopNav`/container chrome |
 | Root store | React Context provider containing all persisted state slices/actions |
+| Data Setup | Notification-center checklist that confirms each space has real user data/integrations |
 | Notification source key | Deterministic rule/event identifier used to prevent duplicate inbox entries |
 | Smart notifications | Frequency mode that keeps all inbox entries but suppresses low-priority immediate browser delivery |
 | Migration | Function that converts older persisted state to the current defensive shape |
