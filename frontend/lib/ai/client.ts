@@ -7,7 +7,7 @@ export interface AskCallbacks{onState?:(state:AiEngineState)=>void;onDelta?:(tex
 const TOKEN_KEY="kaizen.ai.session";
 export class KaizenAiClient{
   private token:string|null=null;
-  constructor(readonly baseUrl=(process.env.NEXT_PUBLIC_KAIZEN_AI_URL||"http://127.0.0.1:4317").replace(/\/$/,"")){if(typeof sessionStorage!=="undefined")this.token=sessionStorage.getItem(TOKEN_KEY)}
+  constructor(readonly baseUrl=(process.env.NEXT_PUBLIC_KAIZEN_AI_URL||"/api/ai").replace(/\/$/,"")){if(typeof sessionStorage!=="undefined")this.token=sessionStorage.getItem(TOKEN_KEY)}
   get paired(){return!!this.token}
   async pair(code:string):Promise<void>{const response=await fetch(`${this.baseUrl}/v1/pair`,{method:"POST",headers:{"x-kaizen-pairing-code":code}});if(!response.ok)throw new Error((await response.json()).error?.message||"Pairing failed");const data=await response.json();this.token=data.sessionToken;sessionStorage.setItem(TOKEN_KEY,this.token!)}
   clear():void{this.token=null;if(typeof sessionStorage!=="undefined")sessionStorage.removeItem(TOKEN_KEY)}

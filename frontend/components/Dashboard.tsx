@@ -21,9 +21,12 @@ import {
 import { useStore } from "../lib/store";
 import { useTheme } from "../lib/theme";
 import { SPACES, type SpaceId } from "../lib/types";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import SpaceIcon from "./SpaceIcon";
+import IntelligencePanel from "./IntelligencePanel";
 import { buildHomeIntelligence } from "../lib/homeIntelligence";
+import { BridgeRevisionTracker } from "../lib/ai/revisions";
+import { buildTodaySnapshot } from "../lib/ai/domainBridge";
 
 const container: Variants = {
   hidden: { opacity: 0 },
@@ -56,6 +59,7 @@ export default function Dashboard({
   const { theme } = useTheme();
   const [time, setTime] = useState(new Date());
   const [habits, setHabits] = useState<any[]>([]);
+  const revisionTracker = useRef<BridgeRevisionTracker | null>(null);
   useEffect(() => {
     const id = setInterval(() => setTime(new Date()), 30_000);
     try {
@@ -63,6 +67,7 @@ export default function Dashboard({
     } catch {}
     return () => clearInterval(id);
   }, []);
+  useEffect(() => () => revisionTracker.current?.release(), []);
   const intel = useMemo(
     () => buildHomeIntelligence({ ...store, habits }, time),
     [
@@ -77,6 +82,17 @@ export default function Dashboard({
       time,
     ],
   );
+  const buildAiSnapshot = useCallback(() => {
+    revisionTracker.current ??= new BridgeRevisionTracker(localStorage, sessionStorage);
+    return buildTodaySnapshot({
+      tasks: store.tasks,
+      forgeTasks: store.forge.tasks.map((task) => ({ id: task.id, title: task.title })),
+      notifications: store.notifications.items,
+      intelligence: intel,
+      now: new Date(),
+      tracker: revisionTracker.current,
+    });
+  }, [store.tasks, store.forge.tasks, store.notifications.items, intel]);
   const dark = theme === "dark";
   const date = time.toLocaleDateString("en-IN", {
     weekday: "long",
@@ -250,6 +266,10 @@ export default function Dashboard({
           </div>
         )}
       </motion.section>
+
+      <motion.div variants={reveal}>
+        <IntelligencePanel buildSnapshot={buildAiSnapshot} />
+      </motion.div>
 
       <motion.section variants={reveal} className="today-strip home-panel">
         <div className="home-section-head compact">
