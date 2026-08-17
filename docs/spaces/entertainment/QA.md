@@ -20,9 +20,10 @@ _Last updated: 2026-08-16, Wave 0 + Wave 1 core._
 - [x] Open Library cover redirect chain — allowlisted proxy returns bounded JPEG 200
 - [x] Unconfigured MAL — bounded 503 with configuration guidance
 - [x] Cross-site search and non-allowlisted image host — rejected 403
-- [x] `node scripts/qa-entertainment.js` — 117/117 structural assertions
+- [x] `node scripts/qa-entertainment.js` — 130/130 structural assertions
 - [x] `npm run qa:entertainment:intelligence` — 9/9 executable intelligence tests
 - [x] `npm run qa:entertainment:reports` — 11/11 executable report tests
+- [x] `npm run qa:entertainment:social` — 5/5 executable social tests
 
 ## Wave 1 functional checklist
 
@@ -94,6 +95,19 @@ _Last updated: 2026-08-16, Wave 0 + Wave 1 core._
 - [x] 365-day heatmap combines events and deep logs
 - [x] Editable purchase price plus total/cost-per-hour
 - [x] Pure report algorithms covered by executable fixtures
+
+## Wave 7 offline-social checklist
+
+- [x] Manual friend CRUD and per-title ratings
+- [x] Taste score compares only mutually rated titles
+- [x] Private recommendation notes
+- [x] Group member names and media membership
+- [x] Deterministic discussion prompts perform no network request
+- [x] Gift reaction tracking
+- [x] Lent/borrowed due/overdue/returned lifecycle
+- [x] Deleting a friend cleans their recommendations
+- [x] Schema v5 backfills every social collection
+- [x] Backend exposes matching generic CRUD resources
 
 ## Security checklist
 

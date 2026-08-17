@@ -2,7 +2,7 @@ export type MediaType = "book" | "comic" | "manga" | "movie" | "series" | "anime
 export type MediaStatus = "planned" | "in-progress" | "completed" | "paused" | "dropped";
 export type MediaPriority = "high" | "medium" | "low";
 export type RatingScale = "ten" | "five";
-export type EntertainmentView = "dashboard" | "library" | "collections" | "calendar" | "history" | "archive" | "discover" | "stats" | "studio";
+export type EntertainmentView = "dashboard" | "library" | "collections" | "calendar" | "history" | "archive" | "discover" | "stats" | "social" | "studio";
 
 export interface MediaSearchResult {
   provider: Exclude<NonNullable<EntertainmentItem["provider"]>, "manual">;
@@ -125,6 +125,12 @@ export interface EntertainmentEvent {
   detail?: string;
 }
 
+export interface EntertainmentFriend { id:string;name:string;ratings:Record<string,number>;createdAt:number }
+export interface FriendRecommendation { id:string;itemId:string;friendId:string;note?:string;createdAt:number }
+export interface SharedMediaGroup { id:string;name:string;memberNames:string[];itemIds:string[];createdAt:number }
+export interface MediaGift { id:string;itemId:string;person:string;giftedAt:string;liked?:boolean;note?:string }
+export interface MediaLoan { id:string;itemId:string;person:string;direction:"lent"|"borrowed";loanedAt:string;dueAt?:string;returnedAt?:string }
+
 export interface EntertainmentSettings {
   ratingScale: RatingScale;
   language: string;
@@ -133,10 +139,15 @@ export interface EntertainmentSettings {
 }
 
 export interface EntertainmentState {
-  schemaVersion: 4;
+  schemaVersion: 5;
   items: EntertainmentItem[];
   collections: EntertainmentCollection[];
   events: EntertainmentEvent[];
+  friends: EntertainmentFriend[];
+  recommendations: FriendRecommendation[];
+  groups: SharedMediaGroup[];
+  gifts: MediaGift[];
+  loans: MediaLoan[];
   settings: EntertainmentSettings;
   lastRolloverMonth?: string;
 }
@@ -144,7 +155,7 @@ export interface EntertainmentState {
 const now = Date.now();
 const day = 86_400_000;
 export const SEED_ENTERTAINMENT: EntertainmentState = {
-  schemaVersion: 4,
+  schemaVersion: 5,
   items: [
     { id:"ent-dune",provider:"manual",type:"book",title:"Dune",description:"Politics, ecology and prophecy on Arrakis.",releaseYear:1965,genres:["Science Fiction"],creators:["Frank Herbert"],cast:[],studios:[],status:"in-progress",progress:{currentPage:286,totalPages:688},rating:9,startedAt:new Date(now-12*day).toISOString().slice(0,10),repeats:0,priority:"high",queueOrder:1,tags:["epic","desert","thoughtful"],format:"Paperback",language:"English",favorite:true,archived:false,minutesConsumed:420,createdAt:now-18*day,updatedAt:now-day},
     { id:"ent-shogun",provider:"manual",type:"series",title:"Shōgun",description:"Power and survival in feudal Japan.",releaseYear:2024,genres:["Drama","History"],creators:["Rachel Kondo","Justin Marks"],cast:[],studios:["FX"],status:"in-progress",progress:{currentEpisode:6,totalEpisodes:10,currentSeason:1,totalSeasons:1},rating:9,startedAt:new Date(now-8*day).toISOString().slice(0,10),repeats:0,priority:"medium",queueOrder:2,tags:["samurai","political","weekend"],format:"Streaming",language:"Japanese / English",favorite:false,archived:false,minutesConsumed:360,createdAt:now-10*day,updatedAt:now-2*day},
@@ -155,13 +166,18 @@ export const SEED_ENTERTAINMENT: EntertainmentState = {
   ],
   collections: [],
   events: [],
+  friends: [],
+  recommendations: [],
+  groups: [],
+  gifts: [],
+  loans: [],
   settings: { ratingScale:"ten", language:"en", monthlyRollover:true, defaultView:"dashboard" },
 };
 
 export function migrateEntertainment(raw: Partial<EntertainmentState> | null | undefined): EntertainmentState {
   if (!raw || typeof raw !== "object") return SEED_ENTERTAINMENT;
   return {
-    schemaVersion: 4,
+    schemaVersion: 5,
     items: Array.isArray(raw.items) ? raw.items.map((item) => ({
       ...item,
       genres: Array.isArray(item.genres) ? item.genres : [],
@@ -187,6 +203,11 @@ export function migrateEntertainment(raw: Partial<EntertainmentState> | null | u
     })) as EntertainmentItem[] : SEED_ENTERTAINMENT.items,
     collections: Array.isArray(raw.collections) ? raw.collections : [],
     events: Array.isArray(raw.events) ? raw.events.slice(0, 5000) : [],
+    friends: Array.isArray(raw.friends) ? raw.friends : [],
+    recommendations: Array.isArray(raw.recommendations) ? raw.recommendations : [],
+    groups: Array.isArray(raw.groups) ? raw.groups : [],
+    gifts: Array.isArray(raw.gifts) ? raw.gifts : [],
+    loans: Array.isArray(raw.loans) ? raw.loans : [],
     settings: { ...SEED_ENTERTAINMENT.settings, ...(raw.settings ?? {}) },
     lastRolloverMonth: raw.lastRolloverMonth,
   };

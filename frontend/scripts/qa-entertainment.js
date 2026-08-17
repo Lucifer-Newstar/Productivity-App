@@ -15,7 +15,7 @@ test('rating, review and notes fields',types.includes('rating?:')&&types.include
 test('dates and repeats fields',types.includes('startedAt?:')&&types.includes('completedAt?:')&&types.includes('repeats:'));
 test('priority, queue and tags fields',types.includes('priority:')&&types.includes('queueOrder:')&&types.includes('tags:'));
 test('favorites and archive fields',types.includes('favorite:')&&types.includes('archived:'));
-test('schema version is explicit',types.includes('schemaVersion: 4'));
+test('schema version is explicit',types.includes('schemaVersion: 5'));
 test('defensive migration exists',types.includes('migrateEntertainment'));
 test('first-run seed covers all sections',Array.from(types.matchAll(/type:"(book|comic|manga|movie|series|anime)"/g)).length>=5);
 test('store persists dedicated key',store.includes('"kaizen.entertainment"'));
@@ -88,7 +88,7 @@ test('advanced genre/tag/priority filters exist',page.includes('All genres')&&pa
 test('rating, backlog-age and favorites filters exist',page.includes('Any rating')&&page.includes('Planned 90+ days')&&page.includes('Favorites only'));
 test('smart filters can be reset',page.includes('RESET SMART FILTERS'));
 const deep=read('components/entertainment/EntertainmentMediaDetails.tsx');
-test('schema v4 carries media-specific detail contracts',types.includes('schemaVersion: 4')&&types.includes('BookDetails')&&types.includes('SeriesDetails'));
+test('schema v5 carries media-specific detail contracts',types.includes('schemaVersion: 5')&&types.includes('BookDetails')&&types.includes('SeriesDetails'));
 test('migration backfills all deep-tracking arrays',types.includes('readingLogs: []')&&types.includes('volumes: []')&&types.includes('episodeLogs: []')&&types.includes('voiceActors: []'));
 test('book format and edition tracking exist',deep.includes('Reading format')&&deep.includes('Collector\'s'));
 test('book reading speed and ETA are calculated',deep.includes('PACE')&&deep.includes('EST. LEFT')&&deep.includes('pages/(totals.minutes/60)'));
@@ -107,7 +107,7 @@ test('anime source, studio and seiyuu fields exist',deep.includes('Source materi
 test('anime OP and ED favorites exist',deep.includes('Opening song')&&deep.includes('Ending song')&&deep.includes('Loved the OP')&&deep.includes('Loved the ED'));
 test('favorite creator/studio toggles exist',deep.includes('FAVORITE TALENT')&&types.includes('favoriteCreatorNames')&&types.includes('favoriteStudioNames'));
 const intelligence=read('components/entertainment/EntertainmentIntelligence.tsx');const analytics=read('lib/entertainmentAnalytics.ts');
-test('schema v4 stores countries and franchise order',types.includes('schemaVersion: 4')&&types.includes('franchiseOrder')&&types.includes('countries?:'));
+test('schema v5 stores countries and franchise order',types.includes('schemaVersion: 5')&&types.includes('franchiseOrder')&&types.includes('countries?:'));
 test('recommendations weight genre/tag/creator/studio overlap',analytics.includes('g*3')&&analytics.includes('t*2')&&analytics.includes('c*5')&&analytics.includes('s*4'));
 test('recommendations only target active Plan-to queue',analytics.includes('i.status==="planned"&&!i.archived'));
 test('mood picker filters Plan-to tags',analytics.includes('moodPick')&&analytics.includes('norm(t)===norm(mood)'));
@@ -136,4 +136,18 @@ test('cost and per-hour analysis exist',reports.includes('costPerHour')&&stats.i
 test('purchase price is editable in details',page.includes('Purchase price (₹)'));
 test('satisfaction trend uses monthly average ratings',reports.includes('satisfaction:monthly.map')&&stats.includes('Satisfaction over time'));
 test('report algorithms have executable QA',fs.existsSync(path.join(root,'scripts/qa-entertainment-reports.ts')));
+const social=read('components/entertainment/EntertainmentSocial.tsx');const socialMath=read('lib/entertainmentSocial.ts');
+test('schema v5 includes offline social collections',types.includes('schemaVersion: 5')&&types.includes('EntertainmentFriend')&&types.includes('MediaLoan'));
+test('migration backfills all social arrays',types.includes('friends: Array.isArray')&&types.includes('recommendations: Array.isArray')&&types.includes('loans: Array.isArray'));
+test('Social route is enabled',page.includes('label:"Social",icon:Users,ready:true')&&page.includes('EntertainmentSocial'));
+test('friend CRUD and manual ratings exist',social.includes('Friend name')&&social.includes("friend.ratings[i.id]"));
+test('taste match computes shared-rating distance',socialMath.includes('tasteMatch')&&socialMath.includes('Math.abs(x.mine-x.theirs)'));
+test('friend recommendation log is wired',social.includes('Recommend to a friend')&&social.includes('LOG RECOMMENDATION'));
+test('shared groups manage members and media',social.includes('CREATE GROUP')&&social.includes('MANAGE MEDIA'));
+test('discussion prompts are deterministic/local',socialMath.includes('discussionPrompts')&&!socialMath.includes('fetch('));
+test('gift tracker captures recipient and reaction',social.includes('Gift tracker')&&social.includes('Liked it'));
+test('loan tracker supports both directions and returns',social.includes('I lent it')&&social.includes('I borrowed it')&&social.includes('RETURNED'));
+test('overdue loans receive warning state',social.includes('dueAt<today()')&&social.includes('text-red-300'));
+test('backend mirrors social collections',backend.includes('entertainmentFriends')&&backend.includes('entertainmentLoans'));
+test('social algorithms have executable QA',fs.existsSync(path.join(root,'scripts/qa-entertainment-social.ts')));
 console.log(`\n${pass} passed, ${fail} failed`); if(fail)process.exit(1);

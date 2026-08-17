@@ -98,11 +98,17 @@ Shipped:
 - Purchase-price total and cost per consumed hour
 - Pure report builder with executable algorithm tests
 
-## Wave 7 — offline social simulation
+## Wave 7 — offline social simulation ✅
 
-- Friend recommendations and manual taste matching
-- Shared groups, deterministic discussion prompts
-- Gift and borrow/loan tracking
+- Private friend directory with manually entered per-title ratings
+- Taste-match score from shared ratings and average 1–10 distance
+- Friend recommendation log with title and private reason note
+- Shared watch/read groups with manual member names and media membership
+- Deterministic metadata-aware discussion prompts; no AI/network dependency
+- Gift recipient/date/note and liked/not-yet reaction tracking
+- Lent/borrowed direction, due-date overdue flag and return tracking
+- Backend mirror collections for friends, recommendations, groups, gifts and loans
+- Entertainment schema v5 migration and executable social-algorithm QA
 
 ## Wave 8 — creation studio
 

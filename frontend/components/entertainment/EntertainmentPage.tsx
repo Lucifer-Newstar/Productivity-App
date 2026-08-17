@@ -6,7 +6,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import {
   Archive, BarChart3, BookOpen, CalendarDays, ChevronRight, Clapperboard,
   Compass, Film, FolderHeart, Heart, History, Info, KeyRound, Library, LoaderCircle, Moon, PenLine, Plus, Search, ShieldCheck, Sparkles, Star,
-  Sun, Trash2, Wifi, X, Zap,
+  Sun, Trash2, Users, Wifi, X, Zap,
 } from "lucide-react";
 import { useStore } from "../../lib/store";
 import { useTheme } from "../../lib/theme";
@@ -17,6 +17,7 @@ import { ArchiveView, CalendarView, CollectionsView, HistoryView } from "./Enter
 import EntertainmentMediaDetails from "./EntertainmentMediaDetails";
 import EntertainmentIntelligence from "./EntertainmentIntelligence";
 import EntertainmentStats from "./EntertainmentStats";
+import EntertainmentSocial from "./EntertainmentSocial";
 
 const uid = () => Math.random().toString(36).slice(2,10) + Date.now().toString(36);
 const today = () => new Date().toISOString().slice(0,10);
@@ -31,7 +32,7 @@ const VIEW_NAV: {id:EntertainmentView;label:string;icon:any;ready:boolean}[] = [
   {id:"dashboard",label:"Now Playing",icon:Clapperboard,ready:true},{id:"library",label:"Library",icon:Library,ready:true},
   {id:"collections",label:"Collections",icon:FolderHeart,ready:true},{id:"calendar",label:"Calendar",icon:CalendarDays,ready:true},
   {id:"history",label:"History",icon:History,ready:true},{id:"archive",label:"Archive",icon:Archive,ready:true},{id:"discover",label:"Discover",icon:Compass,ready:true},
-  {id:"stats",label:"Stats",icon:BarChart3,ready:true},{id:"studio",label:"Studio",icon:Sparkles,ready:false},
+  {id:"stats",label:"Stats",icon:BarChart3,ready:true},{id:"social",label:"Social",icon:Users,ready:true},{id:"studio",label:"Studio",icon:Sparkles,ready:false},
 ];
 
 function progressPct(item: EntertainmentItem) {
@@ -138,6 +139,7 @@ export default function EntertainmentPage() {
           : view==="history" ? <HistoryView state={entertainment}/>
           : view==="archive" ? <ArchiveView state={entertainment} update={updateEntertainment}/>
           : view==="stats" ? <EntertainmentStats state={entertainment}/>
+          : view==="social" ? <EntertainmentSocial state={entertainment} update={updateEntertainment}/>
           : view==="discover" ? <Discover existing={entertainment.items} onAdd={addSearchResult} onOpen={id=>setSelected(id)}/> : <>
           <div className="flex flex-wrap items-end gap-3 mb-6"><div className="mr-auto"><div className="text-xs tracking-[.24em] text-cyan-400">THE ARCHIVE</div><h1 className="text-3xl font-black mt-1">Library <span style={{color:"var(--muted)"}}>({visible.length})</span></h1></div>
             <Filter value={type} onChange={v=>setType(v as any)} options={[['all','All media'],...Object.entries(MEDIA_TYPE_LABELS)]}/><Filter value={status} onChange={v=>setStatus(v as any)} options={[['all','All statuses'],...STATUS.map(s=>[s.id,s.label])]}/><Filter value={sort} onChange={v=>setSort(v as any)} options={[["updated","Recently updated"],["title","Title"],["rating","Rating"],["progress","Progress"],["priority","Priority"]]}/><button onClick={()=>setAdvancedOpen(v=>!v)} className={`rounded-xl border px-3 py-2 text-xs ${advancedOpen?"bg-fuchsia-500/15 text-fuchsia-300":""}`} style={{borderColor:"var(--line)"}}>SMART FILTERS</button>

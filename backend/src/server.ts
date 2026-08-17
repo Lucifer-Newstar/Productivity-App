@@ -9,7 +9,7 @@
  *   - Career  → 25 collections                   (frontend/lib/careerTypes.ts)
  *   - Forge   → 37 collections + 2 singletons    (frontend/lib/forgeTypes.ts)
  *   - Health  → 20 collections + 4 singletons    (frontend/lib/healthTypes.ts)
- *   - Entertainment → 3 collections + 1 singleton (frontend/lib/entertainmentTypes.ts)
+ *   - Entertainment → 8 collections + 1 singleton (frontend/lib/entertainmentTypes.ts)
  *
  * All routes are JSON. This is intentionally minimal — no database, no auth,
  * no validation library. It lets the offline-first frontend push/pull its
@@ -204,6 +204,11 @@ const db: Record<string, Record<string, Row>> = {
   entertainmentItems: {},
   entertainmentCollections: {},
   entertainmentEvents: {},
+  entertainmentFriends: {},
+  entertainmentRecommendations: {},
+  entertainmentGroups: {},
+  entertainmentGifts: {},
+  entertainmentLoans: {},
   // Health (VITAL-SIGN) domain
   healthScores: {},
   healthMeals: {},
@@ -747,6 +752,11 @@ const CRUD: [string, string][] = [
   ["entertainmentItems",       "/entertainment/items"],
   ["entertainmentCollections", "/entertainment/collections"],
   ["entertainmentEvents",      "/entertainment/events"],
+  ["entertainmentFriends",     "/entertainment/friends"],
+  ["entertainmentRecommendations", "/entertainment/recommendations"],
+  ["entertainmentGroups",      "/entertainment/groups"],
+  ["entertainmentGifts",       "/entertainment/gifts"],
+  ["entertainmentLoans",       "/entertainment/loans"],
   // Health (VITAL-SIGN)
   ["healthScores",         "/health/scores"],
   ["healthMeals",          "/health/meals"],

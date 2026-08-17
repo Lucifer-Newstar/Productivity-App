@@ -54,7 +54,12 @@ The approved specification contains 96 numbered features. Wave 0 and the first W
 | 70 | Mood breakdown | ✅ completed-title tag distribution |
 | 71 | Cost analysis | ✅ total spend + cost/hour |
 | 72 | Satisfaction over time | ✅ monthly average-rating line |
-| 73–78 | Offline social | ❌ Wave 7 |
+| 73 | Recommend to friends | ✅ private friend/title/note log |
+| 74 | Taste match | ✅ shared-rating percentage and average difference |
+| 75 | Shared groups | ✅ member names + media membership |
+| 76 | Discussion prompts | ✅ deterministic title/creator/genre prompts |
+| 77 | Gift tracker | ✅ recipient/date/note/reaction |
+| 78 | Borrow/loan tracker | ✅ direction/due/overdue/return |
 | 79–87 | Creation/expression | ❌ Wave 8 |
 | 88 | Unified dashboard | ✅ Wave 1 core |
 | 89 | Quick Add | ✅ catalogue search + manual modes |
