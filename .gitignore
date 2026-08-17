@@ -32,6 +32,8 @@ pids/
 
 # Caches
 .cache/
+__pycache__/
+*.py[cod]
 .npm/
 .eslintcache
 .stylelintcache
@@ -75,3 +77,11 @@ desktop.ini
 *.local
 tmp/
 temp/
+
+# Wave 0 local AI artifacts (never commit models, private paths, or raw runs)
+ai/wave0/config/candidates.local.json
+ai/wave0/models/
+ai/wave0/results/*
+!ai/wave0/results/.gitignore
+*.gguf
+*.server.log

@@ -1,0 +1,53 @@
+{
+  "schemaVersion": 1,
+  "runtime": {
+    "llamaServer": "C:/tools/llama.cpp/llama-server.exe",
+    "llamaBench": "C:/tools/llama.cpp/llama-bench.exe",
+    "host": "127.0.0.1",
+    "port": 18080,
+    "startupTimeoutSeconds": 180,
+    "requestTimeoutSeconds": 120,
+    "runtimeVersion": "RECORD_EXACT_BUILD",
+    "runtimeSha256": "RECORD_BINARY_SHA256"
+  },
+  "defaults": {
+    "threads": 8,
+    "gpuLayers": 99,
+    "batchSize": 512,
+    "ubatchSize": 128,
+    "temperature": 0,
+    "maxOutputTokens": 256,
+    "repetitions": 3,
+    "contextSizes": [4096, 8192],
+    "concurrency": [1, 2]
+  },
+  "candidates": [
+    {
+      "id": "small-instruct-a-q4km",
+      "label": "4B-class instruct candidate A Q4_K_M",
+      "modelPath": "C:/models/CANDIDATE_A_Q4_K_M.gguf",
+      "artifactSha256": "RECORD_MODEL_SHA256",
+      "license": "RECORD_LICENSE",
+      "enabled": false,
+      "extraArgs": []
+    },
+    {
+      "id": "small-instruct-b-q4km",
+      "label": "4B-class instruct candidate B Q4_K_M",
+      "modelPath": "C:/models/CANDIDATE_B_Q4_K_M.gguf",
+      "artifactSha256": "RECORD_MODEL_SHA256",
+      "license": "RECORD_LICENSE",
+      "enabled": false,
+      "extraArgs": []
+    },
+    {
+      "id": "mid-instruct-q4km",
+      "label": "7B-8B-class instruct candidate Q4_K_M spill comparison",
+      "modelPath": "C:/models/CANDIDATE_C_Q4_K_M.gguf",
+      "artifactSha256": "RECORD_MODEL_SHA256",
+      "license": "RECORD_LICENSE",
+      "enabled": false,
+      "extraArgs": []
+    }
+  ]
+}
