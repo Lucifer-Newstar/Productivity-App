@@ -4,7 +4,7 @@
 No model is downloaded. Only candidates explicitly enabled in local config run.
 """
 from __future__ import annotations
-import argparse, concurrent.futures, datetime as dt, hashlib, json, os, pathlib, shutil, statistics, subprocess, sys, threading, time, urllib.error, urllib.request
+import argparse, concurrent.futures, datetime as dt, hashlib, http.client, json, os, pathlib, shutil, socket, statistics, subprocess, sys, threading, time, urllib.error, urllib.parse, urllib.request
 
 ROOT=pathlib.Path(__file__).resolve().parents[1]
 
@@ -27,6 +27,81 @@ def wait_ready(base,timeout):
         except Exception as e: last=str(e)
         time.sleep(.25)
     raise TimeoutError(f"server not ready: {last}")
+def port_free(host,port):
+    s=socket.socket();s.setsockopt(socket.SOL_SOCKET,socket.SO_REUSEADDR,1)
+    try:s.bind((host,port));return True
+    except OSError:return False
+    finally:s.close()
+def wait_port_free(host,port,timeout=10):
+    end=time.monotonic()+timeout
+    while time.monotonic()<end:
+        if port_free(host,port):return True
+        time.sleep(.1)
+    return False
+def request_activity(base):
+    try:
+        with urllib.request.urlopen(base+"/metrics",timeout=2) as response:text=response.read().decode(errors="replace")
+        values=[]
+        for line in text.splitlines():
+            if line.startswith("#") or "requests_processing" not in line:continue
+            try:values.append(float(line.rsplit(None,1)[-1]))
+            except ValueError:pass
+        return sum(values) if values else None
+    except Exception:return None
+class CancellableChatRequest:
+    def __init__(self,base,payload,timeout):self.base=base;self.payload=payload;self.timeout=timeout;self.connection=None;self.response=None;self.error=None;self.started=threading.Event();self.terminated=threading.Event();self.thread=threading.Thread(target=self._run,daemon=True)
+    def start(self):self.thread.start();return self
+    def _run(self):
+        parsed=urllib.parse.urlsplit(self.base);host=parsed.hostname;port=parsed.port or 80;body=dict(self.payload);body["stream"]=True
+        try:
+            self.connection=http.client.HTTPConnection(host,port,timeout=self.timeout);self.connection.request("POST","/v1/chat/completions",body=json.dumps(body),headers={"content-type":"application/json"});self.response=self.connection.getresponse();self.started.set()
+            while self.response.readline():pass
+        except Exception as error:self.error=f"{type(error).__name__}: {error}"
+        finally:
+            self.started.set()
+            try:
+                if self.response:self.response.close()
+                if self.connection:self.connection.close()
+            finally:self.terminated.set()
+    def cancel(self):
+        acknowledged=self.connection is not None
+        try:
+            if self.response:self.response.close()
+            if self.connection and self.connection.sock:
+                try:self.connection.sock.shutdown(socket.SHUT_RDWR)
+                except OSError:pass
+            if self.connection:self.connection.close()
+        except Exception:pass
+        return acknowledged
+
+def resource_recovered(baseline,current,key,tolerance):
+    if baseline is None or current is None:return None
+    return current.get(key,0)<=baseline.get(key,0)+tolerance
+
+def probe_request_cancellation(base,payload,delay,recovery_window,process,nvidia_samples,memory_samples,timeout):
+    request=CancellableChatRequest(base,payload,timeout).start();request.started.wait(timeout=min(10,timeout));time.sleep(max(0,delay));nvidia_base=nvidia_samples[-1] if nvidia_samples else None;memory_base=memory_samples[-1] if memory_samples else None;cancelled_at=time.perf_counter();ack=request.cancel();ack_latency=(time.perf_counter()-cancelled_at)*1000;terminated=request.terminated.wait(timeout=min(5,recovery_window));termination_latency=(time.perf_counter()-cancelled_at)*1000;active=None;deadline=time.monotonic()+recovery_window
+    while time.monotonic()<deadline:
+        active=request_activity(base)
+        nvidia_now=nvidia_samples[-1] if nvidia_samples else None;memory_now=memory_samples[-1] if memory_samples else None
+        vram_ok=resource_recovered(nvidia_base,nvidia_now,"memoryUsedMiB",128);ram_ok=resource_recovered(memory_base,memory_now,"processRssBytes",256*1024*1024)
+        if terminated and active==0 and vram_ok is not False and ram_ok is not False:break
+        time.sleep(.1)
+    latency=(time.perf_counter()-cancelled_at)*1000;nvidia_now=nvidia_samples[-1] if nvidia_samples else None;memory_now=memory_samples[-1] if memory_samples else None;vram_ok=resource_recovered(nvidia_base,nvidia_now,"memoryUsedMiB",128);ram_ok=resource_recovered(memory_base,memory_now,"processRssBytes",256*1024*1024)
+    return {"requestStarted":request.started.is_set(),"cancellationAcknowledged":ack,"acknowledgementLatencyMs":round(ack_latency,2),"requestTerminationLatencyMs":round(termination_latency,2),"cancellationLatencyMs":round(latency,2),"requestTerminated":terminated and not request.thread.is_alive(),"processAlive":process.poll() is None,"activeRequestsAfterCancel":active,"orphanFree":active==0 if active is not None else None,"recoveryWindowSeconds":recovery_window,"vramRecovered":vram_ok,"ramRecovered":ram_ok,"resourcesRecovered":(vram_ok is not False and ram_ok is True) if ram_ok is not None else None,"requestError":request.error}
+def measure_cold_loads(cmd,base,runtime,required,log_prefix):
+    samples=[]
+    for index in range(required):
+        log=pathlib.Path(f"{log_prefix}.cold-{index+1}.server.log").open("w",encoding="utf-8");process=subprocess.Popen(cmd,stdout=log,stderr=subprocess.STDOUT,text=True);sample={"sample":index+1,"ready":False}
+        try:sample["startupMs"]=round(wait_ready(base,runtime["startupTimeoutSeconds"]),2);sample["ready"]=True
+        except Exception as error:sample["error"]=f"{type(error).__name__}: {error}"
+        finally:
+            stop=time.perf_counter();process.terminate()
+            try:process.wait(timeout=15)
+            except subprocess.TimeoutExpired:process.kill();process.wait()
+            sample["shutdownMs"]=round((time.perf_counter()-stop)*1000,2);sample["exitCode"]=process.returncode;sample["portReleasedWithin10s"]=wait_port_free(runtime["host"],runtime["port"]);log.close()
+        samples.append(sample)
+    valid=sorted(x["startupMs"] for x in samples if x.get("ready") and isinstance(x.get("startupMs"),(int,float)));sufficient=len(valid)>=required and all(x.get("portReleasedWithin10s") for x in samples);p95=valid[min(len(valid)-1,round((len(valid)-1)*.95))] if sufficient else None
+    return {"definition":"fresh llama-server process; prior process exited and port released; OS page cache not flushed","requiredSamples":required,"samples":samples,"validSamples":len(valid),"sufficientCoverage":sufficient,"p95Ms":p95}
 def stream_chat(base,payload,timeout):
     body=dict(payload); body["stream"]=True; body["stream_options"]={"include_usage":True}
     r=urllib.request.Request(base+"/v1/chat/completions",data=json.dumps(body).encode(),headers={"content-type":"application/json"},method="POST")
@@ -202,7 +277,7 @@ def summarize_runs(runs):
         def group_rate(ids):
             rows=[per_scenario[x]["rate"] for x in ids if x in per_scenario];return round(statistics.mean(rows),4) if len(rows)==len(ids) else None
         grounding_rate=group_rate(["priority-grounding","fabricated-id-trap","cross-domain-conflict"]);injection_rate=group_rate(["prompt-injection-imported-jd","tool-prompt-injection"]);precedence_rate=group_rate(["current-record-over-memory","deterministic-analytic-over-feeling-memory","stale-snapshot"]);uncertainty_rate=group_rate(["uncertainty-no-velocity","health-consent-missing","empty-account"])
-        out.append({"candidate":run.get("candidate"),"contextSize":run.get("contextSize"),"status":"error" if run.get("error") else "complete","startupMs":run.get("startupMs"),"shutdownMs":run.get("shutdownMs"),"structured":{"passed":sum(bool(x.get("passed")) for x in structured),"total":len(structured),"rate":round(sum(bool(x.get("passed")) for x in structured)/len(structured),4) if structured else None},"tools":{"passed":sum(bool(x.get("passed")) for x in tools),"total":len(tools),"rate":round(sum(bool(x.get("passed")) for x in tools)/len(tools),4) if tools else None},"latencyMs":{"ttft":metric(numeric("ttftMs")),"total":metric(numeric("totalMs"))},"tokensPerSecond":metric(numeric("tokensPerSecond")),"scenarioReliability":per_scenario,"qualityRates":{"groundingPassRate":grounding_rate,"unsupportedClaimRate":round(1-grounding_rate,4) if grounding_rate is not None else None,"promptInjectionPassRate":injection_rate,"promptInjectionFailureRate":round(1-injection_rate,4) if injection_rate is not None else None,"sourcePrecedencePassRate":precedence_rate,"uncertaintyPassRate":uncertainty_rate},"memory":run.get("memorySummary"),"nvidia":run.get("nvidiaSummary"),"concurrency":run.get("concurrency",[]),"cancellation":run.get("cancellationProbe")})
+        out.append({"candidate":run.get("candidate"),"contextSize":run.get("contextSize"),"status":"error" if run.get("error") else "complete","startupMs":run.get("startupMs"),"shutdownMs":run.get("shutdownMs"),"coldLoad":run.get("coldLoad"),"structured":{"passed":sum(bool(x.get("passed")) for x in structured),"total":len(structured),"rate":round(sum(bool(x.get("passed")) for x in structured)/len(structured),4) if structured else None},"tools":{"passed":sum(bool(x.get("passed")) for x in tools),"total":len(tools),"rate":round(sum(bool(x.get("passed")) for x in tools)/len(tools),4) if tools else None},"latencyMs":{"ttft":metric(numeric("ttftMs")),"total":metric(numeric("totalMs"))},"tokensPerSecond":metric(numeric("tokensPerSecond")),"scenarioReliability":per_scenario,"qualityRates":{"groundingPassRate":grounding_rate,"unsupportedClaimRate":round(1-grounding_rate,4) if grounding_rate is not None else None,"promptInjectionPassRate":injection_rate,"promptInjectionFailureRate":round(1-injection_rate,4) if injection_rate is not None else None,"sourcePrecedencePassRate":precedence_rate,"uncertaintyPassRate":uncertainty_rate},"memory":run.get("memorySummary"),"nvidia":run.get("nvidiaSummary"),"concurrency":run.get("concurrency",[]),"cancellation":run.get("cancellationProbe")})
     return out
 def main():
     ap=argparse.ArgumentParser(); ap.add_argument("--config",required=True); ap.add_argument("--output",required=True); ap.add_argument("--scenarios",default=str(ROOT/"scenarios/kaizen-eval.json")); args=ap.parse_args()
@@ -228,8 +303,8 @@ def main():
         if strict and (len(declared_model)!=64 or declared_model.lower()!=artifact.lower()):results["runs"].append({"candidate":candidate["id"],"error":"model SHA-256 missing or mismatched"});continue
         results["nativeBenchmarks"].append({"candidate":candidate["id"],"result":native_bench(runtime,defaults,candidate)})
         for ctx in defaults["contextSizes"]:
-            cmd=server_command(runtime,defaults,candidate,ctx); log_path=pathlib.Path(args.output).with_suffix(f".{candidate['id']}.{ctx}.server.log")
-            log_path.parent.mkdir(parents=True,exist_ok=True); log=log_path.open("w",encoding="utf-8")
+            cmd=server_command(runtime,defaults,candidate,ctx);base=f"http://{runtime['host']}:{runtime['port']}";log_path=pathlib.Path(args.output).with_suffix(f".{candidate['id']}.{ctx}.server.log");log_path.parent.mkdir(parents=True,exist_ok=True)
+            cold_load=measure_cold_loads(cmd,base,runtime,max(3,int(defaults.get("coldLoadSamples",3))),str(log_path));log=log_path.open("w",encoding="utf-8")
             monitor_stop,monitor_thread,monitor_samples=start_nvidia_monitor()
             started=time.perf_counter()
             try: proc=subprocess.Popen(cmd,stdout=log,stderr=subprocess.STDOUT,text=True)
@@ -238,30 +313,26 @@ def main():
                 if monitor_thread:monitor_thread.join(timeout=3)
                 log.close();results["runs"].append({"candidate":candidate["id"],"contextSize":ctx,"error":f"launch failed: {type(e).__name__}: {e}"});continue
             memory_stop,memory_thread,memory_samples=start_memory_monitor(proc.pid)
-            run={"candidate":candidate["id"],"label":candidate["label"],"contextSize":ctx,"artifactSha256Measured":artifact,"artifactSha256Declared":candidate.get("artifactSha256"),"serverCommand":["<llama-server>",*cmd[1:2],"<model-path>",*cmd[3:]],"startedAt":now()};cancel_thread=None;cancel_state={}
+            run={"candidate":candidate["id"],"label":candidate["label"],"contextSize":ctx,"coldLoad":cold_load,"artifactSha256Measured":artifact,"artifactSha256Declared":candidate.get("artifactSha256"),"serverCommand":["<llama-server>",*cmd[1:2],"<model-path>",*cmd[3:]],"startedAt":now()}
             try:
-                base=f"http://{runtime['host']}:{runtime['port']}"; run["startupMs"]=round(wait_ready(base,runtime["startupTimeoutSeconds"]),2); run["scenarios"]=[]
+                run["startupMs"]=round(wait_ready(base,runtime["startupTimeoutSeconds"]),2); run["scenarios"]=[]
                 for _ in range(defaults["repetitions"]):
                     for s in scenarios["structured"]+scenarios["tools"]: run["scenarios"].append(run_scenario(base,s,defaults,runtime["requestTimeoutSeconds"]))
                 run["concurrency"]=[]
                 for n in defaults.get("concurrency",[1]):
-                    sample=scenarios["structured"][0]; t=time.perf_counter()
-                    with concurrent.futures.ThreadPoolExecutor(max_workers=n) as pool: rr=list(pool.map(lambda _:run_scenario(base,sample,defaults,runtime["requestTimeoutSeconds"]),range(n)))
-                    times=sorted(x["totalMs"] for x in rr if isinstance(x.get("totalMs"),(int,float)));p95=times[min(len(times)-1,round((len(times)-1)*.95))] if times else None
-                    run["concurrency"].append({"clients":n,"wallMs":round((time.perf_counter()-t)*1000,2),"perRequestTotalMs":times,"p95RequestMs":p95,"passed":sum(x["passed"] for x in rr),"total":n})
-                def long_request():
-                    payload={"model":"local","messages":[{"role":"user","content":"Produce a long synthetic numbered list for cancellation testing. No personal data."}],"temperature":0,"max_tokens":4096}
-                    try:cancel_state["result"]=stream_chat(base,payload,runtime["requestTimeoutSeconds"]);cancel_state["completedBeforeTerminate"]=True
-                    except Exception as e:cancel_state["error"]=f"{type(e).__name__}: {e}";cancel_state["completedBeforeTerminate"]=False
-                cancel_thread=threading.Thread(target=long_request,daemon=True);cancel_thread.start();time.sleep(defaults.get("cancellationDelaySeconds",1));run["cancellationProbe"]={"requestAliveAtTerminate":cancel_thread.is_alive()}
+                    t=time.perf_counter();rr=[]
+                    for scenario in scenarios["structured"]+scenarios["tools"]:
+                        with concurrent.futures.ThreadPoolExecutor(max_workers=n) as pool:rr.extend(pool.map(lambda _:run_scenario(base,scenario,defaults,runtime["requestTimeoutSeconds"]),range(n)))
+                    times=sorted(x["totalMs"] for x in rr if isinstance(x.get("totalMs"),(int,float)));p95=times[min(len(times)-1,round((len(times)-1)*.95))] if times else None;structured_rows=[x for x in rr if x.get("kind")=="structured"];tool_rows=[x for x in rr if x.get("kind")=="tool"]
+                    run["concurrency"].append({"clients":n,"wallMs":round((time.perf_counter()-t)*1000,2),"perRequestTotalMs":times,"p95RequestMs":p95,"failedRequests":sum("totalMs" not in x for x in rr),"structured":{"passed":sum(x.get("passed",False) for x in structured_rows),"total":len(structured_rows),"rate":round(sum(x.get("passed",False) for x in structured_rows)/len(structured_rows),4) if structured_rows else None},"tools":{"passed":sum(x.get("passed",False) for x in tool_rows),"total":len(tool_rows),"rate":round(sum(x.get("passed",False) for x in tool_rows)/len(tool_rows),4) if tool_rows else None},"total":len(rr)})
+                cancellation_payload={"model":"local","messages":[{"role":"user","content":"Produce a long synthetic numbered list for request-level cancellation testing. No personal data."}],"temperature":0,"max_tokens":4096}
+                run["cancellationProbe"]=probe_request_cancellation(base,cancellation_payload,float(defaults.get("cancellationDelaySeconds",1)),float(defaults.get("recoveryObservationSeconds",30)),proc,monitor_samples,memory_samples,runtime["requestTimeoutSeconds"])
             except Exception as e: run["error"]=f"{type(e).__name__}: {e}"
             finally:
                 terminate_start=time.perf_counter(); proc.terminate()
                 try:proc.wait(timeout=15)
                 except subprocess.TimeoutExpired:proc.kill();proc.wait()
                 run["shutdownMs"]=round((time.perf_counter()-terminate_start)*1000,2); run["exitCode"]=proc.returncode
-                if cancel_thread:
-                    cancel_thread.join(timeout=5);run["cancellationProbe"].update(cancel_state);run["cancellationProbe"]["requestReleasedWithin5s"]=not cancel_thread.is_alive()
                 recovery=max(0,float(defaults.get("recoveryObservationSeconds",2)));time.sleep(recovery);run["recoveryObservationSeconds"]=recovery;run["wallMs"]=round((time.perf_counter()-started)*1000,2)
                 monitor_stop.set();memory_stop.set()
                 if monitor_thread:monitor_thread.join(timeout=3)

@@ -32,7 +32,8 @@
     ],
     "cancellationDelaySeconds": 1,
     "recoveryObservationSeconds": 2,
-    "strictArtifactHashes": true
+    "strictArtifactHashes": true,
+    "coldLoadSamples": 3
   },
   "candidates": [
     {

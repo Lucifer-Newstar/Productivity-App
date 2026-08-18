@@ -36,6 +36,14 @@ def safe_hardware(h):
       "benchmarkProfileLabel":h.get("benchmarkProfileLabel"),
       "capturedAt":h.get("capturedAt")
     }
+def safe_cancellation(x):
+    if not x:return None
+    return {k:x.get(k) for k in ("requestStarted","cancellationAcknowledged","acknowledgementLatencyMs","requestTerminationLatencyMs","cancellationLatencyMs","requestTerminated","processAlive","activeRequestsAfterCancel","orphanFree","recoveryWindowSeconds","vramRecovered","ramRecovered","resourcesRecovered")}
+def safe_concurrency(rows):
+    return [{k:r.get(k) for k in ("clients","wallMs","p95RequestMs","failedRequests","structured","tools","total")} for r in (rows or [])]
+def safe_cold_load(x):
+    if not x:return None
+    return {"definition":x.get("definition"),"requiredSamples":x.get("requiredSamples"),"validSamples":x.get("validSamples"),"sufficientCoverage":x.get("sufficientCoverage"),"p95Ms":x.get("p95Ms"),"samples":[{k:s.get(k) for k in ("sample","ready","startupMs","shutdownMs","exitCode","portReleasedWithin10s")} for s in x.get("samples",[])]}
 def safe_models(m):
     if not m:return None
     candidates={x.get("id"):x.get("label") for x in m.get("config",{}).get("candidates",[])}
@@ -51,8 +59,8 @@ def safe_models(m):
     for row in m.get("summary",[]):
         summaries.append({
           "candidate":row.get("candidate"),"label":candidates.get(row.get("candidate")),"contextSize":row.get("contextSize"),"status":row.get("status"),
-          "startupMs":row.get("startupMs"),"shutdownMs":row.get("shutdownMs"),"structured":row.get("structured"),"tools":row.get("tools"),
-          "latencyMs":row.get("latencyMs"),"tokensPerSecond":row.get("tokensPerSecond"),"scenarioReliability":row.get("scenarioReliability"),"qualityRates":row.get("qualityRates"),"memory":row.get("memory"),"nvidia":row.get("nvidia"),"concurrency":row.get("concurrency"),"cancellation":row.get("cancellation")
+          "startupMs":row.get("startupMs"),"shutdownMs":row.get("shutdownMs"),"coldLoad":safe_cold_load(row.get("coldLoad")),"structured":row.get("structured"),"tools":row.get("tools"),
+          "latencyMs":row.get("latencyMs"),"tokensPerSecond":row.get("tokensPerSecond"),"scenarioReliability":row.get("scenarioReliability"),"qualityRates":row.get("qualityRates"),"memory":row.get("memory"),"nvidia":row.get("nvidia"),"concurrency":safe_concurrency(row.get("concurrency")),"cancellation":safe_cancellation(row.get("cancellation"))
         })
     runtime=m.get("runtimeMeasured",{})
     return {"runtime":{"llamaServerSha256":runtime.get("llamaServerSha256"),"llamaBenchSha256":runtime.get("llamaBenchSha256"),"versionOutput":runtime.get("versionOutput")},"nativeBenchmarks":native,"summaries":summaries}
