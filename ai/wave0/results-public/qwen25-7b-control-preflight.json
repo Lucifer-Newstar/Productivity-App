@@ -1,0 +1,33 @@
+{
+  "schemaVersion": 1,
+  "classification": "PUBLIC-SANITIZED-AGGREGATE",
+  "warning": "No raw prompts, outputs, paths, identifiers or per-sample logs",
+  "hardware": null,
+  "models": null,
+  "retrieval": null,
+  "embeddings": null,
+  "lifecycle": null,
+  "pairing": null,
+  "preflight": {
+    "candidate": "qwen2.5-7b-instruct-q4km-control",
+    "context": 4096,
+    "startupMs": 15520.38,
+    "jinjaEnabled": true,
+    "structuredRate": 0.5,
+    "toolRate": 0.5,
+    "metricsAvailable": true,
+    "nvidiaTelemetryAvailable": true,
+    "portReleased": true,
+    "processTreeExited": true,
+    "failureCategories": [
+      "$.confidence: above maximum",
+      "confidence too high",
+      "expected get_today, got ['get_entertainment_history']"
+    ],
+    "passedForFullRun": false
+  },
+  "revision": null,
+  "score": null,
+  "soak": null,
+  "transport": null
+}
