@@ -1,4 +1,5 @@
 "use client";
+/** Scoped notification inbox, settings, and data-readiness assistant. */
 import { useEffect,useMemo,useState } from "react";
 import { BellOff,Check,ChevronRight,ClipboardCheck,Settings,X } from "lucide-react";
 import { usePathname } from "next/navigation";

@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+/** Exercises authentication, CORS, payload, identifier, export, and 404 defenses. */
 import assert from "node:assert/strict";
 
 const base = process.env.TEST_API_URL ?? "http://127.0.0.1:4000";

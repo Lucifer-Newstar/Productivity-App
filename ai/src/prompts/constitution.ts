@@ -1,3 +1,4 @@
+/** Versioned prompt policy for constitution behavior. */
 export const CONSTITUTION_VERSION = "KAC-1" as const;
 
 export const KAIZEN_CONSTITUTION = `

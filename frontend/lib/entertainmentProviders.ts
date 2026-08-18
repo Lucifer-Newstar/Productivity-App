@@ -1,3 +1,4 @@
+/** Pure domain utilities for entertainment providers. */
 import "server-only";
 import type { MediaSearchResult, MediaType } from "./entertainmentTypes";
 import { providerLocale } from "./entertainmentI18n";

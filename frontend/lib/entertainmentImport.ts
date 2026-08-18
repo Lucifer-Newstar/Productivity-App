@@ -1,4 +1,5 @@
 "use client";
+/** Pure domain utilities for entertainment import. */
 import type { EntertainmentItem, MediaStatus, MediaType } from "./entertainmentTypes";
 import { assertImportFileSize } from "./security";
 

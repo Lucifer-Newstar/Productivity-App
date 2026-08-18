@@ -1,3 +1,4 @@
+<# Local-only Wave 0 orchestration for reproducible target validation. #>
 param(
   [Parameter(Mandatory=$true)][ValidateSet("AC balanced","AC performance","Battery balanced")][string]$ProfileLabel,
   [string]$CandidateConfig = "config/candidates.local.json",

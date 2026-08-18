@@ -1,4 +1,5 @@
 "use client";
+/** AFTERGLOW interface for entertainment organize workflows. */
 import { useMemo, useRef, useState } from "react";
 import { ArchiveRestore, CalendarDays, Download, FileJson, FolderHeart, History, Plus, RotateCcw, Trash2, Upload } from "lucide-react";
 import type { EntertainmentCollection, EntertainmentEvent, EntertainmentItem, EntertainmentState } from "../../lib/entertainmentTypes";

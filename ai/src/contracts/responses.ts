@@ -1,3 +1,4 @@
+/** Versioned Intelligence Engine contracts for responses data. */
 import type { ContentTrust, DomainId, RevisionVector } from "./domain.js";
 import type { ModelIdentity } from "./provider.js";
 

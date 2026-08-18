@@ -1,3 +1,4 @@
+/** Regression gate for qa home intelligence contracts. */
 import assert from "node:assert/strict";
 import { buildHomeIntelligence } from "../lib/homeIntelligence";
 const now = new Date(2026, 7, 17, 20, 0),

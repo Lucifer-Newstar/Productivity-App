@@ -1,3 +1,4 @@
+/** Browser-side Intelligence foundation for domain bridge. */
 import type { HomeIntelligence } from "../homeIntelligence";
 import type { KaizenNotification } from "../notificationTypes";
 import type { Task } from "../types";

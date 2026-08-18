@@ -1,3 +1,4 @@
+/** Parses bounded loopback-only Intelligence Engine configuration. */
 import { isIP } from "node:net";
 
 export interface EngineConfig {

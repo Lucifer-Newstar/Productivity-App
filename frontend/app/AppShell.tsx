@@ -1,4 +1,5 @@
 "use client";
+/** Coordinates Home navigation, responsive rails, and direction-aware view transitions. */
 import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";

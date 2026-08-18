@@ -1,4 +1,5 @@
 "use client";
+/** Navigation-owned trigger for the scoped global Notification Center. */
 import { Bell } from "lucide-react";
 import { usePathname } from "next/navigation";
 import { useStore } from "../lib/store";

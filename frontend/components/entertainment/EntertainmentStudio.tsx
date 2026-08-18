@@ -1,4 +1,5 @@
 "use client";
+/** AFTERGLOW interface for entertainment studio workflows. */
 import { useRef, useState } from "react";
 import { Brush, FileText, Image as ImageIcon, VenetianMask, Plus, Quote, Sparkles, Trash2, Users, Wand2, X } from "lucide-react";
 import type { EntertainmentState, MoodBoardTile, ReviewDraft } from "../../lib/entertainmentTypes";

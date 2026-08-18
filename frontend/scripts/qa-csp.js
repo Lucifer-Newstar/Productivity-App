@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+/** Regression gate for qa csp contracts. */
 const assert=require('node:assert/strict'),path=require('node:path');
 async function policy(env){process.env.NODE_ENV=env;const p=path.resolve(__dirname,'../next.config.js');delete require.cache[p];const cfg=require(p),rows=await cfg.headers();return rows[0].headers.find(x=>x.key==='Content-Security-Policy').value}
 (async()=>{const dev=await policy('development'),prod=await policy('production');assert.ok(dev.includes("'unsafe-eval'"),'development CSP must permit React/Turbopack eval diagnostics');assert.ok(dev.includes('ws: wss:'),'development CSP must permit HMR sockets');assert.ok(!dev.includes('upgrade-insecure-requests'),'development CSP must not upgrade localhost requests');assert.ok(!prod.includes("'unsafe-eval'"),'production CSP must remain eval-free');assert.ok(!prod.includes(' ws:')&&!prod.includes(' wss:'),'production CSP must not broaden connect sources');assert.ok(prod.includes('upgrade-insecure-requests'),'production CSP must upgrade insecure requests');console.log('6 CSP environment checks passed.')} )().catch(e=>{console.error(e);process.exit(1)});

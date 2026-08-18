@@ -1,3 +1,4 @@
+/** Security control for rate limit handling. */
 export class FixedWindowLimiter {
   private readonly buckets = new Map<string, { start: number; count: number }>();
   constructor(private readonly limit: number, private readonly windowMs: number, private readonly maximumBuckets = 1000) {}

@@ -1,4 +1,5 @@
 "use client";
+/** Focus protocol timer with bounded work/reset cycles and session telemetry. */
 
 import { useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";

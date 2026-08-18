@@ -1,3 +1,4 @@
+/** Privacy-safe observability for telemetry metrics. */
 export interface TelemetrySnapshot {
   startedAt: string;
   requestsStarted: number;

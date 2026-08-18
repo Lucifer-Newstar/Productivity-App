@@ -1,3 +1,4 @@
+/** Provider adapter for llama cpp inference behavior. */
 import type {
   GenerationCapabilities, GenerationChunk, GenerationProvider, GenerationRequest,
   GenerationResponse, ModelIdentity, ProviderHealth, ProviderToolCall,

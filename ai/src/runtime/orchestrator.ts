@@ -1,3 +1,4 @@
+/** Runs the bounded read-only tool loop and projects only source-verified responses. */
 import { randomUUID } from "node:crypto";
 import type { DomainSnapshot, TodayContextV1, DomainId } from "../contracts/domain.js";
 import type { IntelligenceRequestInput, EngineEvent } from "../contracts/protocol.js";

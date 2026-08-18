@@ -1,3 +1,4 @@
+/** Regression gate for qa entertainment social contracts. */
 import assert from "node:assert/strict";
 import type { EntertainmentFriend,EntertainmentItem } from "../lib/entertainmentTypes";
 import { discussionPrompts,tasteMatch } from "../lib/entertainmentSocial";

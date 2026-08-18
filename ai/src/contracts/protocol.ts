@@ -1,3 +1,4 @@
+/** Versioned Intelligence Engine contracts for protocol data. */
 import type { BridgeToolRequest, BridgeToolResult } from "./tools.js";
 import type { IntelligenceResponse } from "./responses.js";
 

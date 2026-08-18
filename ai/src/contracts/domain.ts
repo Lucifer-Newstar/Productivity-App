@@ -1,3 +1,4 @@
+/** Versioned Intelligence Engine contracts for domain data. */
 export type DomainId = "core" | "forge" | "career" | "workout" | "health" | "entertainment" | "notifications";
 export type Sensitivity = "normal" | "personal" | "health" | "restricted";
 export type ContentTrust = "system" | "kaizen-derived" | "user-authored" | "externally-imported";

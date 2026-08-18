@@ -1,3 +1,4 @@
+/** Versioned Intelligence Engine contracts for provider data. */
 export type ProcessingMode = "local" | "remote";
 
 export interface ModelIdentity {

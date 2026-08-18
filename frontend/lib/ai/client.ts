@@ -1,3 +1,4 @@
+/** Browser-side Intelligence foundation for client. */
 import type { TodaySnapshot } from "./domainBridge";
 
 export type AiEngineState="offline"|"pairing"|"ready"|"busy"|"failed";

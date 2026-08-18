@@ -1,3 +1,4 @@
+/** Regression gate for qa entertainment migration contracts. */
 import assert from "node:assert/strict";
 import { migrateEntertainment } from "../lib/entertainmentTypes";
 let passed=0;const test=(name:string,fn:()=>void)=>{fn();passed++;console.log(`  ✓ ${name}`)};

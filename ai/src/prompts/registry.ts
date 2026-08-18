@@ -1,3 +1,4 @@
+/** Versioned prompt policy for registry behavior. */
 import { KAIZEN_CONSTITUTION } from "./constitution.js";
 
 export interface PromptDefinition {

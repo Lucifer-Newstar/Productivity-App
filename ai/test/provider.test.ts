@@ -1,3 +1,4 @@
+/** Regression coverage for the provider.test Intelligence Engine boundary. */
 import assert from "node:assert/strict";
 import test from "node:test";
 import { MockGenerationProvider } from "../src/providers/mock.js";

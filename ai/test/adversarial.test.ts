@@ -1,3 +1,4 @@
+/** Regression coverage for the adversarial.test Intelligence Engine boundary. */
 import assert from "node:assert/strict";
 import test from "node:test";
 import type { GenerationChunk, GenerationRequest } from "../src/contracts/provider.js";

@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+/** Regression gate for qa entertainment contracts. */
 const fs=require('fs'), path=require('path');
 const root=path.resolve(__dirname,'..'), repo=path.resolve(root,'..');
 const read=p=>fs.readFileSync(path.join(root,p),'utf8');

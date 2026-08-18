@@ -1,3 +1,4 @@
+/** Pure domain utilities for entertainment i18n. */
 export type EntertainmentLanguage="en"|"ta"|"hi";
 export const ENTERTAINMENT_LANGUAGES:{id:EntertainmentLanguage;label:string;providerLocale:string}[]=[{id:"en",label:"English",providerLocale:"en-US"},{id:"ta",label:"தமிழ்",providerLocale:"ta-IN"},{id:"hi",label:"हिन्दी",providerLocale:"hi-IN"}];
 const copy={

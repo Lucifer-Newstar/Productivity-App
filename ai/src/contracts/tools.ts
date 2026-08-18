@@ -1,3 +1,4 @@
+/** Versioned Intelligence Engine contracts for tools data. */
 import type { DomainId, Sensitivity } from "./domain.js";
 import type { ProviderToolDefinition } from "./provider.js";
 

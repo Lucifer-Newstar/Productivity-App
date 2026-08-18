@@ -1,4 +1,5 @@
 "use client";
+/** AFTERGLOW interface for entertainment page workflows. */
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";

@@ -1,3 +1,4 @@
+/** Bounded runtime implementation for request manager orchestration. */
 import { randomUUID } from "node:crypto";
 import type { BridgeToolRequest, BridgeToolResult } from "../contracts/tools.js";
 import type { EngineEvent, IntelligenceRequestInput } from "../contracts/protocol.js";

@@ -18,7 +18,8 @@
     "qa:ui": "node scripts/qa-ui.js",
     "qa:csp": "node scripts/qa-csp.js",
     "qa:home": "tsx scripts/qa-home-intelligence.ts",
-    "qa:ai": "tsx scripts/qa-ai-foundation.ts"
+    "qa:ai": "tsx scripts/qa-ai-foundation.ts",
+    "qa:comments": "node scripts/qa-comments.js"
   },
   "keywords": [],
   "author": "",

@@ -1,3 +1,4 @@
 "use client";
+/** Surfaces browser persistence failures without hiding unsaved local-state risk. */
 import { useEffect,useState } from "react";
 export default function StorageErrorBanner(){const [key,setKey]=useState("");useEffect(()=>{const onError=(event:Event)=>setKey((event as CustomEvent<{key?:string}>).detail?.key??"local data");window.addEventListener("kaizen:storage-error",onError);return()=>window.removeEventListener("kaizen:storage-error",onError)},[]);if(!key)return null;return <div role="alert" className="fixed bottom-4 left-1/2 -translate-x-1/2 z-[200] max-w-xl rounded-xl border border-red-400/40 bg-red-950 text-red-100 px-4 py-3 shadow-2xl text-xs"><strong>Local storage is full.</strong> Changes to <code>{key}</code> may not persist. Export a backup and remove large images before continuing.<button aria-label="Dismiss storage warning" onClick={()=>setKey("")} className="ml-4 text-red-200 underline">Dismiss</button></div>}

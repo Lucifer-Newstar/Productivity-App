@@ -1,3 +1,4 @@
+/** Regression gate for qa security contracts. */
 import assert from "node:assert/strict";
 import { NextRequest } from "next/server";
 import { csvCell,safeExternalUrl,safeImageDataUrl,safeProxiedImageUrl } from "../lib/security";

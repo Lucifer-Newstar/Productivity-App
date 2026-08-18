@@ -1,3 +1,4 @@
+/** Security control for json handling. */
 const BLOCKED_KEYS = new Set(["__proto__", "prototype", "constructor"]);
 
 export function assertSafeJson(value: unknown, depth = 0, budget = { nodes: 0 }): void {

@@ -1,4 +1,5 @@
 "use client";
+/** Renders the cross-space Command Center and its minimum-context Intelligence bridge. */
 import Link from "next/link";
 import { motion, type Variants } from "framer-motion";
 import {

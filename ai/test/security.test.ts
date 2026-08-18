@@ -1,3 +1,4 @@
+/** Regression coverage for the security.test Intelligence Engine boundary. */
 import assert from "node:assert/strict";
 import test from "node:test";
 import { PairingManager } from "../src/security/pairing.js";

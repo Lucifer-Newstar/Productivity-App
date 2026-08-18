@@ -1,3 +1,4 @@
+/** Public exports for provider-neutral Intelligence Engine contracts and runtime. */
 export * from "./config.js";
 export * from "./contracts/index.js";
 export * from "./gateway.js";

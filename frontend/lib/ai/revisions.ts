@@ -1,3 +1,4 @@
+/** Browser-side Intelligence foundation for revisions. */
 export type BridgeDomain = "core" | "forge" | "career" | "workout" | "health" | "entertainment" | "notifications";
 export interface RevisionVector { installationEpoch: string; domains: Partial<Record<BridgeDomain, number>> }
 interface RevisionState { schemaVersion: 1; installationEpoch: string; domains: Record<BridgeDomain, number>; fingerprints: Partial<Record<BridgeDomain, string>> }

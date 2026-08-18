@@ -1,3 +1,4 @@
+/** Regression coverage for the gateway.test Intelligence Engine boundary. */
 import assert from "node:assert/strict";
 import test from "node:test";
 import type { AddressInfo } from "node:net";

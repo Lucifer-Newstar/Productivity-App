@@ -1,4 +1,5 @@
 "use client";
+/** Central semantic Lucide mapping for all first-class Kaizen spaces. */
 import {
   Anvil,
   BriefcaseBusiness,

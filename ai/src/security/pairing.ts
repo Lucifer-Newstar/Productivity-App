@@ -1,3 +1,4 @@
+/** Security control for pairing handling. */
 import { createHash, randomBytes, timingSafeEqual } from "node:crypto";
 import type { SessionPermissions } from "../contracts/protocol.js";
 

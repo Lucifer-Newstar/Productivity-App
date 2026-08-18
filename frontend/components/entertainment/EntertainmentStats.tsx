@@ -1,4 +1,5 @@
 "use client";
+/** AFTERGLOW interface for entertainment stats workflows. */
 import { useMemo, useState } from "react";
 import { BarChart3, CalendarDays, Clock3, Coins, Flame, Gauge, Star, Trophy } from "lucide-react";
 import type { EntertainmentState } from "../../lib/entertainmentTypes";

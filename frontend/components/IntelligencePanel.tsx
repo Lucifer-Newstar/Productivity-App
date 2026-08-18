@@ -1,4 +1,5 @@
 "use client";
+/** Read-only local Intelligence UI for pairing, requests, evidence, and failure states. */
 import { useMemo, useRef, useState } from "react";
 import { BrainCircuit, CheckCircle2, ChevronRight, Link2, LoaderCircle, LockKeyhole, Send, ShieldCheck, Sparkles, Unplug, X } from "lucide-react";
 import { KaizenAiClient, type AiEngineState, type AiResponse } from "../lib/ai/client";

@@ -1,4 +1,5 @@
 "use client";
+/** Cross-space Priority Desk for capture, filtering, due dates, and completion. */
 
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";

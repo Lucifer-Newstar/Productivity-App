@@ -1,3 +1,4 @@
+/** Regression coverage for the contracts.test Intelligence Engine boundary. */
 import assert from "node:assert/strict";
 import test from "node:test";
 import { GET_TODAY_TOOL } from "../src/contracts/tools.js";

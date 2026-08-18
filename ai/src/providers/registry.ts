@@ -1,3 +1,4 @@
+/** Provider adapter for registry inference behavior. */
 import type { EngineConfig } from "../config.js";
 import type { GenerationProvider } from "../contracts/provider.js";
 import { LlamaCppProvider } from "./llamaCpp.js";

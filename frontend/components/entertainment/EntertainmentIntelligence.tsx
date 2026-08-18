@@ -1,4 +1,5 @@
 "use client";
+/** AFTERGLOW interface for entertainment intelligence workflows. */
 import { useMemo, useState } from "react";
 import { Compass, Dices, Film, Gauge, GitBranch, Sparkles, Target, Users } from "lucide-react";
 import type { EntertainmentItem } from "../../lib/entertainmentTypes";

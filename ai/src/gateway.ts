@@ -1,3 +1,4 @@
+/** Secure loopback HTTP/SSE gateway for pairing and bounded read-only requests. */
 import { createHash, randomUUID } from "node:crypto";
 import { createServer, type IncomingMessage, type ServerResponse } from "node:http";
 import type { Socket } from "node:net";

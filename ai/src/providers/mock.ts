@@ -1,3 +1,4 @@
+/** Provider adapter for mock inference behavior. */
 import { randomUUID } from "node:crypto";
 import type { GenerationCapabilities, GenerationChunk, GenerationProvider, GenerationRequest, GenerationResponse, ModelIdentity, ProviderHealth } from "../contracts/provider.js";
 

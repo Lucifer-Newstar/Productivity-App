@@ -1,3 +1,4 @@
+/** Schema validation for schema payloads. */
 import { createRequire } from "node:module";
 import type { ErrorObject, ValidateFunction } from "ajv";
 import { INTELLIGENCE_RESPONSE_SCHEMA } from "../contracts/responses.js";

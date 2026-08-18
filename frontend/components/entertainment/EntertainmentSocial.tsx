@@ -1,4 +1,5 @@
 "use client";
+/** AFTERGLOW interface for entertainment social workflows. */
 import { useMemo, useState } from "react";
 import { Check, Gift, Library, MessageCircle, Plus, RotateCcw, Trash2, Users } from "lucide-react";
 import type { EntertainmentState, MediaGift, MediaLoan, SharedMediaGroup } from "../../lib/entertainmentTypes";
