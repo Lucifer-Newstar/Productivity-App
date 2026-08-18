@@ -5,6 +5,7 @@ No model is downloaded. Only candidates explicitly enabled in local config run.
 """
 from __future__ import annotations
 import argparse, concurrent.futures, datetime as dt, hashlib, http.client, json, os, pathlib, shutil, socket, statistics, subprocess, sys, threading, time, urllib.error, urllib.parse, urllib.request
+from process_inspection import identity_for, process_table, tree_for, verify_exited_tree, verify_running_tree
 
 ROOT=pathlib.Path(__file__).resolve().parents[1]
 
@@ -79,28 +80,38 @@ def resource_recovered(baseline,current,key,tolerance):
     return current.get(key,0)<=baseline.get(key,0)+tolerance
 
 def probe_request_cancellation(base,payload,delay,recovery_window,process,nvidia_samples,memory_samples,timeout):
-    request=CancellableChatRequest(base,payload,timeout).start();request.started.wait(timeout=min(10,timeout));time.sleep(max(0,delay));nvidia_base=nvidia_samples[-1] if nvidia_samples else None;memory_base=memory_samples[-1] if memory_samples else None;cancelled_at=time.perf_counter();ack=request.cancel();ack_latency=(time.perf_counter()-cancelled_at)*1000;terminated=request.terminated.wait(timeout=min(5,recovery_window));termination_latency=(time.perf_counter()-cancelled_at)*1000;active=None;deadline=time.monotonic()+recovery_window
+    # Baselines are captured before request dispatch; never use in-flight samples.
+    baseline_deadline=time.monotonic()+2
+    while time.monotonic()<baseline_deadline and not memory_samples:time.sleep(.05)
+    nvidia_base=nvidia_samples[-1] if nvidia_samples else None;memory_base=memory_samples[-1] if memory_samples else None;active_base=request_activity(base);table=process_table();tree_before=tree_for(process.pid,table);identity_before=identity_for(process.pid,table)
+    request=CancellableChatRequest(base,payload,timeout).start();request.started.wait(timeout=min(10,timeout));start_seen=False;start_deadline=time.monotonic()+min(5,timeout)
+    while time.monotonic()<start_deadline:
+        observed=request_activity(base)
+        if observed is not None and active_base is not None and observed>active_base:start_seen=True;break
+        time.sleep(.05)
+    time.sleep(max(0,delay));cancelled_at=time.perf_counter();socket_closed=request.cancel();socket_latency=(time.perf_counter()-cancelled_at)*1000;terminated=request.terminated.wait(timeout=min(10,recovery_window));termination_latency=(time.perf_counter()-cancelled_at)*1000;active=None;server_termination=False;server_termination_at=None;deadline=time.monotonic()+recovery_window
     while time.monotonic()<deadline:
-        active=request_activity(base)
-        nvidia_now=nvidia_samples[-1] if nvidia_samples else None;memory_now=memory_samples[-1] if memory_samples else None
-        vram_ok=resource_recovered(nvidia_base,nvidia_now,"memoryUsedMiB",128);ram_ok=resource_recovered(memory_base,memory_now,"processRssBytes",256*1024*1024)
-        if terminated and active==0 and vram_ok is not False and ram_ok is not False:break
+        active=request_activity(base);server_termination=start_seen and active_base is not None and active is not None and active<=active_base
+        if server_termination and server_termination_at is None:server_termination_at=time.perf_counter()
+        nvidia_now=nvidia_samples[-1] if nvidia_samples else None;memory_now=memory_samples[-1] if memory_samples else None;vram_ok=resource_recovered(nvidia_base,nvidia_now,"memoryUsedMiB",128);ram_ok=resource_recovered(memory_base,memory_now,"processRssBytes",256*1024*1024)
+        if terminated and server_termination and vram_ok is not False and ram_ok is not False:break
         time.sleep(.1)
-    latency=(time.perf_counter()-cancelled_at)*1000;nvidia_now=nvidia_samples[-1] if nvidia_samples else None;memory_now=memory_samples[-1] if memory_samples else None;vram_ok=resource_recovered(nvidia_base,nvidia_now,"memoryUsedMiB",128);ram_ok=resource_recovered(memory_base,memory_now,"processRssBytes",256*1024*1024)
-    return {"requestStarted":request.started.is_set(),"cancellationAcknowledged":ack,"acknowledgementLatencyMs":round(ack_latency,2),"requestTerminationLatencyMs":round(termination_latency,2),"cancellationLatencyMs":round(latency,2),"requestTerminated":terminated and not request.thread.is_alive(),"processAlive":process.poll() is None,"activeRequestsAfterCancel":active,"orphanFree":active==0 if active is not None else None,"recoveryWindowSeconds":recovery_window,"vramRecovered":vram_ok,"ramRecovered":ram_ok,"resourcesRecovered":(vram_ok is not False and ram_ok is True) if ram_ok is not None else None,"requestError":request.error}
+    observation_latency=(time.perf_counter()-cancelled_at)*1000;nvidia_now=nvidia_samples[-1] if nvidia_samples else None;memory_now=memory_samples[-1] if memory_samples else None;vram_ok=resource_recovered(nvidia_base,nvidia_now,"memoryUsedMiB",128);ram_ok=resource_recovered(memory_base,memory_now,"processRssBytes",256*1024*1024);tree=verify_running_tree(process.pid,tree_before,identity_before);server_ack=server_termination and active is not None
+    return {"baselineCapturedBeforeDispatch":memory_base is not None,"activeRequestBaseline":active_base,"serverObservedRequestStart":start_seen,"clientSocketClosureIssued":socket_closed,"clientSocketClosureLatencyMs":round(socket_latency,2),"serverObservedRequestTermination":server_termination,"serverTerminationObservationLatencyMs":round((server_termination_at-cancelled_at)*1000,2) if server_ack and server_termination_at else None,"cancellationAcknowledged":server_ack,"acknowledgementSource":"server-active-request-metric" if server_ack else None,"nativeCancellationAcknowledged":None,"requestTerminationLatencyMs":round(termination_latency,2),"cancellationLatencyMs":round(observation_latency,2),"requestTerminated":terminated and not request.thread.is_alive(),"processAlive":process.poll() is None,"activeRequestsAfterCancel":active,"activeCountReturnedToBaseline":server_termination,"orphanFree":server_termination if active is not None else None,"recoveryWindowSeconds":recovery_window,"vramBaselineMiB":nvidia_base.get("memoryUsedMiB") if nvidia_base else None,"vramAfterMiB":nvidia_now.get("memoryUsedMiB") if nvidia_now else None,"ramBaselineBytes":memory_base.get("processRssBytes") if memory_base else None,"ramAfterBytes":memory_now.get("processRssBytes") if memory_now else None,"vramRecovered":vram_ok,"ramRecovered":ram_ok,"resourcesRecovered":(vram_ok is True and ram_ok is True) if vram_ok is not None and ram_ok is not None else None,"processTreeVerified":tree["processTreeStable"],"unexpectedProcessCount":tree["unexpectedProcessCount"],"requestError":request.error}
 def measure_cold_loads(cmd,base,runtime,required,log_prefix):
     samples=[]
     for index in range(required):
         log=pathlib.Path(f"{log_prefix}.cold-{index+1}.server.log").open("w",encoding="utf-8");process=subprocess.Popen(cmd,stdout=log,stderr=subprocess.STDOUT,text=True);sample={"sample":index+1,"ready":False}
-        try:sample["startupMs"]=round(wait_ready(base,runtime["startupTimeoutSeconds"]),2);sample["ready"]=True
+        launched_tree=set()
+        try:sample["startupMs"]=round(wait_ready(base,runtime["startupTimeoutSeconds"]),2);sample["ready"]=True;launched_tree=tree_for(process.pid,process_table())
         except Exception as error:sample["error"]=f"{type(error).__name__}: {error}"
         finally:
             stop=time.perf_counter();process.terminate()
             try:process.wait(timeout=15)
             except subprocess.TimeoutExpired:process.kill();process.wait()
-            sample["shutdownMs"]=round((time.perf_counter()-stop)*1000,2);sample["exitCode"]=process.returncode;sample["portReleasedWithin10s"]=wait_port_free(runtime["host"],runtime["port"]);log.close()
+            sample["shutdownMs"]=round((time.perf_counter()-stop)*1000,2);sample["exitCode"]=process.returncode;sample["portReleasedWithin10s"]=wait_port_free(runtime["host"],runtime["port"]);tree_exit=verify_exited_tree(launched_tree);sample["processTreeExited"]=tree_exit["processTreeExited"];sample["remainingProcessCount"]=tree_exit["remainingProcessCount"];log.close()
         samples.append(sample)
-    valid=sorted(x["startupMs"] for x in samples if x.get("ready") and isinstance(x.get("startupMs"),(int,float)));sufficient=len(valid)>=required and all(x.get("portReleasedWithin10s") for x in samples);p95=valid[min(len(valid)-1,round((len(valid)-1)*.95))] if sufficient else None
+    valid=sorted(x["startupMs"] for x in samples if x.get("ready") and isinstance(x.get("startupMs"),(int,float)));sufficient=len(valid)>=required and all(x.get("portReleasedWithin10s") and x.get("processTreeExited") for x in samples);p95=valid[min(len(valid)-1,round((len(valid)-1)*.95))] if sufficient else None
     return {"definition":"fresh llama-server process; prior process exited and port released; OS page cache not flushed","requiredSamples":required,"samples":samples,"validSamples":len(valid),"sufficientCoverage":sufficient,"p95Ms":p95}
 def stream_chat(base,payload,timeout):
     body=dict(payload); body["stream"]=True; body["stream_options"]={"include_usage":True}

@@ -38,12 +38,12 @@ def safe_hardware(h):
     }
 def safe_cancellation(x):
     if not x:return None
-    return {k:x.get(k) for k in ("requestStarted","cancellationAcknowledged","acknowledgementLatencyMs","requestTerminationLatencyMs","cancellationLatencyMs","requestTerminated","processAlive","activeRequestsAfterCancel","orphanFree","recoveryWindowSeconds","vramRecovered","ramRecovered","resourcesRecovered")}
+    return {k:x.get(k) for k in ("baselineCapturedBeforeDispatch","activeRequestBaseline","serverObservedRequestStart","clientSocketClosureIssued","clientSocketClosureLatencyMs","serverObservedRequestTermination","serverTerminationObservationLatencyMs","cancellationAcknowledged","acknowledgementSource","nativeCancellationAcknowledged","requestTerminationLatencyMs","requestTerminated","processAlive","activeRequestsAfterCancel","activeCountReturnedToBaseline","orphanFree","recoveryWindowSeconds","vramBaselineMiB","vramAfterMiB","ramBaselineBytes","ramAfterBytes","vramRecovered","ramRecovered","resourcesRecovered","processTreeVerified","unexpectedProcessCount")}
 def safe_concurrency(rows):
     return [{k:r.get(k) for k in ("clients","wallMs","p95RequestMs","failedRequests","structured","tools","total")} for r in (rows or [])]
 def safe_cold_load(x):
     if not x:return None
-    return {"definition":x.get("definition"),"requiredSamples":x.get("requiredSamples"),"validSamples":x.get("validSamples"),"sufficientCoverage":x.get("sufficientCoverage"),"p95Ms":x.get("p95Ms"),"samples":[{k:s.get(k) for k in ("sample","ready","startupMs","shutdownMs","exitCode","portReleasedWithin10s")} for s in x.get("samples",[])]}
+    return {"definition":x.get("definition"),"requiredSamples":x.get("requiredSamples"),"validSamples":x.get("validSamples"),"sufficientCoverage":x.get("sufficientCoverage"),"p95Ms":x.get("p95Ms"),"samples":[{k:s.get(k) for k in ("sample","ready","startupMs","shutdownMs","exitCode","portReleasedWithin10s","processTreeExited","remainingProcessCount")} for s in x.get("samples",[])]}
 def safe_models(m):
     if not m:return None
     candidates={x.get("id"):x.get("label") for x in m.get("config",{}).get("candidates",[])}
@@ -83,7 +83,7 @@ def safe_soak(x):
     return {"candidate":x.get("candidate"),"context":x.get("context"),"requestedDurationSeconds":x.get("requestedDurationSeconds"),"actualDurationSeconds":x.get("actualDurationSeconds"),"startupMs":x.get("startupMs"),"shutdownMs":x.get("shutdownMs"),"summary":x.get("summary")}
 def safe_lifecycle(x):
     if not x:return None
-    return {"candidate":x.get("candidate"),"context":x.get("context"),"cycles":[{k:r.get(k) for k in ("mode","startupMs","shutdownMs","exitCode","portReleasedWithin10s","wallMs")} for r in x.get("cycles",[])],"summary":x.get("summary"),"passed":x.get("passed")}
+    return {"candidate":x.get("candidate"),"context":x.get("context"),"cycles":[{k:r.get(k) for k in ("mode","startupMs","shutdownMs","exitCode","portReleasedWithin10s","processTreeExited","remainingProcessCount","wallMs")} for r in x.get("cycles",[])],"summary":x.get("summary"),"passed":x.get("passed")}
 def safe_transport(t):
     if not t:return None
     return {k:t.get(k) for k in ("messagesPerRun","runs","sseDeliveryMs","sseHttpCallbackRoundTripMs","webSocketDeliveryMs","webSocketBidirectionalRoundTripMs")}

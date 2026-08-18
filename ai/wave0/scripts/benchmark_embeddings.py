@@ -15,7 +15,7 @@ def loopback_base_url(value):
     try:url=urllib.parse.urlsplit(value)
     except Exception as error:raise ValueError(f"invalid embedding URL: {error}")
     host=(url.hostname or "").lower()
-    if url.scheme!="http" or host not in {"127.0.0.1","localhost","::1"} or url.username or url.password or url.query or url.fragment or url.path not in {"","/"}:raise ValueError("embedding endpoint must be plain loopback HTTP with no credentials, path, query, or fragment")
+    if url.scheme!="http" or host not in {"127.0.0.1","::1"} or url.username or url.password or url.query or url.fragment or url.path not in {"","/"}:raise ValueError("embedding endpoint must use literal 127.0.0.1 or [::1] HTTP with an explicit port and no credentials, path, query, or fragment")
     if not url.port:raise ValueError("embedding endpoint must declare a loopback port")
     return f"http://[{host}]:{url.port}" if host=="::1" else f"http://{host}:{url.port}"
 QUERIES=[
