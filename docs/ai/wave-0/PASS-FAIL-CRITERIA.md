@@ -8,7 +8,7 @@ The machine-generated LOCAL-ONLY capture taken for each power profile is the aut
 
 - Identical scenarios, generation settings and context matrix for every candidate.
 - Minimum 20 repetitions per structured/tool scenario for finalist scoring.
-- Cold load measured at least 3 times; warm request scenarios measured separately.
+- Cold load means a fresh `llama-server` process after the prior process exits and releases its port; OS page cache is not forcibly flushed. Measure at least 3 independent process/model loads per required context; warm request scenarios remain separate.
 - Thermal run: at least 30 continuous minutes per finalist under the same AC/ASUS profile.
 - Concurrency tests at 1 and 2 clients.
 - Raw LOCAL-ONLY outputs retained for independent local review; only sanitized aggregates are public.
@@ -44,8 +44,9 @@ Target constraint: 4 GB dedicated VRAM / 16 GB system RAM.
 | System headroom | ≥3 GiB available at p95 load; no sustained paging/thrashing |
 | GPU temperature | p95 ≤83 °C, absolute maximum ≤87 °C |
 | Thermal stability | final 10-minute throughput ≥85% of first 5-minute throughput |
-| Cancellation | request acknowledges ≤2 s; process exits ≤10 s when shutdown requested |
-| Resource recovery | VRAM/RAM returns within 30 s of unload/process exit |
+| Request cancellation | individual HTTP generation acknowledges ≤2 s, terminates ≤10 s, active-request metric returns zero, and server process remains alive |
+| Request resource recovery | VRAM and process RAM return to baseline tolerance within 30 s after individual cancellation |
+| Process shutdown | process exits ≤10 s when separately requested |
 | Crash recovery | port/process can restart cleanly; no orphan/duplicate process |
 
 ## Context gates

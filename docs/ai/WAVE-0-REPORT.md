@@ -201,9 +201,12 @@ These are recommendations, not locked selections:
 ## Remaining selection gates
 
 - exact target hardware/power captures
-- verified llama.cpp Windows CUDA build and lifecycle tests
+- verified llama.cpp Windows CUDA build plus required native llama-bench coverage
+- at least three independent cold loads at every required context
+- individual request cancellation, zero active orphan requests and RAM/VRAM recovery while server stays alive
+- separate process crash/restart lifecycle tests
 - at least two 4B-class candidates and one larger comparison
-- structured JSON/tool reliability repetitions
+- structured JSON/tool reliability repetitions, including complete concurrency-2 coverage
 - embedding candidate and retrieval quality tests
 - Windows disk/corruption/deletion/backup tests
 - authenticated browser transport/reconnect test

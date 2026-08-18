@@ -26,7 +26,7 @@ Synthetic baselines:
 
 - Revision prototype: 17 assertions
 - Pairing prototype: 13 security assertions
-- Wave 0 harness: 23 checks
+- Wave 0 harness: 33 checks
 - SQLite FTS5: 20,000 records; p95 approximately 3.96 ms in memory
 - 200-event transport microbenchmark: SSE p95 approximately 5.34 ms; WebSocket p95 approximately 5.66 ms
 
