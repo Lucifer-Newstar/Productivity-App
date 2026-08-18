@@ -1,0 +1,613 @@
+{
+  "schemaVersion": 1,
+  "classification": "PUBLIC-SANITIZED-AGGREGATE",
+  "kind": "wave0-review-bundle",
+  "inputAggregates": 1,
+  "selectionReady": false,
+  "blockers": [
+    "need at least 3 measured candidates",
+    "qwen3-4b-instruct-2507-q4km: frozen gate score not fully passing",
+    "qwen3-4b-instruct-2507-q4km: missing profiles ['AC performance']"
+  ],
+  "candidates": {
+    "qwen3-4b-instruct-2507-q4km": {
+      "profiles": [
+        "AC balanced"
+      ],
+      "contexts": [
+        2048,
+        4096,
+        8192,
+        12288,
+        16384
+      ],
+      "scoreStates": [
+        "fail",
+        "fail",
+        "fail",
+        "fail",
+        "fail"
+      ],
+      "minimumSoakSeconds": 1831.447,
+      "lifecycleAllPassed": true,
+      "runs": [
+        {
+          "profile": "AC balanced",
+          "contextSize": 2048,
+          "structured": {
+            "passed": 0,
+            "total": 50,
+            "rate": 0.0
+          },
+          "tools": {
+            "passed": 30,
+            "total": 35,
+            "rate": 0.8571
+          },
+          "qualityRates": {
+            "groundingPassRate": 0.0,
+            "unsupportedClaimRate": 1.0,
+            "promptInjectionPassRate": 0.5,
+            "promptInjectionFailureRate": 0.5,
+            "sourcePrecedencePassRate": 0.0,
+            "uncertaintyPassRate": 0.0
+          },
+          "latencyMs": {
+            "ttft": {
+              "mean": 62.81,
+              "p50": 54.99,
+              "p95": 108.85
+            },
+            "total": {
+              "mean": 1191.87,
+              "p50": 739.1,
+              "p95": 4694.71
+            }
+          },
+          "tokensPerSecond": {
+            "mean": 50.94,
+            "p50": 51.51,
+            "p95": 54.67
+          },
+          "memory": {
+            "available": true,
+            "samples": 104,
+            "peakProcessRssBytes": 3602853888,
+            "minimumSystemAvailableBytes": 1772748800,
+            "meanProcessCpuPct": 98.52,
+            "peakProcessCpuPct": 107.05
+          },
+          "nvidia": {
+            "available": false,
+            "samples": 0
+          },
+          "concurrency": [
+            {
+              "clients": 1,
+              "wallMs": 21078.91,
+              "p95RequestMs": 4995.25,
+              "failedRequests": 0,
+              "structured": {
+                "passed": 0,
+                "total": 10,
+                "rate": 0.0
+              },
+              "tools": {
+                "passed": 6,
+                "total": 7,
+                "rate": 0.8571
+              },
+              "total": 17
+            },
+            {
+              "clients": 2,
+              "wallMs": 26389.55,
+              "p95RequestMs": 5877.52,
+              "failedRequests": 0,
+              "structured": {
+                "passed": 0,
+                "total": 20,
+                "rate": 0.0
+              },
+              "tools": {
+                "passed": 12,
+                "total": 14,
+                "rate": 0.8571
+              },
+              "total": 34
+            }
+          ],
+          "cancellation": {
+            "baselineCapturedBeforeDispatch": true,
+            "activeRequestBaseline": 0.0,
+            "serverObservedRequestStart": true,
+            "clientSocketClosureIssued": true,
+            "clientSocketClosureLatencyMs": 16.58,
+            "serverObservedRequestTermination": true,
+            "serverTerminationObservationLatencyMs": 144.79,
+            "cancellationAcknowledged": true,
+            "acknowledgementSource": "server-active-request-metric",
+            "nativeCancellationAcknowledged": null,
+            "requestTerminationLatencyMs": 16.59,
+            "requestTerminated": true,
+            "processAlive": true,
+            "activeRequestsAfterCancel": 0.0,
+            "activeCountReturnedToBaseline": true,
+            "orphanFree": true,
+            "recoveryWindowSeconds": 30.0,
+            "vramBaselineMiB": null,
+            "vramAfterMiB": null,
+            "ramBaselineBytes": 3544653824,
+            "ramAfterBytes": 3602853888,
+            "vramRecovered": null,
+            "ramRecovered": true,
+            "resourcesRecovered": null,
+            "processTreeVerified": true,
+            "unexpectedProcessCount": 0
+          }
+        },
+        {
+          "profile": "AC balanced",
+          "contextSize": 4096,
+          "structured": {
+            "passed": 0,
+            "total": 50,
+            "rate": 0.0
+          },
+          "tools": {
+            "passed": 30,
+            "total": 35,
+            "rate": 0.8571
+          },
+          "qualityRates": {
+            "groundingPassRate": 0.0,
+            "unsupportedClaimRate": 1.0,
+            "promptInjectionPassRate": 0.5,
+            "promptInjectionFailureRate": 0.5,
+            "sourcePrecedencePassRate": 0.0,
+            "uncertaintyPassRate": 0.0
+          },
+          "latencyMs": {
+            "ttft": {
+              "mean": 63.12,
+              "p50": 57.76,
+              "p95": 109.72
+            },
+            "total": {
+              "mean": 1313.87,
+              "p50": 808.68,
+              "p95": 5320.37
+            }
+          },
+          "tokensPerSecond": {
+            "mean": 46.41,
+            "p50": 46.7,
+            "p95": 49.39
+          },
+          "memory": {
+            "available": true,
+            "samples": 112,
+            "peakProcessRssBytes": 3594354688,
+            "minimumSystemAvailableBytes": 2329559040,
+            "meanProcessCpuPct": 99.93,
+            "peakProcessCpuPct": 114.56
+          },
+          "nvidia": {
+            "available": false,
+            "samples": 0
+          },
+          "concurrency": [
+            {
+              "clients": 1,
+              "wallMs": 22793.94,
+              "p95RequestMs": 5364.66,
+              "failedRequests": 0,
+              "structured": {
+                "passed": 0,
+                "total": 10,
+                "rate": 0.0
+              },
+              "tools": {
+                "passed": 6,
+                "total": 7,
+                "rate": 0.8571
+              },
+              "total": 17
+            },
+            {
+              "clients": 2,
+              "wallMs": 28118.88,
+              "p95RequestMs": 6359.82,
+              "failedRequests": 0,
+              "structured": {
+                "passed": 0,
+                "total": 20,
+                "rate": 0.0
+              },
+              "tools": {
+                "passed": 12,
+                "total": 14,
+                "rate": 0.8571
+              },
+              "total": 34
+            }
+          ],
+          "cancellation": {
+            "baselineCapturedBeforeDispatch": true,
+            "activeRequestBaseline": 0.0,
+            "serverObservedRequestStart": true,
+            "clientSocketClosureIssued": true,
+            "clientSocketClosureLatencyMs": 8.56,
+            "serverObservedRequestTermination": true,
+            "serverTerminationObservationLatencyMs": 123.33,
+            "cancellationAcknowledged": true,
+            "acknowledgementSource": "server-active-request-metric",
+            "nativeCancellationAcknowledged": null,
+            "requestTerminationLatencyMs": 8.57,
+            "requestTerminated": true,
+            "processAlive": true,
+            "activeRequestsAfterCancel": 0.0,
+            "activeCountReturnedToBaseline": true,
+            "orphanFree": true,
+            "recoveryWindowSeconds": 30.0,
+            "vramBaselineMiB": null,
+            "vramAfterMiB": null,
+            "ramBaselineBytes": 3560202240,
+            "ramAfterBytes": 3566034944,
+            "vramRecovered": null,
+            "ramRecovered": true,
+            "resourcesRecovered": null,
+            "processTreeVerified": true,
+            "unexpectedProcessCount": 0
+          }
+        },
+        {
+          "profile": "AC balanced",
+          "contextSize": 8192,
+          "structured": {
+            "passed": 0,
+            "total": 50,
+            "rate": 0.0
+          },
+          "tools": {
+            "passed": 30,
+            "total": 35,
+            "rate": 0.8571
+          },
+          "qualityRates": {
+            "groundingPassRate": 0.0,
+            "unsupportedClaimRate": 1.0,
+            "promptInjectionPassRate": 0.5,
+            "promptInjectionFailureRate": 0.5,
+            "sourcePrecedencePassRate": 0.0,
+            "uncertaintyPassRate": 0.0
+          },
+          "latencyMs": {
+            "ttft": {
+              "mean": 64.38,
+              "p50": 55.63,
+              "p95": 90.87
+            },
+            "total": {
+              "mean": 1306.98,
+              "p50": 803.5,
+              "p95": 5285.41
+            }
+          },
+          "tokensPerSecond": {
+            "mean": 46.66,
+            "p50": 46.87,
+            "p95": 50.9
+          },
+          "memory": {
+            "available": true,
+            "samples": 111,
+            "peakProcessRssBytes": 3535396864,
+            "minimumSystemAvailableBytes": 2131771392,
+            "meanProcessCpuPct": 132.54,
+            "peakProcessCpuPct": 150.77
+          },
+          "nvidia": {
+            "available": false,
+            "samples": 0
+          },
+          "concurrency": [
+            {
+              "clients": 1,
+              "wallMs": 22475.23,
+              "p95RequestMs": 5369.77,
+              "failedRequests": 0,
+              "structured": {
+                "passed": 0,
+                "total": 10,
+                "rate": 0.0
+              },
+              "tools": {
+                "passed": 6,
+                "total": 7,
+                "rate": 0.8571
+              },
+              "total": 17
+            },
+            {
+              "clients": 2,
+              "wallMs": 27918.66,
+              "p95RequestMs": 6234.85,
+              "failedRequests": 0,
+              "structured": {
+                "passed": 0,
+                "total": 20,
+                "rate": 0.0
+              },
+              "tools": {
+                "passed": 12,
+                "total": 14,
+                "rate": 0.8571
+              },
+              "total": 34
+            }
+          ],
+          "cancellation": {
+            "baselineCapturedBeforeDispatch": true,
+            "activeRequestBaseline": 0.0,
+            "serverObservedRequestStart": true,
+            "clientSocketClosureIssued": true,
+            "clientSocketClosureLatencyMs": 10.4,
+            "serverObservedRequestTermination": true,
+            "serverTerminationObservationLatencyMs": 129.63,
+            "cancellationAcknowledged": true,
+            "acknowledgementSource": "server-active-request-metric",
+            "nativeCancellationAcknowledged": null,
+            "requestTerminationLatencyMs": 10.41,
+            "requestTerminated": true,
+            "processAlive": true,
+            "activeRequestsAfterCancel": 0.0,
+            "activeCountReturnedToBaseline": true,
+            "orphanFree": true,
+            "recoveryWindowSeconds": 30.0,
+            "vramBaselineMiB": null,
+            "vramAfterMiB": null,
+            "ramBaselineBytes": 3477008384,
+            "ramAfterBytes": 3535396864,
+            "vramRecovered": null,
+            "ramRecovered": true,
+            "resourcesRecovered": null,
+            "processTreeVerified": true,
+            "unexpectedProcessCount": 0
+          }
+        },
+        {
+          "profile": "AC balanced",
+          "contextSize": 12288,
+          "structured": {
+            "passed": 0,
+            "total": 50,
+            "rate": 0.0
+          },
+          "tools": {
+            "passed": 30,
+            "total": 35,
+            "rate": 0.8571
+          },
+          "qualityRates": {
+            "groundingPassRate": 0.0,
+            "unsupportedClaimRate": 1.0,
+            "promptInjectionPassRate": 0.5,
+            "promptInjectionFailureRate": 0.5,
+            "sourcePrecedencePassRate": 0.0,
+            "uncertaintyPassRate": 0.0
+          },
+          "latencyMs": {
+            "ttft": {
+              "mean": 73.5,
+              "p50": 67.08,
+              "p95": 126.94
+            },
+            "total": {
+              "mean": 1464.07,
+              "p50": 906.52,
+              "p95": 5996.78
+            }
+          },
+          "tokensPerSecond": {
+            "mean": 41.97,
+            "p50": 42.5,
+            "p95": 45.2
+          },
+          "memory": {
+            "available": true,
+            "samples": 123,
+            "peakProcessRssBytes": 4277841920,
+            "minimumSystemAvailableBytes": 1607450624,
+            "meanProcessCpuPct": 98.63,
+            "peakProcessCpuPct": 105.78
+          },
+          "nvidia": {
+            "available": false,
+            "samples": 0
+          },
+          "concurrency": [
+            {
+              "clients": 1,
+              "wallMs": 24997.54,
+              "p95RequestMs": 5884.48,
+              "failedRequests": 0,
+              "structured": {
+                "passed": 0,
+                "total": 10,
+                "rate": 0.0
+              },
+              "tools": {
+                "passed": 6,
+                "total": 7,
+                "rate": 0.8571
+              },
+              "total": 17
+            },
+            {
+              "clients": 2,
+              "wallMs": 31960.45,
+              "p95RequestMs": 7298.37,
+              "failedRequests": 0,
+              "structured": {
+                "passed": 0,
+                "total": 20,
+                "rate": 0.0
+              },
+              "tools": {
+                "passed": 12,
+                "total": 14,
+                "rate": 0.8571
+              },
+              "total": 34
+            }
+          ],
+          "cancellation": {
+            "baselineCapturedBeforeDispatch": true,
+            "activeRequestBaseline": 0.0,
+            "serverObservedRequestStart": true,
+            "clientSocketClosureIssued": true,
+            "clientSocketClosureLatencyMs": 14.05,
+            "serverObservedRequestTermination": true,
+            "serverTerminationObservationLatencyMs": 139.1,
+            "cancellationAcknowledged": true,
+            "acknowledgementSource": "server-active-request-metric",
+            "nativeCancellationAcknowledged": null,
+            "requestTerminationLatencyMs": 14.06,
+            "requestTerminated": true,
+            "processAlive": true,
+            "activeRequestsAfterCancel": 0.0,
+            "activeCountReturnedToBaseline": true,
+            "orphanFree": true,
+            "recoveryWindowSeconds": 30.0,
+            "vramBaselineMiB": null,
+            "vramAfterMiB": null,
+            "ramBaselineBytes": 4245803008,
+            "ramAfterBytes": 4276015104,
+            "vramRecovered": null,
+            "ramRecovered": true,
+            "resourcesRecovered": null,
+            "processTreeVerified": true,
+            "unexpectedProcessCount": 0
+          }
+        },
+        {
+          "profile": "AC balanced",
+          "contextSize": 16384,
+          "structured": {
+            "passed": 0,
+            "total": 50,
+            "rate": 0.0
+          },
+          "tools": {
+            "passed": 30,
+            "total": 35,
+            "rate": 0.8571
+          },
+          "qualityRates": {
+            "groundingPassRate": 0.0,
+            "unsupportedClaimRate": 1.0,
+            "promptInjectionPassRate": 0.5,
+            "promptInjectionFailureRate": 0.5,
+            "sourcePrecedencePassRate": 0.0,
+            "uncertaintyPassRate": 0.0
+          },
+          "latencyMs": {
+            "ttft": {
+              "mean": 72.08,
+              "p50": 64.8,
+              "p95": 146.83
+            },
+            "total": {
+              "mean": 1496.85,
+              "p50": 934.99,
+              "p95": 6053.21
+            }
+          },
+          "tokensPerSecond": {
+            "mean": 41.04,
+            "p50": 41.62,
+            "p95": 43.35
+          },
+          "memory": {
+            "available": true,
+            "samples": 126,
+            "peakProcessRssBytes": 4987777024,
+            "minimumSystemAvailableBytes": 874024960,
+            "meanProcessCpuPct": 98.89,
+            "peakProcessCpuPct": 106.38
+          },
+          "nvidia": {
+            "available": false,
+            "samples": 0
+          },
+          "concurrency": [
+            {
+              "clients": 1,
+              "wallMs": 25155.81,
+              "p95RequestMs": 6085.49,
+              "failedRequests": 0,
+              "structured": {
+                "passed": 0,
+                "total": 10,
+                "rate": 0.0
+              },
+              "tools": {
+                "passed": 6,
+                "total": 7,
+                "rate": 0.8571
+              },
+              "total": 17
+            },
+            {
+              "clients": 2,
+              "wallMs": 33098.6,
+              "p95RequestMs": 7404.06,
+              "failedRequests": 0,
+              "structured": {
+                "passed": 0,
+                "total": 20,
+                "rate": 0.0
+              },
+              "tools": {
+                "passed": 12,
+                "total": 14,
+                "rate": 0.8571
+              },
+              "total": 34
+            }
+          ],
+          "cancellation": {
+            "baselineCapturedBeforeDispatch": true,
+            "activeRequestBaseline": 0.0,
+            "serverObservedRequestStart": true,
+            "clientSocketClosureIssued": true,
+            "clientSocketClosureLatencyMs": 11.97,
+            "serverObservedRequestTermination": true,
+            "serverTerminationObservationLatencyMs": 148.25,
+            "cancellationAcknowledged": true,
+            "acknowledgementSource": "server-active-request-metric",
+            "nativeCancellationAcknowledged": null,
+            "requestTerminationLatencyMs": 11.98,
+            "requestTerminated": true,
+            "processAlive": true,
+            "activeRequestsAfterCancel": 0.0,
+            "activeCountReturnedToBaseline": true,
+            "orphanFree": true,
+            "recoveryWindowSeconds": 30.0,
+            "vramBaselineMiB": null,
+            "vramAfterMiB": null,
+            "ramBaselineBytes": 4959158272,
+            "ramAfterBytes": 4987777024,
+            "vramRecovered": null,
+            "ramRecovered": true,
+            "resourcesRecovered": null,
+            "processTreeVerified": true,
+            "unexpectedProcessCount": 0
+          }
+        }
+      ]
+    }
+  },
+  "note": "Coverage/readiness only; architecture selection still requires human review."
+}
