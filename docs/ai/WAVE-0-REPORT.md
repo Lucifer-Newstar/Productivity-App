@@ -1,14 +1,14 @@
 # Wave 0 Selection Report
 
-**Status:** `INCOMPLETE — 1 OF REQUIRED CANDIDATE/PROFILE RUNS RECEIVED`<br>
-**Report version:** 0.3 — first sanitized target result<br>
+**Status:** `INCOMPLETE — QWEN CORRECTED PREFLIGHT FAILED; NEXT CANDIDATE REQUIRED`<br>
+**Report version:** 0.4 — corrected Qwen preflight decision<br>
 **Date:** 2026-08-18<br>
 **Permanent model selection:** **BLOCKED**<br>
 **Implementation note:** the user later explicitly authorized provider-neutral v0.1 foundation and read-only `get_today`; this does not complete Wave 0 or approve a model.
 
 ## Executive decision
 
-One public-sanitized target result has been accepted: Qwen3 4B Instruct 2507 Q4_K_M under AC balanced. It confirms the target environment and demonstrates strong latency/throughput, cold-load, native-bench, cancellation, lifecycle, retrieval and soak behavior. It fails the frozen structured-output, tool, grounding, injection, uncertainty and system-headroom gates; GPU telemetry, thermal gates and embeddings remain incomplete. No model, context, runtime, vector backend or transport is selected.
+One pre-fix full Qwen AC-balanced result and one corrected Qwen 4K preflight have been accepted. The corrected preflight confirms canonical schema output, Jinja, request metrics, NVIDIA telemetry and cleanup, but exact tool reliability is only 50% because `get_today` was not called. The preflight is failed and the expensive corrected full run must not proceed. Qwen is not selected; Gemma/Phi preflight is next.
 
 ## Evidence and privacy rules
 
@@ -80,7 +80,34 @@ The candidate is fast and operationally stable under this configuration, includi
 
 ### RECOMMENDATION
 
-Do not select this run as the default model. Do not spend an AC-performance run on the identical configuration until the local owner determines why structured output is universally invalid and two tool scenarios fail. GPU monitoring must also be made available to the benchmark process before a rerun so VRAM, power, temperature and cancellation recovery can be scored. This is a rejection of the measured configuration, not yet a permanent rejection of the Qwen model family.
+Do not select the pre-fix run as the default model. The corrected preflight below determines whether a rerun is allowed.
+
+## Corrected Qwen preflight
+
+### MEASURED FACT
+
+```text
+Context:                     4096
+Startup:                     3.157 s
+Jinja enabled:               yes
+Structured reliability:     100%
+Tool reliability:           50%
+Request metrics:             available
+NVIDIA telemetry:           available
+Port/process-tree cleanup:   passed
+Failure:                     expected get_today, got no tool call
+Full-run permission:         false
+```
+
+Public aggregate: `ai/wave0/results-public/qwen3-fixed-preflight.json`.
+
+### INTERPRETATION
+
+The canonical schema and NVIDIA fixes worked. The remaining blocker is now isolated to actual tool behavior: the model completed one of two preflight tool scenarios but did not invoke the required zero-argument `get_today` tool. This is no longer attributable to missing Jinja or invalid schema wrapping. A 50% preflight tool rate cannot satisfy the frozen 95% full-run gate.
+
+### RECOMMENDATION
+
+Reject this Qwen candidate/configuration for the current selection cycle and do not run its corrected full AC-balanced or AC-performance benchmark. Preserve the result as a measured rejection and move to Gemma 3 4B preflight, then Phi-4 Mini if necessary. No threshold or scenario should be weakened to rescue Qwen.
 
 ## Measured prototype results
 
@@ -191,7 +218,7 @@ All cells remain `PENDING` until sanitized target exports are reviewed.
 
 | Candidate | Quant | Load p95 | TTFT p50/p95 | tok/s p50 | Total p95 | RAM peak | VRAM peak | GPU util | CPU util | Temp p95/max | Structured | Tools | Hallucination | Injection critical | 2K→16K | C1/C2 | Verdict |
 |---|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---|---|---|
-| Qwen3 4B Instruct 2507 | Q4_K_M | 2.36–3.37 s | 55–67 / 91–147 ms | 41.62–51.51 | 4.69–6.05 s | 3.29–4.65 GiB | PENDING | PENDING | ~99–133% mean | PENDING | 0% FAIL | 85.71% FAIL | 100% unsupported FAIL | 50% failure FAIL | complete | zero request errors; quality FAIL | REJECT CURRENT CONFIG | PENDING |
+| Qwen3 4B Instruct 2507 | Q4_K_M | 2.36–3.37 s | 55–67 / 91–147 ms | 41.62–51.51 | 4.69–6.05 s | 3.29–4.65 GiB | corrected preflight available | PENDING full run | ~99–133% mean | PENDING | corrected preflight 100% | corrected preflight 50% FAIL | pre-fix only | corrected schema; tool FAIL | complete | preflight blocked full rerun | REJECT CANDIDATE | PENDING |
 | Gemma 3 4B IT QAT | Q4_0 | PENDING | PENDING | PENDING | PENDING | PENDING | PENDING | PENDING | PENDING | PENDING | PENDING | PENDING | PENDING | PENDING | PENDING | PENDING | PENDING |
 | Phi-4 Mini Instruct | Q4_K_M | PENDING | PENDING | PENDING | PENDING | PENDING | PENDING | PENDING | PENDING | PENDING | PENDING | PENDING | PENDING | PENDING | PENDING | PENDING | PENDING |
 | Larger spill/control | TBD | PENDING | PENDING | PENDING | PENDING | PENDING | PENDING | PENDING | PENDING | PENDING | PENDING | PENDING | PENDING | PENDING | PENDING | PENDING | PENDING |
@@ -235,8 +262,10 @@ These are recommendations, not locked selections:
 ## Remaining selection gates
 
 - restore NVIDIA sampling inside the model/soak process environment, then capture VRAM/utilization/power/temperature and cancellation recovery
-- AC-performance result after any Qwen configuration correction
-- at least two additional candidates and the documented larger-control decision
+- Gemma 3 4B corrected preflight and AC-balanced run only if preflight passes
+- Phi-4 Mini preflight/run if Gemma fails or for required comparison
+- AC-performance only for a candidate that passes balanced quality/resource prerequisites
+- documented larger-control decision after compact candidates
 - passing structured JSON, tool, grounding, injection, source-precedence and uncertainty reliability
 - embedding candidate benchmark; FTS exact retrieval is already passing
 - retain three independent cold loads, request-level cancellation and separate lifecycle tests for every remaining candidate/profile
@@ -262,8 +291,8 @@ These remain unresolved until target evidence passes `W0-GATE-2`:
 | Transport | HTTP+SSE provisional baseline; no selection |
 | Pairing/security | One-time pairing + expiring session concept; mechanism unselected |
 | Revision/snapshot | Epoch + per-domain vector prototype; browser integration pending |
-| Known limitations | 4 GB VRAM/16 GB RAM; current Qwen run fails quality/headroom; GPU telemetry absent |
-| Unresolved | Qwen output/tool configuration diagnosis, remaining candidates/profile, thermals, embeddings/vector need |
+| Known limitations | 4 GB VRAM/16 GB RAM; Qwen rejected after corrected tool preflight |
+| Unresolved | Gemma/Phi results, full GPU thermal/resource data for a passing candidate, embeddings/vector need |
 
 ## Final status
 

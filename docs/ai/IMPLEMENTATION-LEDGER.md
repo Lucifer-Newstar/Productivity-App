@@ -94,20 +94,32 @@ Verified harness defects were subsequently fixed: canonical schema wrapper, guar
 
 A later attachment batch contained raw hardware/model/score/soak/lifecycle/server-log files plus a public aggregate. The public aggregate was JSON-equivalent to the already recorded pre-fix run (same capture timestamp and measurements; only whitespace padding differed) and contained no preflight section. It was not added as new evidence and milestone status did not change. Raw attachments were not inspected beyond minimum metadata/aggregate comparison and were deleted from the public workspace after validation.
 
-The required next artifact remains a **new corrected preflight generated after pulling `fa130e2`/`f0e917b`**, followed by a corrected AC-balanced aggregate only if preflight passes.
+### Corrected Qwen preflight
+
+The corrected 4K preflight is now measured:
+
+```text
+Jinja:                 enabled
+Structured:            100%
+Tools:                 50%
+Metrics/NVIDIA:        available
+Cleanup:               passed
+Failure:               expected get_today, got no tool call
+passedForFullRun:       false
+```
+
+The schema and telemetry defects are fixed, but the model still fails the required tool behavior. Qwen is rejected for this selection cycle; no corrected full or AC-performance run should be performed.
 
 ## Pending model selection work
 
-1. Corrected Qwen preflight.
-2. Corrected Qwen AC-balanced rerun only if preflight passes.
-3. Gemma 3 4B AC-balanced preflight/run.
-4. Phi-4 Mini AC-balanced preflight/run.
-5. AC-performance runs only for passing balanced candidates.
-6. Verified local embedding candidate or an explicit no-embedding decision.
-7. Complete sanitized coverage bundle.
-8. Final model/context/concurrency/runtime recommendation or no-selection result.
-9. Real selected-candidate v0.1 integration test.
-10. Stop for Wave 1.1/v0.2 scope review.
+1. Gemma 3 4B preflight; AC-balanced full run only if it passes.
+2. Phi-4 Mini preflight/run if needed and for comparison.
+3. AC-performance runs only for candidates passing balanced gates.
+4. Verified local embedding candidate or an explicit no-embedding decision.
+5. Complete sanitized coverage bundle.
+6. Final model/context/concurrency/runtime recommendation or no-selection result.
+7. Real selected-candidate v0.1 integration test.
+8. Stop for Wave 1.1/v0.2 scope review.
 
 ## Deferred by freeze
 
