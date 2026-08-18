@@ -90,6 +90,12 @@ Measured blockers:
 
 Verified harness defects were subsequently fixed: canonical schema wrapper, guaranteed `--jinja`, and NVIDIA `[N/A]` handling. Corrected AC-balanced preflight/rerun is next.
 
+### Latest attachment intake — no new result
+
+A later attachment batch contained raw hardware/model/score/soak/lifecycle/server-log files plus a public aggregate. The public aggregate was JSON-equivalent to the already recorded pre-fix run (same capture timestamp and measurements; only whitespace padding differed) and contained no preflight section. It was not added as new evidence and milestone status did not change. Raw attachments were not inspected beyond minimum metadata/aggregate comparison and were deleted from the public workspace after validation.
+
+The required next artifact remains a **new corrected preflight generated after pulling `fa130e2`/`f0e917b`**, followed by a corrected AC-balanced aggregate only if preflight passes.
+
 ## Pending model selection work
 
 1. Corrected Qwen preflight.

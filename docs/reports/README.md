@@ -11,6 +11,7 @@
 - [`AI-WAVE-0-HARNESS-FIX-2026-08-17.md`](AI-WAVE-0-HARNESS-FIX-2026-08-17.md) — request cancellation, cold-load, native bench, concurrency and endpoint-security corrections.
 - [`AI-WAVE-0-TARGET-RESULT-1-2026-08-18.md`](AI-WAVE-0-TARGET-RESULT-1-2026-08-18.md) — first sanitized Qwen AC-balanced result, measured strengths and rejection blockers.
 - [`AI-DOCUMENTATION-PROCESS-2026-08-18.md`](AI-DOCUMENTATION-PROCESS-2026-08-18.md) — mandatory documentation closeout and living implementation ledger.
+- [`AI-WAVE-0-ATTACHMENT-INTAKE-2026-08-18.md`](AI-WAVE-0-ATTACHMENT-INTAKE-2026-08-18.md) — duplicate pre-fix aggregate detection and raw-upload privacy cleanup.
 - [`AI-WAVE-1-FOUNDATION-2026-08-17.md`](AI-WAVE-1-FOUNDATION-2026-08-17.md) — provider-neutral engine, secure gateway, Domain Bridge and read-only UI vertical slice.
 - [`AI-V0.1-INTEGRATION-FREEZE-2026-08-17.md`](AI-V0.1-INTEGRATION-FREEZE-2026-08-17.md) — canonical specification, adversarial verification and frozen next milestone.
 
