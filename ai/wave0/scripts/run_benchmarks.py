@@ -4,7 +4,7 @@
 No model is downloaded. Only candidates explicitly enabled in local config run.
 """
 from __future__ import annotations
-import argparse, concurrent.futures, datetime as dt, hashlib, http.client, json, os, pathlib, shutil, socket, statistics, subprocess, sys, threading, time, urllib.error, urllib.parse, urllib.request
+import argparse, concurrent.futures, datetime as dt, hashlib, http.client, json, os, pathlib, re, shutil, socket, statistics, subprocess, sys, threading, time, urllib.error, urllib.parse, urllib.request
 from process_inspection import identity_for, process_table, tree_for, verify_exited_tree, verify_running_tree
 
 ROOT=pathlib.Path(__file__).resolve().parents[1]
@@ -192,7 +192,7 @@ def evaluate_structured(parsed,expect):
 def run_scenario(base,scenario,defaults,timeout):
     payload={"model":"local","messages":[{"role":"system","content":scenario["system"]},{"role":"user","content":scenario["user"]}],"temperature":defaults["temperature"],"max_tokens":defaults["maxOutputTokens"]}
     kind="tool" if "tools" in scenario else "structured"
-    if kind=="structured": payload["response_format"]={"type":"json_schema","schema":scenario["schema"]}
+    if kind=="structured": payload["response_format"]={"type":"json_schema","json_schema":{"name":re.sub(r"[^A-Za-z0-9_-]","_",scenario["id"])[:64] or "kaizen_response","strict":True,"schema":scenario["schema"]}}
     else: payload["tools"]=scenario["tools"]; payload["tool_choice"]="auto"
     try:
         r=stream_chat(base,payload,timeout); passed=True; failures=[]
@@ -218,15 +218,36 @@ def run_scenario(base,scenario,defaults,timeout):
     except Exception as e:return {"scenarioId":scenario["id"],"kind":kind,"passed":False,"failures":[f"{type(e).__name__}: {e}"]}
 
 def server_command(runtime,defaults,candidate,ctx):
-    return [runtime["llamaServer"],"--model",candidate["modelPath"],"--host",runtime["host"],"--port",str(runtime["port"]),"--ctx-size",str(ctx),"--threads",str(defaults["threads"]),"--n-gpu-layers",str(defaults["gpuLayers"]),"--batch-size",str(defaults["batchSize"]),"--ubatch-size",str(defaults["ubatchSize"]),"--parallel",str(max(defaults.get("concurrency",[1]))),"--metrics",*candidate.get("extraArgs",[])]
+    extra=list(candidate.get("extraArgs",[]))
+    if "--jinja" not in extra:extra.insert(0,"--jinja")
+    return [runtime["llamaServer"],"--model",candidate["modelPath"],"--host",runtime["host"],"--port",str(runtime["port"]),"--ctx-size",str(ctx),"--threads",str(defaults["threads"]),"--n-gpu-layers",str(defaults["gpuLayers"]),"--batch-size",str(defaults["batchSize"]),"--ubatch-size",str(defaults["ubatchSize"]),"--parallel",str(max(defaults.get("concurrency",[1]))),"--metrics",*extra]
+def parse_nvidia_row(line):
+    row=[x.strip() for x in line.split(",")]
+    if len(row)<7:return None
+    def number(value):
+        try:return float(value)
+        except (TypeError,ValueError):return None
+    used,total,util,temp=number(row[0]),number(row[1]),number(row[2]),number(row[5])
+    if used is None or total is None or util is None or temp is None:return None
+    return {"capturedAt":now(),"memoryUsedMiB":used,"memoryTotalMiB":total,"utilizationPct":util,"powerW":number(row[3]),"powerLimitW":number(row[4]),"temperatureC":temp,"pstate":row[6]}
+def nvidia_smi_executable():
+    configured=os.getenv("KAIZEN_W0_NVIDIA_SMI")
+    if configured and pathlib.Path(configured).is_file():return configured
+    found=shutil.which("nvidia-smi")
+    if found:return found
+    common=pathlib.Path("C:/Windows/System32/nvidia-smi.exe")
+    return str(common) if common.is_file() else None
 def start_nvidia_monitor():
-    exe=shutil.which("nvidia-smi");samples=[];stop=threading.Event()
+    exe=nvidia_smi_executable();samples=[];stop=threading.Event()
     def sample():
         fields="memory.used,memory.total,utilization.gpu,power.draw,power.limit,temperature.gpu,pstate"
         while not stop.is_set():
             try:
-                p=subprocess.run([exe,f"--query-gpu={fields}","--format=csv,noheader,nounits"],capture_output=True,text=True,timeout=5)
-                row=p.stdout.splitlines()[0].split(",");samples.append({"capturedAt":now(),"memoryUsedMiB":float(row[0]),"memoryTotalMiB":float(row[1]),"utilizationPct":float(row[2]),"powerW":float(row[3]),"powerLimitW":float(row[4]),"temperatureC":float(row[5]),"pstate":row[6].strip()})
+                p=subprocess.run([exe,f"--query-gpu={fields}","--format=csv,noheader,nounits"],capture_output=True,text=True,timeout=5);lines=p.stdout.splitlines()
+                if not lines:
+                    fallback="memory.used,memory.total,utilization.gpu,temperature.gpu,pstate";p=subprocess.run([exe,f"--query-gpu={fallback}","--format=csv,noheader,nounits"],capture_output=True,text=True,timeout=5);raw=p.stdout.splitlines();lines=[", ".join([*raw[0].split(",")[:3],"[N/A]","[N/A]",*raw[0].split(",")[3:]])] if raw else []
+                sample=parse_nvidia_row(lines[0]) if lines else None
+                if sample:samples.append(sample)
             except Exception:pass
             stop.wait(1)
     thread=threading.Thread(target=sample,daemon=True) if exe else None
@@ -234,9 +255,9 @@ def start_nvidia_monitor():
     return stop,thread,samples
 def summarize_nvidia(samples):
     if not samples:return {"available":False,"samples":0}
-    def values(k):return [x[k] for x in samples]
-    temps=sorted(values("temperatureC"));p95=temps[min(len(temps)-1,round((len(temps)-1)*.95))]
-    return {"available":True,"samples":len(samples),"peakMemoryUsedMiB":max(values("memoryUsedMiB")),"peakUtilizationPct":max(values("utilizationPct")),"meanPowerW":round(statistics.mean(values("powerW")),2),"peakPowerW":max(values("powerW")),"p95TemperatureC":p95,"peakTemperatureC":max(temps),"startTemperatureC":samples[0]["temperatureC"],"endTemperatureC":samples[-1]["temperatureC"]}
+    def values(k):return [x[k] for x in samples if isinstance(x.get(k),(int,float))]
+    temps=sorted(values("temperatureC"));power=values("powerW");p95=temps[min(len(temps)-1,round((len(temps)-1)*.95))]
+    return {"available":True,"samples":len(samples),"peakMemoryUsedMiB":max(values("memoryUsedMiB")),"peakUtilizationPct":max(values("utilizationPct")),"meanPowerW":round(statistics.mean(power),2) if power else None,"peakPowerW":max(power) if power else None,"p95TemperatureC":p95,"peakTemperatureC":max(temps),"startTemperatureC":samples[0]["temperatureC"],"endTemperatureC":samples[-1]["temperatureC"]}
 def start_memory_monitor(pid):
     samples=[];stop=threading.Event();ps=shutil.which("powershell") or shutil.which("pwsh")
     def sample():

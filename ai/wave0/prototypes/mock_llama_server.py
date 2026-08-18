@@ -31,7 +31,9 @@ class H(BaseHTTPRequestHandler):
                 self.wfile.write(b"data: [DONE]\n\n");self.wfile.flush();return
             if body.get("tools"):name="get_today" if "focus on today" in user.lower() else "get_tasks";chunks=[{"choices":[{"delta":{"tool_calls":[{"index":0,"id":"mock","type":"function","function":{"name":name,"arguments":"{}"}}]}}]}]
             else:
-                if "Project X" in user:text=json.dumps({"answer":"Insufficient velocity data.","confidence":.2,"uncertainty":["Velocity is unavailable"]})
+                response_format=body.get("response_format",{});canonical=response_format.get("type")=="json_schema" and isinstance(response_format.get("json_schema",{}).get("schema"),dict) and response_format.get("json_schema",{}).get("strict") is True
+                if not canonical:text="INVALID_RESPONSE_FORMAT"
+                elif "Project X" in user:text=json.dumps({"answer":"Insufficient velocity data.","confidence":.2,"uncertainty":["Velocity is unavailable"]})
                 elif "job description" in user:text=json.dumps({"skills":["Kubernetes","Terraform"]})
                 else:text=json.dumps({"type":"recommendation","title":"Kubernetes auth","sourceIds":["t1"],"confidence":.9})
                 chunks=[{"choices":[{"delta":{"content":text}}]}]

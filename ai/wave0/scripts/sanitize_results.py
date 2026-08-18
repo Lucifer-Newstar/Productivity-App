@@ -72,6 +72,9 @@ def safe_retrieval(r):
 def safe_embeddings(e):
     if not e:return None
     return {k:e.get(k) for k in ("synthetic","documents","queries","repetitions","dimensions","documentBatchMs","queryBatchLatencyMs","ranking")}
+def safe_preflight(x):
+    if not x:return None
+    return {k:x.get(k) for k in ("candidate","context","startupMs","jinjaEnabled","structuredRate","toolRate","metricsAvailable","nvidiaTelemetryAvailable","portReleased","processTreeExited","failureCategories","passedForFullRun")}
 def safe_score(x):
     if not x:return None
     return {"gateVersion":x.get("gateVersion"),"overall":x.get("overall"),"counts":x.get("counts"),"gates":[{k:r.get(k) for k in ("gate","status","measured","operator","threshold")} for r in x.get("gates",[])]}
@@ -96,9 +99,9 @@ def reject_sensitive_text(text):
     hits=[p for p in patterns if re.search(p,text,re.I)]
     if hits:raise SystemExit(f"sanitized output still matches sensitive patterns: {hits}")
 def main():
-    ap=argparse.ArgumentParser();ap.add_argument("--hardware");ap.add_argument("--models");ap.add_argument("--retrieval");ap.add_argument("--embeddings");ap.add_argument("--lifecycle");ap.add_argument("--pairing");ap.add_argument("--revision");ap.add_argument("--score");ap.add_argument("--soak");ap.add_argument("--transport");ap.add_argument("--output",required=True);args=ap.parse_args()
+    ap=argparse.ArgumentParser();ap.add_argument("--hardware");ap.add_argument("--models");ap.add_argument("--retrieval");ap.add_argument("--embeddings");ap.add_argument("--lifecycle");ap.add_argument("--pairing");ap.add_argument("--preflight");ap.add_argument("--revision");ap.add_argument("--score");ap.add_argument("--soak");ap.add_argument("--transport");ap.add_argument("--output",required=True);args=ap.parse_args()
     out=Path(args.output).resolve();public=PUBLIC.resolve()
     if public not in out.parents:raise SystemExit(f"public export must be under {PUBLIC}")
-    result={"schemaVersion":1,"classification":"PUBLIC-SANITIZED-AGGREGATE","warning":"No raw prompts, outputs, paths, identifiers or per-sample logs","hardware":safe_hardware(load(args.hardware)),"models":safe_models(load(args.models)),"retrieval":safe_retrieval(load(args.retrieval)),"embeddings":safe_embeddings(load(args.embeddings)),"lifecycle":safe_lifecycle(load(args.lifecycle)),"pairing":safe_assertion_result(load(args.pairing)),"revision":safe_assertion_result(load(args.revision)),"score":safe_score(load(args.score)),"soak":safe_soak(load(args.soak)),"transport":safe_transport(load(args.transport))}
+    result={"schemaVersion":1,"classification":"PUBLIC-SANITIZED-AGGREGATE","warning":"No raw prompts, outputs, paths, identifiers or per-sample logs","hardware":safe_hardware(load(args.hardware)),"models":safe_models(load(args.models)),"retrieval":safe_retrieval(load(args.retrieval)),"embeddings":safe_embeddings(load(args.embeddings)),"lifecycle":safe_lifecycle(load(args.lifecycle)),"pairing":safe_assertion_result(load(args.pairing)),"preflight":safe_preflight(load(args.preflight)),"revision":safe_assertion_result(load(args.revision)),"score":safe_score(load(args.score)),"soak":safe_soak(load(args.soak)),"transport":safe_transport(load(args.transport))}
     text=json.dumps(result,indent=2);reject_sensitive_text(text);out.parent.mkdir(parents=True,exist_ok=True);out.write_text(text,encoding="utf-8");print(f"wrote sanitized aggregate {out}")
 if __name__=="__main__":main()

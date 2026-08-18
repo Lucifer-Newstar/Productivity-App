@@ -61,6 +61,9 @@ Invoke-Step "Pairing security prototype" {
 Invoke-Step "Revision and snapshot prototype" {
   node prototypes/revision-coordinator.mjs --output "$local/revision.json"
 }
+Invoke-Step "Candidate schema/tool/GPU preflight" {
+  python scripts/preflight_candidate.py --config $CandidateConfig --output "$local/preflight.json"
+}
 Invoke-Step "Generation and tool benchmark" {
   python scripts/run_benchmarks.py --config $CandidateConfig --output "$local/model.json"
 }
@@ -94,6 +97,7 @@ $scoreArgs = @(
   "--retrieval", "$local/retrieval.json",
   "--lifecycle", "$local/lifecycle.json",
   "--pairing", "$local/pairing.json",
+  "--preflight", "$local/preflight.json",
   "--revision", "$local/revision.json",
   "--output", "$local/score.json"
 )
@@ -108,6 +112,7 @@ $sanitizeArgs = @(
   "--retrieval", "$local/retrieval.json",
   "--lifecycle", "$local/lifecycle.json",
   "--pairing", "$local/pairing.json",
+  "--preflight", "$local/preflight.json",
   "--revision", "$local/revision.json",
   "--score", "$local/score.json",
   "--transport", "$local/transport.json",

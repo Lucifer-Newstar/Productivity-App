@@ -46,7 +46,9 @@
       "license": "VERIFY_FROM_UPSTREAM_MODEL_CARD",
       "role": "primary 4B candidate",
       "enabled": false,
-      "extraArgs": []
+      "extraArgs": [
+        "--jinja"
+      ]
     },
     {
       "id": "gemma-3-4b-it-qat-q4",

@@ -1,13 +1,14 @@
 #!/usr/bin/env python3
 """Sample NVIDIA utilization/VRAM/power/temperature during a benchmark."""
-import argparse, csv, datetime as dt, shutil, subprocess, time
+import argparse, csv, datetime as dt, subprocess, time
 from pathlib import Path
+from run_benchmarks import nvidia_smi_executable
 
 FIELDS = "timestamp,name,memory.used,memory.total,utilization.gpu,power.draw,power.limit,temperature.gpu,pstate"
 
 def main():
     ap=argparse.ArgumentParser(); ap.add_argument("--output",required=True); ap.add_argument("--interval",type=float,default=1); ap.add_argument("--duration",type=float,default=300); args=ap.parse_args()
-    exe=shutil.which("nvidia-smi")
+    exe=nvidia_smi_executable()
     if not exe: raise SystemExit("nvidia-smi not found")
     out=Path(args.output); out.parent.mkdir(parents=True,exist_ok=True)
     end=time.monotonic()+args.duration

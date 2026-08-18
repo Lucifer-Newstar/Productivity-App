@@ -61,7 +61,7 @@ export class LlamaCppProvider implements GenerationProvider {
       stream_options: { include_usage: true },
     };
     if (request.tools?.length) { body.tools = request.tools; body.tool_choice = "auto"; }
-    if (request.responseSchema) body.response_format = { type: "json_schema", schema: request.responseSchema };
+    if (request.responseSchema) body.response_format = { type: "json_schema", json_schema: { name: "kaizen_intelligence_response", strict: true, schema: request.responseSchema } };
     const response = await fetch(`${this.options.baseUrl}/v1/chat/completions`, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(body), signal });
     if (!response.ok || !response.body) throw new Error(`llama.cpp request failed with HTTP ${response.status}`);
     const reader = response.body.getReader(), decoder = new TextDecoder();
