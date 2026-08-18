@@ -110,15 +110,29 @@ passedForFullRun:       false
 
 The schema and telemetry defects are fixed, but the model still fails the required tool behavior. Qwen is rejected for this selection cycle; no corrected full or AC-performance run should be performed.
 
+### Gemma 3 4B preflight
+
+```text
+Jinja:                 enabled
+Structured:            0%
+Tools:                 0%
+Metrics/NVIDIA:        available
+Cleanup:               passed
+Failures:              HTTP 400; get_project/get_today not called
+passedForFullRun:       false
+```
+
+Gemma is rejected for this selection cycle. The exact HTTP 400 cause is unavailable in the public-safe summary and is not guessed. No full/performance run should be performed.
+
 ## Pending model selection work
 
-1. Gemma 3 4B preflight; AC-balanced full run only if it passes.
-2. Phi-4 Mini preflight/run if needed and for comparison.
-3. AC-performance runs only for candidates passing balanced gates.
+1. Phi-4 Mini preflight; AC-balanced full run only if it passes.
+2. AC-performance only if Phi passes balanced gates.
+3. If Phi fails, document no passing compact candidate and review the larger-control/no-selection decision.
 4. Verified local embedding candidate or an explicit no-embedding decision.
 5. Complete sanitized coverage bundle.
 6. Final model/context/concurrency/runtime recommendation or no-selection result.
-7. Real selected-candidate v0.1 integration test.
+7. Real selected-candidate v0.1 integration test if a candidate passes.
 8. Stop for Wave 1.1/v0.2 scope review.
 
 ## Deferred by freeze

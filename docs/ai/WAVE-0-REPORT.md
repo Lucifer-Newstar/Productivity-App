@@ -1,14 +1,14 @@
 # Wave 0 Selection Report
 
-**Status:** `INCOMPLETE — QWEN CORRECTED PREFLIGHT FAILED; NEXT CANDIDATE REQUIRED`<br>
-**Report version:** 0.4 — corrected Qwen preflight decision<br>
+**Status:** `INCOMPLETE — QWEN AND GEMMA PREFLIGHTS FAILED; PHI REQUIRED`<br>
+**Report version:** 0.5 — Gemma preflight decision<br>
 **Date:** 2026-08-18<br>
 **Permanent model selection:** **BLOCKED**<br>
 **Implementation note:** the user later explicitly authorized provider-neutral v0.1 foundation and read-only `get_today`; this does not complete Wave 0 or approve a model.
 
 ## Executive decision
 
-One pre-fix full Qwen AC-balanced result and one corrected Qwen 4K preflight have been accepted. The corrected preflight confirms canonical schema output, Jinja, request metrics, NVIDIA telemetry and cleanup, but exact tool reliability is only 50% because `get_today` was not called. The preflight is failed and the expensive corrected full run must not proceed. Qwen is not selected; Gemma/Phi preflight is next.
+Qwen and Gemma have both failed corrected 4K preflight. Qwen passes schema but reaches only 50% tools; Gemma reaches 0% schema/tools with HTTP 400 on structured requests. Neither may proceed to a full run. Phi-4 Mini is the remaining compact candidate. No model, context, runtime, vector backend or transport is selected.
 
 ## Evidence and privacy rules
 
@@ -107,7 +107,31 @@ The canonical schema and NVIDIA fixes worked. The remaining blocker is now isola
 
 ### RECOMMENDATION
 
-Reject this Qwen candidate/configuration for the current selection cycle and do not run its corrected full AC-balanced or AC-performance benchmark. Preserve the result as a measured rejection and move to Gemma 3 4B preflight, then Phi-4 Mini if necessary. No threshold or scenario should be weakened to rescue Qwen.
+Reject this Qwen candidate/configuration for the current selection cycle and do not run its corrected full AC-balanced or AC-performance benchmark. Preserve the result as a measured rejection. No threshold or scenario should be weakened to rescue Qwen.
+
+## Gemma 3 4B corrected preflight
+
+### MEASURED FACT
+
+```text
+Context:                     4096
+Jinja enabled:               yes
+Structured reliability:     0%
+Tool reliability:           0%
+Request metrics:             available
+NVIDIA telemetry:           available
+Port/process-tree cleanup:   passed
+Failures:                    HTTP 400; get_project/get_today not called
+Full-run permission:         false
+```
+
+### INTERPRETATION
+
+Gemma's local runtime and telemetry boundaries work, but the candidate/configuration fails both mandatory compatibility classes. Structured requests are rejected with HTTP 400 and required tools are not called. The exact reason for the 400 response is not available in the public-safe summary, so it remains unknown rather than guessed.
+
+### RECOMMENDATION
+
+Reject the measured Gemma configuration. Do not run its full balanced or performance benchmark and do not weaken frozen gates. Proceed to Phi-4 Mini preflight. If Phi also fails, record that no compact candidate passed instead of forcing a selection.
 
 ## Measured prototype results
 
@@ -219,7 +243,7 @@ All cells remain `PENDING` until sanitized target exports are reviewed.
 | Candidate | Quant | Load p95 | TTFT p50/p95 | tok/s p50 | Total p95 | RAM peak | VRAM peak | GPU util | CPU util | Temp p95/max | Structured | Tools | Hallucination | Injection critical | 2K→16K | C1/C2 | Verdict |
 |---|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---|---|---|
 | Qwen3 4B Instruct 2507 | Q4_K_M | 2.36–3.37 s | 55–67 / 91–147 ms | 41.62–51.51 | 4.69–6.05 s | 3.29–4.65 GiB | corrected preflight available | PENDING full run | ~99–133% mean | PENDING | corrected preflight 100% | corrected preflight 50% FAIL | pre-fix only | corrected schema; tool FAIL | complete | preflight blocked full rerun | REJECT CANDIDATE | PENDING |
-| Gemma 3 4B IT QAT | Q4_0 | PENDING | PENDING | PENDING | PENDING | PENDING | PENDING | PENDING | PENDING | PENDING | PENDING | PENDING | PENDING | PENDING | PENDING | PENDING | PENDING |
+| Gemma 3 4B IT QAT | Q4_0 | preflight only | PENDING | PENDING | PENDING | PENDING | preflight available | PENDING | PENDING | PENDING | 0% FAIL | 0% FAIL | PENDING | structured HTTP 400 | 4K preflight | preflight blocked | REJECT CANDIDATE |
 | Phi-4 Mini Instruct | Q4_K_M | PENDING | PENDING | PENDING | PENDING | PENDING | PENDING | PENDING | PENDING | PENDING | PENDING | PENDING | PENDING | PENDING | PENDING | PENDING | PENDING |
 | Larger spill/control | TBD | PENDING | PENDING | PENDING | PENDING | PENDING | PENDING | PENDING | PENDING | PENDING | PENDING | PENDING | PENDING | PENDING | PENDING | PENDING | PENDING |
 
@@ -262,9 +286,9 @@ These are recommendations, not locked selections:
 ## Remaining selection gates
 
 - restore NVIDIA sampling inside the model/soak process environment, then capture VRAM/utilization/power/temperature and cancellation recovery
-- Gemma 3 4B corrected preflight and AC-balanced run only if preflight passes
-- Phi-4 Mini preflight/run if Gemma fails or for required comparison
-- AC-performance only for a candidate that passes balanced quality/resource prerequisites
+- Phi-4 Mini corrected preflight; AC-balanced full run only if it passes
+- AC-performance only if Phi passes balanced quality/resource prerequisites
+- if Phi fails, record no passing compact candidate rather than weakening gates
 - documented larger-control decision after compact candidates
 - passing structured JSON, tool, grounding, injection, source-precedence and uncertainty reliability
 - embedding candidate benchmark; FTS exact retrieval is already passing
@@ -291,8 +315,8 @@ These remain unresolved until target evidence passes `W0-GATE-2`:
 | Transport | HTTP+SSE provisional baseline; no selection |
 | Pairing/security | One-time pairing + expiring session concept; mechanism unselected |
 | Revision/snapshot | Epoch + per-domain vector prototype; browser integration pending |
-| Known limitations | 4 GB VRAM/16 GB RAM; Qwen rejected after corrected tool preflight |
-| Unresolved | Gemma/Phi results, full GPU thermal/resource data for a passing candidate, embeddings/vector need |
+| Known limitations | 4 GB VRAM/16 GB RAM; Qwen and Gemma rejected at corrected preflight |
+| Unresolved | Phi result, whether any compact candidate passes, full thermal/resource data, embeddings/vector need |
 
 ## Final status
 
