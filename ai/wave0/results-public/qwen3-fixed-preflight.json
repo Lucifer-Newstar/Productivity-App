@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 1,
+  "classification": "PUBLIC-SANITIZED-AGGREGATE",
+  "warning": "No raw prompts, outputs, paths, identifiers or per-sample logs",
+  "hardware": null,
+  "models": null,
+  "retrieval": null,
+  "embeddings": null,
+  "lifecycle": null,
+  "pairing": null,
+  "preflight": {
+    "candidate": "qwen3-4b-instruct-2507-q4km",
+    "context": 4096,
+    "startupMs": 3157.16,
+    "jinjaEnabled": true,
+    "structuredRate": 1.0,
+    "toolRate": 0.5,
+    "metricsAvailable": true,
+    "nvidiaTelemetryAvailable": true,
+    "portReleased": true,
+    "processTreeExited": true,
+    "failureCategories": [
+      "expected get_today, got []"
+    ],
+    "passedForFullRun": false
+  },
+  "revision": null,
+  "score": null,
+  "soak": null,
+  "transport": null
+}
