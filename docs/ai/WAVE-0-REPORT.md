@@ -1,14 +1,14 @@
 # Wave 0 Selection Report
 
-**Status:** `INCOMPLETE — FINAL QWEN2.5 7B CONTROL PREFLIGHT REQUIRED`<br>
-**Report version:** 0.7 — larger-control decision<br>
+**Status:** `COMPLETE — NO TESTED LOCAL MODEL PASSED W0-GATE-2`<br>
+**Report version:** 1.0 — final no-selection decision<br>
 **Date:** 2026-08-18<br>
-**Permanent model selection:** **BLOCKED**<br>
+**Permanent model selection:** **NO SELECTION**<br>
 **Implementation note:** the user later explicitly authorized provider-neutral v0.1 foundation and read-only `get_today`; this does not complete Wave 0 or approve a model.
 
 ## Executive decision
 
-Qwen, Gemma and Phi-4 Mini have all failed corrected 4K preflight. None may proceed to a full run. One final larger control is now explicitly defined: Qwen2.5 7B Instruct Q4_K_M, preflight-only at 4K. Its purpose is to determine whether a mature tool-capable 7B family can satisfy the contract; it is not a model selection or permission for a full benchmark.
+Wave 0 is complete with no model selected. Qwen3 4B, Gemma 3 4B, Phi-4 Mini and the final Qwen2.5 7B control all failed corrected 4K compatibility preflight. No candidate may proceed to a full run. Frozen gates remain unchanged, and testing additional models is outside this completed selection cycle.
 
 ## Evidence and privacy rules
 
@@ -157,7 +157,35 @@ Phi supports the corrected structured-output path but does not call either requi
 
 ### RECOMMENDATION
 
-Reject Phi-4 Mini for this selection cycle and do not run a full balanced/performance benchmark. All three compact candidates are now rejected. The next explicit decision is whether to run the optional larger spill/control preflight or close Wave 0 with **no passing local model**.
+Reject Phi-4 Mini for this selection cycle and do not run a full balanced/performance benchmark.
+
+## Qwen2.5 7B larger-control preflight
+
+### MEASURED FACT
+
+```text
+Context:                     4096
+Startup:                     15.520 s
+Jinja enabled:               yes
+Structured reliability:     50%
+Tool reliability:           50%
+Request metrics:             available
+NVIDIA telemetry:           available
+Port/process-tree cleanup:   passed
+Failures:                    confidence above schema maximum;
+                             get_entertainment_history selected instead of get_today
+Full-run permission:         false
+```
+
+Public aggregate: `ai/wave0/results-public/qwen25-7b-control-preflight.json`.
+
+### INTERPRETATION
+
+The larger control does not resolve compatibility. It violates the structured confidence bound and selects the wrong tool. Startup is also substantially slower than the compact preflights. Runtime telemetry and cleanup are healthy, but the frozen quality gate fails.
+
+### RECOMMENDATION
+
+Reject the Qwen2.5 7B control and close Wave 0 with **no passing local model**. Do not test more models, run full benchmarks or weaken W0-GATE-2. The provider-neutral v0.1 foundation remains valid with the deterministic provider; any future change to deterministic tool routing or model responsibilities is a separate ADR/scope review, not a Wave 0 retest.
 
 ## Measured prototype results
 
@@ -271,7 +299,7 @@ All cells remain `PENDING` until sanitized target exports are reviewed.
 | Qwen3 4B Instruct 2507 | Q4_K_M | 2.36–3.37 s | 55–67 / 91–147 ms | 41.62–51.51 | 4.69–6.05 s | 3.29–4.65 GiB | corrected preflight available | PENDING full run | ~99–133% mean | PENDING | corrected preflight 100% | corrected preflight 50% FAIL | pre-fix only | corrected schema; tool FAIL | complete | preflight blocked full rerun | REJECT CANDIDATE | PENDING |
 | Gemma 3 4B IT QAT | Q4_0 | preflight only | PENDING | PENDING | PENDING | PENDING | preflight available | PENDING | PENDING | PENDING | 0% FAIL | 0% FAIL | PENDING | structured HTTP 400 | 4K preflight | preflight blocked | REJECT CANDIDATE |
 | Phi-4 Mini Instruct | Q4_K_M | preflight only | PENDING | PENDING | PENDING | PENDING | preflight available | PENDING | PENDING | PENDING | 100% PASS | 0% FAIL | PENDING | tools not called | 4K preflight | preflight blocked | REJECT CANDIDATE |
-| Qwen2.5 7B Instruct control | Q4_K_M | preflight pending | PENDING | PENDING | PENDING | PENDING | PENDING | PENDING | PENDING | PENDING | PENDING | PENDING | PENDING | PENDING | 4K preflight only | no full-run permission | CONTROL PENDING |
+| Qwen2.5 7B Instruct control | Q4_K_M | 15.520 s preflight | PENDING | PENDING | PENDING | PENDING | preflight available | PENDING | PENDING | PENDING | 50% FAIL | 50% FAIL | confidence bound FAIL | wrong tool selected | 4K preflight | preflight blocked | REJECT CONTROL |
 
 ## Raw and sanitized evidence inventory
 
@@ -309,40 +337,35 @@ These are recommendations, not locked selections:
 5. Keep SQLite FTS5 as the lexical baseline while evaluating a replaceable vector layer separately.
 6. Prioritize three 4B-class 4-bit candidates for the confirmed 4 GB VRAM limit; include one 7B–8B spill comparison only after those baselines to quantify system-RAM/PCIe cost. This is a benchmark plan, not a model recommendation.
 
-## Remaining selection gates
+## Final gate outcome
 
-- restore NVIDIA sampling inside the model/soak process environment, then capture VRAM/utilization/power/temperature and cancellation recovery
-- Qwen2.5 7B Instruct Q4_K_M control preflight at 4K
-- no full benchmark unless that preflight passes and a separate review authorizes the resource-risk experiment
-- if the control fails, close Wave 0 with no passing local model rather than testing additional models or weakening gates
-- passing structured JSON, tool, grounding, injection, source-precedence and uncertainty reliability
-- embedding candidate benchmark; FTS exact retrieval is already passing
-- retain three independent cold loads, request-level cancellation and separate lifecycle tests for every remaining candidate/profile
-- Windows disk/corruption/deletion/backup tests
-- authenticated browser transport/reconnect test
-- React/localStorage revision integration prototype
-- context 2K/4K/8K/12K/16K reliability and memory curves
-- 20–30 minute thermal soak per finalist
-- concurrency 1/2 and cancellation resource release
+No candidate passed preflight, so no full candidate benchmark was authorized. The following evidence remains unavailable by design rather than silently passed:
+
+- full GPU VRAM/power/thermal and cancellation recovery for a passing candidate,
+- full context/concurrency quality matrix for a passing candidate,
+- real-model v0.1 gateway/Domain Bridge validation,
+- embedding candidate evaluation.
+
+These are not open Wave 0 tasks because there is no passing generation candidate. They may be reconsidered only under a separately approved architecture/scope decision.
 
 ## Final selection fields
 
-These remain unresolved until target evidence passes `W0-GATE-2`:
+Final Wave 0 decision:
 
 | Decision | Current value |
 |---|---|
 | Recommended model | No selection |
 | Recommended quantization | No selection |
-| Recommended runtime/build | llama.cpp is a candidate; no build selected |
-| Recommended context budget | No selection; 2K/4K/8K/12K/16K are measured variables under W0-GATE-2 |
-| Recommended concurrency | No selection; single client baseline |
+| Recommended runtime/build | No production runtime/model pairing selected; tested llama.cpp build remains validation evidence only |
+| Recommended context budget | No model context selected |
+| Recommended concurrency | No model concurrency selected |
 | Retrieval | FTS5 baseline under evaluation; vector layer unproven |
 | Transport | HTTP+SSE provisional baseline; no selection |
 | Pairing/security | One-time pairing + expiring session concept; mechanism unselected |
 | Revision/snapshot | Epoch + per-domain vector prototype; browser integration pending |
-| Known limitations | 4 GB VRAM/16 GB RAM; Qwen, Gemma and Phi rejected at corrected preflight |
-| Unresolved | Qwen2.5 7B control preflight, then passing-model or no-model decision; embeddings/vector need |
+| Known limitations | 4 GB VRAM/16 GB RAM; all four tested candidates rejected at preflight |
+| Unresolved | Future scope decision: deterministic tool routing/model role, different hardware/runtime, or remain deterministic-only |
 
 ## Final status
 
-**NO MODEL SELECTION APPROVAL.** The report records measured synthetic results and blocked target gates. Provider-neutral v0.1 implementation exists under explicit user authorization, but no candidate may become the default/recommended runtime until target results complete this report and receive review.
+**WAVE 0 COMPLETE — NO MODEL SELECTED.** Four candidates failed frozen compatibility preflight, so no full candidate benchmark or production default is authorized. Provider-neutral v0.1 remains deterministic/mock-backed until a future scope review explicitly changes tool routing, model responsibility, runtime or hardware assumptions.

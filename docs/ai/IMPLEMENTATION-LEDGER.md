@@ -6,9 +6,9 @@ _Last updated: 2026-08-18_
 
 ## Current milestone
 
-> **Complete Wave 0 model selection and real-model v0.1 integration validation. Then stop for scope review.**
+> **Wave 0 closed with no passing local model; deterministic/mock v0.1 validated. Stop for next-scope review.**
 
-v0.1 capability scope is frozen. No memory, Health context, write actions, automation, new domains or v0.2 functionality.
+No new capability is authorized yet. Memory, Health context, write actions, automation, new domains and v0.2 remain frozen until explicit review.
 
 ## Completed architecture and foundation
 
@@ -138,15 +138,31 @@ passedForFullRun:       false
 
 Phi is rejected. All three compact candidates failed the frozen tool/schema compatibility gate; no full or performance run is authorized.
 
-## Pending model selection work
+### Qwen2.5 7B control preflight
 
-1. Run one final preflight-only control: Qwen2.5 7B Instruct Q4_K_M at 4K.
-2. If it fails, close Wave 0 with no passing local model; do not test more models or weaken gates.
-3. If it passes, stop for review before any full resource-risk benchmark.
-4. Record an explicit no-embedding decision unless a verified small local embedding endpoint is separately approved.
-5. Final model/context/concurrency/runtime recommendation or no-selection result.
-6. Real selected-candidate v0.1 integration only if a candidate passes.
-7. Stop for Wave 1.1/v0.2 scope review.
+```text
+Jinja:                 enabled
+Structured:            50%
+Tools:                 50%
+Metrics/NVIDIA:        available
+Cleanup:               passed
+Failures:              confidence above maximum;
+                       wrong entertainment tool selected
+passedForFullRun:       false
+```
+
+The larger control is rejected. Wave 0 is complete with no model selected. No more candidate downloads/runs are authorized under this cycle.
+
+## Next scope review
+
+Decide explicitly among:
+
+1. keep v0.1 deterministic/mock-backed and proceed only with deterministic capabilities;
+2. design a v0.1.1 ADR where intent routing chooses read tools deterministically and the model only interprets already-selected evidence;
+3. defer local-model Intelligence until different hardware/runtime/model conditions exist;
+4. consider a separately consented remote-provider phase only through a new privacy/security ADR.
+
+No option is implemented until approved. Production memory, Health, writes, automation and extra domains remain frozen.
 
 ## Deferred by freeze
 

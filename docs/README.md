@@ -53,7 +53,7 @@ Current production verification: **39/39 user routes return HTTP 200**, five Ent
 - [`ai/OPEN-QUESTIONS.md`](ai/OPEN-QUESTIONS.md) — unresolved choices that must not be guessed.
 - [`ai/ROADMAP.md`](ai/ROADMAP.md) — documentation gate through v1.0 acceptance criteria.
 
-Wave 0 model selection remains incomplete; v0.1 provider-neutral read-only foundation was explicitly authorized and implemented.
+Wave 0 is complete with no passing local model selected. The v0.1 provider-neutral read-only foundation remains deterministic/mock-backed pending an explicit next-scope review.
 
 ### Design
 
