@@ -1,14 +1,14 @@
 # Wave 0 Selection Report
 
-**Status:** `INCOMPLETE — QWEN AND GEMMA PREFLIGHTS FAILED; PHI REQUIRED`<br>
-**Report version:** 0.5 — Gemma preflight decision<br>
+**Status:** `INCOMPLETE — ALL THREE COMPACT CANDIDATES FAILED PREFLIGHT`<br>
+**Report version:** 0.6 — Phi preflight decision<br>
 **Date:** 2026-08-18<br>
 **Permanent model selection:** **BLOCKED**<br>
 **Implementation note:** the user later explicitly authorized provider-neutral v0.1 foundation and read-only `get_today`; this does not complete Wave 0 or approve a model.
 
 ## Executive decision
 
-Qwen and Gemma have both failed corrected 4K preflight. Qwen passes schema but reaches only 50% tools; Gemma reaches 0% schema/tools with HTTP 400 on structured requests. Neither may proceed to a full run. Phi-4 Mini is the remaining compact candidate. No model, context, runtime, vector backend or transport is selected.
+Qwen, Gemma and Phi-4 Mini have all failed corrected 4K preflight. Qwen reaches 50% tools, Gemma reaches 0% schema/tools with HTTP 400, and Phi reaches 100% schema but 0% tools. None may proceed to a full run. No compact local model passes the frozen compatibility gate; no model, context, runtime, vector backend or transport is selected.
 
 ## Evidence and privacy rules
 
@@ -131,7 +131,33 @@ Gemma's local runtime and telemetry boundaries work, but the candidate/configura
 
 ### RECOMMENDATION
 
-Reject the measured Gemma configuration. Do not run its full balanced or performance benchmark and do not weaken frozen gates. Proceed to Phi-4 Mini preflight. If Phi also fails, record that no compact candidate passed instead of forcing a selection.
+Reject the measured Gemma configuration. Do not run its full balanced or performance benchmark and do not weaken frozen gates.
+
+## Phi-4 Mini corrected preflight
+
+### MEASURED FACT
+
+```text
+Context:                     4096
+Jinja enabled:               yes
+Structured reliability:     100%
+Tool reliability:           0%
+Request metrics:             available
+NVIDIA telemetry:           available
+Port/process-tree cleanup:   passed
+Failures:                    get_project/get_today not called
+Full-run permission:         false
+```
+
+Public aggregate: `ai/wave0/results-public/phi4-mini-preflight.json`.
+
+### INTERPRETATION
+
+Phi supports the corrected structured-output path but does not call either required tool. Lifecycle, metrics and GPU collection are healthy. A 0% tool preflight is a genuine frozen-gate failure, not a reason to force tools or lower the threshold.
+
+### RECOMMENDATION
+
+Reject Phi-4 Mini for this selection cycle and do not run a full balanced/performance benchmark. All three compact candidates are now rejected. The next explicit decision is whether to run the optional larger spill/control preflight or close Wave 0 with **no passing local model**.
 
 ## Measured prototype results
 
@@ -244,7 +270,7 @@ All cells remain `PENDING` until sanitized target exports are reviewed.
 |---|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---|---|---|
 | Qwen3 4B Instruct 2507 | Q4_K_M | 2.36–3.37 s | 55–67 / 91–147 ms | 41.62–51.51 | 4.69–6.05 s | 3.29–4.65 GiB | corrected preflight available | PENDING full run | ~99–133% mean | PENDING | corrected preflight 100% | corrected preflight 50% FAIL | pre-fix only | corrected schema; tool FAIL | complete | preflight blocked full rerun | REJECT CANDIDATE | PENDING |
 | Gemma 3 4B IT QAT | Q4_0 | preflight only | PENDING | PENDING | PENDING | PENDING | preflight available | PENDING | PENDING | PENDING | 0% FAIL | 0% FAIL | PENDING | structured HTTP 400 | 4K preflight | preflight blocked | REJECT CANDIDATE |
-| Phi-4 Mini Instruct | Q4_K_M | PENDING | PENDING | PENDING | PENDING | PENDING | PENDING | PENDING | PENDING | PENDING | PENDING | PENDING | PENDING | PENDING | PENDING | PENDING | PENDING |
+| Phi-4 Mini Instruct | Q4_K_M | preflight only | PENDING | PENDING | PENDING | PENDING | preflight available | PENDING | PENDING | PENDING | 100% PASS | 0% FAIL | PENDING | tools not called | 4K preflight | preflight blocked | REJECT CANDIDATE |
 | Larger spill/control | TBD | PENDING | PENDING | PENDING | PENDING | PENDING | PENDING | PENDING | PENDING | PENDING | PENDING | PENDING | PENDING | PENDING | PENDING | PENDING | PENDING |
 
 ## Raw and sanitized evidence inventory
@@ -286,10 +312,9 @@ These are recommendations, not locked selections:
 ## Remaining selection gates
 
 - restore NVIDIA sampling inside the model/soak process environment, then capture VRAM/utilization/power/temperature and cancellation recovery
-- Phi-4 Mini corrected preflight; AC-balanced full run only if it passes
-- AC-performance only if Phi passes balanced quality/resource prerequisites
-- if Phi fails, record no passing compact candidate rather than weakening gates
-- documented larger-control decision after compact candidates
+- explicit review decision: optional larger spill/control preflight or no-model selection
+- if larger control is attempted, define its exact identity/license/quantization before measurement and run preflight only first
+- if larger control is declined or fails, close Wave 0 with no passing local model rather than weakening gates
 - passing structured JSON, tool, grounding, injection, source-precedence and uncertainty reliability
 - embedding candidate benchmark; FTS exact retrieval is already passing
 - retain three independent cold loads, request-level cancellation and separate lifecycle tests for every remaining candidate/profile
@@ -315,8 +340,8 @@ These remain unresolved until target evidence passes `W0-GATE-2`:
 | Transport | HTTP+SSE provisional baseline; no selection |
 | Pairing/security | One-time pairing + expiring session concept; mechanism unselected |
 | Revision/snapshot | Epoch + per-domain vector prototype; browser integration pending |
-| Known limitations | 4 GB VRAM/16 GB RAM; Qwen and Gemma rejected at corrected preflight |
-| Unresolved | Phi result, whether any compact candidate passes, full thermal/resource data, embeddings/vector need |
+| Known limitations | 4 GB VRAM/16 GB RAM; Qwen, Gemma and Phi rejected at corrected preflight |
+| Unresolved | optional larger-control/no-model decision, embeddings/vector need, no real-model v0.1 integration |
 
 ## Final status
 

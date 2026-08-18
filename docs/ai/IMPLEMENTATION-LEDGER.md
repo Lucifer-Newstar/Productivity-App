@@ -124,16 +124,28 @@ passedForFullRun:       false
 
 Gemma is rejected for this selection cycle. The exact HTTP 400 cause is unavailable in the public-safe summary and is not guessed. No full/performance run should be performed.
 
+### Phi-4 Mini preflight
+
+```text
+Jinja:                 enabled
+Structured:            100%
+Tools:                 0%
+Metrics/NVIDIA:        available
+Cleanup:               passed
+Failures:              get_project/get_today not called
+passedForFullRun:       false
+```
+
+Phi is rejected. All three compact candidates failed the frozen tool/schema compatibility gate; no full or performance run is authorized.
+
 ## Pending model selection work
 
-1. Phi-4 Mini preflight; AC-balanced full run only if it passes.
-2. AC-performance only if Phi passes balanced gates.
-3. If Phi fails, document no passing compact candidate and review the larger-control/no-selection decision.
-4. Verified local embedding candidate or an explicit no-embedding decision.
-5. Complete sanitized coverage bundle.
-6. Final model/context/concurrency/runtime recommendation or no-selection result.
-7. Real selected-candidate v0.1 integration test if a candidate passes.
-8. Stop for Wave 1.1/v0.2 scope review.
+1. Decide whether to run one optional larger spill/control preflight or close with no passing local model.
+2. If attempted, document the exact larger candidate before measurement and run preflight only.
+3. Verified local embedding candidate or an explicit no-embedding decision.
+4. Final model/context/concurrency/runtime recommendation or no-selection result.
+5. Real selected-candidate v0.1 integration only if a candidate passes.
+6. Stop for Wave 1.1/v0.2 scope review.
 
 ## Deferred by freeze
 
