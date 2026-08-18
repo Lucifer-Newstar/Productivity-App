@@ -73,15 +73,17 @@
       "extraArgs": []
     },
     {
-      "id": "larger-spill-control",
-      "label": "7B\u20138B Q4_K_M spill/control candidate",
-      "sourcePage": "SELECT_ONLY_AFTER_4B_BASELINES",
-      "modelPath": "<LOCAL_LARGER_CONTROL_PATH>",
+      "id": "qwen2.5-7b-instruct-q4km-control",
+      "label": "Qwen2.5 7B Instruct Q4_K_M control",
+      "sourcePage": "https://huggingface.co/bartowski/Qwen2.5-7B-Instruct-GGUF",
+      "modelPath": "<LOCAL_QWEN25_7B_Q4_K_M_PATH>",
       "artifactSha256": "CAPTURE_MODEL_SHA256",
-      "license": "VERIFY_LICENSE",
-      "role": "system-RAM spill and quality-control comparison; not expected default",
+      "license": "VERIFY_APACHE_2_0_FROM_UPSTREAM_MODEL_CARD",
+      "role": "single larger control for tool compatibility; not expected default",
       "enabled": false,
-      "extraArgs": []
+      "extraArgs": [
+        "--jinja"
+      ]
     }
   ]
 }
