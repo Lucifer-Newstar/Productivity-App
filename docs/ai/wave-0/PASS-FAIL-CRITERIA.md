@@ -44,7 +44,7 @@ Target constraint: 4 GB dedicated VRAM / 16 GB system RAM.
 | System headroom | ≥3 GiB available at p95 load; no sustained paging/thrashing |
 | GPU temperature | p95 ≤83 °C, absolute maximum ≤87 °C |
 | Thermal stability | final 10-minute throughput ≥85% of first 5-minute throughput |
-| Request cancellation | individual HTTP generation acknowledges ≤2 s, terminates ≤10 s, active-request metric returns zero, and server process remains alive |
+| Request cancellation | client socket closure is recorded separately; server active-request metric must observe start and return to zero ≤2 s, request thread terminates ≤10 s, and server process/tree remains stable. If the runtime exposes no server-observable metric, acknowledgement is incomplete—not inferred. |
 | Request resource recovery | VRAM and process RAM return to baseline tolerance within 30 s after individual cancellation |
 | Process shutdown | process exits ≤10 s when separately requested |
 | Crash recovery | port/process can restart cleanly; no orphan/duplicate process |

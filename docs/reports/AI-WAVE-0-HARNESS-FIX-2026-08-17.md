@@ -8,13 +8,17 @@ Synthetic/mock-only correction pass. No runtime/model installation, model downlo
 
 ### Request-level cancellation
 
-The benchmark now closes the individual streaming HTTP request while leaving `llama-server` alive. It records acknowledgement, acknowledgement latency, request-termination latency, thread termination, server liveness, active-request metrics, orphan status, recovery window and RAM/VRAM recovery. The existing process termination/crash/restart probe remains separate.
+The benchmark now closes the individual streaming HTTP request while leaving `llama-server` alive. Client socket closure is recorded separately and is not called native acknowledgement. Cancellation is acknowledged only when a server-observable active-request metric first observes the request and then returns to the pre-request zero baseline. If runtime metrics are unavailable, acknowledgement remains incomplete.
 
-The deterministic mock exposes an active-request metric and has normal plus delayed-orphan modes. Regression tests prove successful cancellation and detected orphan failure. W0-GATE-2 now requires acknowledged/terminated/orphan-free request cancellation, live server, zero active requests and RAM/VRAM recovery.
+RAM/VRAM baselines are captured before request dispatch. Post-cancellation samples are compared with those pre-request baselines under the existing tolerance/recovery window. The deterministic mock exposes an active-request metric and normal plus delayed-orphan modes. Regression tests prove successful cancellation and detected orphan failure. The separate process termination/crash/restart probe remains intact.
 
 ### Cold-load coverage
 
-Every configured context performs at least three independent process start→ready→stop cycles before scenario execution. Raw output retains every sample. `p95Ms` exists only when all required samples are valid and release their port. Missing coverage fails/pends its gates.
+Every configured context performs at least three independent process start→ready→stop cycles before scenario execution. Raw output retains every sample. `p95Ms` exists only when all required samples are valid, release their port and leave no process-tree member. Missing coverage fails/pends its gates.
+
+### OS-level process verification
+
+Cross-platform process inspection uses Windows `Win32_Process` or Linux procfs. Request cancellation verifies the expected server identity/tree remains stable with no unexpected child process. Normal shutdown, simulated crash, restart and every cold-load teardown verify the launched process tree has fully exited.
 
 ### llama-bench
 
@@ -26,11 +30,11 @@ Concurrency 1/2 now runs all structured and tool scenarios, not one representati
 
 ### Embedding endpoint
 
-Embedding benchmark accepts only explicit-port plain HTTP on `127.0.0.1`, `localhost` or `::1`, with no credentials, path, query or fragment. Remote/unsafe forms are rejected before the optional token is read or a request is made.
+Embedding benchmark accepts only explicit-port plain HTTP on literal `127.0.0.1` or `[::1]`, with no credentials, path, query or fragment. `localhost` and every other hostname are rejected. Remote/unsafe forms are rejected before the optional token is read or a request is made.
 
 ## Verification
 
-- Wave 0 harness: 33/33 synthetic checks
+- Wave 0 harness: 35/35 synthetic checks
 - Python syntax: pass
 - Privacy boundary: preserved
 - Raw outputs: LOCAL-ONLY only
