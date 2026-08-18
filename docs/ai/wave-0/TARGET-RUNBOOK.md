@@ -18,6 +18,34 @@ Windows 11 — edition/build pending local capture
 
 The public repository stores only a generic `hardware.local.example.json`. Copy it to ignored `hardware.local.json` and fill the supplied target expectations locally. Raw machine data never enters Git.
 
+## Corrected Qwen rerun checklist
+
+The first AC-balanced run exposed three harness/configuration defects now fixed: canonical chat-completions schema wrapping, guaranteed `--jinja`, and `[N/A]`-tolerant NVIDIA sampling.
+
+```powershell
+cd <repo>
+git pull --rebase
+cd ai\wave0
+
+# Make NVIDIA telemetry executable explicit for this PowerShell session.
+$env:KAIZEN_W0_NVIDIA_SMI = "$env:WINDIR\System32\nvidia-smi.exe"
+
+# Fast LOCAL-ONLY compatibility check; this must pass before the full run.
+python scripts\preflight_candidate.py `
+  --config config\candidates.local.json `
+  --output results-local\qwen3-fixed-preflight.json
+```
+
+The preflight requires canonical structured JSON, exact tool behavior, `/metrics`, `--jinja`, NVIDIA samples, clean shutdown and process-tree exit. If it fails, stop and inspect only the LOCAL-ONLY `failureCategories`; do not upload raw output.
+
+If it passes, rerun AC balanced:
+
+```powershell
+.\run_target_wave0.ps1 -ProfileLabel "AC balanced"
+```
+
+Do not run Qwen AC performance until the corrected balanced aggregate passes quality and GPU telemetry prerequisites. No embedding run is expected yet because no verified local embedding model/endpoint has been selected; omit `-EmbeddingBaseUrl` and leave those gates pending honestly.
+
 ## Preferred one-command execution
 
 After filling ignored local configs and enabling exactly one candidate, set the desired Windows/ASUS profile and run:

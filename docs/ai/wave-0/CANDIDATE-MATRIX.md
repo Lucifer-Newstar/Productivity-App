@@ -32,6 +32,7 @@ All model files are manually obtained, locally hashed and kept outside Git. The 
 | Estimated model-file band | **ESTIMATE:** approximately 2.4–3.0 GiB |
 | Estimated target VRAM | **ESTIMATE:** likely near 4 GB after KV/runtime overhead; measure full/partial offload |
 | Estimated process RAM | **ESTIMATE:** 4–8 GiB depending on offload/context |
+| Required runtime flag | `--jinja` so llama.cpp applies the GGUF tool-aware template |
 | Candidate rationale | Current compact instruction model; likely strong structured reasoning/tool baseline for 4 GB VRAM |
 
 ### C2 — Gemma 3 4B IT QAT Q4_0

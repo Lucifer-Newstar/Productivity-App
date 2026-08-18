@@ -44,4 +44,4 @@ The run demonstrates strong speed and operational stability but cannot be select
 
 ## Next action
 
-Do not run the identical AC-performance configuration yet. Locally inspect synthetic failure categories, correct only a verified configuration issue if one exists, ensure `nvidia-smi` is available to the benchmark process, then rerun. Otherwise record this configuration as rejected and proceed to the next candidate.
+Verified harness defects were found after intake: the chat-completions schema used a non-canonical wrapper, the Qwen server lacked guaranteed `--jinja`, and NVIDIA samples were discarded when laptop power fields returned `[N/A]`. Those defects are corrected. Pull the fixes, run the new 4K schema/tool/GPU preflight, and rerun AC balanced only if preflight passes. AC performance remains unnecessary until the corrected balanced run meets quality and telemetry prerequisites.

@@ -174,8 +174,8 @@ The first target run measures 0% structured reliability and 85.71% tool reliabil
 ## Embedding/retrieval status
 
 - Lexical FTS baseline measured.
-- Embedding provider harness/model still pending.
-- Vector store comparison still pending Windows tests.
+- Embedding harness is wired and restricted to literal loopback endpoints, but no verified local embedding model/runtime endpoint was supplied; therefore it was correctly not run.
+- Vector store comparison remains deferred until an embedding candidate proves the measured paraphrase need and resource cost.
 - No permanent embedding model or vector technology selected.
 
 ## Context, thermal and concurrency status
