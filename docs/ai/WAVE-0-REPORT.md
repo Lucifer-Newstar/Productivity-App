@@ -1,14 +1,14 @@
 # Wave 0 Selection Report
 
-**Status:** `INCOMPLETE — ALL THREE COMPACT CANDIDATES FAILED PREFLIGHT`<br>
-**Report version:** 0.6 — Phi preflight decision<br>
+**Status:** `INCOMPLETE — FINAL QWEN2.5 7B CONTROL PREFLIGHT REQUIRED`<br>
+**Report version:** 0.7 — larger-control decision<br>
 **Date:** 2026-08-18<br>
 **Permanent model selection:** **BLOCKED**<br>
 **Implementation note:** the user later explicitly authorized provider-neutral v0.1 foundation and read-only `get_today`; this does not complete Wave 0 or approve a model.
 
 ## Executive decision
 
-Qwen, Gemma and Phi-4 Mini have all failed corrected 4K preflight. Qwen reaches 50% tools, Gemma reaches 0% schema/tools with HTTP 400, and Phi reaches 100% schema but 0% tools. None may proceed to a full run. No compact local model passes the frozen compatibility gate; no model, context, runtime, vector backend or transport is selected.
+Qwen, Gemma and Phi-4 Mini have all failed corrected 4K preflight. None may proceed to a full run. One final larger control is now explicitly defined: Qwen2.5 7B Instruct Q4_K_M, preflight-only at 4K. Its purpose is to determine whether a mature tool-capable 7B family can satisfy the contract; it is not a model selection or permission for a full benchmark.
 
 ## Evidence and privacy rules
 
@@ -271,7 +271,7 @@ All cells remain `PENDING` until sanitized target exports are reviewed.
 | Qwen3 4B Instruct 2507 | Q4_K_M | 2.36–3.37 s | 55–67 / 91–147 ms | 41.62–51.51 | 4.69–6.05 s | 3.29–4.65 GiB | corrected preflight available | PENDING full run | ~99–133% mean | PENDING | corrected preflight 100% | corrected preflight 50% FAIL | pre-fix only | corrected schema; tool FAIL | complete | preflight blocked full rerun | REJECT CANDIDATE | PENDING |
 | Gemma 3 4B IT QAT | Q4_0 | preflight only | PENDING | PENDING | PENDING | PENDING | preflight available | PENDING | PENDING | PENDING | 0% FAIL | 0% FAIL | PENDING | structured HTTP 400 | 4K preflight | preflight blocked | REJECT CANDIDATE |
 | Phi-4 Mini Instruct | Q4_K_M | preflight only | PENDING | PENDING | PENDING | PENDING | preflight available | PENDING | PENDING | PENDING | 100% PASS | 0% FAIL | PENDING | tools not called | 4K preflight | preflight blocked | REJECT CANDIDATE |
-| Larger spill/control | TBD | PENDING | PENDING | PENDING | PENDING | PENDING | PENDING | PENDING | PENDING | PENDING | PENDING | PENDING | PENDING | PENDING | PENDING | PENDING | PENDING |
+| Qwen2.5 7B Instruct control | Q4_K_M | preflight pending | PENDING | PENDING | PENDING | PENDING | PENDING | PENDING | PENDING | PENDING | PENDING | PENDING | PENDING | PENDING | 4K preflight only | no full-run permission | CONTROL PENDING |
 
 ## Raw and sanitized evidence inventory
 
@@ -312,9 +312,9 @@ These are recommendations, not locked selections:
 ## Remaining selection gates
 
 - restore NVIDIA sampling inside the model/soak process environment, then capture VRAM/utilization/power/temperature and cancellation recovery
-- explicit review decision: optional larger spill/control preflight or no-model selection
-- if larger control is attempted, define its exact identity/license/quantization before measurement and run preflight only first
-- if larger control is declined or fails, close Wave 0 with no passing local model rather than weakening gates
+- Qwen2.5 7B Instruct Q4_K_M control preflight at 4K
+- no full benchmark unless that preflight passes and a separate review authorizes the resource-risk experiment
+- if the control fails, close Wave 0 with no passing local model rather than testing additional models or weakening gates
 - passing structured JSON, tool, grounding, injection, source-precedence and uncertainty reliability
 - embedding candidate benchmark; FTS exact retrieval is already passing
 - retain three independent cold loads, request-level cancellation and separate lifecycle tests for every remaining candidate/profile
@@ -341,7 +341,7 @@ These remain unresolved until target evidence passes `W0-GATE-2`:
 | Pairing/security | One-time pairing + expiring session concept; mechanism unselected |
 | Revision/snapshot | Epoch + per-domain vector prototype; browser integration pending |
 | Known limitations | 4 GB VRAM/16 GB RAM; Qwen, Gemma and Phi rejected at corrected preflight |
-| Unresolved | optional larger-control/no-model decision, embeddings/vector need, no real-model v0.1 integration |
+| Unresolved | Qwen2.5 7B control preflight, then passing-model or no-model decision; embeddings/vector need |
 
 ## Final status
 

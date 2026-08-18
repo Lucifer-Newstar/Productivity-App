@@ -140,12 +140,13 @@ Phi is rejected. All three compact candidates failed the frozen tool/schema comp
 
 ## Pending model selection work
 
-1. Decide whether to run one optional larger spill/control preflight or close with no passing local model.
-2. If attempted, document the exact larger candidate before measurement and run preflight only.
-3. Verified local embedding candidate or an explicit no-embedding decision.
-4. Final model/context/concurrency/runtime recommendation or no-selection result.
-5. Real selected-candidate v0.1 integration only if a candidate passes.
-6. Stop for Wave 1.1/v0.2 scope review.
+1. Run one final preflight-only control: Qwen2.5 7B Instruct Q4_K_M at 4K.
+2. If it fails, close Wave 0 with no passing local model; do not test more models or weaken gates.
+3. If it passes, stop for review before any full resource-risk benchmark.
+4. Record an explicit no-embedding decision unless a verified small local embedding endpoint is separately approved.
+5. Final model/context/concurrency/runtime recommendation or no-selection result.
+6. Real selected-candidate v0.1 integration only if a candidate passes.
+7. Stop for Wave 1.1/v0.2 scope review.
 
 ## Deferred by freeze
 

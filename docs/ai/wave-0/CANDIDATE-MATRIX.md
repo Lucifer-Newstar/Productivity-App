@@ -63,17 +63,20 @@ All model files are manually obtained, locally hashed and kept outside Git. The 
 | Estimated process RAM | **ESTIMATE:** 4–8 GiB depending on offload/context |
 | Candidate rationale | Compact instruction model and independent structured-output/tool comparison |
 
-### C4 — 7B–8B Q4_K_M spill/control
+### C4 — Qwen2.5 7B Instruct Q4_K_M control
 
 | Field | Pre-benchmark record |
 |---|---|
-| Parameters | 7B–8B; exact family selected only after C1–C3 baselines |
+| Parameters | 7.6B class; verify exact GGUF metadata locally |
 | Quantization | Q4_K_M |
-| Context under test | Start 2K/4K; attempt 8K/12K/16K only while safety gates permit |
-| Estimated model-file band | **ESTIMATE:** approximately 4.5–5.5 GiB |
-| Estimated target VRAM | **ESTIMATE:** cannot fully fit 4 GB dedicated VRAM; partial offload required |
+| Public GGUF source page | `bartowski/Qwen2.5-7B-Instruct-GGUF` |
+| Upstream context | 32K class; local GGUF/runtime metadata must confirm |
+| Context under test | **Preflight at 4K only.** Full context matrix is prohibited unless preflight passes and an explicit review authorizes it. |
+| Estimated model-file band | **ESTIMATE:** approximately 4.5–5.0 GiB |
+| Estimated target VRAM | **ESTIMATE:** cannot fully fit 4 GB dedicated VRAM; partial offload/system spill expected |
 | Estimated process RAM | **ESTIMATE:** 8–12 GiB with system-RAM/PCIe spill |
-| Candidate rationale | Quantify whether added quality justifies latency, RAM, thermal and responsiveness cost; not expected default |
+| Required runtime flag | `--jinja` |
+| Candidate rationale | One final tool-capable control to distinguish compact-model limitations from engine-contract limitations; not an expected default |
 
 ## Measurement rules
 
