@@ -60,6 +60,7 @@ Entertainment also has five dynamic Next.js provider routes. Runtime security sm
 | Gate | Primary failures |
 |---|---|
 | TypeScript | Model/action/prop and migration contract drift |
+| Source commentary | Maintained code files without any explanatory comment/module documentation |
 | ESLint | Dynamic execution and configured source-quality rules |
 | Next build | Router, server/client boundary and prerender failures |
 | Health QA | H1–H39 formulas, routes, bridge and regressions |
@@ -81,6 +82,7 @@ npm audit --omit=dev
 
 cd ../frontend
 npm run qa:ai
+npm run qa:comments
 ```
 
 Engine tests cover contracts, schema rejection, provider configuration, mock tool rounds, one-time pairing, session expiry, unsafe JSON, rate limits, bounded orchestration, source grounding, task/notification/scheduled-content injection, attempted write-tool escalation and a real loopback HTTP/SSE/tool-result flow. Frontend QA covers revision behavior, minimum-context snapshots, source IDs, session-only tokens, fixed same-origin proxying and read-only UI copy.

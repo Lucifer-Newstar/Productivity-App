@@ -1,6 +1,6 @@
 # Kaizen documentation
 
-_Last synchronized on 2026-08-17 from `main`._
+_Last synchronized on 2026-08-18 from the persistent `ai` branch._
 
 Kaizen is a local-first productivity and life OS built as one Next.js application with five dedicated spaces. The frontend uses React Context state slices persisted under separate browser-storage keys; the Express service is an optional in-memory reference/sync API and is not required for normal frontend use.
 
@@ -12,8 +12,8 @@ Kaizen is a local-first productivity and life OS built as one Next.js applicatio
 | Workout | `/workout/*` | Full-screen imperial training OS | Shipped; 12 routes |
 | Projects / Forge | `/projects/*` | Full-screen Foundry/Drafting Room | v1.0 shipped; 5 routes, 31 Smelter tabs |
 | Career | `/career/*` | Full-screen Night HUD/Blueprint | Shipped; 10 routes including redirect |
-| Health / VITAL-SIGN | `/health/*` | Full-screen medical OS | v1.1 shipped; 10 routes, 216✅/2🟡/63 deferred |
-| Entertainment / AFTERGLOW | `/entertainment` | Full-screen cinema OS | v1.0 Waves 0–9; 94✅/2🟡/0❌ |
+| Health / VITAL-SIGN | `/health/*` | Full-screen medical OS | v1.1 shipped; 10 routes; detailed audit maintained in space docs |
+| Entertainment / AFTERGLOW | `/entertainment` | Full-screen cinema OS | v1.0 Waves 0–9 shipped; detailed audit maintained in space docs |
 
 A global local-first NotificationCenter is mounted across Home and every full-screen space, with section/category controls and an initial high-value rule catalog.
 
@@ -29,7 +29,7 @@ Current production verification: **39/39 user routes return HTTP 200**, five Ent
 |---|---|
 | [`architecture/ARCHITECTURE.md`](architecture/ARCHITECTURE.md) | Routers, providers, shells, state, rendering and system boundaries |
 | [`architecture/DATA-MODEL.md`](architecture/DATA-MODEL.md) | State slices, major entities, relationships and migrations |
-| [`reference/API.md`](reference/API.md) | Express resources and Next.js Entertainment provider routes |
+| [`reference/API.md`](reference/API.md) | Express resources, fixed provider routes and Intelligence Engine gateway |
 | [`reference/FEATURES.md`](reference/FEATURES.md) | Cross-space feature audit and links to detailed specifications |
 | [`reference/ALGORITHMS.md`](reference/ALGORITHMS.md) | Workout, Forge and Health formulas |
 | [`security/SECURITY.md`](security/SECURITY.md) | Threat model, secure deployment and verification commands |
@@ -41,7 +41,7 @@ Current production verification: **39/39 user routes return HTTP 200**, five Ent
 | [`reports/AI-ARCHITECTURE-GATE-2026-08-17.md`](reports/AI-ARCHITECTURE-GATE-2026-08-17.md) | Intelligence Engine architecture package and review boundary |
 | [`notifications/README.md`](notifications/README.md) | Global inbox, rule catalog, settings and scope decisions |
 
-### Kaizen Intelligence Engine — architecture gate
+### Kaizen Intelligence Engine
 
 - [`ai/MASTER-SPECIFICATION.md`](ai/MASTER-SPECIFICATION.md) — canonical product, architecture, privacy, MLOps and phase specification.
 - [`ai/DELIVERY-PLAYBOOK.md`](ai/DELIVERY-PLAYBOOK.md) — mandatory start/scope/test/privacy/documentation/commit procedure.
@@ -111,8 +111,16 @@ npm run qa:entertainment:reports
 npm run qa:entertainment:social
 npm run qa:entertainment:migration
 npm run qa:security
+npm run qa:ai
+npm run qa:comments
 npm run qa:docs
 node scripts/qa-health.js
+npm run build
+
+cd ../ai
+npm ci
+npm run typecheck
+npm test
 npm run build
 
 cd ../backend
@@ -123,8 +131,12 @@ KAIZEN_API_KEY=security-test-key npm start
 KAIZEN_API_KEY=security-test-key npm run security:test
 ```
 
-## Git state used by these docs
+## Git and documentation workflow
 
-- Stable baseline: `main` / `origin/main`, including AFTERGLOW v1.0, global notifications and security/docs hardening.
-- The `entertainment` feature branch was merged through pull request #2 on 2026-08-17.
-- Feature commits use the repository-owner identity configured outside tracked documentation.
+- `main` remains the stable product baseline.
+- Intelligence work continues on the persistent `ai` branch; do not create a branch per wave.
+- Start every step with `git pull --rebase`.
+- End every step by updating the governing docs and `ai/IMPLEMENTATION-LEDGER.md`, running documentation QA and creating focused commits.
+- Configure repository-owner identity outside tracked files.
+
+See [`ai/DELIVERY-PLAYBOOK.md`](ai/DELIVERY-PLAYBOOK.md) and [`guides/CONTRIBUTING.md`](guides/CONTRIBUTING.md).

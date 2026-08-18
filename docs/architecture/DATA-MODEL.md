@@ -1,6 +1,6 @@
 # Kaizen data-model reference
 
-_Last synchronized: 2026-08-17 on merged `main`._
+_Last synchronized: 2026-08-18 across the stable product model and v0.1 Intelligence contracts._
 
 ## Root state
 

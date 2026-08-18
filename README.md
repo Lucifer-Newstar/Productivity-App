@@ -1,57 +1,124 @@
 # Kaizen
 
-> Continuous growth. A productivity / life-OS app with a world-class workout
-> tracker, career roadmap, projects, entertainment, and health spaces.
+Kaizen is a local-first personal operating system for productivity, projects, career development, training, health and entertainment. The browser remains authoritative; optional local services add sync/reference APIs and a read-only Intelligence foundation without taking ownership of user state.
 
-## Stack
+## Product spaces
 
-- **Frontend** — Next.js **16.3.1**, React 19, TypeScript, Tailwind 3,
-  Framer Motion, lucide-react.
-  - App Router (`/`) for the home dashboard with a left `SideNav`.
-  - Pages Router for standalone spaces (`/projects`, `/workout`, `/career`,
-    `/entertainment`, `/health`); all five use dedicated full-screen shells.
-  - Global local-first notification inbox/settings mounted across Home and every space.
-- **Backend** — Express 4 REST API under `backend/`, in-memory store, port 4000.
-- **Intelligence** — independent local-first TypeScript engine under `ai/`, paired loopback gateway and read-only `get_today@1.0` vertical slice.
-- **Docs** — see [`docs/`](docs):
-  - [`architecture/ARCHITECTURE.md`](docs/architecture/ARCHITECTURE.md) — layout, state model, rendering.
-  - [`reference/ALGORITHMS.md`](docs/reference/ALGORITHMS.md) — every formula (1RM, Wilks, Epley,
-    readiness, HR zones, VO2, plates, etc.)
-  - [`reference/FEATURES.md`](docs/reference/FEATURES.md) — cross-space feature status and audits.
-  - [`notifications/`](docs/notifications) — global notification rules, settings and scope.
-  - [`reference/API.md`](docs/reference/API.md) — backend REST reference.
-  - [`security/SECURITY.md`](docs/security/SECURITY.md) — secure deployment and threat model.
-  - [`security/AUDIT-2026-08-16.md`](docs/security/AUDIT-2026-08-16.md) — latest full-site audit and remediation report.
+| Space | Route family | Purpose |
+|---|---|---|
+| Home | `/` | Command Center, tasks, focus, notes, habits and calendar |
+| Forge | `/projects/*` | Projects, execution, strategy canvases and retrospectives |
+| Career | `/career/*` | Roadmaps, skills, jobs, network, portfolio and daily workflow |
+| Workout | `/workout/*` | Training sessions, progression, PRs, planning and analytics |
+| VITAL-SIGN | `/health/*` | Sleep, hydration, nutrition, recovery, vitals and reports |
+| AFTERGLOW | `/entertainment` | Local media library, discovery, tracking, social and studio tools |
 
-## Getting started
+## Architecture
+
+```text
+Next.js 16 / React 19 browser application
+  ├── React Context domain store
+  ├── slice-specific local persistence
+  ├── deterministic analytics and notifications
+  ├── App Router Home and fixed server routes
+  └── Pages Router full-screen product spaces
+
+Optional Express reference API — 127.0.0.1:4000
+Optional Intelligence Engine — 127.0.0.1:4317
+```
+
+The Intelligence Engine is currently v0.1, read-only and provider-neutral. Wave 0 closed with no local model selected; the tested production path therefore remains deterministic/mock-backed pending an explicit next-scope decision.
+
+## Repository
+
+```text
+frontend/   Next.js application and browser-authoritative state
+backend/    Optional in-memory Express reference/sync API
+ai/         Independent Intelligence Engine and Wave 0 validation harness
+docs/       Architecture, reference, security, design, guides and reports
+```
+
+Workspace-specific setup:
+
+- [`frontend/README.md`](frontend/README.md)
+- [`backend/README.md`](backend/README.md)
+- [`ai/README.md`](ai/README.md)
+- [`docs/README.md`](docs/README.md)
+
+## Quick start
+
+Requirements: Node.js 20.9+, npm and Git.
 
 ```bash
-# frontend
+git clone https://github.com/Lucifer-Newstar/Productivity-App.git
+cd Productivity-App
+
 cd frontend
 npm ci
-npm run dev          # http://localhost:3000
-
-# backend (in another tab)
-cd backend
-npm ci
-npm run dev          # http://localhost:4000
-
-# optional local Intelligence Engine (mock provider)
-cd ../ai
-npm ci
-KAIZEN_AI_PROVIDER=mock npm run dev  # http://127.0.0.1:4317
+npm run dev
 ```
 
-## Scripts
+Open `http://localhost:3000`. The frontend works without either optional service.
+
+Optional services:
 
 ```bash
-cd frontend && ./node_modules/.bin/next build     # production build
-cd frontend && ./node_modules/.bin/tsc --noEmit   # type check
-cd backend  && npm run build                      # compile backend
-cd frontend && npm audit --omit=dev                # production dependency audit
-cd backend  && npm audit --omit=dev
+# Express reference API
+cd backend
+npm ci
+npm run dev
+
+# Intelligence Engine with deterministic local provider
+cd ai
+npm ci
+KAIZEN_AI_PROVIDER=mock npm run dev
 ```
 
-The API binds to `127.0.0.1` by default. Before intentionally exposing it on a
-network, set `KAIZEN_API_KEY` and an explicit `CORS_ORIGINS` allowlist; see
-[`docs/security/SECURITY.md`](docs/security/SECURITY.md).
+The Intelligence Engine prints a one-time pairing code to its local console. Enter it only in the Home Intelligence panel.
+
+## Quality gates
+
+```bash
+cd frontend
+npx tsc --noEmit
+npm run lint
+npm run qa:ai
+npm run qa:comments
+npm run qa:docs
+npm run build
+npm audit --omit=dev
+
+cd ../backend
+npm run build
+npm audit --omit=dev
+
+cd ../ai
+npm run typecheck
+npm test
+npm run build
+npm audit --omit=dev
+```
+
+The complete test matrix is in [`docs/guides/TESTING.md`](docs/guides/TESTING.md).
+
+## Documentation
+
+Start with:
+
+- [`docs/architecture/ARCHITECTURE.md`](docs/architecture/ARCHITECTURE.md)
+- [`docs/architecture/DATA-MODEL.md`](docs/architecture/DATA-MODEL.md)
+- [`docs/reference/API.md`](docs/reference/API.md)
+- [`docs/reference/FEATURES.md`](docs/reference/FEATURES.md)
+- [`docs/security/SECURITY.md`](docs/security/SECURITY.md)
+- [`docs/ai/MASTER-SPECIFICATION.md`](docs/ai/MASTER-SPECIFICATION.md)
+- [`docs/ai/IMPLEMENTATION-LEDGER.md`](docs/ai/IMPLEMENTATION-LEDGER.md)
+
+## Security and privacy
+
+- Browser storage is local and unencrypted; use a trusted browser profile.
+- External catalogue access uses fixed server-side adapters and allowlists.
+- Optional services bind to loopback by default.
+- Never commit secrets, personal exports, model weights or raw benchmark data.
+- Raw AI validation artifacts stay in ignored `ai/wave0/results-local/`; only sanitized aggregates may enter Git.
+
+See [`docs/security/SECURITY.md`](docs/security/SECURITY.md) and [`docs/ai/PRIVACY.md`](docs/ai/PRIVACY.md).

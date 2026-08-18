@@ -46,6 +46,14 @@ Never trust restored URLs, images or arbitrary object keys.
 - Revalidate every redirect.
 - Document attribution and commercial terms.
 
+## Source commentary
+
+- Every maintained code file must contain at least one meaningful module, invariant or behavior comment.
+- Prefer a concise file-level purpose comment plus targeted explanations for security, formulas, migrations and non-obvious state transitions.
+- Do not add comments that merely restate syntax.
+- Update comments when behavior changes; stale commentary is a defect.
+- Run `npm run qa:comments` from `frontend/`.
+
 ## UI changes
 
 - Preserve full-screen shell contracts.

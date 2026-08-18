@@ -1,6 +1,6 @@
 # Kaizen Feature Status
 
-Last audited on the `entertainment` branch on 2026-08-16.
+Last full cross-space feature audit: 2026-08-16. Current implementation status is synchronized through the dated reports and per-space QA files.
 All five spaces now have dedicated implementations: **Workout** (battle-tested),
 **Career** (Night HUD / Blueprint), **Projects / Forge** (full PM OS), **Health / VITAL-SIGN**
 (v1.1 Waves 1–9), and **Entertainment / AFTERGLOW** (v1.0 Waves 0–9; 94 complete,

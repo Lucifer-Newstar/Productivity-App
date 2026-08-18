@@ -1,6 +1,6 @@
 # Kaizen architecture
 
-_Last synchronized: 2026-08-17 on merged `main`._
+_Last synchronized: 2026-08-18; product baseline on `main`, Intelligence foundation on persistent `ai` branch._
 
 ## System overview
 
@@ -168,7 +168,7 @@ Cross-space reads occur through root-store selectors/updaters. Avoid circular im
 - User URLs are restricted to HTTP(S); image data is raster-only and bounded.
 - Express binds to loopback by default and requires explicit configuration for network exposure.
 
-See [`SECURITY.md`](../security/SECURITY.md) and [`SECURITY-AUDIT-2026-08-16.md`](../security/AUDIT-2026-08-16.md).
+See [`SECURITY.md`](../security/SECURITY.md) and the dated [`AUDIT-2026-08-16.md`](../security/AUDIT-2026-08-16.md).
 
 ## Backend boundary
 

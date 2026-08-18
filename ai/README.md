@@ -1,41 +1,42 @@
 # Kaizen Intelligence Engine
 
-Independent local-first Intelligence Engine on the persistent `ai` branch.
+Independent local-first Intelligence foundation on the persistent `ai` branch.
 
-## Current release — v0.1 foundation
+## Current status
 
-Implemented:
+v0.1 is implemented and frozen:
 
 - Versioned Constitution, provider, tool, snapshot and response contracts
-- Separate provider registry with `llama.cpp` and deterministic test adapters
-- Structured-output and tool-argument validation
-- Bounded two-pass read-only orchestration
+- Provider registry with llama.cpp and deterministic mock adapters
+- Structured-response and tool-argument validation
+- Bounded read-only orchestration
 - One registered `get_today@1.0` tool
-- One-time pairing and expiring session authentication
-- Loopback-only HTTP gateway with streamed SSE events
-- Origin/host/rate/body/unsafe-JSON controls
-- Same-origin fixed Next.js proxy
-- Browser Domain Bridge with revision vectors and minimum-context projection
-- Main Dashboard Intelligence panel
-- Source verification, evidence, confidence, uncertainty and freshness envelope
+- One-time pairing and expiring sessions
+- Loopback gateway, authenticated SSE and fixed same-origin proxy
+- Browser Domain Bridge with revision vectors and minimum context
+- Source verification, evidence/freshness envelope and Home UI
+- Privacy-safe aggregate observability
 
-Not implemented:
+Wave 0 is complete with **no local model selected**. Qwen3 4B, Gemma3 4B, Phi-4 Mini and Qwen2.5 7B all failed frozen preflight requirements. The production-quality path therefore remains deterministic/mock-backed until a separate scope/ADR decides otherwise.
 
-- State-changing AI tools or automation
-- Memory, vector storage or semantic retrieval in production
-- Health access
+Not implemented or authorized:
+
+- Additional domains or read tools
+- Memory or vector storage
+- Health context
+- State-changing actions or automation
 - Remote providers
-- A permanently selected local model
+- v0.2 functionality
 
-## Workspaces
+## Workspace
 
 ```text
-ai/src/       production engine contracts, providers, gateway and runtime
-ai/test/      executable engine tests
-ai/wave0/     benchmark/selection harness and LOCAL-ONLY tooling
+src/       engine contracts, gateway, providers, runtime and security
+ test/      unit, integration and adversarial tests
+wave0/     frozen model-selection harness and public/local result boundary
 ```
 
-## Run with deterministic mock
+## Run the deterministic provider
 
 ```bash
 cd ai
@@ -43,19 +44,28 @@ npm ci
 KAIZEN_AI_PROVIDER=mock npm run dev
 ```
 
-The engine prints a one-time pairing code to the local console. Open the Kaizen Home dashboard and enter that code in **Kaizen Intelligence**.
+The engine prints a one-time local pairing code. Enter it only in the Home Intelligence panel.
 
-## Run with llama.cpp candidate
+## llama.cpp adapter
 
-Start a verified `llama-server` on loopback, then:
+The adapter remains implemented and tested at protocol level, but no model is approved. A local candidate may be configured only under a future explicit scope decision; Kaizen never downloads model weights.
+
+## Quality gates
 
 ```bash
-KAIZEN_AI_PROVIDER=llama \
-KAIZEN_LLAMA_BASE_URL=http://127.0.0.1:8080 \
-KAIZEN_LLAMA_MODEL_ID=local-candidate \
-npm run dev
+npm run typecheck
+npm test
+npm run build
+npm audit --omit=dev
+
+cd wave0
+python scripts/qa_wave0.py
 ```
 
-No model is downloaded by Kaizen. A configured model remains a candidate until Wave 0 selection is complete.
+## Canonical documentation
 
-Architecture and security documentation: [`../docs/ai/`](../docs/ai/README.md).
+- [`../docs/ai/MASTER-SPECIFICATION.md`](../docs/ai/MASTER-SPECIFICATION.md)
+- [`../docs/ai/IMPLEMENTATION-LEDGER.md`](../docs/ai/IMPLEMENTATION-LEDGER.md)
+- [`../docs/ai/DELIVERY-PLAYBOOK.md`](../docs/ai/DELIVERY-PLAYBOOK.md)
+- [`../docs/ai/WAVE-0-REPORT.md`](../docs/ai/WAVE-0-REPORT.md)
+- [`../docs/ai/PRIVACY.md`](../docs/ai/PRIVACY.md)

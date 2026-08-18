@@ -1,6 +1,6 @@
 # Route inventory
 
-_Last verified: 2026-08-16; 39/39 user routes HTTP 200._
+_Last synchronized: 2026-08-18. The latest production build emits 39 user routes plus fixed dynamic provider/AI routes._
 
 ## Home
 
