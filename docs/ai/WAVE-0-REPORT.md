@@ -1,14 +1,14 @@
 # Wave 0 Selection Report
 
-**Status:** `INCOMPLETE — TARGET HARDWARE AND MODEL RESULTS REQUIRED`<br>
-**Report version:** 0.2 — privacy boundary and frozen gates<br>
-**Date:** 2026-08-17<br>
+**Status:** `INCOMPLETE — 1 OF REQUIRED CANDIDATE/PROFILE RUNS RECEIVED`<br>
+**Report version:** 0.3 — first sanitized target result<br>
+**Date:** 2026-08-18<br>
 **Permanent model selection:** **BLOCKED**<br>
 **Implementation note:** the user later explicitly authorized provider-neutral v0.1 foundation and read-only `get_today`; this does not complete Wave 0 or approve a model.
 
 ## Executive decision
 
-Wave 0 infrastructure and synthetic prototypes are viable, but no generation model, quantization, embedding model, vector backend or final transport is selected. The target is now identified as an ASUS TUF Gaming A15 FA506NCR with Ryzen 7 7435HS, RTX 3050 Laptop GPU (4 GB GDDR6, 60 W/75 W Dynamic Boost) and 16 GB DDR5. Machine-generated Windows, driver, memory-speed, storage, model, power and thermal results are still required. Production feature work remains blocked until those measurements are attached and this report is reviewed.
+One public-sanitized target result has been accepted: Qwen3 4B Instruct 2507 Q4_K_M under AC balanced. It confirms the target environment and demonstrates strong latency/throughput, cold-load, native-bench, cancellation, lifecycle, retrieval and soak behavior. It fails the frozen structured-output, tool, grounding, injection, uncertainty and system-headroom gates; GPU telemetry, thermal gates and embeddings remain incomplete. No model, context, runtime, vector backend or transport is selected.
 
 ## Evidence and privacy rules
 
@@ -28,7 +28,7 @@ Target method: [`wave-0/TARGET-RUNBOOK.md`](wave-0/TARGET-RUNBOOK.md).
 
 - One verified llama.cpp Windows CUDA build/hash for all candidates.
 - Identical synthetic Kaizen scenarios, temperature, output cap and repetitions.
-- 4K and 8K context; concurrency 1 and 2.
+- 2K, 4K, 8K, 12K and 16K context; concurrency 1 and 2.
 - AC balanced and AC performance runs recorded separately.
 - Three cold loads and 30-minute thermal soak per finalist.
 - Structured/tool/grounding/security scoring before speed comparison.
@@ -38,16 +38,49 @@ Target method: [`wave-0/TARGET-RUNBOOK.md`](wave-0/TARGET-RUNBOOK.md).
 
 | Item | Supplied target | Local confirmation |
 |---|---|---|
-| Device | ASUS TUF Gaming A15 FA506NCR | Pending |
-| CPU | Ryzen 7 7435HS, 8C/16T | Pending |
-| RAM | 16 GB DDR5 | Speed/modules pending |
-| GPU | RTX 3050 Laptop, 4 GB GDDR6 | Driver/telemetry pending |
-| GPU power | 60 W, 75 W Dynamic Boost | Runtime limit pending |
-| Storage | ~2.5 TB | Drive layout pending |
-| OS | Windows 11 | Edition/build pending |
-| Adapter | 180 W | Power-profile capture pending |
+| Device | ASUS TUF Gaming A15 FA506NCR | Sanitized run confirms expected CPU/GPU class; device model intentionally omitted |
+| CPU | Ryzen 7 7435HS, 8C/16T | Confirmed: AMD Ryzen 7 7435HS, 8C/16T |
+| RAM | 16 GB DDR5 | 16,987,074,560 bytes, one published module count, DDR5-4800 configured |
+| GPU | RTX 3050 Laptop, 4 GB GDDR6 | Confirmed: 4,096 MiB; 2,970 MiB free at capture; driver 596.49; compute 8.6; CUDA 13.2 |
+| GPU power | 60 W, 75 W Dynamic Boost | Default limit 60 W; current limit unavailable in sanitized capture |
+| Storage | ~2.5 TB | Intentionally absent from public aggregate; not needed for model scoring |
+| OS | Windows 11 | Home Single Language, 64-bit, version 10.0.26200/build 26200 |
+| Adapter | 180 W | Run labeled AC balanced; adapter value remains supplied, not machine-measured |
 
-The Arena sandbox remains a non-target 2-vCPU/1.9 GiB environment without NVIDIA. See [`wave-0/TARGET-HARDWARE-CAPTURE.md`](wave-0/TARGET-HARDWARE-CAPTURE.md) and [`wave-0/TARGET-RUNBOOK.md`](wave-0/TARGET-RUNBOOK.md).
+The Arena sandbox remains a non-target environment. Target claims below come only from the accepted sanitized aggregate at `ai/wave0/results-public/qwen3-4b-instruct-2507-q4km-AC-balanced.json`.
+
+## First target result — Qwen3 4B Q4_K_M / AC balanced
+
+### MEASURED FACT
+
+| Context | Cold-load p95 | TTFT p50 / p95 | tok/s p50 | Total p95 | Process RAM peak | Minimum system available | Structured | Tools |
+|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| 2K | 2.358 s | 55 / 109 ms | 51.51 | 4.695 s | 3.36 GiB | 1.65 GiB | 0% | 85.71% |
+| 4K | 2.614 s | 58 / 110 ms | 46.70 | 5.320 s | 3.35 GiB | 2.17 GiB | 0% | 85.71% |
+| 8K | 3.132 s | 56 / 91 ms | 46.87 | 5.285 s | 3.29 GiB | 1.99 GiB | 0% | 85.71% |
+| 12K | 2.849 s | 67 / 127 ms | 42.50 | 5.997 s | 3.98 GiB | 1.50 GiB | 0% | 85.71% |
+| 16K | 3.375 s | 65 / 147 ms | 41.62 | 6.053 s | 4.65 GiB | 0.81 GiB | 0% | 85.71% |
+
+Additional measured results:
+
+- Frozen score: **FAIL** — 181 pass, 55 fail, 30 pending gates.
+- Native `llama-bench` requirement: pass; runtime build 10472 / commit `60eeeb608`.
+- Three cold loads at every required context: pass.
+- Concurrency transport failures: zero, but structured/tool reliability still fails at concurrency 2.
+- Request cancellation: server-observed start/termination, zero active request, stable process tree and RAM recovery pass at every context.
+- VRAM recovery: pending because per-request NVIDIA monitoring was unavailable.
+- Lifecycle normal/crash/restart: pass; all ports and process trees released.
+- 30-minute soak: 1,093/1,093 requests, 97.68% throughput retention; temperature/power gates pending.
+- FTS5 target p95 at 50K records: 6.384 ms; exact ranking/filter/deletion gates pass; paraphrase Hit@10 remains 0.
+- Embedding benchmark: not supplied.
+
+### INTERPRETATION
+
+The candidate is fast and operationally stable under this configuration, including at larger contexts. It does not meet the minimum intelligence-quality contract: schema reliability is 0%, exact tool reliability is 85.71%, critical grounding/source-precedence/uncertainty gates fail, and prompt-injection failure rate is 50%. The identical quality rates at every context indicate a systematic model/template/schema/tool configuration issue or candidate limitation rather than context pressure alone; raw LOCAL-ONLY failure categories must be inspected on the target machine without uploading raw outputs. System-memory headroom also fails the 3 GiB minimum at every context, worsening to 0.81 GiB at 16K.
+
+### RECOMMENDATION
+
+Do not select this run as the default model. Do not spend an AC-performance run on the identical configuration until the local owner determines why structured output is universally invalid and two tool scenarios fail. GPU monitoring must also be made available to the benchmark process before a rerun so VRAM, power, temperature and cancellation recovery can be scored. This is a rejection of the measured configuration, not yet a permanent rejection of the Qwen model family.
 
 ## Measured prototype results
 
@@ -117,7 +150,7 @@ The harness never downloads a model and fails closed when no candidate is enable
 
 ### Model/quantization results
 
-**Not measured.** Dedicated VRAM is confirmed by the user as 4 GB, but the target laptop is not accessible from the sandbox. The disabled target matrix now includes Qwen3 4B Instruct 2507 Q4_K_M, Gemma 3 4B IT QAT Q4_0 and Phi-4 Mini Instruct Q4_K_M, plus one optional 7B–8B spill/control candidate after the 4B baselines. Sources, licenses and artifact hashes must be verified locally. These are benchmark candidates, not architecture or recommendations.
+Qwen3 4B Instruct 2507 Q4_K_M has one measured AC-balanced run and fails the frozen quality/headroom gates in its current configuration. Gemma 3 4B IT QAT Q4_0, Phi-4 Mini Instruct Q4_K_M and the optional larger control remain unmeasured. No candidate is architecture or selected.
 
 ## Structured output and tool reliability
 
@@ -136,7 +169,7 @@ The public synthetic evaluation dataset now checks:
 - deterministic deadline-forecast tool selection,
 - refusal to invent unavailable write or Health tools.
 
-**Measured model pass rates: pending target model runs.** No native tool-calling strategy is enabled by architecture until its pass threshold is met. Schema-constrained JSON and prompted/native tools will be compared rather than assumed equivalent.
+The first target run measures 0% structured reliability and 85.71% tool reliability at every context, below the frozen 98%/95% thresholds. Failure-category diagnosis remains LOCAL-ONLY. No native tool-calling strategy is approved by these results.
 
 ## Embedding/retrieval status
 
@@ -150,7 +183,7 @@ The public synthetic evaluation dataset now checks:
 - Harness matrix supports 2K/4K/8K/12K/16K contexts and concurrency 1/2 by default.
 - Exact limits remain unselected.
 - NVIDIA sample logger records VRAM, utilization, power, temperature and p-state.
-- Thermal soak, AC/battery power modes, KV-cache pressure, cancellation memory release and two-client behavior are pending target execution.
+- AC-balanced context/concurrency/RAM/cancellation/soak behavior is measured for one candidate. GPU VRAM/utilization/power/temperature telemetry is missing, AC performance is missing, and no second/third candidate exists.
 
 ## Target model measurement table
 
@@ -158,7 +191,7 @@ All cells remain `PENDING` until sanitized target exports are reviewed.
 
 | Candidate | Quant | Load p95 | TTFT p50/p95 | tok/s p50 | Total p95 | RAM peak | VRAM peak | GPU util | CPU util | Temp p95/max | Structured | Tools | Hallucination | Injection critical | 2K→16K | C1/C2 | Verdict |
 |---|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---|---|---|
-| Qwen3 4B Instruct 2507 | Q4_K_M | PENDING | PENDING | PENDING | PENDING | PENDING | PENDING | PENDING | PENDING | PENDING | PENDING | PENDING | PENDING | PENDING | PENDING | PENDING | PENDING |
+| Qwen3 4B Instruct 2507 | Q4_K_M | 2.36–3.37 s | 55–67 / 91–147 ms | 41.62–51.51 | 4.69–6.05 s | 3.29–4.65 GiB | PENDING | PENDING | ~99–133% mean | PENDING | 0% FAIL | 85.71% FAIL | 100% unsupported FAIL | 50% failure FAIL | complete | zero request errors; quality FAIL | REJECT CURRENT CONFIG | PENDING |
 | Gemma 3 4B IT QAT | Q4_0 | PENDING | PENDING | PENDING | PENDING | PENDING | PENDING | PENDING | PENDING | PENDING | PENDING | PENDING | PENDING | PENDING | PENDING | PENDING | PENDING |
 | Phi-4 Mini Instruct | Q4_K_M | PENDING | PENDING | PENDING | PENDING | PENDING | PENDING | PENDING | PENDING | PENDING | PENDING | PENDING | PENDING | PENDING | PENDING | PENDING | PENDING |
 | Larger spill/control | TBD | PENDING | PENDING | PENDING | PENDING | PENDING | PENDING | PENDING | PENDING | PENDING | PENDING | PENDING | PENDING | PENDING | PENDING | PENDING | PENDING |
@@ -171,8 +204,9 @@ All cells remain `PENDING` until sanitized target exports are reviewed.
 | Model/server raw JSON and logs | LOCAL-ONLY raw | Pending target run |
 | Per-second thermal/power CSV | LOCAL-ONLY raw | Pending target run |
 | Retrieval raw JSON | LOCAL-ONLY raw | Pending target run |
-| Sanitized aggregate JSON | Public allowlist export | Pending target run |
-| This report's measured tables | Public sanitized summary | Incomplete |
+| Sanitized aggregate JSON | Public allowlist export | 1 Qwen AC-balanced result received |
+| Public review bundle | Sanitized coverage summary | Incomplete: 1 candidate, 1 profile, frozen score failing |
+| This report's measured tables | Public sanitized summary | Partially populated |
 
 ## Trade-offs and rejected candidates
 
@@ -200,14 +234,12 @@ These are recommendations, not locked selections:
 
 ## Remaining selection gates
 
-- exact target hardware/power captures
-- verified llama.cpp Windows CUDA build plus required native llama-bench coverage
-- at least three independent cold loads at every required context
-- individual request cancellation, zero active orphan requests and RAM/VRAM recovery while server stays alive
-- separate process crash/restart lifecycle tests
-- at least two 4B-class candidates and one larger comparison
-- structured JSON/tool reliability repetitions, including complete concurrency-2 coverage
-- embedding candidate and retrieval quality tests
+- restore NVIDIA sampling inside the model/soak process environment, then capture VRAM/utilization/power/temperature and cancellation recovery
+- AC-performance result after any Qwen configuration correction
+- at least two additional candidates and the documented larger-control decision
+- passing structured JSON, tool, grounding, injection, source-precedence and uncertainty reliability
+- embedding candidate benchmark; FTS exact retrieval is already passing
+- retain three independent cold loads, request-level cancellation and separate lifecycle tests for every remaining candidate/profile
 - Windows disk/corruption/deletion/backup tests
 - authenticated browser transport/reconnect test
 - React/localStorage revision integration prototype
@@ -230,8 +262,8 @@ These remain unresolved until target evidence passes `W0-GATE-2`:
 | Transport | HTTP+SSE provisional baseline; no selection |
 | Pairing/security | One-time pairing + expiring session concept; mechanism unselected |
 | Revision/snapshot | Epoch + per-domain vector prototype; browser integration pending |
-| Known limitations | 4 GB VRAM, 16 GB RAM; target measurements missing |
-| Unresolved | Model/tool reliability, Windows lifecycle, thermals, embeddings/vector need |
+| Known limitations | 4 GB VRAM/16 GB RAM; current Qwen run fails quality/headroom; GPU telemetry absent |
+| Unresolved | Qwen output/tool configuration diagnosis, remaining candidates/profile, thermals, embeddings/vector need |
 
 ## Final status
 
