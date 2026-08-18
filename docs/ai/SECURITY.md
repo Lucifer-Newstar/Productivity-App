@@ -85,6 +85,10 @@ Record artifact source, license, hash, model card, quantization, download timest
 
 Health is separately consented. Secrets, session keys, provider credentials, raw media and hidden configuration never enter prompts, tool output, memory or logs. Remote mode changes the trust boundary and requires explicit request-level disclosure.
 
+## v0.1.1 interpreter boundary
+
+[AI-ADR-019](adrs/AI-ADR-019-DETERMINISTIC-CORE-TODAY-ROUTING.md) removes model routing authority for the approved slice. Trusted code fixes `focus-today → get_today@1.0`; the provider receives one validated `core.today@1.0` snapshot and no tool definitions. Provider tool calls, unknown source IDs, command-shaped output, additional domains and policy changes embedded in user-authored fields are rejected. Health, memory, retrieval, writes, automation and remote processing remain unavailable.
+
 ## v0.1 implemented controls
 
 - Engine binds only to `127.0.0.1` or `::1`; configuration rejects network exposure.

@@ -95,6 +95,12 @@ Exact thresholds are an architecture-review/Wave 0 deliverable and must be set b
 7. Hardware soak.
 8. Selection report with trade-offs and no hidden manual overrides.
 
+## v0.1.1 interpreter-only gate
+
+`V011-INT-GATE-1` is frozen before implementation for the narrower role defined by [AI-ADR-019](adrs/AI-ADR-019-DETERMINISTIC-CORE-TODAY-ROUTING.md). It measures interpretation of already-selected `core.today@1.0` evidence with zero provider tools. It does not modify or supersede `W0-GATE-2`.
+
+The normative thresholds, dataset strata, scoring rules and stop conditions are in [V0.1.1-INTERPRETER-EVALUATION.md](V0.1.1-INTERPRETER-EVALUATION.md). Machine-readable gates and public synthetic fixtures live under `ai/evaluation/v0.1.1/` and `ai/test/fixtures/`.
+
 ## Feedback and future learning
 
 Significant recommendations may later store model/prompt/context references, user feedback, action and outcome. This supports evaluation and only later a fine-tuning feasibility review. Fine-tuning is deferred until evidence shows prompting, tools, retrieval and memory are insufficient.

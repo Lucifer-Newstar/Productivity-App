@@ -120,7 +120,7 @@ Use structured filters and relationships first, then FTS, optional semantic retr
 
 Agent loop is bounded: observe → select a registered tool → observe result → answer/propose. Hard caps apply to iterations, tool calls, context, output, time, cancellation and concurrency. Every tool is registered, versioned, schema-validated, permission-checked, domain-scoped and auditable.
 
-Current production tool: `get_today@1.0` only. Future read tools require contract+evaluation+privacy review. No writes until action architecture approval.
+Current production tool: `get_today@1.0` only. AI-ADR-019 freezes a v0.1.1 path where trusted code selects that tool for `focus-today` and the provider only interprets validated Core Today evidence with zero tool access. Future read tools require contract+evaluation+privacy review. No writes until action architecture approval.
 
 ## 14. Future action system
 
@@ -164,8 +164,9 @@ Global UI offers purposeful workflows (plan today, needs attention, review week,
 
 ## 21. Phases
 
-- **v0.1 Foundation:** implemented; now frozen for integration/model validation.
-- **v0.2 Understands:** more read tools, orchestration, retrieval/memory foundation, cross-domain context and consent—only after scope review.
+- **v0.1 Foundation:** implemented and validated with deterministic/mock provider.
+- **v0.1.1 Deterministic Core Today interpretation:** architecture, contracts, interpreter-only gates and synthetic tests frozen before production implementation.
+- **v0.2 Understands:** more read tools, orchestration, retrieval/memory foundation, cross-domain context and consent—still frozen.
 - **v0.3 Reasons:** Daily/Weekly intelligence, momentum/conflicts/alignment, Forge/Career reasoning.
 - **v0.4 Acts:** proposals, approval, dry run, stale checks, idempotency, verification, audit and undo.
 - **v0.5 Domain Intelligence:** specialized Forge/Career/Workout/Health/Afterglow.

@@ -2,13 +2,13 @@
 
 Living record of what is implemented, validated, measured, blocked and next. Update this file at the end of every AI step.
 
-_Last updated: 2026-08-18_
+_Last updated: 2026-08-19_
 
 ## Current milestone
 
-> **Wave 0 closed with no passing local model; deterministic/mock v0.1 validated. Stop for next-scope review.**
+> **v0.1.1 deterministic Core Today routing architecture, contracts, frozen gates and synthetic tests complete. Stop for implementation review.**
 
-No new capability is authorized yet. Memory, Health context, write actions, automation, new domains and v0.2 remain frozen until explicit review.
+AI-ADR-019 authorizes trusted `focus-today → get_today@1.0` routing and model interpretation of validated `core.today@1.0` evidence with zero model tool access. No production v0.1.1 runtime change has been made. Memory, retrieval, Health context, write actions, automation, additional domains, remote processing and v0.2 remain frozen.
 
 ## Completed architecture and foundation
 
@@ -28,6 +28,20 @@ No new capability is authorized yet. Memory, Health context, write actions, auto
 | Source/evidence/freshness envelope | Complete | Schema and source-ID verification |
 | Privacy-safe observability | Complete | Aggregate in-memory `/v1/metrics` |
 | Public vs LOCAL-ONLY boundary | Complete | Ignore rules, sanitizer, pre-commit scanner |
+
+## v0.1.1 architecture phase
+
+| Deliverable | Status | Evidence |
+|---|---|---|
+| Deterministic-routing ADR | Complete / locked | `adrs/AI-ADR-019-DETERMINISTIC-CORE-TODAY-ROUTING.md` |
+| Route and interpreter contract | Frozen `1.0` | `V0.1.1-DETERMINISTIC-ROUTING-CONTRACT.md`, `ai/src/contracts/interpreter.ts` |
+| Interpreter-only evaluation gate | Frozen before implementation | `V011-INT-GATE-1`, `ai/evaluation/v0.1.1/gates.v0.1.1.json` |
+| Public synthetic fixtures | Complete | `ai/test/fixtures/v0.1.1-interpreter.json` |
+| Pre-implementation executable tests | Complete | valid, empty, injection-resistant and rejection mutants |
+| Production router/interpreter wiring | NOT STARTED | review required before implementation |
+| Real model integration | BLOCKED | no selected model; later candidate must pass the new gate and review |
+
+The new gate does not supersede or weaken `W0-GATE-2`. It evaluates a different, narrower provider role with no tools.
 
 ## v0.1 integration validation
 
@@ -153,16 +167,19 @@ passedForFullRun:       false
 
 The larger control is rejected. Wave 0 is complete with no model selected. No more candidate downloads/runs are authorized under this cycle.
 
-## Next scope review
+## Next review
 
-Decide explicitly among:
+Review the completed v0.1.1 architecture package before production implementation. If implementation is approved, follow this order without expanding scope:
 
-1. keep v0.1 deterministic/mock-backed and proceed only with deterministic capabilities;
-2. design a v0.1.1 ADR where intent routing chooses read tools deterministically and the model only interprets already-selected evidence;
-3. defer local-model Intelligence until different hardware/runtime/model conditions exist;
-4. consider a separately consented remote-provider phase only through a new privacy/security ADR.
+1. add the trusted fixed-intent router and typed unsupported result;
+2. execute only existing `get_today@1.0` through the authenticated Domain Bridge;
+3. validate `core.today@1.0` before constructing an interpreter request;
+4. invoke providers with no tool definitions and reject provider tool calls;
+5. enforce response schema, source subset, deterministic precedence and freshness;
+6. run security/adversarial suites and `V011-INT-GATE-1` evaluation;
+7. document results and stop for integration review.
 
-No option is implemented until approved. Production memory, Health, writes, automation and extra domains remain frozen.
+Production memory, retrieval, Health, writes, automation, remote processing and additional domains remain frozen. No local model is selected.
 
 ## Documentation and repository maintenance
 

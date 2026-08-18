@@ -17,7 +17,7 @@ v0.1 is implemented and frozen:
 - Source verification, evidence/freshness envelope and Home UI
 - Privacy-safe aggregate observability
 
-Wave 0 is complete with **no local model selected**. Qwen3 4B, Gemma3 4B, Phi-4 Mini and Qwen2.5 7B all failed frozen preflight requirements. The production-quality path therefore remains deterministic/mock-backed until a separate scope/ADR decides otherwise.
+Wave 0 is complete with **no local model selected**. Qwen3 4B, Gemma3 4B, Phi-4 Mini and Qwen2.5 7B all failed frozen preflight requirements. AI-ADR-019 now freezes the v0.1.1 architecture: trusted code selects `get_today@1.0`, and a future provider may only interpret validated Core Today evidence with no tools. Production implementation has not started.
 
 Not implemented or authorized:
 
@@ -67,5 +67,8 @@ python scripts/qa_wave0.py
 - [`../docs/ai/MASTER-SPECIFICATION.md`](../docs/ai/MASTER-SPECIFICATION.md)
 - [`../docs/ai/IMPLEMENTATION-LEDGER.md`](../docs/ai/IMPLEMENTATION-LEDGER.md)
 - [`../docs/ai/DELIVERY-PLAYBOOK.md`](../docs/ai/DELIVERY-PLAYBOOK.md)
+- [`../docs/ai/adrs/AI-ADR-019-DETERMINISTIC-CORE-TODAY-ROUTING.md`](../docs/ai/adrs/AI-ADR-019-DETERMINISTIC-CORE-TODAY-ROUTING.md)
+- [`../docs/ai/V0.1.1-DETERMINISTIC-ROUTING-CONTRACT.md`](../docs/ai/V0.1.1-DETERMINISTIC-ROUTING-CONTRACT.md)
+- [`../docs/ai/V0.1.1-INTERPRETER-EVALUATION.md`](../docs/ai/V0.1.1-INTERPRETER-EVALUATION.md)
 - [`../docs/ai/WAVE-0-REPORT.md`](../docs/ai/WAVE-0-REPORT.md)
 - [`../docs/ai/PRIVACY.md`](../docs/ai/PRIVACY.md)

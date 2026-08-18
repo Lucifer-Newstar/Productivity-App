@@ -1,6 +1,6 @@
 # Intelligence Engine roadmap and acceptance gates
 
-Architecture review has authorized Wave 0 preparation and controlled feasibility spikes. Production AI feature implementation remains blocked until the Wave 0 selection report is reviewed.
+Wave 0 is complete with no model selected. Architecture review has authorized a narrowly bounded v0.1.1 deterministic Core Today routing phase; no production runtime implementation is approved beyond the reviewed contract boundary.
 
 ## Wave 0 — Architecture and feasibility seal
 
@@ -30,7 +30,21 @@ Architecture review has authorized Wave 0 preparation and controlled feasibility
 
 **Exit status:** executable mock-backed end-to-end flow uses current browser state and deterministic Next Action with verified sources and no state mutation. Real candidate quality/performance remains gated by the incomplete Wave 0 report.
 
-**Integration freeze:** Wave 0 closed with no model selected. Do not start v0.2 tools, memory, retrieval, Health or cross-domain work until the no-model result and deterministic-routing/defer/remote alternatives receive explicit scope review.
+**Integration result:** Wave 0 closed with no model selected. The provider-neutral deterministic/mock fallback remains authoritative.
+
+## v0.1.1 — Deterministic Core Today interpretation — architecture frozen
+
+- [x] AI-ADR-019 locks trusted `focus-today → get_today@1.0` routing
+- [x] route, interpreter-request and response contracts frozen at `1.0`
+- [x] `V011-INT-GATE-1` frozen before implementation
+- [x] public synthetic contract/adversarial mutants executable
+- [ ] production deterministic router and interpreter path
+- [ ] security/adversarial implementation validation
+- [ ] candidate interpreter evaluation and explicit integration review
+
+**Current stop:** architecture, contract, gates and pre-implementation tests are complete. Review before production implementation. The provider must receive no tools, and unsupported intents fail closed.
+
+**Scope freeze:** Core Today only. Do not add memory, retrieval, Health, additional domains, writes, automation, remote processing or v0.2 work.
 
 ## v0.2 — Kaizen Understands
 

@@ -87,6 +87,15 @@ npm run qa:comments
 
 Engine tests cover contracts, schema rejection, provider configuration, mock tool rounds, one-time pairing, session expiry, unsafe JSON, rate limits, bounded orchestration, source grounding, task/notification/scheduled-content injection, attempted write-tool escalation and a real loopback HTTP/SSE/tool-result flow. Frontend QA covers revision behavior, minimum-context snapshots, source IDs, session-only tokens, fixed same-origin proxying and read-only UI copy.
 
+## Intelligence Engine v0.1.1 architecture gate
+
+```bash
+cd ai
+npm run qa:v0.1.1
+```
+
+This pre-implementation suite validates the fixed `focus-today → get_today@1.0` route, zero provider tool authority, Core Today-only scope, frozen `V011-INT-GATE-1` thresholds, source-subset grounding, required uncertainty, and rejection mutants for provider tool calls, fabricated IDs, extra domains and command-shaped output. It is synthetic contract evidence, not a model result.
+
 ## Intelligence Engine Wave 0
 
 Wave 0 has a synthetic validation harness but no production AI feature:

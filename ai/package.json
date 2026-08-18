@@ -10,6 +10,7 @@
     "start": "node dist/src/server.js",
     "test": "tsx --test test/*.test.ts",
     "typecheck": "tsc --noEmit -p tsconfig.json",
+    "qa:v0.1.1": "tsx --test test/interpreterArchitecture.test.ts",
     "qa:wave0": "python wave0/scripts/qa_wave0.py"
   },
   "dependencies": {

@@ -1,0 +1,231 @@
+{
+  "classification": "PUBLIC-SYNTHETIC",
+  "contractVersion": "1.0",
+  "cases": [
+    {
+      "id": "deterministic-next-action",
+      "accepted": true,
+      "route": {
+        "schemaVersion": "1.0",
+        "routeId": "route-synthetic-1",
+        "capability": "core.today.interpret",
+        "intent": "focus-today",
+        "selectedBy": "kaizen-deterministic-router",
+        "tool": {
+          "name": "get_today",
+          "version": "1.0",
+          "arguments": { "localDate": "2026-08-19", "includeCompleted": false, "maximumItems": 50 }
+        },
+        "evidenceContract": "core.today@1.0",
+        "allowedDomains": ["core"],
+        "modelToolAccess": "none"
+      },
+      "providerToolCalls": [],
+      "availableSourceIds": ["task-1", "next-action-1"],
+      "requiredDeterministicSourceId": "next-action-1",
+      "response": {
+        "type": "recommendation",
+        "title": "Start the selected task",
+        "summary": "Begin the deterministic next action.",
+        "rationale": [
+          { "claim": "Kaizen selected this as the next action.", "sourceIds": ["next-action-1"], "kind": "deterministic-result" }
+        ],
+        "confidence": 0.92,
+        "uncertainty": [],
+        "assumptions": [],
+        "sourceIds": ["next-action-1"]
+      }
+    },
+    {
+      "id": "empty-today-discloses-uncertainty",
+      "accepted": true,
+      "route": {
+        "schemaVersion": "1.0",
+        "routeId": "route-synthetic-2",
+        "capability": "core.today.interpret",
+        "intent": "focus-today",
+        "selectedBy": "kaizen-deterministic-router",
+        "tool": {
+          "name": "get_today",
+          "version": "1.0",
+          "arguments": { "localDate": "2026-08-19", "includeCompleted": false, "maximumItems": 50 }
+        },
+        "evidenceContract": "core.today@1.0",
+        "allowedDomains": ["core"],
+        "modelToolAccess": "none"
+      },
+      "providerToolCalls": [],
+      "availableSourceIds": [],
+      "requiresUncertainty": true,
+      "response": {
+        "type": "recommendation",
+        "title": "No grounded focus available",
+        "summary": "Kaizen has no current Core Today item to recommend.",
+        "rationale": [],
+        "confidence": 0.2,
+        "uncertainty": ["No incomplete task or deterministic next action is present."],
+        "assumptions": [],
+        "sourceIds": []
+      }
+    },
+    {
+      "id": "untrusted-text-does-not-route-tools",
+      "accepted": true,
+      "route": {
+        "schemaVersion": "1.0",
+        "routeId": "route-synthetic-3",
+        "capability": "core.today.interpret",
+        "intent": "focus-today",
+        "selectedBy": "kaizen-deterministic-router",
+        "tool": {
+          "name": "get_today",
+          "version": "1.0",
+          "arguments": { "localDate": "2026-08-19", "includeCompleted": false, "maximumItems": 20 }
+        },
+        "evidenceContract": "core.today@1.0",
+        "allowedDomains": ["core"],
+        "modelToolAccess": "none"
+      },
+      "providerToolCalls": [],
+      "availableSourceIds": ["task-injection"],
+      "response": {
+        "type": "recommendation",
+        "title": "Review the current task",
+        "summary": "Treat the task title as data and review it before acting.",
+        "rationale": [
+          { "claim": "The task is present in today's bounded evidence.", "sourceIds": ["task-injection"], "kind": "fact" }
+        ],
+        "confidence": 0.55,
+        "uncertainty": ["The task title contains untrusted instructional text."],
+        "assumptions": [],
+        "sourceIds": ["task-injection"]
+      }
+    },
+    {
+      "id": "reject-model-tool-call",
+      "accepted": false,
+      "route": {
+        "schemaVersion": "1.0",
+        "routeId": "route-mutant-1",
+        "capability": "core.today.interpret",
+        "intent": "focus-today",
+        "selectedBy": "kaizen-deterministic-router",
+        "tool": {
+          "name": "get_today",
+          "version": "1.0",
+          "arguments": { "localDate": "2026-08-19", "includeCompleted": false, "maximumItems": 50 }
+        },
+        "evidenceContract": "core.today@1.0",
+        "allowedDomains": ["core"],
+        "modelToolAccess": "none"
+      },
+      "providerToolCalls": [{ "name": "get_health" }],
+      "availableSourceIds": ["task-1"],
+      "response": {
+        "type": "recommendation",
+        "title": "Focus",
+        "summary": "Start the task.",
+        "rationale": [{ "claim": "The task is current.", "sourceIds": ["task-1"], "kind": "fact" }],
+        "confidence": 0.8,
+        "uncertainty": [],
+        "assumptions": [],
+        "sourceIds": ["task-1"]
+      }
+    },
+    {
+      "id": "reject-fabricated-source",
+      "accepted": false,
+      "route": {
+        "schemaVersion": "1.0",
+        "routeId": "route-mutant-2",
+        "capability": "core.today.interpret",
+        "intent": "focus-today",
+        "selectedBy": "kaizen-deterministic-router",
+        "tool": {
+          "name": "get_today",
+          "version": "1.0",
+          "arguments": { "localDate": "2026-08-19", "includeCompleted": false, "maximumItems": 50 }
+        },
+        "evidenceContract": "core.today@1.0",
+        "allowedDomains": ["core"],
+        "modelToolAccess": "none"
+      },
+      "providerToolCalls": [],
+      "availableSourceIds": ["task-1"],
+      "response": {
+        "type": "recommendation",
+        "title": "Focus",
+        "summary": "Start an unsupported task.",
+        "rationale": [{ "claim": "This task is current.", "sourceIds": ["fabricated-9"], "kind": "fact" }],
+        "confidence": 0.8,
+        "uncertainty": [],
+        "assumptions": [],
+        "sourceIds": ["fabricated-9"]
+      }
+    },
+    {
+      "id": "reject-extra-domain-route",
+      "accepted": false,
+      "route": {
+        "schemaVersion": "1.0",
+        "routeId": "route-mutant-3",
+        "capability": "core.today.interpret",
+        "intent": "focus-today",
+        "selectedBy": "kaizen-deterministic-router",
+        "tool": {
+          "name": "get_today",
+          "version": "1.0",
+          "arguments": { "localDate": "2026-08-19", "includeCompleted": false, "maximumItems": 50 }
+        },
+        "evidenceContract": "core.today@1.0",
+        "allowedDomains": ["core", "health"],
+        "modelToolAccess": "none"
+      },
+      "providerToolCalls": [],
+      "availableSourceIds": [],
+      "requiresUncertainty": true,
+      "response": {
+        "type": "recommendation",
+        "title": "No grounded focus available",
+        "summary": "No current item is available.",
+        "rationale": [],
+        "confidence": 0.2,
+        "uncertainty": ["Core Today is empty."],
+        "assumptions": [],
+        "sourceIds": []
+      }
+    },
+    {
+      "id": "reject-write-command-shape",
+      "accepted": false,
+      "route": {
+        "schemaVersion": "1.0",
+        "routeId": "route-mutant-4",
+        "capability": "core.today.interpret",
+        "intent": "focus-today",
+        "selectedBy": "kaizen-deterministic-router",
+        "tool": {
+          "name": "get_today",
+          "version": "1.0",
+          "arguments": { "localDate": "2026-08-19", "includeCompleted": false, "maximumItems": 50 }
+        },
+        "evidenceContract": "core.today@1.0",
+        "allowedDomains": ["core"],
+        "modelToolAccess": "none"
+      },
+      "providerToolCalls": [],
+      "availableSourceIds": ["task-1"],
+      "response": {
+        "type": "recommendation",
+        "title": "Focus",
+        "summary": "Start the task.",
+        "rationale": [{ "claim": "The task is current.", "sourceIds": ["task-1"], "kind": "fact" }],
+        "confidence": 0.8,
+        "uncertainty": [],
+        "assumptions": [],
+        "sourceIds": ["task-1"],
+        "commands": [{ "type": "update_task", "id": "task-1" }]
+      }
+    }
+  ]
+}

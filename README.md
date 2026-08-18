@@ -27,7 +27,7 @@ Optional Express reference API — 127.0.0.1:4000
 Optional Intelligence Engine — 127.0.0.1:4317
 ```
 
-The Intelligence Engine is currently v0.1, read-only and provider-neutral. Wave 0 closed with no local model selected; the tested production path therefore remains deterministic/mock-backed pending an explicit next-scope decision.
+The Intelligence Engine is currently v0.1, read-only and provider-neutral. Wave 0 closed with no local model selected. v0.1.1 deterministic Core Today routing is now contract-frozen before implementation: trusted code selects `get_today@1.0`, while any future model only interprets validated evidence with no tool authority.
 
 ## Repository
 

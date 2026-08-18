@@ -24,6 +24,7 @@ This register prevents exploratory choices from becoming accidental architecture
 | AI-ADR-016 | Constitution is versioned and provider-independent | Shared behavior cannot live only in mutable prompts. |
 | AI-ADR-017 | Source-of-truth precedence is explicit | Memory and model inference can never override current authoritative records or deterministic analytics. |
 | AI-ADR-018 | v0.1 may ship provider-neutral before model selection | Explicit user authorization allows contracts/gateway/read-only vertical slice; no model candidate becomes architecture and all writes remain prohibited. |
+| [AI-ADR-019](adrs/AI-ADR-019-DETERMINISTIC-CORE-TODAY-ROUTING.md) | v0.1.1 routes Core Today deterministically and limits the model to evidence interpretation | Wave 0 proved model-selected tools unreliable; trusted Kaizen code selects `get_today@1.0`, while the provider receives no tools or extra context. |
 
 ## Source-of-truth precedence
 
