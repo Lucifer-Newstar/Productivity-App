@@ -187,4 +187,4 @@ Every major capability follows:
 architecture → contract → implementation → test → security test → evaluation → documentation
 ```
 
-Every architecture change gets an ADR. Every capability gets a synthetic evaluation. Every write gets authorization policy. Every external-data path gets a trust boundary. Each milestone is independently testable/reviewable on the persistent `ai` branch while `main` remains stable.
+Every architecture change gets an ADR. Every capability gets a synthetic evaluation. Every write gets authorization policy. Every external-data path gets a trust boundary. At the end of every step, update the governing docs and [`IMPLEMENTATION-LEDGER.md`](IMPLEMENTATION-LEDGER.md), run documentation QA and commit the synchronized documentation. Each milestone is independently testable/reviewable on the persistent `ai` branch while `main` remains stable.

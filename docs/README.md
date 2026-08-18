@@ -44,6 +44,8 @@ Current production verification: **39/39 user routes return HTTP 200**, five Ent
 ### Kaizen Intelligence Engine — architecture gate
 
 - [`ai/MASTER-SPECIFICATION.md`](ai/MASTER-SPECIFICATION.md) — canonical product, architecture, privacy, MLOps and phase specification.
+- [`ai/DELIVERY-PLAYBOOK.md`](ai/DELIVERY-PLAYBOOK.md) — mandatory start/scope/test/privacy/documentation/commit procedure.
+- [`ai/IMPLEMENTATION-LEDGER.md`](ai/IMPLEMENTATION-LEDGER.md) — living completed/pending/blocker/next-step status.
 - [`ai/README.md`](ai/README.md) — architecture and implementation index.
 - [`ai/CONSTITUTION.md`](ai/CONSTITUTION.md) — versioned behavioral and authority rules.
 - [`ai/ARCHITECTURE.md`](ai/ARCHITECTURE.md) — independent engine and client-mediated Domain Bridge boundary.

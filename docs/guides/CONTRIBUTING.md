@@ -65,6 +65,18 @@ git config core.hooksPath .githooks
 
 The hook runs the Wave 0 staged privacy/secret scanner. Raw AI hardware captures, benchmark logs, prompts/outputs, machine configuration and telemetry stay in ignored `ai/wave0/results-local/` or `*.local.json`. Only reviewed allowlist-sanitized aggregates may be staged from `results-public/`.
 
+## Intelligence Engine step closeout
+
+Every AI implementation, validation, benchmark intake, fix and selection step must end by updating:
+
+1. `docs/ai/IMPLEMENTATION-LEDGER.md`;
+2. the governing contract/architecture/security/evaluation document;
+3. `docs/ai/WAVE-0-REPORT.md` or `V0.1-INTEGRATION-VALIDATION.md` when relevant;
+4. a dated report for material milestones;
+5. documentation indexes and QA expectations.
+
+Run `npm run qa:docs` from `frontend/` before the documentation commit. Follow [`../ai/DELIVERY-PLAYBOOK.md`](../ai/DELIVERY-PLAYBOOK.md).
+
 ## Pull-request checklist
 
 - [ ] Focused branch and commit history
