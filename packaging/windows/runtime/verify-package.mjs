@@ -6,7 +6,7 @@ import net from "node:net";
 import path from "node:path";
 import { spawn } from "node:child_process";
 import { fileURLToPath } from "node:url";
-const scriptDirectory=path.dirname(fileURLToPath(import.meta.url)),root=path.resolve(scriptDirectory,"..",".."),managed=[];
+const scriptDirectory=path.dirname(fileURLToPath(import.meta.url)),root=path.resolve(scriptDirectory,".."),managed=[];
 function start(name,args,cwd,env){const child=spawn(process.execPath,args,{cwd,env:{...process.env,...env},stdio:["ignore","pipe","pipe"],windowsHide:true});let log="";const collect=(chunk)=>{log=(log+chunk.toString()).slice(-20000)};child.stdout.on("data",collect);child.stderr.on("data",collect);managed.push({name,child,log:()=>log.replace(/one-time pairing code: \S+/g,"one-time pairing code: [REDACTED]")});return{getLog:()=>log}}
 async function waitFor(url,timeout=30000){const end=Date.now()+timeout;while(Date.now()<end){try{const response=await fetch(url,{signal:AbortSignal.timeout(1500)});if(response.ok)return}catch{}await new Promise(r=>setTimeout(r,250))}throw new Error(`Timed out waiting for ${url}`)}
 async function stopAll(){for(const item of [...managed].reverse())try{item.child.kill()}catch{}await new Promise(r=>setTimeout(r,750));for(const item of managed)if(item.child.exitCode===null)try{item.child.kill("SIGKILL")}catch{}}

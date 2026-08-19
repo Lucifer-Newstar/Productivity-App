@@ -19,6 +19,7 @@ test("launcher fixes both services to loopback",()=>assert.ok(launcherSource.inc
 test("launcher fixes expected ports and deterministic provider",()=>assert.ok(launcherSource.includes('PORT: "3000"')&&launcherSource.includes('KAIZEN_AI_PORT: "4317"')&&launcherSource.includes('KAIZEN_AI_PROVIDER: "mock"')));
 test("launcher rejects occupied ports",()=>assert.ok(launcherSource.includes("port 3000 or 4317 is already in use")));
 test("launcher uses stable browser origin",()=>assert.equal(launcher.APP_URL,"http://127.0.0.1:3000"));
+test("runtime scripts resolve the Kaizen install root one level above scripts",()=>{const install=path.join(path.sep,"Programs","Kaizen");assert.equal(launcher.packageRoot(path.join(install,"scripts")),install);assert.ok(read("packaging/windows/runtime/verify-package.mjs").includes('path.resolve(scriptDirectory,".."),managed'))});
 test("runtime state stays in per-user local data",()=>assert.equal(path.basename(launcher.runtimeFile({LOCALAPPDATA:"C:/Local"})),"runtime.json"));
 test("stop rejects unsafe process identifiers",()=>{assert.equal(stop.validPid(-1),false);assert.equal(stop.validPid("12"),false);assert.equal(stop.validPid(42),true)});
 test("installer is per-user and x64",()=>assert.ok(installer.includes("PrivilegesRequired=lowest")&&installer.includes("ArchitecturesAllowed=x64compatible")));

@@ -80,7 +80,7 @@ PR #4 merged as `06cf13c`; main run `32260387533` passed all four jobs. The sing
 | GitHub PR #4 | MERGED | merge `06cf13c`; main CI green |
 | Windows package foundation | IMPLEMENTED / HOST VERIFICATION PENDING | one setup executable + registered uninstaller/icons; ADR-014 |
 | Packaged-runtime verifier | IMPLEMENTED | 39 routes + CSP + pairing/Core Today + shutdown; sanitized aggregate only |
-| Windows build automation | IMPLEMENTED / RUN PENDING | manual artifact build or opt-in `v*` GitHub Release; silent install/verify/uninstall |
+| Windows build automation | RUN 1 FAILED / CORRECTED RERUN PENDING | install-root depth fixed in launcher + verifier |
 | Merge action | COMPLETE | user merged PR #4 after green checks |
 
 The new gate does not supersede or weaken `W0-GATE-2`. It evaluates a different, narrower provider role with no tools.

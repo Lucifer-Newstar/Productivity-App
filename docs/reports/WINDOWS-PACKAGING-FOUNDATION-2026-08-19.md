@@ -1,7 +1,7 @@
 # Windows packaging foundation
 
 **Date:** 2026-08-19
-**Status:** implementation complete; physical Windows install/update/uninstall verification pending
+**Status:** implementation corrected after run-1 install-root failure; Windows rerun pending
 
 ## Implemented
 

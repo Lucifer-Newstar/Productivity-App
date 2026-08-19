@@ -9,7 +9,7 @@ const { spawn } = require("node:child_process");
 const APP_URL = "http://127.0.0.1:3000";
 const ENGINE_URL = "http://127.0.0.1:4317/health";
 
-function packageRoot(scriptDirectory = __dirname) { return path.resolve(scriptDirectory, "..", ".."); }
+function packageRoot(scriptDirectory = __dirname) { return path.resolve(scriptDirectory, ".."); }
 function runtimeFile(env = process.env) {
   const home = env.LOCALAPPDATA || env.TEMP;
   if (!home) throw new Error("LOCALAPPDATA or TEMP is required");
