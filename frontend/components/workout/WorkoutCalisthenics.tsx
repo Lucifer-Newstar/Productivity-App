@@ -25,6 +25,7 @@ import {
   Hand, RefreshCw, X, Database,
 } from "lucide-react";
 import { useStore } from "../../lib/store";
+import { DEMO_TOOLS_ENABLED } from "../../lib/demoMode";
 import { playBeep } from "../../lib/workoutAnalytics";
 import CelebrationModal from "./CelebrationModal";
 import type { CalisthenicsSkill, CaliEquipment, MovementPattern, RepQuality } from "../../lib/types";
@@ -330,9 +331,9 @@ export default function WorkoutCalisthenics() {
         <div className="space-y-4">
           {chains.length === 0 && (
             <EmptyState icon={<Target size={20} />} title="No progression chains yet"
-              subtitle="Chains ship with the default seed — reset data if you want the Push/Pull/Squat/Handstand starters back."
-              actionLabel="Reset demo data"
-              onAction={() => { if (confirm("Reset workout data to seed? This clears logs.")) seedDemoData(); }} />
+              subtitle="No progression templates are currently available."
+              actionLabel={DEMO_TOOLS_ENABLED?"Reset demo data":undefined}
+              onAction={DEMO_TOOLS_ENABLED?() => { if (confirm("Reset workout data to seed? This clears logs.")) seedDemoData(); }:undefined} />
           )}
           {chains.map((chain) => {
             const achieved = chain.progressions.filter((p) => p.achieved).length;

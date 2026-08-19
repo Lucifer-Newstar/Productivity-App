@@ -50,6 +50,7 @@ Frontend server environment:
 | `KAIZEN_AI_GATEWAY_URL` | `http://127.0.0.1:4317` | Server-side fixed proxy target; loopback HTTP only |
 | `KAIZEN_AI_PROXY_ORIGIN` | `http://localhost:3000` | Fixed trusted origin forwarded after same-host browser validation; include it in engine origin allowlist |
 | `NEXT_PUBLIC_KAIZEN_AI_URL` | `/api/ai` | Optional browser base override; keep same-origin in production |
+| `NEXT_PUBLIC_KAIZEN_DEMO_TOOLS` | unset | Set exactly `1` only in an explicit local QA/demo build; destructive demo controls are hidden otherwise |
 
 Application runtime is locked to the deterministic provider. `KAIZEN_AI_PROVIDER=llama` and all `KAIZEN_LLAMA_*` variables fail closed because no model is approved. The llama.cpp adapter remains protocol-test/evaluation code only and is unreachable through `ProviderRegistry`. Never put pairing codes/session tokens into environment files, URLs or documentation.
 

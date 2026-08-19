@@ -37,8 +37,8 @@ The Data Setup checklist now requires bodyweight plus a logged workout rather th
 
 `FRESH_PROFILE_COUNTS` exposes the fresh-state separation for executable QA. `npm run qa:baseline` verifies ten personal-history categories are empty, catalogs remain populated, existing Entertainment records migrate intact, habits start empty and setup does not count routine templates.
 
-Local validation: **8/8 production baseline checks pass**, **9/9 core correctness checks pass**, TypeScript and ESLint pass.
+Local validation: **11/11 production baseline checks pass**, **9/9 core correctness checks pass**, TypeScript and ESLint pass.
 
-## Remaining related work
+## Demo tooling boundary
 
-Production-visible destructive demo loaders remain APP-103 (P1). They must be hidden behind an explicit demo/developer mode before packaging. This change only removes automatic fabricated history and does not remove opt-in QA fixtures.
+APP-103 is complete: destructive Career/Forge/Workout controls render only when an explicit QA build sets `NEXT_PUBLIC_KAIZEN_DEMO_TOOLS=1`, and store mutators independently no-op otherwise. Demo fixtures remain available for local QA without appearing in normal production builds.

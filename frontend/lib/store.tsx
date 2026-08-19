@@ -52,6 +52,7 @@ import type { NotificationState, KaizenNotification } from "./notificationTypes"
 import { EMPTY_NOTIFICATION_STATE, migrateNotifications } from "./notificationTypes";
 import { isDoneStatus as isTaskDone } from "../components/forge/forgeUtils";
 import { localDateKey } from "./localDate";
+import { DEMO_TOOLS_ENABLED } from "./demoMode";
 
 // Generate ids for runtime-created entities.
 const uid = () => Math.random().toString(36).slice(2, 10) + Date.now().toString(36);
@@ -942,6 +943,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     }), [setForge]);
 
   const seedForgeDemo = useCallback<StoreState["seedForgeDemo"]>(() => {
+    if(!DEMO_TOOLS_ENABLED)return;
     import("./forgeDemo").then(({ buildForgeDemo }) => setForge(buildForgeDemo()));
   }, [setForge]);
 
@@ -1030,6 +1032,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
 
   // seedCareerDemo: populate every career module with rich mock data (QA/demo).
   const seedCareerDemo = useCallback(() => {
+    if(!DEMO_TOOLS_ENABLED)return;
     import("./careerDemo").then(({ buildCareerDemo }) => {
       const demo = buildCareerDemo();
       // Reseed templates
@@ -1485,6 +1488,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
   // seedDemoData: lazy-imports the mock generator and overwrites logs (keeps
   // library / routines / settings) with ~12 weeks of realistic history for QA.
   const seedDemoData = useCallback<StoreState["seedDemoData"]>(() => {
+    if(!DEMO_TOOLS_ENABLED)return;
     import("./mockData").then(({ generateSeedData }) => {
       setWorkout((w) => {
         const data = generateSeedData({ exercises: w.exercises, routines: w.routines });

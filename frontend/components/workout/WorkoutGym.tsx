@@ -22,6 +22,7 @@ import { useRouter } from "next/router";
 import { motion, AnimatePresence } from "framer-motion";
 import { Dumbbell, Calculator, BarChart3, History, Flame, Play, Database } from "lucide-react";
 import { useStore } from "../../lib/store";
+import { DEMO_TOOLS_ENABLED } from "../../lib/demoMode";
 import {
   epley1RM, trainingMax, platesForKg, dbToBbEquivalent, bbToDbEquivalent,
   wilks, strengthToWeight, rirToRpe, projectAMRAP,
@@ -215,16 +216,16 @@ export default function WorkoutGym() {
               <div className="rounded-xl border border-dashed border-white/10 p-5 text-center">
                 <History className="mx-auto text-amber-400/60 mb-2" size={22} />
                 <p className="text-sm text-gray-300">No sessions yet.</p>
-                <p className="text-xs text-gray-500 mt-1">Start a freestyle lift or load demo data to see history here.</p>
+                <p className="text-xs text-gray-500 mt-1">Start a freestyle lift to build history here.</p>
                 <div className="flex gap-2 justify-center mt-3 flex-wrap">
                   <button onClick={() => router.push("/workout/gym/freestyle")}
                     className="btn-primary text-xs inline-flex items-center gap-1">
                     <Play size={12} fill="white" /> Start a workout
                   </button>
-                  <button onClick={() => seedDemoData()}
+                  {DEMO_TOOLS_ENABLED&&<button onClick={() => seedDemoData()}
                     className="btn-ghost text-xs inline-flex items-center gap-1">
                     <Database size={12} /> Load demo data
-                  </button>
+                  </button>}
                 </div>
               </div>
             ) : (

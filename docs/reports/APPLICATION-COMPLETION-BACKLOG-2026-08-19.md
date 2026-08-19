@@ -40,7 +40,7 @@ Priorities:
 |---|---|---|---|---|
 | APP-101 | Fixed / pending hosted proof | Streak is derived from normalized history; uncheck/gap/yesterday semantics and corrupt migration covered | Keep `qa:core` required in CI | Local 9/9 core correctness checks pass |
 | APP-102 | Mock/placeholder | Wilks uses `weight × 3` as “rough placeholder for demo” | Require real squat/bench/deadlift total or relabel/remove Wilks output; never present placeholder as measured metric | Formula tests and UI copy match actual inputs |
-| APP-103 | Mock/placeholder | Career/Forge/Workout destructive demo seeding is visible in ordinary production UI | Gate behind explicit demo/developer mode, with clear destructive boundary; remove from standard navigation | Production build hides demo controls by default |
+| APP-103 | Fixed / pending hosted proof | Destructive demo controls and store mutators now require `NEXT_PUBLIC_KAIZEN_DEMO_TOOLS=1`; default production build hides/fails closed | Keep 11-check baseline QA required | Local TypeScript/ESLint and 11/11 baseline checks pass |
 | APP-104 | Incomplete | Pomodoro sessions/minutes are component-memory only | Decide whether session history is product data; if yes persist/migrate, if no label as current-session only and fix paused Skip behavior | Reload/navigation behavior and tests match documented contract |
 | APP-105 | Incomplete | Forge voice recordings use runtime Blob URLs and disappear on reload | Persist safely in an approved storage layer or label/export as session-only; revoke Blob URLs correctly | Reload/export lifecycle test |
 | APP-106 | Fragile persistence | Corrupt localStorage is silently ignored; hydration/persist sequencing lacks direct regression coverage | Add schema-aware parse failure handling, recovery/export prompt and hydration tests that prove stored data is not clobbered | Corrupt/legacy/quota/hydration tests pass |
@@ -129,13 +129,12 @@ CI must assert:
 
 ```text
 1. Verify fixed/implemented items on the first hosted GitHub run
-2. APP-103 production demo-tool gating
-3. APP-106 corruption/hydration recovery
-4. APP-109 global backup/restore durability proof
-5. Resolve APP-108 sensitive localStorage release acceptance
-6. Remaining P1 UX/persistence work
-7. Full regression + documentation release matrix
-8. Re-review PR ai → main; do not merge before gates pass
+2. APP-106 corruption/hydration recovery
+3. APP-109 global backup/restore durability proof
+4. Resolve APP-108 sensitive localStorage release acceptance
+5. Remaining P1 UX/persistence work
+6. Full regression + documentation release matrix
+7. Re-review PR ai → main; do not merge before gates pass
 ```
 
 ## Current release gate

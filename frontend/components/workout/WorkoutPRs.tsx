@@ -13,6 +13,7 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Trophy, Plus, Trash2, Flame, History, Database } from "lucide-react";
 import { useStore } from "../../lib/store";
+import { DEMO_TOOLS_ENABLED } from "../../lib/demoMode";
 import { MUSCLE_GROUPS, formatWorkoutValue } from "../../lib/types";
 import type { WorkoutExercise } from "../../lib/types";
 import ExerciseHistoryDrawer from "./ExerciseHistoryDrawer";
@@ -168,11 +169,11 @@ export default function WorkoutPRs() {
         <div className="rounded-2xl border border-dashed border-white/10 p-8 text-center">
           <Trophy className="mx-auto text-amber-400/60 mb-2" size={22} />
           <p className="text-sm text-gray-300">No PRs yet.</p>
-          <p className="text-xs text-gray-500 mt-1">Finish a workout or load demo data to see PRs populate.</p>
-          <button onClick={() => seedDemoData()}
+          <p className="text-xs text-gray-500 mt-1">Finish a workout to see PRs populate.</p>
+          {DEMO_TOOLS_ENABLED&&<button onClick={() => seedDemoData()}
             className="mt-3 btn-primary text-xs inline-flex items-center gap-1 !bg-gradient-to-r !from-amber-500 !to-pink-500">
             <Database size={12} /> Load demo data
-          </button>
+          </button>}
         </div>
       )}
       {prs.length === 0 && noPRexercises.length > 0 && (
