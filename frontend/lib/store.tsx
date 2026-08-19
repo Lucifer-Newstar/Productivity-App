@@ -765,16 +765,10 @@ const StoreContext = createContext<StoreState | null>(null);
 
 /** Hydration-safe localStorage hook. */
 function useLocalState<T>(key: string, seed: T, migrate?: (raw: any) => T): [T, React.Dispatch<React.SetStateAction<T>>] {
-  const [v, setV] = useState<T>(seed);
-  const hydrated = useRef(false);
-  useEffect(() => {
-    const raw = localStorage.getItem(key);
-    if (raw) { try { setV(migrate ? migrate(JSON.parse(raw)) : JSON.parse(raw)); } catch { /* ignore */ } }
-    hydrated.current = true;
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [key]);
-  useEffect(() => { if (!hydrated.current) return; try { localStorage.setItem(key, JSON.stringify(v)); } catch (error) { window.dispatchEvent(new CustomEvent("kaizen:storage-error", { detail: { key, reason: error instanceof Error ? error.name : "storage-error" } })); } }, [key, v]);
-  return [v, setV];
+  const [v,setV]=useState<T>(seed),[hydrated,setHydrated]=useState(false),blocked=useRef(false);
+  useEffect(()=>{blocked.current=false;const raw=localStorage.getItem(key);if(raw){try{setV(migrate?migrate(JSON.parse(raw)):JSON.parse(raw))}catch{blocked.current=true;window.dispatchEvent(new CustomEvent("kaizen:storage-error",{detail:{key,reason:"corrupt"}}))}}setHydrated(true)},[key]);
+  useEffect(()=>{if(!hydrated||blocked.current)return;try{localStorage.setItem(key,JSON.stringify(v))}catch(error){window.dispatchEvent(new CustomEvent("kaizen:storage-error",{detail:{key,reason:error instanceof Error?error.name:"storage-error"}}))}},[hydrated,key,v]);
+  return[v,setV];
 }
 
 const migrateCareer = (raw: any): CareerState => {

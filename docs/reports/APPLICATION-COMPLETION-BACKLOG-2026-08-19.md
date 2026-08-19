@@ -43,10 +43,10 @@ Priorities:
 | APP-103 | Fixed / pending hosted proof | Destructive demo controls and store mutators now require `NEXT_PUBLIC_KAIZEN_DEMO_TOOLS=1`; default production build hides/fails closed | Keep 11-check baseline QA required | Local TypeScript/ESLint and 11/11 baseline checks pass |
 | APP-104 | Incomplete | Pomodoro sessions/minutes are component-memory only | Decide whether session history is product data; if yes persist/migrate, if no label as current-session only and fix paused Skip behavior | Reload/navigation behavior and tests match documented contract |
 | APP-105 | Incomplete | Forge voice recordings use runtime Blob URLs and disappear on reload | Persist safely in an approved storage layer or label/export as session-only; revoke Blob URLs correctly | Reload/export lifecycle test |
-| APP-106 | Fragile persistence | Corrupt localStorage is silently ignored; hydration/persist sequencing lacks direct regression coverage | Add schema-aware parse failure handling, recovery/export prompt and hydration tests that prove stored data is not clobbered | Corrupt/legacy/quota/hydration tests pass |
+| APP-106 | Fixed / pending hosted proof | Hydration now waits for parsed state, corrupt keys block writes and surface recovery UI | Keep backup/corruption tests required; add browser hydration E2E later | Local TypeScript/build and recovery checks pass |
 | APP-107 | Fixed / pending hosted proof | Reference API now throws before non-loopback bind without `KAIZEN_API_KEY`; dedicated startup test added | Keep startup test required in backend CI | Local build/startup security check passes |
 | APP-108 | Security decision | Health/career/private records live unencrypted in browser localStorage | Explicitly accept for trusted-profile local release or implement encrypted packaged storage; make product copy/export threat model accurate | Signed release decision and packaging test |
-| APP-109 | Incomplete | No whole-product backup proves all keys, habits, notifications and media restore together | Implement/version global export/restore with size/schema/security checks, or explicitly scope per-space backups | Round-trip fixture across every authoritative key |
+| APP-109 | Fixed / pending hosted proof | Versioned ten-key whole-product export/restore added with exact-key/security validation and rollback | Keep `qa:backup` required and verify packaged browser manually | Local 8/8 backup/recovery checks pass |
 | APP-110 | Incomplete UX | No custom top-level route error/loading boundary; provider setup fetch errors are swallowed | Add mature route/offline/recovery states and telemetry-safe diagnostics | Error/offline/empty interaction tests |
 | APP-111 | Incomplete architecture | Express generic CRUD lacks domain schemas, transactions and durable persistence | If Express is included in release authority, add versioned schemas, durable DB, migrations, conflict strategy and tests; otherwise mark/exclude it as dev/reference | Decision from APP-004 implemented |
 | APP-112 | Incomplete navigation | Home internal views do not update URL/history; browser Back cannot traverse sections | Synchronize `?view=` or choose documented single-page behavior | Deep-link/back/forward tests |
@@ -129,12 +129,13 @@ CI must assert:
 
 ```text
 1. Verify fixed/implemented items on the first hosted GitHub run
-2. APP-106 corruption/hydration recovery
-3. APP-109 global backup/restore durability proof
-4. Resolve APP-108 sensitive localStorage release acceptance
-5. Remaining P1 UX/persistence work
-6. Full regression + documentation release matrix
-7. Re-review PR ai → main; do not merge before gates pass
+2. Resolve APP-108 sensitive localStorage release acceptance
+3. APP-102 Wilks placeholder correctness
+4. APP-104 Pomodoro persistence/contract
+5. APP-105 Forge voice durability
+6. Remaining P1 UX/navigation/error work
+7. Full regression + documentation release matrix
+8. Re-review PR ai → main; do not merge before gates pass
 ```
 
 ## Current release gate

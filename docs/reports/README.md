@@ -35,6 +35,7 @@
 - [`CORE-DATE-HABIT-CORRECTNESS-2026-08-19.md`](CORE-DATE-HABIT-CORRECTNESS-2026-08-19.md) — local-calendar utilities and history-derived habit streak corrections.
 - [`PRODUCTION-DATA-BASELINE-2026-08-19.md`](PRODUCTION-DATA-BASELINE-2026-08-19.md) — empty fresh user history with preserved product catalogs/templates.
 - [`LOCAL-RELEASE-DATA-AUTHORITY-2026-08-19.md`](LOCAL-RELEASE-DATA-AUTHORITY-2026-08-19.md) — browser-only v1 authority decision and reference API network-bind hardening.
+- [`BROWSER-BACKUP-RECOVERY-2026-08-19.md`](BROWSER-BACKUP-RECOVERY-2026-08-19.md) — whole-product backup, rollback restore and corrupt-storage protection.
 - [`AI-WAVE-1-FOUNDATION-2026-08-17.md`](AI-WAVE-1-FOUNDATION-2026-08-17.md) — provider-neutral engine, secure gateway, Domain Bridge and read-only UI vertical slice.
 - [`AI-V0.1-INTEGRATION-FREEZE-2026-08-17.md`](AI-V0.1-INTEGRATION-FREEZE-2026-08-17.md) — canonical specification, adversarial verification and frozen next milestone.
 

@@ -2,60 +2,51 @@
 
 ## Data ownership
 
-Kaizen is local-first. Clearing browser site data removes frontend records unless they were exported.
+Kaizen v1 is browser-authoritative under ADR-012. Clearing browser site data removes product records unless a backup was exported.
 
-## Built-in exports
+## Whole-product backup
 
-### Workout
+Open Notification Center → **Local data recovery** (database icon).
 
-Workout tools export/import session CSV. Imports are bounded and normalized into local sessions.
+**Export backup** writes one versioned `KAIZEN-LOCAL-BACKUP` JSON containing the ten authoritative keys:
 
-### Forge
+```text
+kaizen.tasks       kaizen.notes          kaizen.career
+kaizen.workout     kaizen.forge          kaizen.health
+kaizen.entertainment  kaizen.notifications
+kaizen.habits      kaizen.theme
+```
 
-Vault supports:
+It excludes AI pairing/session tokens, provider session overrides, revision metadata and evaluation data.
 
-- Full Forge JSON backup/replace restore
-- Task CSV import/export
-- Project CSV import/export
+**Restore backup** validates classification/version, exact keys, total/per-value size, JSON shape, nesting/entry budgets, unsafe object keys and theme values. Restore is all-or-rollback across the authoritative keys, then reloads the application.
 
-### Health
+Store real backups in an encrypted user-controlled location. Never commit or paste them into public chat.
 
-Reports exports:
+## Corruption and quota recovery
 
-- Daily-summary CSV
-- Full Health JSON export
+If persisted JSON cannot be parsed, Kaizen does not overwrite the affected key with defaults. The global warning identifies the key and opens Local data recovery. Restore a known backup, export unaffected data where possible, or clear only the confirmed corrupt key after recovery.
 
-Health JSON is currently an export artifact; there is no full replacement-import UI.
+When storage quota is full:
 
-### Entertainment
-
-Archive/Data Vault supports:
-
-- Full schema-v6 JSON backup
-- Safe replacement restore with migration
-- Formula-safe CSV export
-- MAL XML/XML.GZ import
-- AniList/Kitsu JSON import
-- Trakt/Simkl CSV import
-
-Entertainment restores reject unsafe object keys, oversized structures and invalid raster/proxy image sources.
-
-## Recommended backup routine
-
-1. Export Forge, Health, Workout and Entertainment after meaningful updates.
-2. Store backups in an encrypted user-controlled location.
-3. Do not commit real exports to Git; they can contain health, journal, social and provider-derived data.
-4. Test restoration using a separate browser profile and synthetic data.
-
-## Storage quota recovery
-
-When the global “Local storage is full” warning appears:
-
-1. Export all available backups before refreshing.
+1. Export a whole-product backup before refreshing.
 2. Remove old progress photos, fan art, cosplay photos or mood-board images.
-3. Confirm the warning no longer appears after a small test edit.
-4. Do not clear site data until backups are verified.
+3. Confirm a small edit persists.
+4. Do not clear site data until the backup is verified in a separate browser profile.
+
+## Per-space formats
+
+The following remain useful for portability rather than whole-product recovery:
+
+- Workout session CSV import/export
+- Forge JSON plus task/project CSV
+- Health daily CSV and Health JSON export
+- Entertainment schema-v6 JSON restore, CSV export and provider-format imports
 
 ## Restore trust model
 
-Treat backup files as untrusted input. Kaizen applies size, nesting, key, record, image and formula protections, but users should still import only expected formats from trusted sources.
+Treat every backup as untrusted input. Whole-product restore accepts only the exact v1 envelope and raw persisted values that independently pass validation. Per-space imports retain their own record/image/formula limits.
+
+## Release durability gate
+
+`npm run qa:backup` proves complete-key export, session-secret exclusion, strict validation, exact restore and rollback after simulated storage failure. Hosted CI must pass this suite before release.
