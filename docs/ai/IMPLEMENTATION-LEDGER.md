@@ -6,9 +6,9 @@ _Last updated: 2026-08-19_
 
 ## Current milestone
 
-> **Deterministic/mock v0.1.1 is the reviewed authoritative application AI path; model providers fail closed.**
+> **Deterministic v0.1.1 application integration and `ai`→`main` pre-merge review are complete; do not merge yet.**
 
-Application composition now defaults to and resolves only the deterministic Core Today provider. Model-provider and legacy llama environment settings are rejected, deterministic requests cannot carry model tools, and Home discloses the no-model/read-only boundary. Live engine→proxy→pairing→SSE→verified-response integration passed with no provider environment configuration. All model stages remain closed; every scope exclusion remains frozen.
+Application composition resolves only deterministic Core Today, model settings fail closed, and the full frontend/backend/API/auth/Core Today review passed. The PR diff contains 228 files across 55 commits with no merge conflict expected. Complete per-file and integration reports are indexed under `docs/reports/`. All model stages and AI scope expansion remain closed.
 
 ## Completed architecture and foundation
 
@@ -67,6 +67,10 @@ Application composition now defaults to and resolves only the deterministic Core
 | Deterministic provider authority | PASS | no native tools; tool-bearing requests rejected |
 | Home integration disclosure | PASS | deterministic/read-only/no-model copy |
 | Live default-config integration | PASS | pair/status/route/tool/SSE/source/session flow |
+| Frontend/backend regression review | PASS | all product, security, build and API suites |
+| `ai`→`main` complete diff | REVIEWED | 228 files; 18,005 additions; 245 deletions |
+| Merge conflict precheck | PASS | `origin/main` is ancestor; merge-tree clean |
+| Merge action | NOT PERFORMED | stop for PR review |
 
 The new gate does not supersede or weaken `W0-GATE-2`. It evaluates a different, narrower provider role with no tools.
 
@@ -195,11 +199,11 @@ passedForFullRun:       false
 
 The larger control is rejected. Wave 0 is complete with no model selected. No more candidate downloads/runs are authorized under this cycle.
 
-## Next application work
+## Next review
 
-Keep v0.1.1 operating as the deterministic Core Today baseline and move to ordinary application priorities outside AI scope. Future maintenance may fix defects, accessibility, UX clarity, integration reliability or documentation without expanding capability.
+Review the `ai`→`main` PR using the complete integration report and changed-file appendix. Do not merge until explicit human approval. If approved later, merge without expanding AI scope and rerun release gates on `main`.
 
-Do not re-enable model providers, rerun candidates, add AI domains, memory, retrieval, Health, writes, automation, remote processing or v0.2 work. Any such change requires a new explicit scope decision.
+Do not re-enable model providers, rerun candidates, add AI domains, memory, retrieval, Health, writes, automation, remote processing or v0.2 work.
 
 ## Documentation and repository maintenance
 

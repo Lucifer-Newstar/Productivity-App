@@ -75,6 +75,7 @@ Every design choice in this package uses one of four labels:
 - [`../reports/AI-V0.1.1-PREFLIGHT-ATTACHMENT-MISMATCH-2026-08-19.md`](../reports/AI-V0.1.1-PREFLIGHT-ATTACHMENT-MISMATCH-2026-08-19.md) — incorrect attachments and safe local classifier workflow.
 - [`../reports/AI-V0.1.1-PREFLIGHT-FINAL-2026-08-19.md`](../reports/AI-V0.1.1-PREFLIGHT-FINAL-2026-08-19.md) — final classified rejections and no-model closure.
 - [`../reports/AI-V0.1.1-APPLICATION-INTEGRATION-REVIEW-2026-08-19.md`](../reports/AI-V0.1.1-APPLICATION-INTEGRATION-REVIEW-2026-08-19.md) — authoritative deterministic composition and live review.
+- [`../reports/AI-BRANCH-PR-INTEGRATION-REVIEW-2026-08-19.md`](../reports/AI-BRANCH-PR-INTEGRATION-REVIEW-2026-08-19.md) — complete `ai`→`main` pre-merge review and PR body.
 - [`DELIVERY-PLAYBOOK.md`](DELIVERY-PLAYBOOK.md) — mandatory pull/scope/test/privacy/docs/commit procedure.
 - [`V0.1-INTEGRATION-VALIDATION.md`](V0.1-INTEGRATION-VALIDATION.md) — deterministic/mock foundation validated; real model unavailable.
 - [`WAVE-0-REPORT.md`](WAVE-0-REPORT.md) — final no-model Selection Report.

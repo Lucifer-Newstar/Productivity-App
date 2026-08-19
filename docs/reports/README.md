@@ -27,6 +27,8 @@
 - [`AI-V0.1.1-PREFLIGHT-ATTACHMENT-MISMATCH-2026-08-19.md`](AI-V0.1.1-PREFLIGHT-ATTACHMENT-MISMATCH-2026-08-19.md) — legacy attachment mismatch and local safe failure reclassification workflow.
 - [`AI-V0.1.1-PREFLIGHT-FINAL-2026-08-19.md`](AI-V0.1.1-PREFLIGHT-FINAL-2026-08-19.md) — validated Qwen3/Phi rejections, no-model decision and all-stage closure.
 - [`AI-V0.1.1-APPLICATION-INTEGRATION-REVIEW-2026-08-19.md`](AI-V0.1.1-APPLICATION-INTEGRATION-REVIEW-2026-08-19.md) — deterministic provider composition lock, Home disclosure and live default-config review.
+- [`AI-BRANCH-PR-INTEGRATION-REVIEW-2026-08-19.md`](AI-BRANCH-PR-INTEGRATION-REVIEW-2026-08-19.md) — complete `ai`→`main` pre-merge application, API, auth, security and regression review.
+- [`AI-BRANCH-PR-CHANGED-FILES-2026-08-19.md`](AI-BRANCH-PR-CHANGED-FILES-2026-08-19.md) — complete per-file PR diff status and line-count summary.
 - [`AI-WAVE-1-FOUNDATION-2026-08-17.md`](AI-WAVE-1-FOUNDATION-2026-08-17.md) — provider-neutral engine, secure gateway, Domain Bridge and read-only UI vertical slice.
 - [`AI-V0.1-INTEGRATION-FREEZE-2026-08-17.md`](AI-V0.1-INTEGRATION-FREEZE-2026-08-17.md) — canonical specification, adversarial verification and frozen next milestone.
 

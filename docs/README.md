@@ -48,6 +48,8 @@ Current production verification: **39/39 user routes return HTTP 200**, five Ent
 | [`reports/AI-V0.1.1-PREFLIGHT-ATTACHMENT-MISMATCH-2026-08-19.md`](reports/AI-V0.1.1-PREFLIGHT-ATTACHMENT-MISMATCH-2026-08-19.md) | Legacy attachment mismatch and private-local failure reclassification |
 | [`reports/AI-V0.1.1-PREFLIGHT-FINAL-2026-08-19.md`](reports/AI-V0.1.1-PREFLIGHT-FINAL-2026-08-19.md) | Final Qwen3/Phi rejections, no-model decision and execution closure |
 | [`reports/AI-V0.1.1-APPLICATION-INTEGRATION-REVIEW-2026-08-19.md`](reports/AI-V0.1.1-APPLICATION-INTEGRATION-REVIEW-2026-08-19.md) | Deterministic application provider lock and live integration review |
+| [`reports/AI-BRANCH-PR-INTEGRATION-REVIEW-2026-08-19.md`](reports/AI-BRANCH-PR-INTEGRATION-REVIEW-2026-08-19.md) | Complete `ai`→`main` pre-merge integration and security review |
+| [`reports/AI-BRANCH-PR-CHANGED-FILES-2026-08-19.md`](reports/AI-BRANCH-PR-CHANGED-FILES-2026-08-19.md) | Complete changed-file and line-count PR diff |
 | [`notifications/README.md`](notifications/README.md) | Global inbox, rule catalog, settings and scope decisions |
 
 ### Kaizen Intelligence Engine
