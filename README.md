@@ -76,6 +76,16 @@ npm run dev
 
 The Intelligence Engine prints a one-time pairing code to its local console. Enter it only in the Home Intelligence panel.
 
+## Windows installer and updates
+
+The verified Windows x64 setup bundles the standalone frontend, deterministic Intelligence Engine and pinned Node runtime. It installs per user, creates branded shortcuts and registers an uninstaller. Browser records remain in the trusted browser profile at `http://127.0.0.1:3000` and are preserved across setup upgrades and uninstall.
+
+After a newer stable GitHub Release is published, an installed packaged build creates a system notification with a local **Download update** action. The user stops Kaizen and runs the downloaded setup, which upgrades the existing installation through the stable installer identity. Kaizen does not silently execute installers or upload personal data.
+
+Every successful `main` CI run automatically builds and verifies a private candidate installer artifact. Only an intentional annotated semantic-version tag that passes provenance, privacy, exact-main CI, release-note and Windows install/verify/uninstall gates publishes an open-source GitHub Release.
+
+See [`docs/guides/WINDOWS-INSTALLATION.md`](docs/guides/WINDOWS-INSTALLATION.md) and [`docs/guides/CONTINUOUS-DELIVERY.md`](docs/guides/CONTINUOUS-DELIVERY.md).
+
 ## Quality gates
 
 ```bash
@@ -123,6 +133,13 @@ Start with:
 - Raw AI validation artifacts stay in ignored `ai/wave0/results-local/`; only sanitized aggregates may enter Git.
 
 See [`docs/security/SECURITY.md`](docs/security/SECURITY.md) and [`docs/ai/PRIVACY.md`](docs/ai/PRIVACY.md).
+
+## Open-source participation
+
+- Read [CONTRIBUTING.md](CONTRIBUTING.md) before proposing changes.
+- Follow the [Code of Conduct](CODE_OF_CONDUCT.md).
+- Report vulnerabilities privately using [SECURITY.md](SECURITY.md).
+- Use synthetic, non-sensitive data in issues, screenshots and tests.
 
 ## License
 

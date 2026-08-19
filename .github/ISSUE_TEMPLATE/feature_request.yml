@@ -1,0 +1,32 @@
+name: Feature request
+description: Propose a focused improvement within the local-first product scope.
+title: "[Feature]: "
+labels: [enhancement]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: User problem
+      description: Describe the need without personal or sensitive records.
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed behavior
+    validations:
+      required: true
+  - type: dropdown
+    id: boundary
+    attributes:
+      label: Architecture impact
+      options: [No boundary change, Persistence/data migration, Windows installer/update, Security/privacy, AI scope, Unsure]
+    validations:
+      required: true
+  - type: checkboxes
+    id: scope
+    attributes:
+      label: Scope check
+      options:
+        - label: This request does not include credentials, personal records or private documents.
+          required: true

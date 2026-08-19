@@ -1,0 +1,48 @@
+name: Bug report
+description: Report a reproducible Kaizen defect using synthetic, non-sensitive data.
+title: "[Bug]: "
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: Do not attach credentials, personal exports, Health/Career records, pairing codes, home paths, machine identifiers or raw private logs. Report security vulnerabilities privately through GitHub.
+  - type: input
+    id: version
+    attributes:
+      label: Kaizen version
+      placeholder: 1.0.0
+    validations:
+      required: true
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options: [Windows installer/update, Home, Forge, Career, Workout, Health, Entertainment, Deterministic Intelligence, Documentation]
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Reproduction steps
+      description: Use synthetic data only.
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behavior
+    validations:
+      required: true
+  - type: checkboxes
+    id: safety
+    attributes:
+      label: Privacy check
+      options:
+        - label: I removed credentials, personal records, machine identifiers, home paths and private logs.
+          required: true
