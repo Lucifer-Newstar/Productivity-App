@@ -867,9 +867,10 @@ app.use((err: Error & { type?: string; status?: number }, _req: Request, res: Re
 const PORT = parseInt(process.env.PORT ?? "4000", 10);
 // Loopback by default: set HOST=0.0.0.0 only behind TLS/reverse proxy and with KAIZEN_API_KEY.
 const HOST = process.env.HOST ?? "127.0.0.1";
+const loopbackHosts = new Set(["127.0.0.1", "localhost", "::1"]);
+if (!loopbackHosts.has(HOST) && !apiKey) {
+  throw new Error("KAIZEN_API_KEY is required before binding the reference API beyond loopback");
+}
 app.listen(PORT, HOST, () => {
-  if (HOST !== "127.0.0.1" && HOST !== "localhost" && !apiKey) {
-    console.warn("[kaizen-backend] WARNING: network-exposed API has no KAIZEN_API_KEY");
-  }
   console.log(`[kaizen-backend] listening on http://${HOST}:${PORT}`);
 });

@@ -40,6 +40,7 @@ Entertainment executable total: **42/42**.
 cd backend
 npm ci
 npm run build
+npm run security:startup
 npm audit --omit=dev
 KAIZEN_API_KEY=security-test-key npm start
 # second terminal

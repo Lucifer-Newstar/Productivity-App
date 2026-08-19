@@ -20,7 +20,7 @@ AFTERGLOW also supports temporary tab-session overrides in Providers & Credits. 
 |---|---:|---|
 | `HOST` | `127.0.0.1` | Bind interface |
 | `PORT` | `4000` | HTTP port |
-| `KAIZEN_API_KEY` | unset | Protect all non-liveness data routes |
+| `KAIZEN_API_KEY` | unset | Protect all non-liveness routes; required when `HOST` is non-loopback |
 | `CORS_ORIGINS` | localhost origins | Comma-separated browser allowlist |
 | `JSON_LIMIT` | `5mb` | Strict JSON body limit |
 | `RATE_LIMIT` | `300` / 15 min | General API limit |

@@ -30,7 +30,7 @@ Priorities:
 | APP-001 | Implemented / pending hosted proof | `.github/workflows/ci.yml` now defines frontend, backend, deterministic AI and integration jobs | Push branch and require all four checks; fix runner-only failures without weakening suites | PR workflow green on clean runner |
 | APP-002 | Fixed / pending hosted proof | Fresh profile now has zero personal-history records; catalogs/templates remain; existing persisted arrays migrate intact | Keep `qa:baseline` required and complete APP-103 demo-tool gating before packaging | Local 8/8 baseline checks pass |
 | APP-003 | Fixed / pending hosted proof | Shared local-date utility now drives Home Calendar, task fallback/overdue, Dashboard day lookup, central store dates and Habits; nine core tests include IST boundary | Require `qa:core` in hosted CI and migrate remaining specialized helpers when touched | Local TypeScript/ESLint and 9/9 checks pass |
-| APP-004 | Incomplete architecture | Frontend uses localStorage only; Express is unused/in-memory; release durability promise is undefined | Decide and document one release authority: browser-only with complete backup/recovery, or durable integrated backend. Do not wire the in-memory API as production persistence | Approved architecture decision plus executable durability test |
+| APP-004 | Decision complete / durability test pending | ADR-012 locks browser-only authority and excludes Express from local v1 runtime | Complete APP-109 global backup/restore and APP-106 corruption recovery before release | ADR approved; executable durability proof pending |
 | APP-005 | Implemented / pending hosted proof | `scripts/ci/core-today-integration.mjs` starts actual frontend/engine and verifies pairing/SSE/tool/source/session flow | Require integration job and keep model authorization closed | Integration job passes through fixed Next proxy on Ubuntu/Node 20 |
 | APP-006 | Documentation drift | Current status is spread across historical wave tables with contradictory early ❌ and later ✅ rows | Create one current release matrix and label historical tables as evidence, not current backlog | Docs QA enforces current-state matrix links/status |
 
@@ -44,7 +44,7 @@ Priorities:
 | APP-104 | Incomplete | Pomodoro sessions/minutes are component-memory only | Decide whether session history is product data; if yes persist/migrate, if no label as current-session only and fix paused Skip behavior | Reload/navigation behavior and tests match documented contract |
 | APP-105 | Incomplete | Forge voice recordings use runtime Blob URLs and disappear on reload | Persist safely in an approved storage layer or label/export as session-only; revoke Blob URLs correctly | Reload/export lifecycle test |
 | APP-106 | Fragile persistence | Corrupt localStorage is silently ignored; hydration/persist sequencing lacks direct regression coverage | Add schema-aware parse failure handling, recovery/export prompt and hydration tests that prove stored data is not clobbered | Corrupt/legacy/quota/hydration tests pass |
-| APP-107 | Security issue | Express allows non-loopback bind without API key and only warns | Fail startup for non-loopback without key, or remove network bind from release config | Startup security test proves refusal |
+| APP-107 | Fixed / pending hosted proof | Reference API now throws before non-loopback bind without `KAIZEN_API_KEY`; dedicated startup test added | Keep startup test required in backend CI | Local build/startup security check passes |
 | APP-108 | Security decision | Health/career/private records live unencrypted in browser localStorage | Explicitly accept for trusted-profile local release or implement encrypted packaged storage; make product copy/export threat model accurate | Signed release decision and packaging test |
 | APP-109 | Incomplete | No whole-product backup proves all keys, habits, notifications and media restore together | Implement/version global export/restore with size/schema/security checks, or explicitly scope per-space backups | Round-trip fixture across every authoritative key |
 | APP-110 | Incomplete UX | No custom top-level route error/loading boundary; provider setup fetch errors are swallowed | Add mature route/offline/recovery states and telemetry-safe diagnostics | Error/offline/empty interaction tests |
@@ -128,13 +128,14 @@ CI must assert:
 ## Recommended execution order
 
 ```text
-1. Verify APP-001/APP-002/APP-003/APP-005/APP-101 on the first hosted GitHub run
-2. APP-004 storage/backend authority decision
-3. APP-107 backend exposure hard-fail
-4. APP-103 production demo-tool gating
-5. Remaining P1 persistence/error/backup work
-6. Full regression + documentation release matrix
-7. Re-review PR ai → main; do not merge before gates pass
+1. Verify fixed/implemented items on the first hosted GitHub run
+2. APP-103 production demo-tool gating
+3. APP-106 corruption/hydration recovery
+4. APP-109 global backup/restore durability proof
+5. Resolve APP-108 sensitive localStorage release acceptance
+6. Remaining P1 UX/persistence work
+7. Full regression + documentation release matrix
+8. Re-review PR ai → main; do not merge before gates pass
 ```
 
 ## Current release gate

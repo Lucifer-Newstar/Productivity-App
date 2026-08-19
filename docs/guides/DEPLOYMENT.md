@@ -1,48 +1,51 @@
-# Secure deployment
+# Local release topology
 
-## Supported topology
+## Supported v1 topology
 
 ```text
-HTTPS reverse proxy
- ├── Next.js frontend (required)
- └── Express reference API (optional; private/service use only)
+Windows/local machine
+ ├── Next.js application
+ │    ├── browser-authoritative local persistence
+ │    └── optional Entertainment provider BFF routes
+ └── deterministic Intelligence Engine on loopback
 ```
 
-The normal frontend does not require Express. Entertainment provider adapters run inside Next.js and use same-origin browser requests.
+ADR-012 excludes the Express reference API from the packaged local v1 runtime. The frontend consumes zero Express endpoints, and the service is in-memory development/reference code.
 
-## Frontend
+Cloud deployment, multi-user hosting and public network exposure are not part of the current release phase.
 
-1. Install with `npm ci`.
-2. Configure provider environment values on the server.
+## Application requirements
+
+1. Install from lockfiles with Node 20.9+.
+2. Configure optional Entertainment provider credentials in local server environment only.
 3. Run all gates in [`TESTING.md`](TESTING.md).
-4. Build with `npm run build`.
-5. Serve with `npm run start` behind HTTPS.
-6. Preserve headers from `next.config.js`; do not replace them with weaker proxy defaults.
+4. Build the frontend and deterministic engine.
+5. Bind the Intelligence Engine to loopback only.
+6. Preserve security headers from `next.config.js`.
+7. Verify browser backup/restore before packaging.
 
-Required headers include CSP, HSTS, frame denial, MIME denial, strict referrer policy, COOP, CORP, Origin-Agent-Cluster and Permissions Policy.
+The application remains usable without Entertainment provider credentials. Deterministic Intelligence requires the local engine/pairing flow but no model runtime.
 
-## Express
+## Express reference API
 
-Do not expose Express without TLS, an API key and explicit origins:
+Express may be run manually for development/security testing. It is not product persistence, synchronization or backup.
 
-```bash
-HOST=0.0.0.0 \
-KAIZEN_API_KEY='long-random-secret' \
-CORS_ORIGINS='https://kaizen.example.com' \
-npm start
-```
+- Default bind is `127.0.0.1`.
+- Non-loopback bind now refuses startup without `KAIZEN_API_KEY`.
+- Data disappears on restart.
+- No user identity or row-level authorization exists.
 
-The reverse proxy must overwrite—not append untrusted—`X-Real-IP` and `X-Forwarded-For`. Multi-instance deployments need shared rate limiting such as Redis or a WAF.
+Do not package or auto-start Express for v1. Any future durable backend requires a new architecture decision.
 
 ## Important limitations
 
-- Express has no user accounts or row-level authorization.
-- Express data is in-memory and disappears on restart.
-- Browser state is not encrypted at rest.
+- Browser state is currently unencrypted at rest.
+- localStorage is synchronous and finite.
 - Provider session overrides are not a secrets vault.
-- Valid local images can fill browser storage; IndexedDB is the future media-storage target.
+- Valid local images can fill browser storage.
+- Whole-product backup/corruption recovery remains a release gate.
 
-## Commercial/provider compliance
+## Provider compliance
 
 - Display the approved local TMDB logo and required non-endorsement text.
 - Comic Vine is configured for non-commercial use; review licensing before commercialization.
@@ -50,12 +53,13 @@ The reverse proxy must overwrite—not append untrusted—`X-Real-IP` and `X-For
 
 ## Release checklist
 
-- [ ] Clean working tree and reviewed branch diff
-- [ ] Correct commit identity
-- [ ] Frontend/backend audits clean
-- [ ] TypeScript, ESLint and builds pass
-- [ ] All domain/security tests pass
-- [ ] 39/39 route smoke
-- [ ] Provider credentials present only in deployment secrets
-- [ ] HTTPS and required headers confirmed externally
-- [ ] Backup/restore tested with synthetic data
+- [ ] Hosted CI checks green
+- [ ] P0/P1 completion backlog resolved or explicitly accepted
+- [ ] Frontend and deterministic engine builds pass
+- [ ] All domain/security/integration tests pass
+- [ ] 39 user routes verified
+- [ ] No model/provider stage is reachable
+- [ ] Fresh profile has no fabricated personal history
+- [ ] Whole-product backup/restore passes with synthetic data
+- [ ] Sensitive localStorage risk accepted or replaced
+- [ ] Windows/local packaging and offline operation verified

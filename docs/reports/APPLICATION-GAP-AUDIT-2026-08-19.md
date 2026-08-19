@@ -303,7 +303,7 @@ The remaining backlog, rather than the original finding text, is authoritative f
 
 ## Audit validation
 
-The audit was performed against source/runtime evidence and the same full green baseline recorded by the pre-merge review: frontend TypeScript/ESLint/build, 458 Health assertions, 168 Entertainment structural checks, 42 Entertainment executable checks, security/CSP/notification/UI/Home/AI suites, backend build plus 13 security checks, AI 24 tests plus closed harness QA, live Core Today flow, 52 documentation checks and 259 commentary checks.
+The audit was performed against source/runtime evidence and the same full green baseline recorded by the pre-merge review: frontend TypeScript/ESLint/build, 458 Health assertions, 168 Entertainment structural checks, 42 Entertainment executable checks, security/CSP/notification/UI/Home/AI suites, backend build plus 13 security checks, AI 24 tests plus closed harness QA, live Core Today flow, 53 documentation checks and 260 commentary checks.
 
 Green regression suites establish that existing implemented behavior still works. They do not negate the product gaps classified below.
 

@@ -185,8 +185,8 @@ Production CSP remains free of `unsafe-eval`; external URLs, restored images, CS
 | Home intelligence | 10/10 PASS |
 | Backend TypeScript build | PASS |
 | Backend security smoke | 13/13 PASS |
-| Documentation QA | 52/52 PASS |
-| Source commentary QA | 259/259 PASS |
+| Documentation QA | 53/53 PASS |
+| Source commentary QA | 260/260 PASS |
 | Staged privacy scan | PASS |
 | Git diff check | PASS |
 | Main ancestry / merge conflict precheck | PASS |
