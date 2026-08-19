@@ -8,7 +8,7 @@ _Last updated: 2026-08-19_
 
 > **Local application completion work is closed; first hosted CI proof now gates PR creation.**
 
-CI, production data truth, local-date/habit correctness, browser-only authority, backend bind security, backup/recovery, demo gating, placeholder removal and resilience/navigation work are implemented and locally green. The continuity blueprint and current release matrix define exact handoff/finish steps. AI scope remains closed; no model or GPU work is permitted.
+Local completion is green. Hosted run 1 used stale commit `ae62224`, failed the superseded Entertainment seed assertion and exposed deprecated action-runtime warnings. Current CI uses the production baseline assertion plus Node 24-compatible action majors; latest-head rerun is pending. AI scope remains closed with no model/GPU work.
 
 ## Completed architecture and foundation
 
@@ -72,7 +72,7 @@ CI, production data truth, local-date/habit correctness, browser-only authority,
 | Merge conflict precheck | PASS | `origin/main` is ancestor; merge-tree clean |
 | Whole-product gap audit | COMPLETE | 39 routes, persistence, mocks, API consumption, states and integration traced |
 | Product completion backlog | COMPLETE | P0/P1/P2, completed, rejected AI scope and CI plan |
-| CI workflow | IMPLEMENTED / HOSTED RUN PENDING | frontend, backend, deterministic AI, integration |
+| CI workflow | RUN 1 FAILED STALE HEAD / RERUN PENDING | current four-job workflow corrected |
 | Deterministic CI integration | PASS LOCALLY | actual engine + Next proxy + pairing/SSE/tool/source/session |
 | Product P0/P1 completion | PASS LOCALLY | data, dates, habits, backup, security, resilience, placeholders |
 | Continuity/release handoff | COMPLETE | blueprint + current release matrix + backlog |

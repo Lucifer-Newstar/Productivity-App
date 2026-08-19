@@ -17,7 +17,7 @@
 | Express network security | Non-loopback requires service key |
 | Deterministic Intelligence | Authoritative Core Today path |
 | Model evaluation | Closed; no model selected |
-| CI | Implemented locally; first hosted result pending |
+| CI | Implemented locally; run 1 used stale commit and failed; current-head rerun pending |
 | Cloud deployment | Not planned |
 
 ## Backlog gate
