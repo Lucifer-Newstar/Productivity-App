@@ -39,10 +39,10 @@ Priorities:
 | ID | Category | Evidence | Required action | Exit evidence |
 |---|---|---|---|---|
 | APP-101 | Fixed / pending hosted proof | Streak is derived from normalized history; uncheck/gap/yesterday semantics and corrupt migration covered | Keep `qa:core` required in CI | Local 9/9 core correctness checks pass |
-| APP-102 | Mock/placeholder | Wilks uses `weight × 3` as “rough placeholder for demo” | Require real squat/bench/deadlift total or relabel/remove Wilks output; never present placeholder as measured metric | Formula tests and UI copy match actual inputs |
+| APP-102 | Fixed / pending hosted proof | Wilks requires explicit entered squat+bench+deadlift total; placeholder multiplier removed | Keep formula/input check in `qa:core` | Local TypeScript/ESLint and core QA pass |
 | APP-103 | Fixed / pending hosted proof | Destructive demo controls and store mutators now require `NEXT_PUBLIC_KAIZEN_DEMO_TOOLS=1`; default production build hides/fails closed | Keep 11-check baseline QA required | Local TypeScript/ESLint and 11/11 baseline checks pass |
-| APP-104 | Incomplete | Pomodoro sessions/minutes are component-memory only | Decide whether session history is product data; if yes persist/migrate, if no label as current-session only and fix paused Skip behavior | Reload/navigation behavior and tests match documented contract |
-| APP-105 | Incomplete | Forge voice recordings use runtime Blob URLs and disappear on reload | Persist safely in an approved storage layer or label/export as session-only; revoke Blob URLs correctly | Reload/export lifecycle test |
+| APP-104 | Fixed / pending hosted proof | Completed focus cycles/minutes persist under `kaizen.focus`; copy reflects browser-profile retention and paused Skip advances safely | Keep key in whole-product backup and add future browser E2E | Local TypeScript/backup/core checks pass |
+| APP-105 | Fixed as explicit session-only scope | Voice audio now states session-only, provides download-before-reload and shows transcript-only state after reload; Blob deletion revokes URL | Keep transcript persistence and download disclosure | Structural baseline QA passes |
 | APP-106 | Fixed / pending hosted proof | Hydration now waits for parsed state, corrupt keys block writes and surface recovery UI | Keep backup/corruption tests required; add browser hydration E2E later | Local TypeScript/build and recovery checks pass |
 | APP-107 | Fixed / pending hosted proof | Reference API now throws before non-loopback bind without `KAIZEN_API_KEY`; dedicated startup test added | Keep startup test required in backend CI | Local build/startup security check passes |
 | APP-108 | Security decision | Health/career/private records live unencrypted in browser localStorage | Explicitly accept for trusted-profile local release or implement encrypted packaged storage; make product copy/export threat model accurate | Signed release decision and packaging test |
@@ -130,12 +130,11 @@ CI must assert:
 ```text
 1. Verify fixed/implemented items on the first hosted GitHub run
 2. Resolve APP-108 sensitive localStorage release acceptance
-3. APP-102 Wilks placeholder correctness
-4. APP-104 Pomodoro persistence/contract
-5. APP-105 Forge voice durability
-6. Remaining P1 UX/navigation/error work
-7. Full regression + documentation release matrix
-8. Re-review PR ai → main; do not merge before gates pass
+3. APP-110 top-level error/loading recovery
+4. APP-112 Home URL/history navigation
+5. Remaining P1 UX/persistence work
+6. Full regression + documentation release matrix
+7. Re-review PR ai → main; do not merge before gates pass
 ```
 
 ## Current release gate

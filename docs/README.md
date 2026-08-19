@@ -57,6 +57,7 @@ Current production verification: **39/39 user routes return HTTP 200**, five Ent
 | [`reports/PRODUCTION-DATA-BASELINE-2026-08-19.md`](reports/PRODUCTION-DATA-BASELINE-2026-08-19.md) | Empty fresh user history and retained product catalogs/templates |
 | [`reports/LOCAL-RELEASE-DATA-AUTHORITY-2026-08-19.md`](reports/LOCAL-RELEASE-DATA-AUTHORITY-2026-08-19.md) | Browser-only release authority and reference API hardening |
 | [`reports/BROWSER-BACKUP-RECOVERY-2026-08-19.md`](reports/BROWSER-BACKUP-RECOVERY-2026-08-19.md) | Whole-product backup, rollback restore and corruption recovery |
+| [`reports/P1-CORRECTNESS-POLISH-2026-08-19.md`](reports/P1-CORRECTNESS-POLISH-2026-08-19.md) | Wilks, focus persistence and voice-session correctness polish |
 | [`notifications/README.md`](notifications/README.md) | Global inbox, rule catalog, settings and scope decisions |
 
 ### Kaizen Intelligence Engine

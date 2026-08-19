@@ -37,7 +37,7 @@ The Data Setup checklist now requires bodyweight plus a logged workout rather th
 
 `FRESH_PROFILE_COUNTS` exposes the fresh-state separation for executable QA. `npm run qa:baseline` verifies ten personal-history categories are empty, catalogs remain populated, existing Entertainment records migrate intact, habits start empty and setup does not count routine templates.
 
-Local validation: **11/11 production baseline checks pass**, **9/9 core correctness checks pass**, TypeScript and ESLint pass.
+Local validation: **12/12 production baseline checks pass**, **10/10 core correctness checks pass**, TypeScript and ESLint pass.
 
 ## Demo tooling boundary
 

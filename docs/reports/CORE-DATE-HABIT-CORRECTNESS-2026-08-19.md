@@ -35,7 +35,7 @@ Habit streak is now derived from normalized history instead of manually incremen
 
 Added `npm run qa:core` with nine checks covering IST UTC-boundary behavior, local parsing, invalid dates, month rollover, consecutive/broken streaks, unchecking and history migration.
 
-The suite is included in hosted frontend CI. Local validation: **9/9 checks pass**, TypeScript passes and ESLint passes.
+The suite is included in hosted frontend CI. Local validation: **10/10 checks pass** (including entered-total Wilks), TypeScript passes and ESLint passes.
 
 ## Scope
 

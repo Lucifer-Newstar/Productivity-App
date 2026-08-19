@@ -8,13 +8,13 @@ Kaizen v1 is browser-authoritative under ADR-012. Clearing browser site data rem
 
 Open Notification Center → **Local data recovery** (database icon).
 
-**Export backup** writes one versioned `KAIZEN-LOCAL-BACKUP` JSON containing the ten authoritative keys:
+**Export backup** writes one versioned `KAIZEN-LOCAL-BACKUP` JSON containing the eleven authoritative keys:
 
 ```text
 kaizen.tasks       kaizen.notes          kaizen.career
 kaizen.workout     kaizen.forge          kaizen.health
 kaizen.entertainment  kaizen.notifications
-kaizen.habits      kaizen.theme
+kaizen.habits      kaizen.focus        kaizen.theme
 ```
 
 It excludes AI pairing/session tokens, provider session overrides, revision metadata and evaluation data.

@@ -1,5 +1,5 @@
 /** Versioned whole-product browser backup with strict validation and rollback restore. */
-export const AUTHORITATIVE_KEYS=["kaizen.tasks","kaizen.notes","kaizen.career","kaizen.workout","kaizen.forge","kaizen.health","kaizen.entertainment","kaizen.notifications","kaizen.habits","kaizen.theme"] as const;
+export const AUTHORITATIVE_KEYS=["kaizen.tasks","kaizen.notes","kaizen.career","kaizen.workout","kaizen.forge","kaizen.health","kaizen.entertainment","kaizen.notifications","kaizen.habits","kaizen.focus","kaizen.theme"] as const;
 export type AuthoritativeKey=typeof AUTHORITATIVE_KEYS[number];
 export interface StorageLike{getItem(key:string):string|null;setItem(key:string,value:string):void;removeItem(key:string):void}
 export interface KaizenBackup{classification:"KAIZEN-LOCAL-BACKUP";schemaVersion:1;exportedAt:string;data:Record<AuthoritativeKey,string|null>}

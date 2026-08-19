@@ -4,15 +4,16 @@
 
 | Key | Contents | Migration |
 |---|---|---|
-| `kaizen.tasks` | Core tasks | Seed fallback |
-| `kaizen.notes` | Core notes | Seed fallback |
+| `kaizen.tasks` | Core tasks | Empty fresh profile |
+| `kaizen.notes` | Core notes | Empty fresh profile |
 | `kaizen.career` | Career state | `migrateCareer` |
 | `kaizen.workout` | Workout state | `migrateWorkout` |
 | `kaizen.forge` | Forge state | `migrateForge` |
 | `kaizen.health` | Health state | `migrateHealth` |
 | `kaizen.entertainment` | Entertainment schema v6 | `migrateEntertainment` |
-| `kaizen.notifications` | Global inbox/settings schema v1 | `migrateNotifications` |
-| `kaizen.habits` | Home habits | Component seed fallback |
+| `kaizen.notifications` | Global inbox/settings schema v2 | `migrateNotifications` |
+| `kaizen.habits` | Home habits | Empty + history normalization |
+| `kaizen.focus` | Completed focus cycles/minutes | Bounded component validation |
 | `kaizen.theme` | `dark` or `light` | Preference validation |
 | `kaizen.bw.ack` | Workout bodyweight prompt acknowledgement | Date string |
 | `afterglow.notice.<item>.<date>` | Local notification de-duplication | Best effort |
@@ -45,7 +46,7 @@ Session provider values are never included in root state or exports. They are st
 
 ## Storage failure behavior
 
-Root persistence and Habits catch quota exceptions and dispatch `kaizen:storage-error`. `StorageErrorBanner` warns the user to export a backup and remove large raster media.
+Root persistence, Habits and Focus catch quota exceptions and dispatch `kaizen:storage-error`. Corrupt root JSON blocks writes for that slice instead of overwriting data and opens whole-product recovery. The versioned backup covers the eleven authoritative keys.
 
 ## Privacy
 
