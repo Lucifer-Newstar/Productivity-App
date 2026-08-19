@@ -17,7 +17,7 @@ npm run qa:v0.1.1:model-design
 npm run qa:v0.1.1:model-harness
 ```
 
-Both suites must pass before configuring execution. They start no model.
+Both suites must pass before configuring execution. They start no model. Harness QA must include `streaming artifact hash matches SHA-256`; otherwise the checkout predates the >2 GiB GGUF intake fix.
 
 ## 2. Create ignored local configuration
 

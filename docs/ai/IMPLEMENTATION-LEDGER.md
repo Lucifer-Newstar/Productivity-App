@@ -6,9 +6,9 @@ _Last updated: 2026-08-19_
 
 ## Current milestone
 
-> **Target-laptop `I1-PREFLIGHT` authorized for Qwen3 then Phi; execution and results pending. Full/operations remain prohibited.**
+> **Qwen target intake exposed and fixed a >2 GiB streaming-hash defect before inference. Qwen retry and Phi preflight remain pending.**
 
-AI-ADR-019 governs the accepted deterministic/mock baseline. `I1-PREFLIGHT-AUTH-1` permits only the ten-attempt preflight for each frozen candidate through the guarded target wrapper. No target model process has been started in this workspace and no preflight result exists yet. Memory, retrieval, Health context, write actions, automation, additional domains, remote processing and v0.2 remain frozen.
+`I1-PREFLIGHT-AUTH-1` remains preflight-only. The first target wrapper run passed QA and selected Qwen in frozen order, then stopped before model startup because synchronous Node hashing could not read the 2,497,280,736-byte GGUF. Streaming SHA-256 now removes that runner limit without changing gates. No candidate result exists. Memory, retrieval, Health context, write actions, automation, additional domains, remote processing and v0.2 remain frozen.
 
 ## Completed architecture and foundation
 
@@ -55,7 +55,9 @@ AI-ADR-019 governs the accepted deterministic/mock baseline. `I1-PREFLIGHT-AUTH-
 | Interpreter-model report format | Complete | sanitized aggregate template; no selection outcome |
 | Preflight authorization | APPROVED / PENDING TARGET RUN | `I1-PREFLIGHT-AUTH-1`, Qwen3 then Phi only |
 | Full/operations authorization | PROHIBITED | hard-blocked by machine authorization record |
-| Preflight results | PENDING | no model process or sanitized aggregate yet |
+| First Qwen intake | RUNNER DEFECT / NO INFERENCE | `readFileSync` exceeded Node 2 GiB buffer ceiling |
+| Large-artifact hash correction | Complete | streaming SHA-256 for runtime/model files; harness regression |
+| Preflight results | PENDING RETRY | Qwen retry first; Phi remains unrun; no aggregate yet |
 
 The new gate does not supersede or weaken `W0-GATE-2`. It evaluates a different, narrower provider role with no tools.
 
@@ -186,9 +188,9 @@ The larger control is rejected. Wave 0 is complete with no model selected. No mo
 
 ## Next target action and review
 
-On the target laptop, follow [`v0.1.1-model-evaluation/TARGET-PREFLIGHT-RUNBOOK.md`](v0.1.1-model-evaluation/TARGET-PREFLIGHT-RUNBOOK.md). Run Qwen3 preflight and then Phi preflight through the authorized wrapper. Keep all raw evidence LOCAL-ONLY.
+Pull the streaming-hash fix on the target laptop, rerun design/harness QA, then rerun the same authorized wrapper from Qwen3. The wrapper proceeds to Phi only under the original stop rules. Keep all raw evidence LOCAL-ONLY.
 
-After both runs, return only the two sanitizer-produced public aggregates for intake. The next repository step will validate, document and commit both decisions. Do not infer missing results or run the full corpus/operations. A preflight pass authorizes neither stage nor integration. Remote-provider work, v0.2, memory, retrieval, Health, writes, automation and additional domains remain frozen.
+After both measured runs, return only the two sanitizer-produced public aggregates for intake. Do not treat the failed filesystem intake as a candidate result, infer missing measurements or run full/operations. A preflight pass authorizes neither stage nor integration. Remote-provider work, v0.2, memory, retrieval, Health, writes, automation and additional domains remain frozen.
 
 ## Documentation and repository maintenance
 
@@ -197,7 +199,7 @@ Latest maintenance pass:
 - Root, frontend, backend and Intelligence README files aligned with the current architecture and no-model Wave 0 outcome.
 - Stale “coming soon”, placeholder/in-progress and architecture-only Intelligence descriptions removed from active docs.
 - Documentation indexes, route metadata, setup commands and quality gates synchronized.
-- All 253 maintained TypeScript, JavaScript, Python, PowerShell, CSS and shell source files now include explanatory commentary.
+- All 254 maintained TypeScript, JavaScript, Python, PowerShell, CSS and shell source files now include explanatory commentary.
 - `qa:comments` permanently enforces source-comment coverage.
 - Historical reports/bug entries remain intact and are explicitly treated as dated evidence rather than current status.
 

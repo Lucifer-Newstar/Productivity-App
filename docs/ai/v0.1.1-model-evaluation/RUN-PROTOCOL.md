@@ -55,7 +55,7 @@ Any provider tool-call chunk is a failure even though no tool definition was sup
 | Raw result location | ignored `model-phase/results-local/` only |
 | Public result | reviewed sanitized aggregate only |
 
-Runtime binary, model artifact, exact quantization, license, SHA-256, GPU layers, threads, batch parameters, command flags and power mode must be recorded locally before preflight. Missing identity or hash invalidates the run.
+Runtime binary, model artifact, exact quantization, license, SHA-256, GPU layers, threads, batch parameters, command flags and power mode must be recorded locally before preflight. Missing identity or hash invalidates the run. Runtime/model hashes are independently recomputed with streaming SHA-256 so multi-gigabyte GGUFs never enter one Node buffer.
 
 Implemented commands:
 

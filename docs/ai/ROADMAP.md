@@ -46,7 +46,8 @@ Wave 0 is complete with no model selected. Architecture review has authorized a 
 - [x] `I1-SYNTHETIC-1` corpus, manifest and semantic-review worksheet
 - [x] disabled production-path runner, scorer, sanitizer and harness QA
 - [x] target preflight authorization record and frozen-order PowerShell wrapper
-- [ ] target-laptop Qwen3 and Phi preflight outcomes
+- [x] >2 GiB artifact intake correction via streaming SHA-256
+- [ ] target-laptop Qwen3 retry and Phi preflight outcomes
 - [ ] any full candidate run, operations report and selection review
 
 **Current boundary:** preflight-only target execution is authorized and pending. Full/operations are machine-blocked and require later review. No real model is selected.

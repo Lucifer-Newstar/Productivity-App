@@ -10,6 +10,7 @@ import type { GenerationChunk, GenerationProvider, GenerationRequest } from "../
 import { LlamaCppProvider } from "../../../src/providers/llamaCpp.js";
 import { IntelligenceOrchestrator } from "../../../src/runtime/orchestrator.js";
 import { parseAndValidateTodayInterpreter, validateDeterministicTodayRoute } from "../../../src/validation/schema.js";
+import { sha256File } from "./fileHash.js";
 
 interface LocalCandidate { id:string; modelPath:string; artifactSha256:string; license:string; licenseVerified:boolean; enabled:boolean }
 interface LocalConfig { schemaVersion:number; executionEnabled:boolean; protocolId:string; runtime:{llamaServerPath:string;runtimeVersion:string;runtimeSha256:string;nvidiaSmiPath:string;endpoint:string;startupTimeoutMs:number;requestTimeoutMs:number;gpuLayers:number;threads:number;batchSize:number;ubatchSize:number};candidates:LocalCandidate[] }
@@ -25,8 +26,8 @@ const PROTOCOL_PATH=resolve(PHASE,"protocol.v1.json");
 const AUTHORIZATION_PATH=resolve(PHASE,"authorization.v1.json");
 
 function fail(code:string,message:string):never{const error=new Error(message) as Error&{code:string};error.code=code;throw error}
-function sha256(path:string):string{const hash=createHash("sha256");hash.update(readFileSync(path));return hash.digest("hex")}
-function exactHash(path:string,expected:string,label:string):void{if(!existsSync(path)||!/^([a-f0-9]{64})$/i.test(expected)||sha256(path).toLowerCase()!==expected.toLowerCase())fail("IDENTITY_INVALID",`${label} path/hash is invalid`)}
+function sha256SmallFile(path:string):string{const hash=createHash("sha256");hash.update(readFileSync(path));return hash.digest("hex")}
+async function exactHash(path:string,expected:string,label:string):Promise<void>{if(!existsSync(path)||!/^([a-f0-9]{64})$/i.test(expected))fail("IDENTITY_INVALID",`${label} path/hash is invalid`);const actual=await sha256File(path);if(actual.toLowerCase()!==expected.toLowerCase())fail("IDENTITY_INVALID",`${label} path/hash is invalid`)}
 function literalLoopback(value:string):URL{let url:URL;try{url=new URL(value)}catch{return fail("ENDPOINT_INVALID","runtime endpoint is invalid")};if(url.protocol!=="http:"||url.hostname!=="127.0.0.1"||url.username||url.password||url.pathname!=="/"||url.search||url.hash)fail("ENDPOINT_INVALID","runtime endpoint must be literal-loopback HTTP with no path/query/credentials");return url}
 function readJson<T>(path:string):T{return JSON.parse(readFileSync(path,"utf8").replace(/^\uFEFF/,"")) as T}
 function args():Record<string,string|boolean>{const values:Record<string,string|boolean>={};for(let index=2;index<process.argv.length;index++){const item=process.argv[index]!;if(item.startsWith("--")){const key=item.slice(2),next=process.argv[index+1];if(next&&!next.startsWith("--")){values[key]=next;index++}else values[key]=true}}return values}
@@ -87,8 +88,8 @@ async function main():Promise<void>{
     if(!score||score.stage!=="preflight"||score.candidateId!==candidateId||score.passed!==true)fail("PREFLIGHT_REQUIRED","a passing local preflight score is required before full execution");
   }
   if(!candidate.licenseVerified||!candidate.license.trim())fail("LICENSE_INVALID","candidate license is unresolved");
-  exactHash(config.runtime.llamaServerPath,config.runtime.runtimeSha256,"runtime");exactHash(candidate.modelPath,candidate.artifactSha256,"model");if(!existsSync(config.runtime.nvidiaSmiPath))fail("TELEMETRY_INVALID","nvidia-smi path is unavailable");
-  const manifest=readJson<any>(MANIFEST_PATH);if(manifest.sha256!==sha256(CORPUS_PATH)||manifest.corpusId!=="I1-SYNTHETIC-1")fail("CORPUS_INVALID","frozen corpus hash does not match manifest");
+  await exactHash(config.runtime.llamaServerPath,config.runtime.runtimeSha256,"runtime");await exactHash(candidate.modelPath,candidate.artifactSha256,"model");if(!existsSync(config.runtime.nvidiaSmiPath))fail("TELEMETRY_INVALID","nvidia-smi path is unavailable");
+  const manifest=readJson<any>(MANIFEST_PATH);if(manifest.sha256!==sha256SmallFile(CORPUS_PATH)||manifest.corpusId!=="I1-SYNTHETIC-1")fail("CORPUS_INVALID","frozen corpus hash does not match manifest");
   const protocol=readJson<any>(PROTOCOL_PATH),corpus=readJson<Corpus>(CORPUS_PATH),selected=stage==="preflight"?corpus.cases.filter(item=>protocol.dataset.preflightScenarioIds.includes(item.id)):corpus.cases;
   if(selected.length!==(stage==="preflight"?10:50))fail("CORPUS_INVALID","stage scenario coverage is incomplete");
   const runId=`${candidateId}-${stage}-${new Date().toISOString().replace(/[:.]/g,"-")}-${randomUUID().slice(0,8)}`,outputDir=resolve(RESULTS_ROOT,runId);mkdirSync(outputDir,{recursive:true});

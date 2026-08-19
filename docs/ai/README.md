@@ -1,6 +1,6 @@
 # Kaizen Intelligence Engine — architecture gate
 
-**Status:** v0.1.1 baseline accepted; target interpreter preflight authorized and pending<br>
+**Status:** v0.1.1 baseline accepted; target Qwen preflight retry pending after runner hash fix<br>
 **Architecture package version:** 0.8-v0.1.1-preflight-authorization<br>
 **Intelligence permissions:** READ / ANALYZE / SUGGEST only
 
@@ -70,6 +70,7 @@ Every design choice in this package uses one of four labels:
 - [`../reports/AI-V0.1.1-ACCEPTANCE-AND-MODEL-EVAL-DESIGN-2026-08-19.md`](../reports/AI-V0.1.1-ACCEPTANCE-AND-MODEL-EVAL-DESIGN-2026-08-19.md) — live acceptance and evaluation-design report.
 - [`../reports/AI-V0.1.1-MODEL-HARNESS-2026-08-19.md`](../reports/AI-V0.1.1-MODEL-HARNESS-2026-08-19.md) — corpus/harness implementation and no-execution evidence.
 - [`../reports/AI-V0.1.1-PREFLIGHT-AUTHORIZATION-2026-08-19.md`](../reports/AI-V0.1.1-PREFLIGHT-AUTHORIZATION-2026-08-19.md) — target preflight authorization; results pending.
+- [`../reports/AI-V0.1.1-PREFLIGHT-INTAKE-HASH-FIX-2026-08-19.md`](../reports/AI-V0.1.1-PREFLIGHT-INTAKE-HASH-FIX-2026-08-19.md) — no-inference intake defect and streaming hash correction.
 - [`DELIVERY-PLAYBOOK.md`](DELIVERY-PLAYBOOK.md) — mandatory pull/scope/test/privacy/docs/commit procedure.
 - [`V0.1-INTEGRATION-VALIDATION.md`](V0.1-INTEGRATION-VALIDATION.md) — deterministic/mock foundation validated; real model unavailable.
 - [`WAVE-0-REPORT.md`](WAVE-0-REPORT.md) — final no-model Selection Report.
@@ -79,4 +80,4 @@ Every design choice in this package uses one of four labels:
 
 ## Active implementation boundary
 
-The provider-neutral engine implements and has live-accepted deterministic `focus-today → get_today@1.0` routing with zero provider tool access. The deterministic/mock path remains the accepted baseline. Target preflight is authorized for Qwen3 then Phi through the guarded wrapper; results are pending. Full/operations remain blocked. Wave 0 remains closed with no local model selected. Health, memory, retrieval, additional domains, writes, automation, remote processing and v0.2 remain frozen.
+The provider-neutral engine implements and has live-accepted deterministic `focus-today → get_today@1.0` routing with zero provider tool access. The deterministic/mock path remains the accepted baseline. The first Qwen target intake stopped before inference on a now-fixed >2 GiB hash-read defect; retry then Phi remain pending. Full/operations stay blocked. Wave 0 remains closed with no local model selected. Health, memory, retrieval, additional domains, writes, automation, remote processing and v0.2 remain frozen.

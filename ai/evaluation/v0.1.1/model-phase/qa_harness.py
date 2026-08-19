@@ -57,6 +57,12 @@ try:
     template["runtime"]["nvidiaSmiPath"] = str(sentinel)
     disabled_config.write_text(json.dumps(template), encoding="utf-8")
     tsx = AI_ROOT / "node_modules" / ".bin" / ("tsx.cmd" if os.name == "nt" else "tsx")
+    probe_path = CONFIG_DIR / "qa-stream-hash.bin"; probe_path.write_bytes((b"kaizen-stream-hash\n" * 65536))
+    expected_probe = digest(probe_path)
+    probe = run([str(tsx), "-e", f"import('{(PHASE / 'fileHash.ts').as_uri()}').then(async m=>console.log(await m.sha256File({json.dumps(str(probe_path))})))"])
+    check("streaming artifact hash matches SHA-256", probe.returncode == 0 and probe.stdout.strip() == expected_probe)
+    runner_source = RUNNER.read_text(encoding="utf-8")
+    check("runner hashes runtime/model artifacts through streaming utility", "await exactHash(config.runtime.llamaServerPath" in runner_source and "await exactHash(candidate.modelPath" in runner_source and "createReadStream" in (PHASE / "fileHash.ts").read_text(encoding="utf-8"))
     environment = {**os.environ, "KAIZEN_I1_EXECUTION_ACK": "I1-RUN-1"}
     disabled = run([str(tsx), str(RUNNER), "--config", str(disabled_config), "--candidate", "qwen3-4b-instruct-2507-q4km", "--stage", "preflight", "--execute"], env=environment)
     check("disabled runner exits before any runtime spawn", disabled.returncode == 2 and "I1_EXECUTION_DISABLED" in disabled.stderr and not sentinel.exists())
@@ -109,7 +115,7 @@ try:
     tampered = run([sys.executable, str(PHASE / "sanitizer.py"), "--score", str(tampered_score_path), "--run", str(run_path), "--lifecycle", str(lifecycle_path), "--output", str(PUBLIC_QA)])
     check("sanitizer rejects unknown nested metric fields", tampered.returncode != 0 and "metric keys" in (tampered.stdout + tampered.stderr) and not PUBLIC_QA.exists())
 finally:
-    for path in [CONFIG_DIR / "qa-disabled.local.json", PUBLIC_QA]:
+    for path in [CONFIG_DIR / "qa-disabled.local.json", CONFIG_DIR / "qa-stream-hash.bin", PUBLIC_QA]:
         path.unlink(missing_ok=True)
     shutil.rmtree(LOCAL_QA, ignore_errors=True)
 allowed_public = {"README.md", "qwen3-4b-instruct-2507-q4km-preflight.json", "phi-4-mini-instruct-q4km-preflight.json"}

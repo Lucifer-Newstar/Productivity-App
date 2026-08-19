@@ -1,6 +1,6 @@
 # v0.1.1 interpreter-only local-model evaluation design
 
-**Status:** TARGET PREFLIGHT AUTHORIZED — FULL/OPERATIONS DISABLED
+**Status:** TARGET PREFLIGHT RETRY PENDING AFTER HASH FIX — FULL/OPERATIONS DISABLED
 
 This package defines a new, narrow evaluation of models as interpreters of validated Core Today evidence. It does not reopen Wave 0, change `V011-INT-GATE-1`, grant tool authority or select a model.
 
