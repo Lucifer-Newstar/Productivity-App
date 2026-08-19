@@ -112,9 +112,19 @@ evaluation/v0.1.1/model-phase/config/*.local.json
 
 That includes attempts, raw outputs, logs, paths, review working files, telemetry and lifecycle details. Do not paste them into chat.
 
-## 7. Return for review
+## 7. Reclassify generic failure codes without inference
 
-After both public aggregates exist:
+If a sanitizer-produced aggregate contains only `UNCLASSIFIED`, do not share raw attempts or rerun inference. Pull the latest scorer and run:
+
+```powershell
+npm run reclassify:v0.1.1:model:target
+```
+
+This command reads retained LOCAL-ONLY error messages, maps known transport/HTTP/timeout/tokenizer/stream failures to safe public codes, re-scores the same attempts and verifies that outcome, counts and requirements did not change. It refuses to publish when a safe classification is unavailable.
+
+## 8. Return for review
+
+After both public aggregates exist with classified failure codes:
 
 1. inspect only the sanitized JSON files;
 2. run `npm run qa:v0.1.1:model-harness` again;

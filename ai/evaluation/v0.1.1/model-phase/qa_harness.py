@@ -96,12 +96,12 @@ try:
     scored = run([sys.executable, str(PHASE / "scorer.py"), "--attempts", str(attempts_path), "--run", str(run_path), "--reviews", str(reviews_path), "--output", str(score_path)])
     score = json.loads(score_path.read_text(encoding="utf-8")) if score_path.exists() else {}
     check("scorer accepts a complete known-pass fixture", scored.returncode == 0 and score.get("passed") is True and score.get("retainedAttemptCount") == 100)
-    failed_attempts = json.loads(json.dumps(attempts)); failed_attempts[0]["status"] = "failed"; failed_attempts[0]["automatic"]["structuredValid"] = False; failed_attempts[0]["automatic"]["sourceValid"] = False
+    failed_attempts = json.loads(json.dumps(attempts)); failed_attempts[0]["status"] = "failed"; failed_attempts[0]["error"] = {"code": "UNCLASSIFIED", "message": "llama.cpp request failed with HTTP 400"}; failed_attempts[0]["automatic"]["structuredValid"] = False; failed_attempts[0]["automatic"]["sourceValid"] = False
     failed_path, failed_score_path = LOCAL_QA / "failed.local.jsonl", LOCAL_QA / "failed-score.local.json"
     failed_path.write_text("".join(json.dumps(item) + "\n" for item in failed_attempts), encoding="utf-8")
     failed_score_run = run([sys.executable, str(PHASE / "scorer.py"), "--attempts", str(failed_path), "--run", str(run_path), "--reviews", str(reviews_path), "--output", str(failed_score_path)])
     failed_score = json.loads(failed_score_path.read_text(encoding="utf-8")) if failed_score_path.exists() else {}
-    check("failed attempts remain counted as gate failures", failed_score_run.returncode == 0 and failed_score.get("retainedAttemptCount") == 100 and failed_score.get("passed") is False and failed_score.get("metrics", {}).get("structuredResponseRate", {}).get("numerator") == 99)
+    check("failed attempts remain counted and receive safe local classification", failed_score_run.returncode == 0 and failed_score.get("retainedAttemptCount") == 100 and failed_score.get("passed") is False and failed_score.get("metrics", {}).get("structuredResponseRate", {}).get("numerator") == 99 and failed_score.get("failureCodes") == ["PROVIDER_HTTP_400"])
     missing_path = LOCAL_QA / "missing.local.jsonl"; missing_path.write_text("".join(json.dumps(item) + "\n" for item in attempts[:-1]), encoding="utf-8")
     missing = run([sys.executable, str(PHASE / "scorer.py"), "--attempts", str(missing_path), "--run", str(run_path), "--reviews", str(reviews_path), "--output", str(LOCAL_QA / "missing-score.local.json")])
     check("scorer rejects a dropped attempt", missing.returncode != 0 and "expected 100 retained attempts" in (missing.stdout + missing.stderr))

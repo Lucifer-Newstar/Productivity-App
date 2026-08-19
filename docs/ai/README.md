@@ -1,6 +1,6 @@
 # Kaizen Intelligence Engine — architecture gate
 
-**Status:** v0.1.1 baseline accepted; target Qwen preflight retry pending after runner hash fix<br>
+**Status:** target preflights reported rejected; classified aggregate intake pending<br>
 **Architecture package version:** 0.8-v0.1.1-preflight-authorization<br>
 **Intelligence permissions:** READ / ANALYZE / SUGGEST only
 
@@ -71,6 +71,7 @@ Every design choice in this package uses one of four labels:
 - [`../reports/AI-V0.1.1-MODEL-HARNESS-2026-08-19.md`](../reports/AI-V0.1.1-MODEL-HARNESS-2026-08-19.md) — corpus/harness implementation and no-execution evidence.
 - [`../reports/AI-V0.1.1-PREFLIGHT-AUTHORIZATION-2026-08-19.md`](../reports/AI-V0.1.1-PREFLIGHT-AUTHORIZATION-2026-08-19.md) — target preflight authorization; results pending.
 - [`../reports/AI-V0.1.1-PREFLIGHT-INTAKE-HASH-FIX-2026-08-19.md`](../reports/AI-V0.1.1-PREFLIGHT-INTAKE-HASH-FIX-2026-08-19.md) — no-inference intake defect and streaming hash correction.
+- [`../reports/AI-V0.1.1-PREFLIGHT-ATTACHMENT-MISMATCH-2026-08-19.md`](../reports/AI-V0.1.1-PREFLIGHT-ATTACHMENT-MISMATCH-2026-08-19.md) — incorrect attachments and safe local classifier workflow.
 - [`DELIVERY-PLAYBOOK.md`](DELIVERY-PLAYBOOK.md) — mandatory pull/scope/test/privacy/docs/commit procedure.
 - [`V0.1-INTEGRATION-VALIDATION.md`](V0.1-INTEGRATION-VALIDATION.md) — deterministic/mock foundation validated; real model unavailable.
 - [`WAVE-0-REPORT.md`](WAVE-0-REPORT.md) — final no-model Selection Report.
@@ -80,4 +81,4 @@ Every design choice in this package uses one of four labels:
 
 ## Active implementation boundary
 
-The provider-neutral engine implements and has live-accepted deterministic `focus-today → get_today@1.0` routing with zero provider tool access. The deterministic/mock path remains the accepted baseline. The first Qwen target intake stopped before inference on a now-fixed >2 GiB hash-read defect; retry then Phi remain pending. Full/operations stay blocked. Wave 0 remains closed with no local model selected. Health, memory, retrieval, additional domains, writes, automation, remote processing and v0.2 remain frozen.
+The provider-neutral deterministic/mock path remains accepted. Qwen3 and Phi preflights are reported rejected, but supplied attachments were legacy Wave 0 duplicates and safe failure codes remain generic. Local reclassification of retained attempts is required before final intake; no inference rerun, full run or operations stage is authorized. Wave 0 remains closed with no local model selected, and all excluded capabilities stay frozen.

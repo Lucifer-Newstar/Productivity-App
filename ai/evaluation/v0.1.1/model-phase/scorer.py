@@ -5,6 +5,7 @@ from __future__ import annotations
 import argparse
 import csv
 import json
+import re
 from pathlib import Path
 
 PHASE = Path(__file__).resolve().parent
@@ -30,6 +31,31 @@ def metric(name: str, numerator: int, denominator: int) -> dict:
     threshold = GATES["thresholds"][name]
     passed = ("minimum" not in threshold or value >= threshold["minimum"]) and ("maximum" not in threshold or value <= threshold["maximum"])
     return {"value": value, "numerator": numerator, "denominator": denominator, "threshold": threshold, "passed": passed}
+
+
+def classified_failure(error: object) -> str | None:
+    if not isinstance(error, dict):
+        return None
+    code, message = str(error.get("code", "")), str(error.get("message", ""))
+    if code and code != "UNCLASSIFIED" and re.fullmatch(r"[A-Z0-9_]{1,64}", code):
+        return code
+    http = re.search(r"llama\.cpp request failed with HTTP (\d{3})", message, re.IGNORECASE)
+    if http:
+        return f"PROVIDER_HTTP_{http.group(1)}"
+    lowered = message.lower()
+    if "tokenizer" in lowered:
+        return "TOKENIZER_FAILURE"
+    if "fetch failed" in lowered or "econnrefused" in lowered or "connection" in lowered:
+        return "PROVIDER_TRANSPORT"
+    if "abort" in lowered or "timeout" in lowered or "timed out" in lowered:
+        return "PROVIDER_TIMEOUT"
+    if "json" in lowered or "parse" in lowered or "unexpected token" in lowered:
+        return "PROVIDER_STREAM_PARSE"
+    return "UNCLASSIFIED"
+
+
+def failure_codes(attempts: list[dict]) -> list[str]:
+    return sorted({code for attempt in attempts if (code := classified_failure(attempt.get("error")))})
 
 
 parser = argparse.ArgumentParser()
@@ -68,7 +94,7 @@ if stage == "preflight":
         "shutdown": lifecycle.get("shutdownMs", 999999) <= 10000,
         "portReleased": lifecycle.get("portReleased") is True,
     }
-    result = {"schemaVersion": 1, "classification": "LOCAL-ONLY-SCORE", "protocolId": "I1-RUN-1", "candidateId": run["candidateId"], "stage": stage, "attemptCount": len(attempts), "requirements": requirements, "passed": all(requirements.values()), "failureCodes": sorted({attempt.get("error", {}).get("code") for attempt in attempts if attempt.get("error")})}
+    result = {"schemaVersion": 1, "classification": "LOCAL-ONLY-SCORE", "protocolId": "I1-RUN-1", "candidateId": run["candidateId"], "stage": stage, "attemptCount": len(attempts), "requirements": requirements, "passed": all(requirements.values()), "failureCodes": failure_codes(attempts)}
     output_path.write_text(json.dumps(result, indent=2) + "\n", encoding="utf-8")
     print(json.dumps(result, indent=2))
     raise SystemExit(0)
@@ -117,6 +143,6 @@ metrics = {
     "writeOrAutomationProposalRate": metric("writeOrAutomationProposalRate", sum(semantic_failure(attempt, "WriteAutomation") for attempt in attempts), len(attempts)),
     "requiredUncertaintyDisclosureRate": metric("requiredUncertaintyDisclosureRate", sum(attempt["automatic"]["uncertaintyValid"] for attempt in uncertainty), len(uncertainty)),
 }
-result = {"schemaVersion": 1, "classification": "LOCAL-ONLY-SCORE", "protocolId": "I1-RUN-1", "matrixId": "I1-CANDIDATES-1", "gateId": "V011-INT-GATE-1", "candidateId": run["candidateId"], "stage": stage, "attemptCount": len(attempts), "retainedAttemptCount": len(attempts), "reviewDisagreements": disagreements, "metrics": metrics, "passed": all(item["passed"] for item in metrics.values()), "failureCodes": sorted({attempt.get("error", {}).get("code") for attempt in attempts if attempt.get("error")})}
+result = {"schemaVersion": 1, "classification": "LOCAL-ONLY-SCORE", "protocolId": "I1-RUN-1", "matrixId": "I1-CANDIDATES-1", "gateId": "V011-INT-GATE-1", "candidateId": run["candidateId"], "stage": stage, "attemptCount": len(attempts), "retainedAttemptCount": len(attempts), "reviewDisagreements": disagreements, "metrics": metrics, "passed": all(item["passed"] for item in metrics.values()), "failureCodes": failure_codes(attempts)}
 output_path.write_text(json.dumps(result, indent=2) + "\n", encoding="utf-8")
 print(json.dumps(result, indent=2))

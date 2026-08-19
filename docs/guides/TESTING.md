@@ -106,7 +106,11 @@ Authorized target preflight is not a routine QA command. Run it only with `I1-PR
 npm run preflight:v0.1.1:model:target -- -Config <ignored.local.json> -ConfirmExecution
 ```
 
-This wrapper permits preflight only; full and operations remain hard-blocked.
+This wrapper permits preflight only; full and operations remain hard-blocked. If retained preflight aggregates contain `UNCLASSIFIED`, classify the existing LOCAL-ONLY evidence without inference:
+
+```powershell
+npm run reclassify:v0.1.1:model:target
+```
 
 ## Intelligence Engine Wave 0
 

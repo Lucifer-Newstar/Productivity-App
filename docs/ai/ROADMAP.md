@@ -47,10 +47,11 @@ Wave 0 is complete with no model selected. Architecture review has authorized a 
 - [x] disabled production-path runner, scorer, sanitizer and harness QA
 - [x] target preflight authorization record and frozen-order PowerShell wrapper
 - [x] >2 GiB artifact intake correction via streaming SHA-256
-- [ ] target-laptop Qwen3 retry and Phi preflight outcomes
+- [x] target-laptop Qwen3 and Phi ten-attempt execution reported complete
+- [ ] classified sanitizer aggregates and final preflight decision intake
 - [ ] any full candidate run, operations report and selection review
 
-**Current boundary:** preflight-only target execution is authorized and pending. Full/operations are machine-blocked and require later review. No real model is selected.
+**Current boundary:** both candidates are reported rejected, but supplied attachments were legacy Wave 0 duplicates and public failure codes remain generic. Reclassify retained attempts locally; full/operations stay blocked. No model is selected.
 
 **Scope freeze:** Core Today only. Do not add memory, retrieval, Health, additional domains, writes, automation, remote processing or v0.2 work.
 

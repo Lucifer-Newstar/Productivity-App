@@ -112,6 +112,7 @@ Executable adversarial coverage includes unsupported intent, provider tool escal
 - Every attempt is appended immediately to ignored LOCAL-ONLY JSONL; scorer coverage rejects dropped or duplicate attempts.
 - Exact candidate tokenization is checked before generation; provider tools are forbidden by the production capture wrapper.
 - Raw output, server logs, paths and per-sample telemetry stay under ignored `results-local/`.
+- Generic provider errors are classified locally into bounded HTTP/transport/timeout/tokenizer/stream codes; private messages never enter public output.
 - The sanitizer uses an explicit aggregate allowlist, cannot report model selection, and may write only under reviewed `results-public/`.
 
 ## v0.1 implemented controls

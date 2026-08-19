@@ -45,6 +45,7 @@ Current production verification: **39/39 user routes return HTTP 200**, five Ent
 | [`reports/AI-V0.1.1-MODEL-HARNESS-2026-08-19.md`](reports/AI-V0.1.1-MODEL-HARNESS-2026-08-19.md) | Frozen corpus, disabled production-path runner and privacy-safe scoring harness |
 | [`reports/AI-V0.1.1-PREFLIGHT-AUTHORIZATION-2026-08-19.md`](reports/AI-V0.1.1-PREFLIGHT-AUTHORIZATION-2026-08-19.md) | Preflight-only target authorization and hard full/operations block |
 | [`reports/AI-V0.1.1-PREFLIGHT-INTAKE-HASH-FIX-2026-08-19.md`](reports/AI-V0.1.1-PREFLIGHT-INTAKE-HASH-FIX-2026-08-19.md) | No-inference Qwen intake failure and streaming large-artifact hash fix |
+| [`reports/AI-V0.1.1-PREFLIGHT-ATTACHMENT-MISMATCH-2026-08-19.md`](reports/AI-V0.1.1-PREFLIGHT-ATTACHMENT-MISMATCH-2026-08-19.md) | Legacy attachment mismatch and private-local failure reclassification |
 | [`notifications/README.md`](notifications/README.md) | Global inbox, rule catalog, settings and scope decisions |
 
 ### Kaizen Intelligence Engine

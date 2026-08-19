@@ -18,7 +18,7 @@ v0.1.1 deterministic Core Today interpretation is implemented and frozen for rev
 - Source verification, evidence/freshness envelope and Home UI
 - Privacy-safe aggregate observability
 
-Wave 0 is complete with **no local model selected**. AI-ADR-019 is implemented and live-accepted for the deterministic/mock path. `V011-INT-GATE-1` passes on the public synthetic deterministic-mock aggregate. The first Qwen preflight intake stopped before inference on a fixed >2 GiB hash-read defect; Qwen retry then Phi remain pending, with full/operations blocked.
+Wave 0 is complete with **no local model selected**. Both interpreter preflights are reported rejected, but the supplied attachments were legacy Wave 0 duplicates and public failure codes remain `UNCLASSIFIED`. Reclassify retained local attempts without inference, then return only the two correct sanitizer aggregates. Full/operations remain blocked.
 
 Not implemented or authorized:
 
