@@ -1,8 +1,8 @@
 # Hosted CI run 2 intake
 
-**Date:** 2026-08-19  
-**Run:** `32255006909`  
-**Commit:** `615da49`  
+**Date:** 2026-08-19
+**Run:** `32255006909`
+**Commit:** `615da49`
 **Outcome:** frontend failed; Reference API and Deterministic Intelligence passed; integration was dependency-skipped
 
 ## Failure

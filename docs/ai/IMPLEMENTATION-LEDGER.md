@@ -77,7 +77,7 @@ Hosted run 3 (`32255861421`) passed all four jobs at `6a2c885` after runs 1 and 
 | Product P0/P1 completion | PASS LOCALLY | data, dates, habits, backup, security, resilience, placeholders |
 | Continuity/release handoff | COMPLETE | blueprint + current release matrix + backlog |
 | Model/GPU CI exclusion | ENFORCED | closed authorization; no execution commands or runner |
-| GitHub PR creation | AUTHORIZED / PENDING | create `ai`→`main`, leave unmerged for review |
+| GitHub PR #4 | OPEN / REVIEW PASS / FINAL HEAD PENDING | clean and mergeable; push evidence commit and rerun checks |
 | Merge action | NOT PERFORMED | do not merge before release gates |
 
 The new gate does not supersede or weaken `W0-GATE-2`. It evaluates a different, narrower provider role with no tools.

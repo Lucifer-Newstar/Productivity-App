@@ -250,9 +250,9 @@ The workflow is implemented and locally reproduced. Hosted runs 1 and 2 exposed 
 
 ### Still required before PR/merge
 
-1. Commit and push the green-CI evidence and regenerated PR review.
-2. Create `ai`→`main` PR from an authenticated GitHub session.
-3. Human review; do not merge automatically.
+1. Push the local evidence/review commits, beginning with `483c5f0`, into open PR #4.
+2. Require all four checks to pass on the updated PR head.
+3. Obtain explicit human merge approval; do not merge automatically.
 
 The current release matrix and final local regression are complete.
 

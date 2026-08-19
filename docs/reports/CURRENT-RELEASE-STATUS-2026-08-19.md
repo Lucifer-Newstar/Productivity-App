@@ -24,9 +24,9 @@
 
 All identified P0/P1 code or architecture items are now fixed, scoped or explicitly accepted locally. P2 items remain intentional deferrals.
 
-The final local regression and hosted CI are green. The release remains blocked on review evidence:
+The final local regression and PR-triggered hosted CI are green. PR #4 is open, mergeable and clean. The release remains blocked on:
 
-1. authenticated `ai`→`main` PR creation;
+1. pushing the local evidence/review commits beginning with `483c5f0` and obtaining green checks on the resulting exact head;
 2. human review and explicit merge approval.
 
 ## Post-merge-only gate
@@ -47,7 +47,7 @@ Windows/local packaging, clean install/update/uninstall, offline operation, back
 ```text
 Local code completion:     COMPLETE
 Hosted CI:                GREEN — 32255861421
-PR creation:              AUTHORIZED — LEAVE UNMERGED
+PR #4:                   OPEN — REVIEW PASS / FINAL HEAD CHECK PENDING
 Merge:                    NOT AUTHORIZED
 Windows packaging:        AFTER MERGE ONLY
 Release:                  NOT YET
