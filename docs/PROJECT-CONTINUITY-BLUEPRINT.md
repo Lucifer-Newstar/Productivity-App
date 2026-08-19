@@ -262,7 +262,9 @@ PR #4 merged into `main` as `06cf13c`; main CI run `32260387533` passed all four
 6. Verify loopback deterministic engine startup/pairing.
 7. Record artifact checksums and physical-host evidence.
 8. Produce final release notes.
-9. Release.
+9. Run the gated continuous-delivery preflight on exact green `main`.
+10. Create the annotated release tag only after explicit authorization.
+11. Verify the published open-source release assets and checksums.
 
 No cloud deployment is planned.
 

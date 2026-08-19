@@ -74,7 +74,7 @@ Core personal tracking, backup/recovery and deterministic Core Today work offlin
 
 Run the **Windows Installer** workflow manually with version `1.0.0`. Its Windows runner builds the setup executable, silently installs it, runs packaged verification, silently uninstalls it, and uploads the setup, checksum and sanitized verification report as one workflow artifact.
 
-A normal branch push runs correctness CI but does not publish a release. Pushing an intentional semantic version tag such as `v1.0.0` runs the same Windows verification and then creates an open-source GitHub Release containing the verified files.
+A normal branch push runs correctness CI but does not publish a release. Pushing an intentional annotated semantic version tag such as `v1.0.0` runs the same Windows verification and then creates an open-source GitHub Release containing the verified files. The complete provenance and failure rules are in [`CONTINUOUS-DELIVERY.md`](CONTINUOUS-DELIVERY.md).
 
 ### Local Windows build
 

@@ -16,7 +16,9 @@
 | Model evaluation | Closed; no model selected |
 | PR #4 | Merged as `06cf13c` |
 | Main CI | GREEN — run `32260387533`, all four jobs |
-| Windows package | Single setup executable + registered uninstaller/icons implemented; host validation pending |
+| Windows package | Single setup executable + registered uninstaller/icons implemented; corrected rerun pending |
+| Continuous delivery | Gated manual artifact + opt-in annotated-tag GitHub Release implemented |
+| Open-source license | ISC License present |
 | Cloud deployment | Not planned |
 
 ## Release gate
@@ -28,7 +30,8 @@ All identified P0/P1 application items are fixed, scoped or explicitly accepted.
 3. clean install, launch, stop, update and uninstall;
 4. verify offline routes and stable browser origin;
 5. verify synthetic backup/restore and browser-data disclosure;
-6. verify deterministic engine pairing and no residual ports/processes.
+6. verify deterministic engine pairing and no residual ports/processes;
+7. require green main CI and reviewed delivery manifests before authorizing an annotated release tag.
 
 ## Explicit non-goals
 

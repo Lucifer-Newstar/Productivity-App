@@ -21,6 +21,7 @@ Compression=lzma2
 SolidCompression=yes
 WizardStyle=modern
 UninstallDisplayName=Kaizen
+LicenseFile=..\..\LICENSE
 CloseApplications=yes
 
 [Files]

@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       version:
-        description: Installer version
+        description: Installer version (must match frontend/package.json)
         required: true
         default: 1.0.0
   push:
@@ -12,15 +12,49 @@ on:
       - "v*"
 
 permissions:
+  actions: read
   contents: read
 
 jobs:
-  build-and-verify:
-    name: Build and verify Windows setup
-    runs-on: windows-latest
-    timeout-minutes: 45
+  delivery-gate:
+    name: Validate delivery gate
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
     outputs:
       version: ${{ steps.version.outputs.value }}
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+      - name: Resolve and validate version
+        id: version
+        shell: bash
+        run: |
+          if [[ "${{ github.ref_type }}" == "tag" ]]; then version="${GITHUB_REF_NAME#v}"; else version="${{ inputs.version }}"; fi
+          [[ "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]] || { echo "Version must use x.y.z"; exit 1; }
+          app_version=$(node -p "require('./frontend/package.json').version")
+          [[ "$version" == "$app_version" ]] || { echo "Version $version does not match frontend package $app_version"; exit 1; }
+          echo "value=$version" >> "$GITHUB_OUTPUT"
+      - name: Privacy and release-source gate
+        run: python3 ai/wave0/scripts/privacy_scan.py --mode tracked
+      - name: Require tag provenance and green main CI
+        if: github.ref_type == 'tag'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          git fetch origin main --tags
+          git merge-base --is-ancestor "$GITHUB_SHA" origin/main || { echo "Release tag must point to main history"; exit 1; }
+          [[ "$(git cat-file -t "$GITHUB_REF")" == "tag" ]] || { echo "Release tag must be annotated"; exit 1; }
+          test -f "docs/releases/${GITHUB_REF_NAME}.md" || { echo "Missing reviewed release notes: docs/releases/${GITHUB_REF_NAME}.md"; exit 1; }
+          successful=$(gh run list --repo "$GITHUB_REPOSITORY" --workflow ci.yml --commit "$GITHUB_SHA" --event push --limit 20 --json status,conclusion,databaseId --jq '[.[] | select(.status == "completed" and .conclusion == "success")] | length')
+          [[ "$successful" -gt 0 ]] || { echo "No successful main Kaizen CI run exists for release commit $GITHUB_SHA"; exit 1; }
+
+  build-and-verify:
+    name: Build and verify Windows setup
+    needs: delivery-gate
+    runs-on: windows-latest
+    timeout-minutes: 45
     steps:
       - uses: actions/checkout@v5
       - uses: actions/setup-node@v6
@@ -30,22 +64,18 @@ jobs:
           cache-dependency-path: |
             frontend/package-lock.json
             ai/package-lock.json
-      - name: Resolve release version
-        id: version
-        shell: pwsh
-        run: |
-          $version = if ("${{ github.ref_type }}" -eq "tag") { "${{ github.ref_name }}".TrimStart("v") } else { "${{ inputs.version }}" }
-          if ($version -notmatch '^\d+\.\d+\.\d+$') { throw "Version must use x.y.z" }
-          "KAIZEN_RELEASE_VERSION=$version" >> $env:GITHUB_ENV
-          "value=$version" >> $env:GITHUB_OUTPUT
-      - name: Install Inno Setup compiler
+      - name: Install pinned Inno Setup compiler
         shell: pwsh
         run: choco install innosetup --version=6.7.1 --yes --no-progress
       - name: Build single-file setup
         shell: pwsh
+        env:
+          KAIZEN_RELEASE_VERSION: ${{ needs.delivery-gate.outputs.version }}
         run: powershell -ExecutionPolicy Bypass -File packaging/windows/build-installer.ps1 -Version $env:KAIZEN_RELEASE_VERSION
       - name: Install silently
         shell: pwsh
+        env:
+          KAIZEN_RELEASE_VERSION: ${{ needs.delivery-gate.outputs.version }}
         run: |
           $setup = "release-artifacts/Kaizen-$env:KAIZEN_RELEASE_VERSION-win-x64-setup.exe"
           if (-not (Test-Path $setup)) { throw "Setup executable was not produced" }
@@ -70,30 +100,55 @@ jobs:
           if ($process.ExitCode -ne 0) { throw "Uninstall failed with exit code $($process.ExitCode)" }
           Start-Sleep -Seconds 2
           if (Test-Path "$install/frontend/server.js") { throw "Installed runtime remained after uninstall" }
+      - name: Create sanitized delivery manifest
+        shell: pwsh
+        env:
+          KAIZEN_RELEASE_VERSION: ${{ needs.delivery-gate.outputs.version }}
+        run: |
+          $setup = "release-artifacts/Kaizen-$env:KAIZEN_RELEASE_VERSION-win-x64-setup.exe"
+          $signature = (Get-AuthenticodeSignature $setup).Status.ToString()
+          [ordered]@{
+            classification = "PUBLIC-SANITIZED-AGGREGATE"
+            contract = "kaizen.windows-delivery-manifest"
+            version = "1.0"
+            releaseVersion = $env:KAIZEN_RELEASE_VERSION
+            commit = "${{ github.sha }}"
+            nodeRuntime = "20.19.0"
+            innoSetup = "6.7.1"
+            authenticode = $signature
+            installVerifyUninstall = "PASS"
+          } | ConvertTo-Json | Set-Content "release-artifacts/release-manifest.json"
       - name: Upload verified installer
         uses: actions/upload-artifact@v4
         with:
-          name: Kaizen-${{ steps.version.outputs.value }}-win-x64
+          name: Kaizen-${{ needs.delivery-gate.outputs.version }}-win-x64
           path: |
-            release-artifacts/Kaizen-${{ steps.version.outputs.value }}-win-x64-setup.exe
-            release-artifacts/Kaizen-${{ steps.version.outputs.value }}-win-x64-setup.exe.sha256
+            release-artifacts/Kaizen-${{ needs.delivery-gate.outputs.version }}-win-x64-setup.exe
+            release-artifacts/Kaizen-${{ needs.delivery-gate.outputs.version }}-win-x64-setup.exe.sha256
             release-artifacts/package-verification.json
+            release-artifacts/release-manifest.json
           if-no-files-found: error
           retention-days: 14
 
   github-release:
     name: Publish open-source release
     if: github.ref_type == 'tag'
-    needs: build-and-verify
+    needs: [delivery-gate, build-and-verify]
     runs-on: ubuntu-latest
     permissions:
       contents: write
     steps:
+      - uses: actions/checkout@v5
       - uses: actions/download-artifact@v4
         with:
-          name: Kaizen-${{ needs.build-and-verify.outputs.version }}-win-x64
+          name: Kaizen-${{ needs.delivery-gate.outputs.version }}-win-x64
           path: release-artifacts
-      - name: Publish tag assets
+      - name: Publish verified tag assets
         env:
           GH_TOKEN: ${{ github.token }}
-        run: gh release create "${{ github.ref_name }}" release-artifacts/* --repo "${{ github.repository }}" --generate-notes --verify-tag
+        run: |
+          gh release create "${{ github.ref_name }}" release-artifacts/* \
+            --repo "${{ github.repository }}" \
+            --title "Kaizen ${{ github.ref_name }}" \
+            --notes-file "docs/releases/${{ github.ref_name }}.md" \
+            --verify-tag

@@ -90,6 +90,10 @@ Frontend to deterministic Core Today
 
 The product completion backlog still blocks merge even when these checks are green. CI proves current behavior; it does not prove seeded data, timezone, persistence architecture or every release decision is finished.
 
+## Continuous delivery boundary
+
+Correctness CI never publishes a release. The separate Windows Installer workflow can create a private manual artifact or, only from an annotated version tag that passes exact-main CI, privacy, provenance, release-note, install/verify/uninstall and manifest gates, publish a GitHub Release. See [`CONTINUOUS-DELIVERY.md`](CONTINUOUS-DELIVERY.md).
+
 ## Local reproduction
 
 Use the commands in [`TESTING.md`](TESTING.md). The live integration job can be reproduced after installing frontend/AI dependencies and building AI:

@@ -42,6 +42,7 @@ Copy-Item (Join-Path $PSScriptRoot "assets/kaizen.ico") (Join-Path $stage "asset
 Copy-Item (Join-Path $PSScriptRoot "start-kaizen.cmd") $stage
 Copy-Item (Join-Path $PSScriptRoot "stop-kaizen.cmd") $stage
 Copy-Item (Join-Path $PSScriptRoot "verify-kaizen.cmd") $stage
+Copy-Item (Join-Path $root "LICENSE") $stage
 Set-Content (Join-Path $stage "VERSION") $Version -NoNewline
 Set-Content (Join-Path $stage "README.txt") "Launch Kaizen from its desktop or Start Menu shortcut. Keep the console open while using Kaizen. Product data remains in the browser profile and is not removed by uninstall."
 Write-Host "Staged package: $stage"

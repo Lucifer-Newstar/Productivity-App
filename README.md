@@ -123,3 +123,7 @@ Start with:
 - Raw AI validation artifacts stay in ignored `ai/wave0/results-local/`; only sanitized aggregates may enter Git.
 
 See [`docs/security/SECURITY.md`](docs/security/SECURITY.md) and [`docs/ai/PRIVACY.md`](docs/ai/PRIVACY.md).
+
+## License
+
+Kaizen is available under the [ISC License](LICENSE). Release binaries remain subject to the licenses and terms of bundled runtimes and optional metadata providers.
