@@ -68,9 +68,17 @@ It writes `package-verification.json` containing only `PUBLIC-SANITIZED-AGGREGAT
 
 Core personal tracking, backup/recovery and deterministic Core Today work offline. Entertainment metadata provider features require network access and optional locally configured credentials. No remote AI provider is used.
 
-## Build command
+## Build options
 
-Install Inno Setup 6, then run from Windows PowerShell:
+### GitHub Actions
+
+Run the **Windows Installer** workflow manually with version `1.0.0`. Its Windows runner builds the setup executable, silently installs it, runs packaged verification, silently uninstalls it, and uploads the setup, checksum and sanitized verification report as one workflow artifact.
+
+A normal branch push runs correctness CI but does not publish a release. Pushing an intentional semantic version tag such as `v1.0.0` runs the same Windows verification and then creates an open-source GitHub Release containing the verified files.
+
+### Local Windows build
+
+Install Inno Setup 6, then run:
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File packaging/windows/build-installer.ps1 -Version 1.0.0

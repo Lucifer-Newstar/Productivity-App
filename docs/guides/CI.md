@@ -1,6 +1,6 @@
 # Continuous integration
 
-Kaizen CI runs on GitHub-hosted Ubuntu CPU runners for pull requests to `main` and pushes to `ai` or `main`.
+Kaizen CI runs on GitHub-hosted Ubuntu CPU runners for pull requests to `main` and pushes to `main`, legacy `ai`, or the active `windows-packaging` branch. The explicit packaging branch trigger prevents a plain push from being silently untested.
 
 ```text
 .github/workflows/ci.yml

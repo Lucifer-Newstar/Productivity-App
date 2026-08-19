@@ -4,7 +4,7 @@ on:
   pull_request:
     branches: [main]
   push:
-    branches: [main, ai]
+    branches: [main, ai, windows-packaging]
 
 permissions:
   contents: read

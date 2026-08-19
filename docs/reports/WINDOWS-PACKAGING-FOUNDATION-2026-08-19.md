@@ -17,6 +17,8 @@
 - SHA-256 sidecars for ZIP and installer.
 - Static/executable packaging contract QA.
 - Bundled privacy-safe verifier covering 39 routes, local CSP, cross-site denial, deterministic Core Today and released ports.
+- GitHub Windows workflow for build, silent install, packaged verification, silent uninstall and artifact upload.
+- Release publication only on an intentional `v*` tag; manual runs create private workflow artifacts without publishing a release.
 
 ## Frozen runtime contents
 

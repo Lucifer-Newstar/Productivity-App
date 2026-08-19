@@ -255,8 +255,8 @@ PR #4 merged into `main` as `06cf13c`; main CI run `32260387533` passed all four
 ### Current packaging/release gate
 
 1. The single-file Windows installer foundation is implemented under `packaging/windows/`; ADR-014 fixes single-file distribution.
-2. Build both artifacts on a physical Windows x64 host.
-3. Verify clean install/update/uninstall behavior.
+2. Run the Windows Installer workflow manually for a private artifact, or build on a physical Windows x64 host.
+3. Verify clean install/update/uninstall behavior; the workflow automates silent install/verify/uninstall.
 4. Verify offline operation.
 5. Verify browser-data location and synthetic backup restore.
 6. Verify loopback deterministic engine startup/pairing.
