@@ -8,7 +8,7 @@
 
 ```text
 Files changed: 228
-Additions: 18005
+Additions: 18018
 Deletions: 245
 ```
 
@@ -23,7 +23,7 @@ Line counts are Git numstat values. Added documentation/source files count every
 | `README.md` | 1 | 108 | 39 |
 | `ai` | 96 | 12500 | 0 |
 | `backend` | 2 | 79 | 65 |
-| `docs` | 76 | 4988 | 80 |
+| `docs` | 76 | 5001 | 80 |
 | `frontend` | 51 | 308 | 61 |
 
 ## Complete file list
@@ -136,7 +136,7 @@ Line counts are Git numstat values. Added documentation/source files count every
 | Modified | `docs/ai/DECISION-REGISTER.md` | 3 | 0 |
 | Added | `docs/ai/DELIVERY-PLAYBOOK.md` | 191 | 0 |
 | Modified | `docs/ai/EVALUATION.md` | 12 | 0 |
-| Added | `docs/ai/IMPLEMENTATION-LEDGER.md` | 236 | 0 |
+| Added | `docs/ai/IMPLEMENTATION-LEDGER.md` | 237 | 0 |
 | Added | `docs/ai/MASTER-SPECIFICATION.md` | 191 | 0 |
 | Modified | `docs/ai/OBSERVABILITY.md` | 4 | 0 |
 | Modified | `docs/ai/PRIVACY.md` | 51 | 0 |
@@ -177,7 +177,7 @@ Line counts are Git numstat values. Added documentation/source files count every
 | Modified | `docs/reference/README.md` | 1 | 1 |
 | Modified | `docs/reference/ROUTES.md` | 7 | 1 |
 | Added | `docs/reports/AI-BRANCH-PR-CHANGED-FILES-2026-08-19.md` | 268 | 0 |
-| Added | `docs/reports/AI-BRANCH-PR-INTEGRATION-REVIEW-2026-08-19.md` | 222 | 0 |
+| Added | `docs/reports/AI-BRANCH-PR-INTEGRATION-REVIEW-2026-08-19.md` | 234 | 0 |
 | Added | `docs/reports/AI-DOCUMENTATION-PROCESS-2026-08-18.md` | 22 | 0 |
 | Added | `docs/reports/AI-V0.1-INTEGRATION-FREEZE-2026-08-17.md` | 22 | 0 |
 | Added | `docs/reports/AI-V0.1.1-ACCEPTANCE-AND-MODEL-EVAL-DESIGN-2026-08-19.md` | 148 | 0 |

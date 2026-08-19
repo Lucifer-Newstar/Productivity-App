@@ -68,8 +68,9 @@ Application composition resolves only deterministic Core Today, model settings f
 | Home integration disclosure | PASS | deterministic/read-only/no-model copy |
 | Live default-config integration | PASS | pair/status/route/tool/SSE/source/session flow |
 | Frontend/backend regression review | PASS | all product, security, build and API suites |
-| `ai`→`main` complete diff | REVIEWED | 228 files; 18,005 additions; 245 deletions |
+| `ai`→`main` complete diff | REVIEWED | 228 files; 18,018 additions; 245 deletions |
 | Merge conflict precheck | PASS | `origin/main` is ancestor; merge-tree clean |
+| GitHub PR creation | BLOCKED HERE | no GitHub CLI/token/HTTPS credentials; prepared compare URL/body |
 | Merge action | NOT PERFORMED | stop for PR review |
 
 The new gate does not supersede or weaken `W0-GATE-2`. It evaluates a different, narrower provider role with no tools.

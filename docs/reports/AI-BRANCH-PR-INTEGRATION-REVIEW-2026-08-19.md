@@ -4,7 +4,7 @@
 **Base:** `origin/main` at `cc8155d265f8752e20c294f4a6fd51f36d5ea291`
 **Head branch:** `ai`
 **Merge performed:** no
-**Review decision:** READY FOR PR REVIEW — DO NOT MERGE YET
+**Review decision:** READY FOR PR REVIEW — PR CREATION REQUIRES AUTHENTICATED GITHUB SESSION — DO NOT MERGE YET
 
 ## Executive summary
 
@@ -15,9 +15,9 @@ AI-ADR-020 corrected the only material stale architecture assumption found durin
 ## PR diff summary
 
 ```text
-Commits from main: 55
+Commits from main: 56
 Files changed: 228
-Additions: 18005
+Additions: 18018
 Deletions: 245
 Merge base: cc8155d265f8752e20c294f4a6fd51f36d5ea291
 Merge topology: origin/main is an ancestor of ai; no conflict expected
@@ -198,9 +198,21 @@ Production CSP remains free of `unsafe-eval`; external URLs, restored images, CS
 - Internal provider identity remains `kaizen-mock` for historical compatibility; UI presents “Deterministic baseline.”
 - Historical model adapters/harnesses remain in the repository for reproducibility but are application-unreachable and authorization-closed.
 
+## PR creation status
+
+No open `ai`→`main` PR existed when checked through the public GitHub API. This workspace has no `gh` executable, GitHub token or HTTPS Git credentials; authenticated push returned `could not read Username`. Credentials were not requested or exposed.
+
+From an authenticated environment, push the current `ai` head and open the prepared comparison URL:
+
+```text
+https://github.com/Lucifer-Newstar/Productivity-App/compare/main...ai?expand=1
+```
+
+Use the title/body below and leave the PR unmerged.
+
 ## PR recommendation
 
-Open `ai` → `main` for review. Do not merge until a human reviewer confirms the large historical/evaluation documentation diff and the deterministic-only application decision. No additional implementation is required for the reviewed scope.
+Open `ai` → `main` for review. Do not merge until a human reviewer confirms the large historical/evaluation documentation diff and deterministic-only application decision. No additional implementation is required for the reviewed scope.
 
 ### Proposed PR title
 
