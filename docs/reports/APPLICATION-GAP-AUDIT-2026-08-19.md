@@ -296,14 +296,18 @@ Current product-state docs are generally strong, but several ambiguities/drifts 
 
 - APP-003 local-calendar handling is fixed and covered by `qa:core`.
 - APP-101 habit streak semantics are fixed and covered by `qa:core`.
-- APP-002 automatic personal-looking seed history is removed; catalogs/templates remain and `qa:baseline` protects the boundary.
+- APP-002 automatic personal-looking seed history is removed; catalogs/templates remain and demo tools are production-gated.
+- APP-004/107 browser-only authority and reference API bind security are resolved.
+- APP-102/104/105 placeholder/transient-state gaps are resolved.
+- APP-106/109 whole-product backup and corrupt-storage recovery are implemented.
+- APP-108/110/112/113 security scope, route recovery, Home history and terminology are resolved.
 - CI and the deterministic live integration job are implemented; first hosted proof remains pending.
 
 The remaining backlog, rather than the original finding text, is authoritative for current status.
 
 ## Audit validation
 
-The audit was performed against source/runtime evidence and the same full green baseline recorded by the pre-merge review: frontend TypeScript/ESLint/build, 458 Health assertions, 168 Entertainment structural checks, 42 Entertainment executable checks, security/CSP/notification/UI/Home/AI suites, backend build plus 13 security checks, AI 24 tests plus closed harness QA, live Core Today flow, 56 documentation checks and 268 commentary checks.
+The audit was performed against source/runtime evidence and the same full green baseline recorded by the pre-merge review: frontend TypeScript/ESLint/build, 458 Health assertions, 168 Entertainment structural checks, 42 Entertainment executable checks, security/CSP/notification/UI/Home/AI suites, backend build plus 13 security checks, AI 24 tests plus closed harness QA, live Core Today flow, 59 documentation checks and 268 commentary checks.
 
 Green regression suites establish that existing implemented behavior still works. They do not negate the product gaps classified below.
 

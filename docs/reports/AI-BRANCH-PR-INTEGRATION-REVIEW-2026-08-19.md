@@ -4,21 +4,21 @@
 **Base:** `origin/main` at `cc8155d265f8752e20c294f4a6fd51f36d5ea291`
 **Head branch:** `ai`
 **Merge performed:** no
-**Review decision:** HOLD PR CREATION/MERGE — APPLICATION COMPLETION BACKLOG REQUIRED
+**Review decision:** HOLD PR CREATION/MERGE — FIRST HOSTED CI RUN REQUIRED
 
 ## Executive summary
 
 The Core Today integration review found no unresolved AI-chain blocker. Frontend, Express reference API and Intelligence Engine remain separate and correctly composed; deterministic Core Today is the only application AI provider.
 
-The later whole-product gap audit established that this is not sufficient evidence for release or merge. Production seed data, calendar timezone correctness, storage/backend authority, absent CI and other P0/P1 items remain. This report now defers to [`APPLICATION-GAP-AUDIT-2026-08-19.md`](APPLICATION-GAP-AUDIT-2026-08-19.md) and [`APPLICATION-COMPLETION-BACKLOG-2026-08-19.md`](APPLICATION-COMPLETION-BACKLOG-2026-08-19.md).
+The whole-product gap audit found real release blockers beyond AI. Those local P0/P1 items are now fixed, scoped or explicitly accepted, and the final local regression is green. PR creation remains held until the implemented four-job workflow produces its first hosted GitHub result. Current authority is [`CURRENT-RELEASE-STATUS-2026-08-19.md`](CURRENT-RELEASE-STATUS-2026-08-19.md).
 
 ## PR diff summary
 
 ```text
-Commits from main: 58
-Files changed: 236
-Additions: 18905
-Deletions: 253
+Commits from main: 66
+Files changed: 275
+Additions: 20158
+Deletions: 496
 Merge base: cc8155d265f8752e20c294f4a6fd51f36d5ea291
 Merge topology: origin/main is an ancestor of ai; no conflict expected
 ```
@@ -185,26 +185,24 @@ Production CSP remains free of `unsafe-eval`; external URLs, restored images, CS
 | Home intelligence | 10/10 PASS |
 | Backend TypeScript build | PASS |
 | Backend security smoke | 13/13 PASS |
-| Documentation QA | 56/56 PASS |
+| Documentation QA | 59/59 PASS |
 | Source commentary QA | 268/268 PASS |
 | Staged privacy scan | PASS |
 | Git diff check | PASS |
 | Main ancestry / merge conflict precheck | PASS |
 
-## Product-level constraints found after AI review
+## Current constraints after completion work
 
-- Browser persistence is local and unencrypted; release risk acceptance is unresolved.
-- Express is unused, in-memory reference code rather than durable application persistence.
-- Production first-run state contains mock personal history.
-- Calendar and habit correctness gaps require fixes.
-- No CI or automated whole-chain integration job exists.
+- Browser persistence is unencrypted under the explicitly accepted trusted-profile boundary.
+- Express is excluded reference code, not release persistence.
+- Hosted CI has not yet run because this environment cannot push/create the PR.
+- Windows/local packaging and offline verification are post-merge work.
+- P2 feature items remain intentional deferrals.
 - Historical model adapters/harnesses remain application-unreachable and authorization-closed.
-
-See the current completion backlog for priority and exit evidence.
 
 ## PR creation status
 
-No open `ai`→`main` PR existed when checked through the public GitHub API. This workspace also has no authenticated GitHub tooling. More importantly, the product gap audit now blocks PR creation under the approved sequence.
+No open `ai`→`main` PR existed when checked through the public GitHub API, and this workspace has no authenticated GitHub tooling. Local completion is green; first hosted CI proof still blocks PR creation.
 
 The future comparison URL remains:
 
@@ -212,11 +210,11 @@ The future comparison URL remains:
 https://github.com/Lucifer-Newstar/Productivity-App/compare/main...ai?expand=1
 ```
 
-Do not open or merge it until the P0 backlog and CI foundation pass.
+Do not open or merge it until all four hosted CI jobs pass.
 
 ## PR recommendation
 
-**HOLD.** Complete the product-truth backlog, add CI and rerun the full release gate. Then regenerate this diff/review and create the PR for human review.
+**HOLD FOR HOSTED CI.** After the first green hosted run, regenerate this diff/review, create the PR from an authenticated session and stop for human review.
 
 ### Proposed PR title
 

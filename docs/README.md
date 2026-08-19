@@ -1,6 +1,8 @@
 # Kaizen documentation
 
-_Last synchronized on 2026-08-18 from the persistent `ai` branch._
+_Last synchronized on 2026-08-19 from the persistent `ai` branch._
+
+Crash/handoff entry point: [`PROJECT-CONTINUITY-BLUEPRINT.md`](PROJECT-CONTINUITY-BLUEPRINT.md).
 
 Kaizen is a local-first productivity and life OS built as one Next.js application with five dedicated spaces. The frontend uses React Context state slices persisted under separate browser-storage keys; the Express service is an optional in-memory reference/sync API and is not required for normal frontend use.
 
@@ -59,6 +61,8 @@ Current production verification: **39/39 user routes return HTTP 200**, five Ent
 | [`reports/BROWSER-BACKUP-RECOVERY-2026-08-19.md`](reports/BROWSER-BACKUP-RECOVERY-2026-08-19.md) | Whole-product backup, rollback restore and corruption recovery |
 | [`reports/P1-CORRECTNESS-POLISH-2026-08-19.md`](reports/P1-CORRECTNESS-POLISH-2026-08-19.md) | Wilks, focus persistence and voice-session correctness polish |
 | [`reports/RELEASE-RESILIENCE-DECISIONS-2026-08-19.md`](reports/RELEASE-RESILIENCE-DECISIONS-2026-08-19.md) | Trusted-profile security decision, route recovery and navigation history |
+| [`reports/CURRENT-RELEASE-STATUS-2026-08-19.md`](reports/CURRENT-RELEASE-STATUS-2026-08-19.md) | Current release matrix and remaining hosted/PR/packaging gates |
+| [`reports/FINAL-LOCAL-REGRESSION-2026-08-19.md`](reports/FINAL-LOCAL-REGRESSION-2026-08-19.md) | Complete latest frontend/backend/AI/integration regression evidence |
 | [`notifications/README.md`](notifications/README.md) | Global inbox, rule catalog, settings and scope decisions |
 
 ### Kaizen Intelligence Engine

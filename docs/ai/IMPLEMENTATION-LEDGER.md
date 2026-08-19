@@ -6,9 +6,9 @@ _Last updated: 2026-08-19_
 
 ## Current milestone
 
-> **CI foundation and deterministic live integration automation are implemented; hosted proof and remaining P0 product fixes still block PR/merge.**
+> **Local application completion work is closed; first hosted CI proof now gates PR creation.**
 
-Four CPU-only jobs now cover frontend, reference API, deterministic Intelligence and the real Core Today proxy/SSE chain. CI runs no model or GPU workload. The current application backlog remains authoritative: production mock data, calendar timezone correctness and persistence/backend authority still require resolution. No AI scope expansion is authorized.
+CI, production data truth, local-date/habit correctness, browser-only authority, backend bind security, backup/recovery, demo gating, placeholder removal and resilience/navigation work are implemented and locally green. The continuity blueprint and current release matrix define exact handoff/finish steps. AI scope remains closed; no model or GPU work is permitted.
 
 ## Completed architecture and foundation
 
@@ -68,12 +68,14 @@ Four CPU-only jobs now cover frontend, reference API, deterministic Intelligence
 | Home integration disclosure | PASS | deterministic/read-only/no-model copy |
 | Live default-config integration | PASS | pair/status/route/tool/SSE/source/session flow |
 | Frontend/backend regression review | PASS | all product, security, build and API suites |
-| `ai`→`main` current diff | AUDITED / HOLD | 236 files; 18,905 additions; 253 deletions |
+| `ai`→`main` current diff | AUDITED / HOLD | 275 files; 20,158 additions; 496 deletions |
 | Merge conflict precheck | PASS | `origin/main` is ancestor; merge-tree clean |
 | Whole-product gap audit | COMPLETE | 39 routes, persistence, mocks, API consumption, states and integration traced |
 | Product completion backlog | COMPLETE | P0/P1/P2, completed, rejected AI scope and CI plan |
 | CI workflow | IMPLEMENTED / HOSTED RUN PENDING | frontend, backend, deterministic AI, integration |
 | Deterministic CI integration | PASS LOCALLY | actual engine + Next proxy + pairing/SSE/tool/source/session |
+| Product P0/P1 completion | PASS LOCALLY | data, dates, habits, backup, security, resilience, placeholders |
+| Continuity/release handoff | COMPLETE | blueprint + current release matrix + backlog |
 | Model/GPU CI exclusion | ENFORCED | closed authorization; no execution commands or runner |
 | GitHub PR creation | HOLD | P0 backlog and hosted CI now block PR |
 | Merge action | NOT PERFORMED | do not merge before release gates |
@@ -207,7 +209,7 @@ The larger control is rejected. Wave 0 is complete with no model selected. No mo
 
 ## Next review
 
-Obtain the first hosted CI result, then implement APP-002 production data/onboarding truth, APP-003 local-date correctness and APP-101 habit streak correctness. APP-004 requires an explicit browser-only versus durable-backend authority decision before backend completion work. Regenerate the PR review only after P0 gates pass.
+Obtain the first hosted CI result. If all four jobs pass, rerun the synchronized release matrix, regenerate the PR diff/review, create `ai`→`main` from an authenticated session and stop for human review. Merge and Windows packaging remain separately approval-gated.
 
 Do not re-enable model providers, rerun candidates, add AI domains, memory, retrieval, Health, writes, automation, remote processing or v0.2 work.
 

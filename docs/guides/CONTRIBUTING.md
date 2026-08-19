@@ -85,6 +85,10 @@ Every AI implementation, validation, benchmark intake, fix and selection step mu
 
 Run `npm run qa:docs` from `frontend/` before the documentation commit. Follow [`../ai/DELIVERY-PLAYBOOK.md`](../ai/DELIVERY-PLAYBOOK.md).
 
+## Session handoff
+
+Before ending a long implementation session, verify [`../PROJECT-CONTINUITY-BLUEPRINT.md`](../PROJECT-CONTINUITY-BLUEPRINT.md) still reflects current architecture, completed backlog and exact next steps. Never place credentials, private paths or personal data in the handoff.
+
 ## Pull-request checklist
 
 - [ ] Focused branch and commit history

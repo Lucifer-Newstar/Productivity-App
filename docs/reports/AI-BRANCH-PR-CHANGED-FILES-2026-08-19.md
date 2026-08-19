@@ -2,14 +2,14 @@
 
 **Generated:** 2026-08-19
 **Base:** `origin/main` (`cc8155d265f8752e20c294f4a6fd51f36d5ea291`)
-**Head:** `ai` CI-foundation review
+**Head:** `ai` local-completion review
 
 ## Aggregate diff
 
 ```text
-Files changed: 236
-Additions: 18905
-Deletions: 253
+Files changed: 275
+Additions: 20158
+Deletions: 496
 ```
 
 Line counts are Git numstat values. Added documentation/source files count every line; generated dependency/build directories are excluded.
@@ -19,13 +19,13 @@ Line counts are Git numstat values. Added documentation/source files count every
 | Area | Files | Additions | Deletions |
 |---|---:|---:|---:|
 | `.githooks` | 1 | 3 | 0 |
-| `.github` | 1 | 143 | 0 |
+| `.github` | 1 | 148 | 0 |
 | `.gitignore` | 1 | 19 | 0 |
-| `README.md` | 1 | 108 | 39 |
+| `README.md` | 1 | 109 | 39 |
 | `ai` | 96 | 12500 | 0 |
-| `backend` | 3 | 84 | 69 |
-| `docs` | 81 | 5693 | 84 |
-| `frontend` | 51 | 310 | 61 |
+| `backend` | 5 | 105 | 72 |
+| `docs` | 93 | 6603 | 165 |
+| `frontend` | 76 | 626 | 220 |
 | `scripts` | 1 | 45 | 0 |
 
 ## Complete file list
@@ -33,9 +33,9 @@ Line counts are Git numstat values. Added documentation/source files count every
 | Status | File | + | − |
 |---|---|---:|---:|
 | Added | `.githooks/pre-commit` | 3 | 0 |
-| Added | `.github/workflows/ci.yml` | 143 | 0 |
+| Added | `.github/workflows/ci.yml` | 148 | 0 |
 | Modified | `.gitignore` | 19 | 0 |
-| Modified | `README.md` | 108 | 39 |
+| Modified | `README.md` | 109 | 39 |
 | Added | `ai/README.md` | 80 | 0 |
 | Added | `ai/evaluation/v0.1.1/evaluate.ts` | 81 | 0 |
 | Added | `ai/evaluation/v0.1.1/gates.v0.1.1.json` | 28 | 0 |
@@ -133,14 +133,17 @@ Line counts are Git numstat values. Added documentation/source files count every
 | Added | `ai/wave0/scripts/soak_model.py` | 28 | 0 |
 | Added | `ai/wave0/scripts/transport_probe.py` | 85 | 0 |
 | Modified | `backend/README.md` | 78 | 65 |
+| Modified | `backend/package.json` | 1 | 0 |
 | Modified | `backend/scripts/security-smoke.mjs` | 1 | 0 |
-| Modified | `backend/src/server.ts` | 5 | 4 |
-| Modified | `docs/README.md` | 43 | 13 |
+| Added | `backend/scripts/startup-security.mjs` | 16 | 0 |
+| Modified | `backend/src/server.ts` | 9 | 7 |
+| Added | `docs/PROJECT-CONTINUITY-BLUEPRINT.md` | 392 | 0 |
+| Modified | `docs/README.md` | 53 | 13 |
 | Modified | `docs/ai/ARCHITECTURE.md` | 4 | 2 |
 | Modified | `docs/ai/DECISION-REGISTER.md` | 3 | 0 |
 | Added | `docs/ai/DELIVERY-PLAYBOOK.md` | 191 | 0 |
 | Modified | `docs/ai/EVALUATION.md` | 12 | 0 |
-| Added | `docs/ai/IMPLEMENTATION-LEDGER.md` | 242 | 0 |
+| Added | `docs/ai/IMPLEMENTATION-LEDGER.md` | 244 | 0 |
 | Added | `docs/ai/MASTER-SPECIFICATION.md` | 196 | 0 |
 | Modified | `docs/ai/OBSERVABILITY.md` | 4 | 0 |
 | Modified | `docs/ai/PRIVACY.md` | 51 | 0 |
@@ -168,22 +171,25 @@ Line counts are Git numstat values. Added documentation/source files count every
 | Added | `docs/ai/wave-0/TARGET-RUNBOOK.md` | 189 | 0 |
 | Modified | `docs/architecture/ARCHITECTURE.md` | 10 | 5 |
 | Modified | `docs/architecture/DATA-MODEL.md` | 4 | 4 |
+| Modified | `docs/architecture/DECISIONS.md` | 29 | 0 |
 | Modified | `docs/architecture/README.md` | 1 | 1 |
 | Added | `docs/guides/CI.md` | 106 | 0 |
-| Modified | `docs/guides/CONFIGURATION.md` | 26 | 0 |
-| Modified | `docs/guides/CONTRIBUTING.md` | 31 | 6 |
+| Modified | `docs/guides/CONFIGURATION.md` | 28 | 1 |
+| Modified | `docs/guides/CONTRIBUTING.md` | 35 | 6 |
+| Modified | `docs/guides/DATA-BACKUP-RESTORE.md` | 30 | 39 |
+| Modified | `docs/guides/DEPLOYMENT.md` | 40 | 36 |
 | Modified | `docs/guides/LOCAL-DEVELOPMENT.md` | 13 | 8 |
 | Modified | `docs/guides/README.md` | 2 | 1 |
-| Modified | `docs/guides/TESTING.md` | 43 | 3 |
+| Modified | `docs/guides/TESTING.md` | 48 | 3 |
 | Modified | `docs/quality/qa/README.md` | 1 | 1 |
 | Modified | `docs/reference/API.md` | 16 | 2 |
 | Modified | `docs/reference/FEATURES.md` | 7 | 4 |
 | Modified | `docs/reference/GLOSSARY.md` | 1 | 1 |
-| Modified | `docs/reference/PERSISTENCE-KEYS.md` | 9 | 2 |
+| Modified | `docs/reference/PERSISTENCE-KEYS.md` | 15 | 7 |
 | Modified | `docs/reference/README.md` | 1 | 1 |
 | Modified | `docs/reference/ROUTES.md` | 7 | 1 |
-| Added | `docs/reports/AI-BRANCH-PR-CHANGED-FILES-2026-08-19.md` | 278 | 0 |
-| Added | `docs/reports/AI-BRANCH-PR-INTEGRATION-REVIEW-2026-08-19.md` | 238 | 0 |
+| Added | `docs/reports/AI-BRANCH-PR-CHANGED-FILES-2026-08-19.md` | 317 | 0 |
+| Added | `docs/reports/AI-BRANCH-PR-INTEGRATION-REVIEW-2026-08-19.md` | 236 | 0 |
 | Added | `docs/reports/AI-DOCUMENTATION-PROCESS-2026-08-18.md` | 22 | 0 |
 | Added | `docs/reports/AI-V0.1-INTEGRATION-FREEZE-2026-08-17.md` | 22 | 0 |
 | Added | `docs/reports/AI-V0.1.1-ACCEPTANCE-AND-MODEL-EVAL-DESIGN-2026-08-19.md` | 148 | 0 |
@@ -205,11 +211,19 @@ Line counts are Git numstat values. Added documentation/source files count every
 | Added | `docs/reports/AI-WAVE-0-QWEN-PREFLIGHT-2026-08-18.md` | 29 | 0 |
 | Added | `docs/reports/AI-WAVE-0-TARGET-RESULT-1-2026-08-18.md` | 47 | 0 |
 | Added | `docs/reports/AI-WAVE-1-FOUNDATION-2026-08-17.md` | 43 | 0 |
-| Added | `docs/reports/APPLICATION-COMPLETION-BACKLOG-2026-08-19.md` | 144 | 0 |
-| Added | `docs/reports/APPLICATION-GAP-AUDIT-2026-08-19.md` | 311 | 0 |
+| Added | `docs/reports/APPLICATION-COMPLETION-BACKLOG-2026-08-19.md` | 140 | 0 |
+| Added | `docs/reports/APPLICATION-GAP-AUDIT-2026-08-19.md` | 324 | 0 |
+| Added | `docs/reports/BROWSER-BACKUP-RECOVERY-2026-08-19.md` | 36 | 0 |
 | Added | `docs/reports/CI-FOUNDATION-2026-08-19.md` | 90 | 0 |
+| Added | `docs/reports/CORE-DATE-HABIT-CORRECTNESS-2026-08-19.md` | 42 | 0 |
+| Added | `docs/reports/CURRENT-RELEASE-STATUS-2026-08-19.md` | 55 | 0 |
 | Added | `docs/reports/DOCS-AND-COMMENTARY-POLISH-2026-08-18.md` | 35 | 0 |
-| Modified | `docs/reports/README.md` | 27 | 0 |
+| Added | `docs/reports/FINAL-LOCAL-REGRESSION-2026-08-19.md` | 65 | 0 |
+| Added | `docs/reports/LOCAL-RELEASE-DATA-AUTHORITY-2026-08-19.md` | 37 | 0 |
+| Added | `docs/reports/P1-CORRECTNESS-POLISH-2026-08-19.md` | 31 | 0 |
+| Added | `docs/reports/PRODUCTION-DATA-BASELINE-2026-08-19.md` | 44 | 0 |
+| Modified | `docs/reports/README.md` | 35 | 0 |
+| Added | `docs/reports/RELEASE-RESILIENCE-DECISIONS-2026-08-19.md` | 26 | 0 |
 | Modified | `docs/spaces/career/QA.md` | 1 | 1 |
 | Modified | `docs/spaces/career/README.md` | 1 | 1 |
 | Modified | `docs/spaces/entertainment/APIS.md` | 1 | 1 |
@@ -217,25 +231,31 @@ Line counts are Git numstat values. Added documentation/source files count every
 | Modified | `docs/spaces/projects/QA.md` | 1 | 1 |
 | Modified | `docs/spaces/workout/QA.md` | 1 | 1 |
 | Modified | `frontend/README.md` | 73 | 54 |
-| Modified | `frontend/app/AppShell.tsx` | 1 | 0 |
+| Modified | `frontend/app/AppShell.tsx` | 8 | 6 |
 | Added | `frontend/app/api/ai/[...path]/route.ts` | 9 | 0 |
 | Modified | `frontend/app/api/entertainment/details/route.ts` | 1 | 0 |
 | Modified | `frontend/app/api/entertainment/image/route.ts` | 1 | 0 |
 | Modified | `frontend/app/api/entertainment/providers/route.ts` | 1 | 0 |
 | Modified | `frontend/app/api/entertainment/search/route.ts` | 1 | 0 |
 | Modified | `frontend/app/api/entertainment/trending/route.ts` | 1 | 0 |
+| Added | `frontend/app/error.tsx` | 5 | 0 |
 | Modified | `frontend/app/globals.css` | 4 | 0 |
-| Modified | `frontend/components/Dashboard.tsx` | 22 | 1 |
+| Added | `frontend/app/loading.tsx` | 2 | 0 |
+| Modified | `frontend/components/Calendar.tsx` | 11 | 9 |
+| Modified | `frontend/components/Dashboard.tsx` | 24 | 2 |
+| Added | `frontend/components/DataRecoveryPanel.tsx` | 10 | 0 |
+| Modified | `frontend/components/Habits.tsx` | 13 | 19 |
 | Modified | `frontend/components/HomeSectionHeader.tsx` | 1 | 0 |
 | Added | `frontend/components/IntelligencePanel.tsx` | 24 | 0 |
 | Modified | `frontend/components/NotificationButton.tsx` | 1 | 0 |
-| Modified | `frontend/components/NotificationCenter.tsx` | 1 | 0 |
-| Modified | `frontend/components/Pomodoro.tsx` | 1 | 0 |
+| Modified | `frontend/components/NotificationCenter.tsx` | 7 | 4 |
+| Modified | `frontend/components/Pomodoro.tsx` | 6 | 4 |
 | Modified | `frontend/components/SideNav.tsx` | 1 | 0 |
 | Modified | `frontend/components/SpaceIcon.tsx` | 1 | 0 |
-| Modified | `frontend/components/StorageErrorBanner.tsx` | 1 | 0 |
-| Modified | `frontend/components/Tasks.tsx` | 1 | 0 |
+| Modified | `frontend/components/StorageErrorBanner.tsx` | 3 | 1 |
+| Modified | `frontend/components/Tasks.tsx` | 3 | 1 |
 | Modified | `frontend/components/TopNav.tsx` | 1 | 0 |
+| Modified | `frontend/components/career/sections/GlobalSection.tsx` | 3 | 2 |
 | Modified | `frontend/components/entertainment/EntertainmentIntelligence.tsx` | 1 | 0 |
 | Modified | `frontend/components/entertainment/EntertainmentMediaDetails.tsx` | 1 | 0 |
 | Modified | `frontend/components/entertainment/EntertainmentOrganize.tsx` | 1 | 0 |
@@ -243,36 +263,55 @@ Line counts are Git numstat values. Added documentation/source files count every
 | Modified | `frontend/components/entertainment/EntertainmentSocial.tsx` | 1 | 0 |
 | Modified | `frontend/components/entertainment/EntertainmentStats.tsx` | 1 | 0 |
 | Modified | `frontend/components/entertainment/EntertainmentStudio.tsx` | 1 | 0 |
+| Modified | `frontend/components/forge/sections/Canvases.tsx` | 5 | 3 |
+| Modified | `frontend/components/forge/sections/FoundrySection.tsx` | 2 | 1 |
+| Modified | `frontend/components/workout/OverviewContent.tsx` | 8 | 7 |
+| Modified | `frontend/components/workout/WorkoutCalisthenics.tsx` | 4 | 3 |
+| Modified | `frontend/components/workout/WorkoutGlobal.tsx` | 4 | 4 |
+| Modified | `frontend/components/workout/WorkoutGym.tsx` | 12 | 10 |
+| Modified | `frontend/components/workout/WorkoutPRs.tsx` | 4 | 3 |
 | Added | `frontend/lib/ai/client.ts` | 24 | 0 |
 | Added | `frontend/lib/ai/domainBridge.ts` | 25 | 0 |
 | Added | `frontend/lib/ai/revisions.ts` | 25 | 0 |
+| Added | `frontend/lib/backup.ts` | 11 | 0 |
+| Added | `frontend/lib/demoMode.ts` | 2 | 0 |
 | Modified | `frontend/lib/entertainmentAnalytics.ts` | 1 | 0 |
 | Modified | `frontend/lib/entertainmentI18n.ts` | 1 | 0 |
 | Modified | `frontend/lib/entertainmentImport.ts` | 1 | 0 |
 | Modified | `frontend/lib/entertainmentProviders.ts` | 1 | 0 |
 | Modified | `frontend/lib/entertainmentReports.ts` | 1 | 0 |
 | Modified | `frontend/lib/entertainmentSocial.ts` | 1 | 0 |
+| Modified | `frontend/lib/entertainmentTypes.ts` | 1 | 10 |
+| Added | `frontend/lib/habitTracking.ts` | 14 | 0 |
+| Modified | `frontend/lib/healthTypes.ts` | 1 | 1 |
+| Added | `frontend/lib/localDate.ts` | 16 | 0 |
 | Modified | `frontend/lib/notificationTypes.ts` | 1 | 0 |
-| Modified | `frontend/package.json` | 3 | 1 |
+| Modified | `frontend/lib/store.tsx` | 69 | 69 |
+| Modified | `frontend/package.json` | 7 | 1 |
+| Added | `frontend/pages/_error.tsx` | 5 | 0 |
 | Added | `frontend/scripts/qa-ai-foundation.ts` | 19 | 0 |
+| Added | `frontend/scripts/qa-backup.ts` | 16 | 0 |
 | Added | `frontend/scripts/qa-comments.js` | 7 | 0 |
+| Added | `frontend/scripts/qa-core-correctness.ts` | 21 | 0 |
 | Modified | `frontend/scripts/qa-csp.js` | 1 | 0 |
-| Modified | `frontend/scripts/qa-docs.js` | 36 | 5 |
+| Modified | `frontend/scripts/qa-docs.js` | 45 | 5 |
 | Modified | `frontend/scripts/qa-entertainment-intelligence.ts` | 1 | 0 |
 | Modified | `frontend/scripts/qa-entertainment-migration.ts` | 1 | 0 |
 | Modified | `frontend/scripts/qa-entertainment-reports.ts` | 1 | 0 |
 | Modified | `frontend/scripts/qa-entertainment-social.ts` | 1 | 0 |
-| Modified | `frontend/scripts/qa-entertainment.js` | 1 | 0 |
+| Modified | `frontend/scripts/qa-entertainment.js` | 2 | 1 |
 | Modified | `frontend/scripts/qa-home-intelligence.ts` | 1 | 0 |
 | Modified | `frontend/scripts/qa-notifications.ts` | 1 | 0 |
+| Added | `frontend/scripts/qa-production-baseline.ts` | 24 | 0 |
+| Added | `frontend/scripts/qa-resilience.ts` | 15 | 0 |
 | Modified | `frontend/scripts/qa-security.ts` | 1 | 0 |
 | Modified | `frontend/scripts/qa-ui.js` | 1 | 0 |
 | Added | `scripts/ci/core-today-integration.mjs` | 45 | 0 |
 
 ## Review notes
 
-- The independent deterministic AI chain is complete and application-locked.
-- The whole-product audit blocks PR/merge on production data truth, timezone correctness and persistence architecture.
-- CI now covers frontend, reference API, deterministic Intelligence and a live Core Today integration flow without models.
-- Backend remains a reference in-memory API; the frontend does not consume it.
+- Deterministic AI remains application-locked and model execution closed.
+- Local P0/P1 completion work is implemented and the full local regression is green.
+- Hosted CI proof, authenticated PR creation and human review remain before merge.
+- Express remains reference-only and excluded from local v1 runtime.
 - No model weights, local configuration, raw private outputs, secrets, memory, embeddings or user data are included.

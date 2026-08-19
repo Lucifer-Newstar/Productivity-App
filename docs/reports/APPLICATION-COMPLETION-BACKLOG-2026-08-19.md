@@ -137,4 +137,4 @@ CI must assert:
 
 ## Current release gate
 
-**BLOCKED.** CI and the deterministic integration runner are implemented but have not yet produced a hosted GitHub result. Production data, timezone and persistence P0 work remains. This backlog supersedes “green suites imply finished product” assumptions.
+**BLOCKED ON HOSTED/REVIEW EVIDENCE.** Local P0/P1 implementation and the complete regression matrix are green. The first hosted CI result, final PR regeneration, authenticated PR creation and human approval remain before merge. P2 items stay intentionally deferred.

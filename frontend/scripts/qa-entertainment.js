@@ -18,7 +18,7 @@ test('priority, queue and tags fields',types.includes('priority:')&&types.includ
 test('favorites and archive fields',types.includes('favorite:')&&types.includes('archived:'));
 test('schema version is explicit',types.includes('schemaVersion: 6'));
 test('defensive migration exists',types.includes('migrateEntertainment'));
-test('first-run seed covers all sections',Array.from(types.matchAll(/type:"(book|comic|manga|movie|series|anime)"/g)).length>=5);
+test('fresh production library is empty while six types remain supported',types.includes('items: []')&&/"book" \| "comic" \| "manga" \| "movie" \| "series" \| "anime"/.test(types));
 test('store persists dedicated key',store.includes('"kaizen.entertainment"'));
 test('store exposes functional updater',store.includes('updateEntertainment'));
 test('route is full-screen',route.includes('Page.fullScreen = FULLSCREEN'));

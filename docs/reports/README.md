@@ -38,6 +38,8 @@
 - [`BROWSER-BACKUP-RECOVERY-2026-08-19.md`](BROWSER-BACKUP-RECOVERY-2026-08-19.md) — whole-product backup, rollback restore and corrupt-storage protection.
 - [`P1-CORRECTNESS-POLISH-2026-08-19.md`](P1-CORRECTNESS-POLISH-2026-08-19.md) — Wilks input correctness, focus persistence and session-only voice export scope.
 - [`RELEASE-RESILIENCE-DECISIONS-2026-08-19.md`](RELEASE-RESILIENCE-DECISIONS-2026-08-19.md) — trusted-profile risk acceptance, route recovery, Home history and Health terminology.
+- [`CURRENT-RELEASE-STATUS-2026-08-19.md`](CURRENT-RELEASE-STATUS-2026-08-19.md) — single current-state release matrix and remaining hosted/PR/packaging gates.
+- [`FINAL-LOCAL-REGRESSION-2026-08-19.md`](FINAL-LOCAL-REGRESSION-2026-08-19.md) — complete latest frontend/backend/AI/integration regression evidence.
 - [`AI-WAVE-1-FOUNDATION-2026-08-17.md`](AI-WAVE-1-FOUNDATION-2026-08-17.md) — provider-neutral engine, secure gateway, Domain Bridge and read-only UI vertical slice.
 - [`AI-V0.1-INTEGRATION-FREEZE-2026-08-17.md`](AI-V0.1-INTEGRATION-FREEZE-2026-08-17.md) — canonical specification, adversarial verification and frozen next milestone.
 

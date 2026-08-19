@@ -105,6 +105,7 @@ The complete test matrix is in [`docs/guides/TESTING.md`](docs/guides/TESTING.md
 
 Start with:
 
+- [`docs/PROJECT-CONTINUITY-BLUEPRINT.md`](docs/PROJECT-CONTINUITY-BLUEPRINT.md) — history, current architecture, remaining path and crash-safe handoff
 - [`docs/architecture/ARCHITECTURE.md`](docs/architecture/ARCHITECTURE.md)
 - [`docs/architecture/DATA-MODEL.md`](docs/architecture/DATA-MODEL.md)
 - [`docs/reference/API.md`](docs/reference/API.md)
