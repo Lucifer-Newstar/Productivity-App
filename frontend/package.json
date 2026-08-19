@@ -23,6 +23,7 @@
     "qa:baseline": "tsx scripts/qa-production-baseline.ts",
     "qa:backup": "tsx scripts/qa-backup.ts",
     "qa:resilience": "tsx scripts/qa-resilience.ts",
+    "qa:packaging": "node ../packaging/windows/qa-packaging.mjs",
     "qa:comments": "node scripts/qa-comments.js"
   },
   "keywords": [],

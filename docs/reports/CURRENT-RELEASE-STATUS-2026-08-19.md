@@ -10,28 +10,25 @@
 | Frontend routes | 39 user routes implemented |
 | Browser state | Authoritative, eleven versioned backup keys |
 | Fresh profile | Empty personal history; catalogs/templates retained |
-| Demo data | Hidden/no-op unless explicit demo build flag |
-| Local dates/habits | Corrected and regression-tested |
 | Backup/recovery | Whole-product export, strict restore, rollback and corruption warning |
 | Express | Reference/development only; excluded from v1 runtime |
-| Express network security | Non-loopback requires service key |
 | Deterministic Intelligence | Authoritative Core Today path |
 | Model evaluation | Closed; no model selected |
-| CI | GREEN — run `32255861421` passed all four jobs at `6a2c885` |
+| PR #4 | Merged as `06cf13c` |
+| Main CI | GREEN — run `32260387533`, all four jobs |
+| Windows package | Installer + portable foundations implemented; physical-host validation pending |
 | Cloud deployment | Not planned |
 
-## Backlog gate
+## Release gate
 
-All identified P0/P1 code or architecture items are now fixed, scoped or explicitly accepted locally. P2 items remain intentional deferrals.
+All identified P0/P1 application items are fixed, scoped or explicitly accepted. PR #4 and main CI are complete. Release is now blocked only on physical Windows evidence:
 
-The final local regression and PR-triggered hosted CI are green. PR #4 is open, mergeable and clean. The release remains blocked on:
-
-1. pushing the local evidence/review commits beginning with `483c5f0` and obtaining green checks on the resulting exact head;
-2. human review and explicit merge approval.
-
-## Post-merge-only gate
-
-Windows/local packaging, clean install/update/uninstall, offline operation, backup restore and loopback engine startup are not started and must occur only after merge.
+1. build portable ZIP and installer;
+2. verify checksums;
+3. clean install, launch, stop, update and uninstall;
+4. verify offline routes and stable browser origin;
+5. verify synthetic backup/restore and browser-data disclosure;
+6. verify deterministic engine pairing and no residual ports/processes.
 
 ## Explicit non-goals
 
@@ -46,9 +43,9 @@ Windows/local packaging, clean install/update/uninstall, offline operation, back
 
 ```text
 Local code completion:     COMPLETE
-Hosted CI:                GREEN — 32255861421
-PR #4:                   OPEN — REVIEW PASS / FINAL HEAD CHECK PENDING
-Merge:                    NOT AUTHORIZED
-Windows packaging:        AFTER MERGE ONLY
+PR #4:                    MERGED — 06cf13c
+Main CI:                  GREEN — 32260387533
+Packaging implementation: COMPLETE LOCALLY
+Windows host verification: PENDING
 Release:                  NOT YET
 ```

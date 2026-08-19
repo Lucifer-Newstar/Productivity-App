@@ -248,23 +248,21 @@ The workflow is implemented and locally reproduced. Hosted runs 1 and 2 exposed 
 - Route recovery and Home history
 - AI/model closure
 
-### Still required before PR/merge
+### Merge completed
 
-1. Push the local evidence/review commits, beginning with `483c5f0`, into open PR #4.
-2. Require all four checks to pass on the updated PR head.
-3. Obtain explicit human merge approval; do not merge automatically.
+PR #4 merged into `main` as `06cf13c`; main CI run `32260387533` passed all four jobs. The remote `ai` branch was deleted after merge and the persistent local development branch was fast-forwarded to `main` for packaging work.
 
-The current release matrix and final local regression are complete.
+### Current packaging/release gate
 
-### After merge only
-
-1. Build local Windows packaging.
-2. Verify clean install/update/uninstall behavior.
-3. Verify offline operation.
-4. Verify browser-data location and backup restore.
-5. Verify loopback deterministic engine startup/pairing.
-6. Produce release notes and local installation guide.
-7. Release.
+1. Windows installer and portable ZIP foundations are implemented under `packaging/windows/`.
+2. Build both artifacts on a physical Windows x64 host.
+3. Verify clean install/update/uninstall behavior.
+4. Verify offline operation.
+5. Verify browser-data location and synthetic backup restore.
+6. Verify loopback deterministic engine startup/pairing.
+7. Record artifact checksums and physical-host evidence.
+8. Produce final release notes.
+9. Release.
 
 No cloud deployment is planned.
 
