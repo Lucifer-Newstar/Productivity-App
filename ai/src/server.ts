@@ -7,6 +7,7 @@ export function startEngine(): ReturnType<typeof createEngineGateway> {
   gateway.server.listen(config.port, config.host, () => {
     // Pairing code is intentionally local console output. Never persist or include it in reports.
     console.log(`[kaizen-ai] listening on http://${config.host}:${config.port}`);
+    console.log("[kaizen-ai] mode: deterministic Core Today baseline; model providers disabled");
     console.log(`[kaizen-ai] one-time pairing code: ${gateway.pairingCode}`);
   });
   const shutdown = () => gateway.server.close(() => process.exit(0));

@@ -50,8 +50,11 @@ Wave 0 is complete with no model selected. Architecture review has authorized a 
 - [x] target-laptop Qwen3 and Phi ten-attempt preflights
 - [x] classified sanitizer aggregates and final decision intake
 - [x] all model stages closed after both preflight rejections
+- [x] AI-ADR-020 locks application provider registry to deterministic baseline
+- [x] model environment settings fail closed
+- [x] default-config live application integration review
 
-**Final I1 status:** Qwen3 and Phi are `REJECTED-PREFLIGHT`; no candidate may run full or operations. No model is selected. Stop for scope review.
+**Final v0.1.1 status:** deterministic Core Today is the authoritative application AI path. No model is selected or reachable through application configuration. AI scope is closed; continue non-AI application work.
 
 **Scope freeze:** Core Today only. Do not add memory, retrieval, Health, additional domains, writes, automation, remote processing or v0.2 work.
 

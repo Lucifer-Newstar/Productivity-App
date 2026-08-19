@@ -29,7 +29,7 @@ Before writing code:
 4. Confirm the request does not silently expand into an unapproved phase.
 5. Surface conflicts with locked decisions instead of guessing.
 
-Current boundary: v0.1.1 deterministic/mock integration is accepted. Qwen3 and Phi interpreter preflights are both rejected, and `I1-PREFLIGHT-CLOSURE-1` blocks every model stage. Wave 0 remains closed. No v0.2 tools, memory, retrieval, Health, writes, automation or additional domains.
+Current boundary: deterministic v0.1.1 is the authoritative application path; application model providers fail closed and all evaluation stages are closed. No AI scope expansion is authorized. Ordinary non-AI product work may proceed under normal repository quality gates.
 
 ## 3. Required implementation sequence
 

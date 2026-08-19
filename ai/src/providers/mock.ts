@@ -1,33 +1,26 @@
-/** Provider adapter for mock inference behavior. */
-import { randomUUID } from "node:crypto";
+/** Deterministic Core Today provider used by the accepted application baseline. */
 import type { GenerationCapabilities, GenerationChunk, GenerationProvider, GenerationRequest, GenerationResponse, ModelIdentity, ProviderHealth } from "../contracts/provider.js";
 
 export class MockGenerationProvider implements GenerationProvider {
   identity(): ModelIdentity { return { providerId: "kaizen-mock", mode: "local", modelId: "deterministic-mock", runtime: "node", runtimeVersion: process.version }; }
-  capabilities(): GenerationCapabilities { return { streaming: true, nativeToolCalling: true, structuredOutput: "native-schema", maximumContextTokens: 4096, maximumOutputTokens: 512, parallelToolCalls: false, vision: false }; }
-  async health(): Promise<ProviderHealth> { return { status: "ready", checkedAt: new Date().toISOString() }; }
+  capabilities(): GenerationCapabilities { return { streaming: true, nativeToolCalling: false, structuredOutput: "native-schema", maximumContextTokens: 4096, maximumOutputTokens: 512, parallelToolCalls: false, vision: false }; }
+  async health(): Promise<ProviderHealth> { return { status: "ready", detail: "deterministic Core Today baseline", checkedAt: new Date().toISOString() }; }
 
   async generate(request: GenerationRequest, signal: AbortSignal): Promise<GenerationResponse> {
-    let text = ""; const toolCalls = [];
-    for await (const chunk of this.stream(request, signal)) {
-      if (chunk.type === "text-delta") text += chunk.text;
-      if (chunk.type === "tool-call") toolCalls.push(chunk.call);
-    }
-    return { text, toolCalls, finishReason: toolCalls.length ? "tool_calls" : "stop" };
+    let text = "";
+    for await (const chunk of this.stream(request, signal)) if (chunk.type === "text-delta") text += chunk.text;
+    return { text, toolCalls: [], finishReason: "stop" };
   }
 
   async *stream(request: GenerationRequest, signal: AbortSignal): AsyncIterable<GenerationChunk> {
     if (signal.aborted) throw signal.reason;
-    const toolMessage = [...request.messages].reverse().find((message) => message.role === "tool");
-    if (!toolMessage && request.tools?.some((tool) => tool.function.name === "get_today")) {
-      yield { type: "tool-call", call: { id: randomUUID(), name: "get_today", argumentsJson: "{}" } };
-      yield { type: "complete", finishReason: "tool_calls" };
-      return;
+    if (request.tools?.length || request.messages.some((message) => message.role === "tool" || message.toolCalls?.length)) {
+      throw new Error("The deterministic application provider does not accept model tool authority");
     }
     let snapshot: any = {};
     try {
-      const payload = toolMessage ? JSON.parse(toolMessage.content) : JSON.parse([...request.messages].reverse().find((message) => message.role === "user")?.content ?? "{}");
-      snapshot = payload?.evidence ?? payload?.snapshot ?? payload;
+      const payload = JSON.parse([...request.messages].reverse().find((message) => message.role === "user")?.content ?? "{}");
+      snapshot = payload?.evidence ?? payload;
     } catch {}
     const data = snapshot?.data ?? {};
     const action = data.deterministicNextAction;
@@ -44,7 +37,7 @@ export class MockGenerationProvider implements GenerationProvider {
     };
     const text = JSON.stringify(payload);
     yield { type: "text-delta", text };
-    yield { type: "usage", promptTokens: 1, outputTokens: 1 };
+    yield { type: "usage", promptTokens: 0, outputTokens: 0 };
     yield { type: "complete", finishReason: "stop" };
   }
 }

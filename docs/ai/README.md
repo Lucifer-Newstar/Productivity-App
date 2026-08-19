@@ -1,7 +1,7 @@
 # Kaizen Intelligence Engine — architecture gate
 
-**Status:** interpreter preflight complete; both candidates rejected, no model selected<br>
-**Architecture package version:** 0.9-v0.1.1-preflight-closure<br>
+**Status:** deterministic v0.1.1 authoritative application baseline; AI scope closed<br>
+**Architecture package version:** 1.0-v0.1.1-application-baseline<br>
 **Intelligence permissions:** READ / ANALYZE / SUGGEST only
 
 The canonical future-development authority is [`MASTER-SPECIFICATION.md`](MASTER-SPECIFICATION.md), interpreted together with KAC-1, locked ADRs, versioned contracts and the current `ai` branch. Execution follows [`DELIVERY-PLAYBOOK.md`](DELIVERY-PLAYBOOK.md), and every completed step updates the living [`IMPLEMENTATION-LEDGER.md`](IMPLEMENTATION-LEDGER.md). Fragmented later instructions do not silently replace these sources.
@@ -63,6 +63,7 @@ Every design choice in this package uses one of four labels:
 
 - [`IMPLEMENTATION-LEDGER.md`](IMPLEMENTATION-LEDGER.md) — current status, completed work, blockers and next steps.
 - [AI-ADR-019](adrs/AI-ADR-019-DETERMINISTIC-CORE-TODAY-ROUTING.md) — approved deterministic `get_today` routing and interpreter-only model authority.
+- [AI-ADR-020](adrs/AI-ADR-020-DETERMINISTIC-APPLICATION-PROVIDER.md) — deterministic-only application provider composition after no-model closure.
 - [`V0.1.1-DETERMINISTIC-ROUTING-CONTRACT.md`](V0.1.1-DETERMINISTIC-ROUTING-CONTRACT.md) — frozen route, evidence and output contracts.
 - [`V0.1.1-INTERPRETER-EVALUATION.md`](V0.1.1-INTERPRETER-EVALUATION.md) — frozen interpreter-only gates and deterministic/mock result.
 - [`../reports/AI-V0.1.1-IMPLEMENTATION-2026-08-19.md`](../reports/AI-V0.1.1-IMPLEMENTATION-2026-08-19.md) — implementation, security and evaluation closeout.
@@ -73,6 +74,7 @@ Every design choice in this package uses one of four labels:
 - [`../reports/AI-V0.1.1-PREFLIGHT-INTAKE-HASH-FIX-2026-08-19.md`](../reports/AI-V0.1.1-PREFLIGHT-INTAKE-HASH-FIX-2026-08-19.md) — no-inference intake defect and streaming hash correction.
 - [`../reports/AI-V0.1.1-PREFLIGHT-ATTACHMENT-MISMATCH-2026-08-19.md`](../reports/AI-V0.1.1-PREFLIGHT-ATTACHMENT-MISMATCH-2026-08-19.md) — incorrect attachments and safe local classifier workflow.
 - [`../reports/AI-V0.1.1-PREFLIGHT-FINAL-2026-08-19.md`](../reports/AI-V0.1.1-PREFLIGHT-FINAL-2026-08-19.md) — final classified rejections and no-model closure.
+- [`../reports/AI-V0.1.1-APPLICATION-INTEGRATION-REVIEW-2026-08-19.md`](../reports/AI-V0.1.1-APPLICATION-INTEGRATION-REVIEW-2026-08-19.md) — authoritative deterministic composition and live review.
 - [`DELIVERY-PLAYBOOK.md`](DELIVERY-PLAYBOOK.md) — mandatory pull/scope/test/privacy/docs/commit procedure.
 - [`V0.1-INTEGRATION-VALIDATION.md`](V0.1-INTEGRATION-VALIDATION.md) — deterministic/mock foundation validated; real model unavailable.
 - [`WAVE-0-REPORT.md`](WAVE-0-REPORT.md) — final no-model Selection Report.
@@ -82,4 +84,4 @@ Every design choice in this package uses one of four labels:
 
 ## Active implementation boundary
 
-The provider-neutral deterministic/mock path remains accepted. Valid aggregates confirm Qwen3 and Phi are both `REJECTED-PREFLIGHT` with no eligibility for full or operations. All I1 model stages are closed, Wave 0 remains closed and no local model is selected. Every excluded capability remains frozen pending scope review.
+Deterministic Core Today is the authoritative application AI path. The server composition root exposes no model provider, model settings fail closed, and Home discloses deterministic/read-only operation. Wave 0 and I1 are closed with no model selected. AI capability scope is closed; ordinary non-AI application work may continue.

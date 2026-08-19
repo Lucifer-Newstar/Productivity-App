@@ -66,7 +66,7 @@ Stores AI-specific memories separately from Kaizen domain state. Retrieval combi
 
 ### Provider registry
 
-Selects generation and embedding providers by configuration and declared capabilities. LOCAL is initial; HYBRID and REMOTE remain architectural modes only.
+The provider contract remains replaceable, but the current application composition root resolves only the accepted deterministic provider. Model configuration fails closed after both local evaluation cycles selected no model. The llama.cpp adapter remains test/evaluation-only code; LOCAL model, HYBRID and REMOTE application modes require future explicit review.
 
 ## Transport and session flow
 

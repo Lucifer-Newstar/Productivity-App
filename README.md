@@ -27,7 +27,7 @@ Optional Express reference API — 127.0.0.1:4000
 Optional Intelligence Engine — 127.0.0.1:4317
 ```
 
-The Intelligence Engine is currently v0.1.1, read-only and provider-neutral. The deterministic/mock path is live-accepted. Qwen3 and Phi interpreter preflights are complete and rejected; no local model is selected.
+The Intelligence Engine is currently v0.1.1 and read-only. Deterministic Core Today is the authoritative application AI path; model configuration fails closed, and no local model is selected.
 
 ## Repository
 
@@ -71,7 +71,7 @@ npm run dev
 # Intelligence Engine with deterministic local provider
 cd ai
 npm ci
-KAIZEN_AI_PROVIDER=mock npm run dev
+npm run dev
 ```
 
 The Intelligence Engine prints a one-time pairing code to its local console. Enter it only in the Home Intelligence panel.

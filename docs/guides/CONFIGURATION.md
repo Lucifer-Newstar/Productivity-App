@@ -27,7 +27,7 @@ AFTERGLOW also supports temporary tab-session overrides in Providers & Credits. 
 | `WRITE_RATE_LIMIT` | `120` / 15 min | Mutation limit |
 | `MAX_ROWS_PER_TABLE` | `20000` | Per-table in-memory capacity |
 
-## Intelligence Engine v0.1
+## Intelligence Engine v0.1.1 deterministic baseline
 
 Engine environment (`ai/`):
 
@@ -36,13 +36,7 @@ Engine environment (`ai/`):
 | `KAIZEN_AI_HOST` | `127.0.0.1` | Loopback bind; non-loopback values are rejected |
 | `KAIZEN_AI_PORT` | `4317` | Local engine port |
 | `KAIZEN_AI_ORIGINS` | localhost frontend origins | Exact comma-separated browser origins |
-| `KAIZEN_AI_PROVIDER` | `llama` | `llama` or deterministic `mock` for tests/local preview |
-| `KAIZEN_LLAMA_BASE_URL` | `http://127.0.0.1:8080` | Fixed loopback llama-server URL |
-| `KAIZEN_LLAMA_MODEL_ID` | `local-model` | Configured candidate identifier |
-| `KAIZEN_LLAMA_RUNTIME_VERSION` | `unreported` | Measured runtime/build label |
-| `KAIZEN_LLAMA_CONTEXT_TOKENS` | `4096` | Declared provider context capability |
-| `KAIZEN_LLAMA_OUTPUT_TOKENS` | `512` | Bounded generation output |
-| `KAIZEN_LLAMA_NATIVE_TOOLS` | enabled | Set `0` only for a tested non-native strategy |
+| `KAIZEN_AI_PROVIDER` | `mock` | Optional explicit value; any model provider value is rejected |
 | `KAIZEN_AI_PAIRING_TTL_MS` | 5 minutes | One-time code validity |
 | `KAIZEN_AI_SESSION_TTL_MS` | 30 minutes | Browser session-token validity |
 | `KAIZEN_AI_REQUEST_TIMEOUT_MS` | 120 seconds | Engine generation/tool deadline |
@@ -57,7 +51,7 @@ Frontend server environment:
 | `KAIZEN_AI_PROXY_ORIGIN` | `http://localhost:3000` | Fixed trusted origin forwarded after same-host browser validation; include it in engine origin allowlist |
 | `NEXT_PUBLIC_KAIZEN_AI_URL` | `/api/ai` | Optional browser base override; keep same-origin in production |
 
-No model is downloaded automatically. Never put pairing codes/session tokens into environment files, URLs or documentation.
+Application runtime is locked to the deterministic provider. `KAIZEN_AI_PROVIDER=llama` and all `KAIZEN_LLAMA_*` variables fail closed because no model is approved. The llama.cpp adapter remains protocol-test/evaluation code only and is unreachable through `ProviderRegistry`. Never put pairing codes/session tokens into environment files, URLs or documentation.
 
 ## Browser preferences
 

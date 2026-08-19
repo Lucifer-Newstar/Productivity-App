@@ -26,6 +26,7 @@
 - [`AI-V0.1.1-PREFLIGHT-INTAKE-HASH-FIX-2026-08-19.md`](AI-V0.1.1-PREFLIGHT-INTAKE-HASH-FIX-2026-08-19.md) — no-inference Qwen intake failure and streaming SHA-256 correction for multi-gigabyte artifacts.
 - [`AI-V0.1.1-PREFLIGHT-ATTACHMENT-MISMATCH-2026-08-19.md`](AI-V0.1.1-PREFLIGHT-ATTACHMENT-MISMATCH-2026-08-19.md) — legacy attachment mismatch and local safe failure reclassification workflow.
 - [`AI-V0.1.1-PREFLIGHT-FINAL-2026-08-19.md`](AI-V0.1.1-PREFLIGHT-FINAL-2026-08-19.md) — validated Qwen3/Phi rejections, no-model decision and all-stage closure.
+- [`AI-V0.1.1-APPLICATION-INTEGRATION-REVIEW-2026-08-19.md`](AI-V0.1.1-APPLICATION-INTEGRATION-REVIEW-2026-08-19.md) — deterministic provider composition lock, Home disclosure and live default-config review.
 - [`AI-WAVE-1-FOUNDATION-2026-08-17.md`](AI-WAVE-1-FOUNDATION-2026-08-17.md) — provider-neutral engine, secure gateway, Domain Bridge and read-only UI vertical slice.
 - [`AI-V0.1-INTEGRATION-FREEZE-2026-08-17.md`](AI-V0.1-INTEGRATION-FREEZE-2026-08-17.md) — canonical specification, adversarial verification and frozen next milestone.
 

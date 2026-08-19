@@ -47,7 +47,7 @@ For a deterministic end-to-end development flow:
 ```bash
 cd ai
 npm ci
-KAIZEN_AI_PROVIDER=mock npm run dev
+npm run dev
 ```
 
 The local console prints a one-time pairing code. Enter it in the Home dashboard's Kaizen Intelligence panel. For a verified llama.cpp candidate, configure the loopback variables in [`CONFIGURATION.md`](CONFIGURATION.md); Kaizen never downloads a model.

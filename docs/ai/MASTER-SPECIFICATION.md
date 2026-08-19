@@ -42,7 +42,7 @@ The `ai` branch already implements:
 - privacy-safe observability,
 - Home Intelligence UI.
 
-Do not discard or redesign this foundation without an ADR. Its frozen scope is READ / ANALYZE / SUGGEST, Core Today, local-first and provider-neutral.
+Do not discard or redesign this foundation without an ADR. Its frozen scope is READ / ANALYZE / SUGGEST, Core Today, local-first and provider-neutral. The current application composition uses only the deterministic provider; model adapters remain unreachable test/evaluation infrastructure after both model cycles selected no model.
 
 ## 4. Required architecture
 
@@ -165,7 +165,7 @@ Global UI offers purposeful workflows (plan today, needs attention, review week,
 ## 21. Phases
 
 - **v0.1 Foundation:** implemented and validated with deterministic/mock provider.
-- **v0.1.1 Deterministic Core Today interpretation:** trusted routing and deterministic/mock baseline accepted. Qwen3 and Phi interpreter preflights both rejected; all I1 model stages closed with no model selected.
+- **v0.1.1 Deterministic Core Today interpretation:** authoritative application baseline. Trusted routing, deterministic provider, no model registry path, live integration and fail-closed model configuration are complete; AI scope is closed.
 - **v0.2 Understands:** more read tools, orchestration, retrieval/memory foundation, cross-domain context and consent—still frozen.
 - **v0.3 Reasons:** Daily/Weekly intelligence, momentum/conflicts/alignment, Forge/Career reasoning.
 - **v0.4 Acts:** proposals, approval, dry run, stale checks, idempotency, verification, audit and undo.

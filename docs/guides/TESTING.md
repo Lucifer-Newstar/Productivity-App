@@ -70,7 +70,7 @@ Entertainment also has five dynamic Next.js provider routes. Runtime security sm
 | Backend security | Auth, CORS, unsafe payload, ID, overwrite and CSV attacks |
 | HTTP smoke | Production server route failures |
 
-## Intelligence Engine v0.1
+## Intelligence Engine v0.1.1 deterministic baseline
 
 ```bash
 cd ai
@@ -85,9 +85,9 @@ npm run qa:ai
 npm run qa:comments
 ```
 
-Engine tests cover contracts, schema rejection, provider configuration, mock tool rounds, one-time pairing, session expiry, unsafe JSON, rate limits, bounded orchestration, source grounding, task/notification/scheduled-content injection, attempted write-tool escalation and a real loopback HTTP/SSE/tool-result flow. Frontend QA covers revision behavior, minimum-context snapshots, source IDs, session-only tokens, fixed same-origin proxying and read-only UI copy.
+Engine tests cover contracts, schema rejection, deterministic-default configuration, model-setting rejection, zero provider tool authority, one-time pairing, session expiry, unsafe JSON, rate limits, bounded orchestration, source grounding, content injection, attempted tool escalation and a real loopback HTTP/SSE/tool-result flow. Frontend QA covers revisions, bounded snapshots, sources, session tokens, fixed proxying, deterministic provider composition and explicit read-only/no-model UI copy.
 
-## Intelligence Engine v0.1.1 architecture gate
+## Intelligence Engine v0.1.1 evaluation archive
 
 ```bash
 cd ai
@@ -98,19 +98,7 @@ npm run build:v0.1.1:corpus
 npm run qa:v0.1.1:model-harness
 ```
 
-This suite validates the fixed `focus-today → get_today@1.0` route, zero provider tool authority, Core Today-only scope, frozen `V011-INT-GATE-1` thresholds, exact/bounded/fresh evidence, source-subset grounding, deterministic precedence, required uncertainty, browser revision verification, and rejection mutants for provider tool calls, fabricated IDs, extra domains and command-shaped output. The deterministic evaluator is not a real-model result. Model harness QA rebuilds and hashes all 50 frozen scenarios, verifies the blank 100-row review worksheet, proves disabled/no-spawn and loopback behavior, checks complete failed-attempt accounting, exercises scoring/sanitization and leaves public model results empty.
-
-Authorized target preflight is not a routine QA command. Run it only with `I1-PREFLIGHT-AUTH-1` and the [target runbook](../ai/v0.1.1-model-evaluation/TARGET-PREFLIGHT-RUNBOOK.md):
-
-```powershell
-npm run preflight:v0.1.1:model:target -- -Config <ignored.local.json> -ConfirmExecution
-```
-
-This wrapper permits preflight only; full and operations remain hard-blocked. If retained preflight aggregates contain `UNCLASSIFIED`, classify the existing LOCAL-ONLY evidence without inference:
-
-```powershell
-npm run reclassify:v0.1.1:model:target
-```
+These suites preserve the frozen route/contracts and historical evaluation reproducibility. Harness QA verifies corpus integrity, safe scoring/sanitization, accepted public aggregates and `I1-PREFLIGHT-CLOSURE-1`. Every model stage is closed; the retained target scripts are historical and return `STAGE_NOT_AUTHORIZED`. Do not run or reclassify model evidence again.
 
 ## Intelligence Engine Wave 0
 
@@ -123,7 +111,7 @@ python scripts/qa_wave0.py
 
 This gate verifies disabled-by-default candidates, strict hashes, loopback/no-download rules, revision/pairing, request-level cancellation plus orphan detection, three-sample cold loads per context, required native llama-bench coverage, concurrency-2 structured/tool reliability, embedding endpoint isolation, hardware capture, FTS ranking/filter/deletion, transport, lifecycle crash/restart, soak metrics, frozen scoring, allowlist sanitization and tracked-file privacy scanning.
 
-Target GPU/model/thermal results must be produced separately on the RTX 3050 laptop and cannot be replaced by sandbox QA. See [`../ai/EVALUATION.md`](../ai/EVALUATION.md), [`../ai/ROADMAP.md`](../ai/ROADMAP.md), and the incomplete [`../ai/WAVE-0-REPORT.md`](../ai/WAVE-0-REPORT.md). Every AI step must also update [`../ai/IMPLEMENTATION-LEDGER.md`](../ai/IMPLEMENTATION-LEDGER.md) and pass documentation QA.
+Wave 0 is a closed historical no-selection cycle. Its harness remains reproducible, but no target rerun is authorized. See [`../ai/EVALUATION.md`](../ai/EVALUATION.md), [`../ai/ROADMAP.md`](../ai/ROADMAP.md), and the final [`../ai/WAVE-0-REPORT.md`](../ai/WAVE-0-REPORT.md). Every AI maintenance step still updates [`../ai/IMPLEMENTATION-LEDGER.md`](../ai/IMPLEMENTATION-LEDGER.md) and passes documentation QA.
 
 ## Historical reports
 

@@ -6,9 +6,9 @@ _Last updated: 2026-08-19_
 
 ## Current milestone
 
-> **`I1-PREFLIGHT` complete: Qwen3 and Phi rejected; no candidate eligible for full and no model selected.**
+> **Deterministic/mock v0.1.1 is the reviewed authoritative application AI path; model providers fail closed.**
 
-Two valid `I1-RUN-1` aggregates confirm ten retained attempts per candidate and `PROVIDER_HTTP_400`. Both failed attempt-completion, structured, source and resource-ceiling requirements. `I1-PREFLIGHT-CLOSURE-1` disables preflight, full and operations. The deterministic/mock v0.1.1 baseline remains authoritative. Memory, retrieval, Health, writes, automation, additional domains, remote processing and v0.2 remain frozen.
+Application composition now defaults to and resolves only the deterministic Core Today provider. Model-provider and legacy llama environment settings are rejected, deterministic requests cannot carry model tools, and Home discloses the no-model/read-only boundary. Live engine→proxy→pairing→SSE→verified-response integration passed with no provider environment configuration. All model stages remain closed; every scope exclusion remains frozen.
 
 ## Completed architecture and foundation
 
@@ -62,6 +62,11 @@ Two valid `I1-RUN-1` aggregates confirm ten retained attempts per candidate and 
 | Classified aggregate intake | PASS | exact protocol/matrix/gate/corpus and privacy contract verified |
 | Model-stage authorization | CLOSED | preflight/full/operations all false in `authorization.v2.json` |
 | Final model decision | NO MODEL SELECTED | deterministic/mock v0.1.1 remains baseline |
+| Application provider composition | LOCKED / COMPLETE | deterministic only; no llama registry branch |
+| Model environment handling | FAIL CLOSED | provider/model variables rejected at startup |
+| Deterministic provider authority | PASS | no native tools; tool-bearing requests rejected |
+| Home integration disclosure | PASS | deterministic/read-only/no-model copy |
+| Live default-config integration | PASS | pair/status/route/tool/SSE/source/session flow |
 
 The new gate does not supersede or weaken `W0-GATE-2`. It evaluates a different, narrower provider role with no tools.
 
@@ -190,16 +195,11 @@ passedForFullRun:       false
 
 The larger control is rejected. Wave 0 is complete with no model selected. No more candidate downloads/runs are authorized under this cycle.
 
-## Next scope review
+## Next application work
 
-Choose explicitly among:
+Keep v0.1.1 operating as the deterministic Core Today baseline and move to ordinary application priorities outside AI scope. Future maintenance may fix defects, accessibility, UX clarity, integration reliability or documentation without expanding capability.
 
-1. accept v0.1.1 deterministic/mock-only as the closed local baseline and move to non-model product work;
-2. defer all further Intelligence work;
-3. propose a future model evaluation only through a new matrix/protocol/authorization after conditions materially change;
-4. consider a separately consented remote-provider ADR.
-
-Do not rerun these candidates, add ad hoc candidates, weaken gates or run full/operations. Memory, retrieval, Health, writes, automation, additional domains and v0.2 remain frozen.
+Do not re-enable model providers, rerun candidates, add AI domains, memory, retrieval, Health, writes, automation, remote processing or v0.2 work. Any such change requires a new explicit scope decision.
 
 ## Documentation and repository maintenance
 

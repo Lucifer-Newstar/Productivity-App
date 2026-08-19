@@ -7,7 +7,7 @@ Independent local-first Intelligence foundation on the persistent `ai` branch.
 v0.1.1 deterministic Core Today interpretation is implemented and frozen for review:
 
 - Versioned Constitution, provider, tool, snapshot and response contracts
-- Provider registry with llama.cpp and deterministic mock adapters
+- Application provider registry locked to the deterministic adapter; llama.cpp retained only for protocol tests/evaluation
 - Structured-response and tool-argument validation
 - Trusted fixed-intent `focus-today → get_today@1.0` routing
 - Zero-tool provider interpretation of validated `core.today@1.0`
@@ -18,7 +18,7 @@ v0.1.1 deterministic Core Today interpretation is implemented and frozen for rev
 - Source verification, evidence/freshness envelope and Home UI
 - Privacy-safe aggregate observability
 
-Wave 0 is complete with **no local model selected**. The interpreter-only preflight cycle is also complete. Valid aggregates confirm Qwen3 and Phi are both `REJECTED-PREFLIGHT` with `PROVIDER_HTTP_400`; neither may run full or operations. The deterministic/mock v0.1.1 baseline remains available.
+Wave 0 is complete with **no local model selected**. I1 is also complete. Deterministic Core Today is the authoritative application provider and starts by default. Model provider settings fail closed; llama.cpp remains unreachable protocol-test/evaluation code.
 
 Not implemented or authorized:
 
@@ -43,14 +43,14 @@ wave0/       frozen model-selection harness and public/local result boundary
 ```bash
 cd ai
 npm ci
-KAIZEN_AI_PROVIDER=mock npm run dev
+npm run dev
 ```
 
 The engine prints a one-time local pairing code. Enter it only in the Home Intelligence panel.
 
 ## llama.cpp adapter
 
-The adapter remains implemented and tested at protocol level, but no model is approved. A local candidate may be configured only under a future explicit scope decision; Kaizen never downloads model weights.
+The adapter remains implemented and tested at protocol level, but it is unreachable through the application provider registry. `KAIZEN_AI_PROVIDER=llama` and legacy llama environment settings fail closed. Any future use requires a new reviewed scope decision; Kaizen never downloads model weights.
 
 ## Quality gates
 

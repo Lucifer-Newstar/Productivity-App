@@ -117,6 +117,8 @@ Executable adversarial coverage includes unsupported intent, provider tool escal
 
 ## v0.1 implemented controls
 
+- Application configuration defaults to deterministic mode and rejects model-provider or legacy llama environment settings.
+- Application `ProviderRegistry` has no model adapter branch; the deterministic provider rejects tool-bearing requests and advertises no native tool authority.
 - Engine binds only to `127.0.0.1` or `::1`; configuration rejects network exposure.
 - llama.cpp/provider URLs must be loopback HTTP.
 - One-time pairing code is printed only to the local engine console.

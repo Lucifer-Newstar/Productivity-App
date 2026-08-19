@@ -1,19 +1,10 @@
-/** Parses bounded loopback-only Intelligence Engine configuration. */
-import { isIP } from "node:net";
+/** Parses the bounded loopback-only deterministic Intelligence Engine configuration. */
 
 export interface EngineConfig {
   host: "127.0.0.1" | "::1";
   port: number;
   allowedOrigins: Set<string>;
-  provider: "llama" | "mock";
-  llama: {
-    baseUrl: string;
-    modelId: string;
-    runtimeVersion: string;
-    maximumContextTokens: number;
-    maximumOutputTokens: number;
-    nativeToolCalling: boolean;
-  };
+  provider: "mock";
   pairingTtlMs: number;
   sessionTtlMs: number;
   requestTimeoutMs: number;
@@ -21,26 +12,27 @@ export interface EngineConfig {
   maximumActiveRequests: number;
 }
 
+const MODEL_ENVIRONMENT = [
+  "KAIZEN_LLAMA_BASE_URL",
+  "KAIZEN_LLAMA_MODEL_ID",
+  "KAIZEN_LLAMA_RUNTIME_VERSION",
+  "KAIZEN_LLAMA_CONTEXT_TOKENS",
+  "KAIZEN_LLAMA_OUTPUT_TOKENS",
+  "KAIZEN_LLAMA_NATIVE_TOOLS",
+] as const;
+
 function boundedInt(value: string | undefined, fallback: number, minimum: number, maximum: number): number {
   const parsed = Number(value);
   return Number.isInteger(parsed) && parsed >= minimum && parsed <= maximum ? parsed : fallback;
 }
 
-function loopbackUrl(value: string): string {
-  const url = new URL(value);
-  const host = url.hostname.replace(/^\[|\]$/g, "");
-  if (url.protocol !== "http:" || !(host === "localhost" || host === "127.0.0.1" || host === "::1" || isIP(host) === 6 && host === "::1")) {
-    throw new Error("KAIZEN_LLAMA_BASE_URL must be loopback HTTP");
-  }
-  url.pathname = url.pathname.replace(/\/$/, "");
-  url.search = "";
-  url.hash = "";
-  return url.toString().replace(/\/$/, "");
-}
-
 export function loadConfig(env: NodeJS.ProcessEnv = process.env): EngineConfig {
   const rawHost = env.KAIZEN_AI_HOST ?? "127.0.0.1";
   if (rawHost !== "127.0.0.1" && rawHost !== "::1") throw new Error("Intelligence Engine must bind to loopback");
+  const provider = env.KAIZEN_AI_PROVIDER ?? "mock";
+  if (provider !== "mock") throw new Error("No model provider is approved; KAIZEN_AI_PROVIDER must be mock");
+  const configuredModelVariable = MODEL_ENVIRONMENT.find((name) => env[name] !== undefined);
+  if (configuredModelVariable) throw new Error(`${configuredModelVariable} is unavailable because no model provider is approved`);
   const origins = (env.KAIZEN_AI_ORIGINS ?? "http://localhost:3000,http://127.0.0.1:3000").split(",").map((x) => x.trim()).filter(Boolean);
   for (const origin of origins) {
     const url = new URL(origin);
@@ -50,15 +42,7 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): EngineConfig {
     host: rawHost,
     port: boundedInt(env.KAIZEN_AI_PORT, 4317, 1024, 65535),
     allowedOrigins: new Set(origins),
-    provider: env.KAIZEN_AI_PROVIDER === "mock" ? "mock" : "llama",
-    llama: {
-      baseUrl: loopbackUrl(env.KAIZEN_LLAMA_BASE_URL ?? "http://127.0.0.1:8080"),
-      modelId: env.KAIZEN_LLAMA_MODEL_ID ?? "local-model",
-      runtimeVersion: env.KAIZEN_LLAMA_RUNTIME_VERSION ?? "unreported",
-      maximumContextTokens: boundedInt(env.KAIZEN_LLAMA_CONTEXT_TOKENS, 4096, 1024, 262144),
-      maximumOutputTokens: boundedInt(env.KAIZEN_LLAMA_OUTPUT_TOKENS, 512, 64, 8192),
-      nativeToolCalling: env.KAIZEN_LLAMA_NATIVE_TOOLS !== "0",
-    },
+    provider: "mock",
     pairingTtlMs: boundedInt(env.KAIZEN_AI_PAIRING_TTL_MS, 5 * 60_000, 30_000, 30 * 60_000),
     sessionTtlMs: boundedInt(env.KAIZEN_AI_SESSION_TTL_MS, 30 * 60_000, 60_000, 24 * 60 * 60_000),
     requestTimeoutMs: boundedInt(env.KAIZEN_AI_REQUEST_TIMEOUT_MS, 120_000, 5_000, 10 * 60_000),

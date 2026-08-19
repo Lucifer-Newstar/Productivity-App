@@ -27,7 +27,7 @@ The independent engine binds to `127.0.0.1:4317` by default. Browser traffic use
 | POST | `/v1/requests/:id/tool-results` | Return validated client Domain Bridge result |
 | DELETE | `/v1/requests/:id` | Cancel request |
 
-Tokens travel only in `Authorization`; pairing codes use `X-Kaizen-Pairing-Code`. The gateway enforces loopback, host/origin allowlists, body/rate limits, unsafe-key rejection and no-store/security headers. Current tool surface is only `get_today@1.0`, selected by trusted engine code. Generic prompts, extra request fields and provider tool calls are rejected. The Express sync API is not an AI source of truth.
+Tokens travel only in `Authorization`; pairing codes use `X-Kaizen-Pairing-Code`. The gateway enforces loopback, host/origin allowlists, body/rate limits, unsafe-key rejection and no-store/security headers. Current tool surface is only `get_today@1.0`, selected by trusted engine code. Application provider status is deterministic with `nativeToolCalling: false`; model settings fail startup validation. Generic prompts, extra request fields and provider tool calls are rejected. The Express sync API is not an AI source of truth.
 
 ## Common
 
