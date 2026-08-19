@@ -105,7 +105,7 @@ The normative thresholds, dataset strata, scoring rules and stop conditions are 
 
 `I1-CANDIDATES-1` and `I1-RUN-1` define a future local-model evaluation through the production deterministic route. The matrix includes Qwen3 4B Instruct 2507 Q4_K_M and Phi-4 Mini Instruct Q4_K_M only. The design fixes 50 scenarios, two repetitions, a 4K context, zero provider tools, blinded semantic review, unchanged `V011-INT-GATE-1` thresholds and unchanged W0 resource/safety ceilings where applicable.
 
-The package is documented under [`v0.1.1-model-evaluation/`](v0.1.1-model-evaluation/README.md). After the large-file hash fix, both preflights are reported complete and rejected, but safe failure codes remained `UNCLASSIFIED`. Supplied attachments were legacy Wave 0 duplicates, so final intake is pending locally reclassified `I1-RUN-1` aggregates. No inference rerun is needed or authorized; full/operations remain blocked and Wave 0 stays closed.
+The package is documented under [`v0.1.1-model-evaluation/`](v0.1.1-model-evaluation/README.md). Valid classified aggregates confirm Qwen3 and Phi are both `REJECTED-PREFLIGHT` with `PROVIDER_HTTP_400`, incomplete/invalid structured-source flow and failed aggregate resource ceilings. Neither is eligible for full or operations. All model stages are closed by `I1-PREFLIGHT-CLOSURE-1`; Wave 0 remains closed.
 
 ## Feedback and future learning
 

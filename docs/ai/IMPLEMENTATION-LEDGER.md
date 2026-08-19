@@ -6,9 +6,9 @@ _Last updated: 2026-08-19_
 
 ## Current milestone
 
-> **Both target preflights are reported rejected, but final intake is blocked on locally classified `I1-RUN-1` aggregates.**
+> **`I1-PREFLIGHT` complete: Qwen3 and Phi rejected; no candidate eligible for full and no model selected.**
 
-The target operator reports ten retained attempts for Qwen3 and Phi, both `REJECTED-PREFLIGHT`, with no full/operations run. Public failure codes remained `UNCLASSIFIED`; the supplied attachments were exact legacy Wave 0 duplicates rather than the new aggregates. Local-only reclassification tooling now preserves attempts/metrics while producing bounded safe codes. No final candidate decision is committed yet. Memory, retrieval, Health, writes, automation, additional domains, remote processing and v0.2 remain frozen.
+Two valid `I1-RUN-1` aggregates confirm ten retained attempts per candidate and `PROVIDER_HTTP_400`. Both failed attempt-completion, structured, source and resource-ceiling requirements. `I1-PREFLIGHT-CLOSURE-1` disables preflight, full and operations. The deterministic/mock v0.1.1 baseline remains authoritative. Memory, retrieval, Health, writes, automation, additional domains, remote processing and v0.2 remain frozen.
 
 ## Completed architecture and foundation
 
@@ -57,10 +57,11 @@ The target operator reports ten retained attempts for Qwen3 and Phi, both `REJEC
 | Full/operations authorization | PROHIBITED | hard-blocked by machine authorization record |
 | First Qwen intake | RUNNER DEFECT / NO INFERENCE | `readFileSync` exceeded Node 2 GiB buffer ceiling |
 | Large-artifact hash correction | Complete | streaming SHA-256 for runtime/model files; harness regression |
-| Reported preflight outcomes | BOTH REJECTED / INTAKE PENDING | 10 attempts each; public code still generic |
-| Attached files | REJECTED AS NEW EVIDENCE | exact duplicates of tracked Wave 0 aggregates |
-| Failure classifier | Complete | local HTTP/transport/timeout/tokenizer/stream mapping; no inference |
-| Final preflight decisions | PENDING | require two correct classified `I1-RUN-1` aggregates |
+| Qwen3 interpreter preflight | REJECTED | 10 retained; `PROVIDER_HTTP_400`; structured/source/resource gates failed |
+| Phi interpreter preflight | REJECTED | 10 retained; `PROVIDER_HTTP_400`; structured/source/resource gates failed |
+| Classified aggregate intake | PASS | exact protocol/matrix/gate/corpus and privacy contract verified |
+| Model-stage authorization | CLOSED | preflight/full/operations all false in `authorization.v2.json` |
+| Final model decision | NO MODEL SELECTED | deterministic/mock v0.1.1 remains baseline |
 
 The new gate does not supersede or weaken `W0-GATE-2`. It evaluates a different, narrower provider role with no tools.
 
@@ -189,11 +190,16 @@ passedForFullRun:       false
 
 The larger control is rejected. Wave 0 is complete with no model selected. No more candidate downloads/runs are authorized under this cycle.
 
-## Next target action and review
+## Next scope review
 
-On the target laptop, pull the classifier update and run `npm run reclassify:v0.1.1:model:target`. This re-scores retained attempts only; it must not run inference. Return only the two regenerated sanitizer aggregates.
+Choose explicitly among:
 
-Do not upload private evidence, rerun the model, infer missing classifications or run full/operations. Final repository decisions remain pending validated `I1-RUN-1` aggregates. Remote-provider work, v0.2, memory, retrieval, Health, writes, automation and additional domains remain frozen.
+1. accept v0.1.1 deterministic/mock-only as the closed local baseline and move to non-model product work;
+2. defer all further Intelligence work;
+3. propose a future model evaluation only through a new matrix/protocol/authorization after conditions materially change;
+4. consider a separately consented remote-provider ADR.
+
+Do not rerun these candidates, add ad hoc candidates, weaken gates or run full/operations. Memory, retrieval, Health, writes, automation, additional domains and v0.2 remain frozen.
 
 ## Documentation and repository maintenance
 

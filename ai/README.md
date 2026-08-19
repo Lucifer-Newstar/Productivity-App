@@ -18,7 +18,7 @@ v0.1.1 deterministic Core Today interpretation is implemented and frozen for rev
 - Source verification, evidence/freshness envelope and Home UI
 - Privacy-safe aggregate observability
 
-Wave 0 is complete with **no local model selected**. Both interpreter preflights are reported rejected, but the supplied attachments were legacy Wave 0 duplicates and public failure codes remain `UNCLASSIFIED`. Reclassify retained local attempts without inference, then return only the two correct sanitizer aggregates. Full/operations remain blocked.
+Wave 0 is complete with **no local model selected**. The interpreter-only preflight cycle is also complete. Valid aggregates confirm Qwen3 and Phi are both `REJECTED-PREFLIGHT` with `PROVIDER_HTTP_400`; neither may run full or operations. The deterministic/mock v0.1.1 baseline remains available.
 
 Not implemented or authorized:
 

@@ -58,3 +58,12 @@ Excluded because its control preflight produced only 50% structured output, viol
 3. Model files remain outside the repository. Local paths, hashes, runtime paths and licenses are recorded only in ignored local configuration and sanitized aggregates.
 4. Inclusion does not alter `WAVE 0 COMPLETE — NO MODEL SELECTED`.
 5. A candidate pass means only “eligible for selection review.” It does not select or integrate the model.
+
+## Final preflight outcomes
+
+| Candidate | Outcome | Safe failure code | Full eligible |
+|---|---|---|---|
+| Qwen3 4B Instruct 2507 Q4_K_M | `REJECTED-PREFLIGHT` | `PROVIDER_HTTP_400` | No |
+| Phi-4 Mini Instruct Q4_K_M | `REJECTED-PREFLIGHT` | `PROVIDER_HTTP_400` | No |
+
+Both retained ten attempts and passed route, zero-tool, token-budget, telemetry, shutdown and port-release checks. Both failed attempt completion, structured response, source validity and resource-ceiling requirements. `I1-CANDIDATES-1` is closed with no candidate eligible for full evaluation.

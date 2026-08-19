@@ -105,7 +105,7 @@ Executable adversarial coverage includes unsupported intent, provider tool escal
 ### Interpreter-model harness controls
 
 - Both frozen candidates and the public local-config template remain disabled; the authorized wrapper creates one transient single-candidate config at a time.
-- `authorization.v1.json` allows `preflight` only. The runner rejects `full`/operations with `STAGE_NOT_AUTHORIZED` regardless of local flags.
+- Historical `authorization.v1.json` allowed preflight only. Current `authorization.v2.json` blocks preflight, full and operations with `STAGE_NOT_AUTHORIZED` after both rejections.
 - The runner requires an ignored `*.local.json`, literal `127.0.0.1` HTTP, verified runtime/model hashes, verified license, enabled config/candidate, `--execute`, and an exact environment acknowledgement.
 - Runtime/model SHA-256 verification streams artifacts incrementally, avoiding whole-file buffers and supporting multi-gigabyte GGUFs without weakening exact-hash checks.
 - QA proves disabled execution exits before file checks or process spawn and rejects remote endpoints.

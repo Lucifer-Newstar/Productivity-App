@@ -19,7 +19,7 @@ def check(label: str, condition: bool) -> None:
 
 candidates = json.loads((PHASE / "candidates.v1.json").read_text(encoding="utf-8"))
 protocol = json.loads((PHASE / "protocol.v1.json").read_text(encoding="utf-8"))
-authorization = json.loads((PHASE / "authorization.v1.json").read_text(encoding="utf-8"))
+authorization = json.loads((PHASE / "authorization.v2.json").read_text(encoding="utf-8"))
 template = json.loads((PHASE / "config" / "candidates.local.example.json").read_text(encoding="utf-8"))
 included = [candidate["id"] for candidate in candidates["included"]]
 excluded = [candidate["id"] for candidate in candidates["excluded"]]
@@ -29,7 +29,7 @@ check("candidate matrix is frozen and disabled", candidates["status"] == "FROZEN
 check("candidate order is exactly Qwen3 then Phi", included == ["qwen3-4b-instruct-2507-q4km", "phi-4-mini-instruct-q4km"])
 check("Gemma and larger control are explicitly excluded", excluded == ["gemma-3-4b-it-qat-q4", "qwen2.5-7b-instruct-q4km-control"])
 check("protocol is frozen and public execution stays disabled", protocol["status"] == "FROZEN-BEFORE-MODEL-EXECUTION" and protocol["executionEnabled"] is False)
-check("authorization permits preflight but blocks full and operations", authorization["status"] == "AUTHORIZED-TARGET-PREFLIGHT-ONLY" and authorization["candidateOrder"] == included and authorization["stages"] == {"preflight": True, "full": False, "operations": False})
+check("authorization closes every stage after both rejections", authorization["status"] == "CLOSED-NO-PASSING-CANDIDATE" and authorization["candidateOrder"] == included and authorization["stages"] == {"preflight": False, "full": False, "operations": False} and set(authorization["outcomes"].values()) == {"REJECTED-PREFLIGHT"})
 check("protocol references the frozen matrix", protocol["matrixId"] == candidates["matrixId"] == "I1-CANDIDATES-1")
 check("V011 gate is unchanged", protocol["qualityGate"] == {"id": "V011-INT-GATE-1", "version": "1.0", "changeAllowed": False, "wave0GateReopened": False})
 check("production route has zero provider tools", protocol["productionPath"]["providerToolDefinitions"] == 0 and protocol["productionPath"]["providerToolRounds"] == 0)

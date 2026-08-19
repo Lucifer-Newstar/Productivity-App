@@ -65,7 +65,7 @@ try:
     check("runner hashes runtime/model artifacts through streaming utility", "await exactHash(config.runtime.llamaServerPath" in runner_source and "await exactHash(candidate.modelPath" in runner_source and "createReadStream" in (PHASE / "fileHash.ts").read_text(encoding="utf-8"))
     environment = {**os.environ, "KAIZEN_I1_EXECUTION_ACK": "I1-RUN-1"}
     disabled = run([str(tsx), str(RUNNER), "--config", str(disabled_config), "--candidate", "qwen3-4b-instruct-2507-q4km", "--stage", "preflight", "--execute"], env=environment)
-    check("disabled runner exits before any runtime spawn", disabled.returncode == 2 and "I1_EXECUTION_DISABLED" in disabled.stderr and not sentinel.exists())
+    check("closed authorization blocks preflight before runtime spawn", disabled.returncode == 2 and "STAGE_NOT_AUTHORIZED" in disabled.stderr and not sentinel.exists())
     remote = json.loads(json.dumps(template)); remote["runtime"]["endpoint"] = "https://example.invalid:18080"
     disabled_config.write_text(json.dumps(remote), encoding="utf-8")
     rejected = run([str(tsx), str(RUNNER), "--config", str(disabled_config), "--candidate", "qwen3-4b-instruct-2507-q4km", "--stage", "preflight"], env=environment)

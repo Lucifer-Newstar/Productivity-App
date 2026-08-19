@@ -1,10 +1,11 @@
 # I1 target-laptop preflight runbook
 
-**Authorization:** `I1-PREFLIGHT-AUTH-1`
-**Allowed:** Qwen3 preflight, then Phi preflight
-**Prohibited:** full corpus, operations/soak, model integration
+**Historical authorization:** `I1-PREFLIGHT-AUTH-1` — completed and superseded
+**Current authorization:** `I1-PREFLIGHT-CLOSURE-1`
+**Allowed:** no model stage
+**Prohibited:** preflight rerun, full corpus, operations/soak, model integration
 
-This runbook is executed only on the target Windows laptop where the approved local runtime and model artifacts already exist. Do not upload or paste local configuration, paths, hashes, raw attempts, server logs or telemetry.
+This runbook is retained as historical procedure. Both preflights are complete and rejected; do not execute these commands again. Do not upload or paste local configuration, paths, hashes, raw attempts, server logs or telemetry.
 
 ## 1. Synchronize and validate
 

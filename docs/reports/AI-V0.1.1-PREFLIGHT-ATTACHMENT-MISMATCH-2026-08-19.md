@@ -63,14 +63,11 @@ Do not authorize full or operations. Final documented candidate decisions requir
 
 ## Privacy action
 
-Do not provide attempts, raw output, server logs, local paths, telemetry or local configuration. Return only:
+Do not provide attempts, raw output, server logs, local paths, telemetry or local configuration. Only sanitizer-produced `I1-RUN-1` aggregates are eligible.
 
-```text
-qwen3-4b-instruct-2507-q4km-preflight.json
-phi-4-mini-instruct-q4km-preflight.json
-```
+## Resolution
 
-with `PUBLIC-SANITIZED-AGGREGATE`, `protocolId: I1-RUN-1`, `stage: preflight`, and a non-generic safe failure code.
+The two correct aggregates were subsequently received and validated. Both contain `PROVIDER_HTTP_400` and `REJECTED-PREFLIGHT`. See `AI-V0.1.1-PREFLIGHT-FINAL-2026-08-19.md`. The legacy duplicate attachments remain excluded from evidence.
 
 ## Validation summary
 
@@ -80,7 +77,7 @@ AI tests: 24/24 PASS
 AI build: PASS
 Interpreter-model design QA: 16/16 PASS
 Interpreter-model harness QA: 18/18 PASS
-Documentation QA: 45/45 PASS
+Documentation QA: 46/46 PASS
 Source commentary QA: 255/255 PASS
 No inference during classification implementation: confirmed
 Attached legacy duplicates removed from workspace after comparison

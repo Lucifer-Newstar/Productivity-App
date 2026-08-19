@@ -23,7 +23,7 @@ const RESULTS_ROOT=resolve(PHASE,"results-local");
 const CORPUS_PATH=resolve(PHASE,"corpus.v1.json");
 const MANIFEST_PATH=resolve(PHASE,"corpus.manifest.json");
 const PROTOCOL_PATH=resolve(PHASE,"protocol.v1.json");
-const AUTHORIZATION_PATH=resolve(PHASE,"authorization.v1.json");
+const AUTHORIZATION_PATH=resolve(PHASE,"authorization.v2.json");
 
 function fail(code:string,message:string):never{const error=new Error(message) as Error&{code:string};error.code=code;throw error}
 function sha256SmallFile(path:string):string{const hash=createHash("sha256");hash.update(readFileSync(path));return hash.digest("hex")}
@@ -79,7 +79,7 @@ async function main():Promise<void>{
   if(!configPath||!candidateId||!["preflight","full"].includes(stage))fail("USAGE","runner requires --config, --candidate and --stage preflight|full");
   const config=readJson<LocalConfig>(configPath),{endpoint}=validateConfig(configPath,config),candidate=config.candidates.find(item=>item.id===candidateId),authorization=readJson<any>(AUTHORIZATION_PATH);
   if(!candidate)fail("CANDIDATE_INVALID","candidate is not in I1-CANDIDATES-1");
-  if(authorization.authorizationId!=="I1-PREFLIGHT-AUTH-1"||authorization.protocolId!=="I1-RUN-1"||authorization.matrixId!=="I1-CANDIDATES-1"||authorization.candidateOrder?.join(",")!==config.candidates.map(item=>item.id).join(",")||authorization.stages?.[stage]!==true)fail("STAGE_NOT_AUTHORIZED",`${stage} execution is not authorized`);
+  if(authorization.authorizationId!=="I1-PREFLIGHT-CLOSURE-1"||authorization.protocolId!=="I1-RUN-1"||authorization.matrixId!=="I1-CANDIDATES-1"||authorization.candidateOrder?.join(",")!==config.candidates.map(item=>item.id).join(",")||authorization.stages?.[stage]!==true)fail("STAGE_NOT_AUTHORIZED",`${stage} execution is not authorized`);
   const acknowledged=cli.execute===true&&process.env.KAIZEN_I1_EXECUTION_ACK==="I1-RUN-1";
   if(!config.executionEnabled||!candidate.enabled||!acknowledged)fail("I1_EXECUTION_DISABLED","model execution remains disabled by config/candidate/acknowledgement gates");
   if(stage==="full"){

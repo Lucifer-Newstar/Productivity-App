@@ -1,6 +1,6 @@
 # v0.1.1 interpreter-only local-model evaluation design
 
-**Status:** PREFLIGHTS REPORTED REJECTED — CLASSIFIED AGGREGATE INTAKE PENDING
+**Status:** PREFLIGHT COMPLETE — BOTH CANDIDATES REJECTED — EXECUTION CLOSED
 
 This package defines a new, narrow evaluation of models as interpreters of validated Core Today evidence. It does not reopen Wave 0, change `V011-INT-GATE-1`, grant tool authority or select a model.
 
@@ -13,7 +13,8 @@ This package defines a new, narrow evaluation of models as interpreters of valid
 5. Machine records:
    - `ai/evaluation/v0.1.1/model-phase/candidates.v1.json`
    - `ai/evaluation/v0.1.1/model-phase/protocol.v1.json`
-   - `ai/evaluation/v0.1.1/model-phase/authorization.v1.json`
+   - `ai/evaluation/v0.1.1/model-phase/authorization.v1.json` — historical preflight authorization
+   - `ai/evaluation/v0.1.1/model-phase/authorization.v2.json` — current all-stage closure
 6. Frozen corpus and manifest:
    - `ai/evaluation/v0.1.1/model-phase/corpus.v1.json`
    - `ai/evaluation/v0.1.1/model-phase/corpus.manifest.json`
@@ -31,6 +32,6 @@ This package defines a new, narrow evaluation of models as interpreters of valid
 
 The matrix contains only Qwen3 4B Instruct 2507 Q4_K_M and Phi-4 Mini Instruct Q4_K_M. Both retain their Wave 0 rejection. Gemma 3 4B and the Qwen2.5 7B control are explicitly excluded.
 
-No model, runtime binary, local path, hash configuration or raw result belongs in this public package. Both preflights are reported rejected; final intake awaits `reclassify_target_preflights.ps1` and the two correct sanitizer aggregates. This reads retained local attempts without inference. Full and operations remain hard-blocked by `authorization.v1.json`.
+No model, runtime binary, local path, hash configuration or raw result belongs in this public package. Both classified aggregates are accepted: Qwen3 and Phi are `REJECTED-PREFLIGHT` with `PROVIDER_HTTP_400`. `authorization.v2.json` closes preflight, full and operations. No model is selected.
 
 Memory, retrieval, Health, additional domains, writes, automation, remote providers and v0.2 remain outside scope.

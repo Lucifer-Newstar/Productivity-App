@@ -75,11 +75,11 @@ Every accepted file must declare `PUBLIC-SANITIZED-AGGREGATE`. Raw attempts, out
 ## Current measured status
 
 ```text
-Qwen3 preflight: RETRY PENDING — first intake stopped before inference on fixed >2 GiB hash defect
-Phi preflight:   PENDING — not run because wrapper stopped at Qwen intake
+Qwen3 preflight: REJECTED-PREFLIGHT — PROVIDER_HTTP_400
+Phi preflight:   REJECTED-PREFLIGHT — PROVIDER_HTTP_400
 ```
 
-No pass or rejection is inferred. Both decisions will be documented only after valid sanitized aggregates are received. See `AI-V0.1.1-PREFLIGHT-INTAKE-HASH-FIX-2026-08-19.md`.
+The authorization is closed by `I1-PREFLIGHT-CLOSURE-1`. Neither candidate is eligible for full or operations. See `AI-V0.1.1-PREFLIGHT-FINAL-2026-08-19.md`.
 
 ## Validation before authorization commit
 
@@ -88,8 +88,8 @@ No pass or rejection is inferred. Both decisions will be documented only after v
 - AI build: PASS
 - Design QA: 16/16 PASS
 - Harness QA: 18/18 PASS
-- Documentation QA: 44/44 PASS
-- Source commentary QA: 254/254 PASS
+- Documentation QA: 46/46 PASS
+- Source commentary QA: 255/255 PASS
 - Git diff check: PASS
 - Staged privacy scan: PASS
 

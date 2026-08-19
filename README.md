@@ -27,7 +27,7 @@ Optional Express reference API — 127.0.0.1:4000
 Optional Intelligence Engine — 127.0.0.1:4317
 ```
 
-The Intelligence Engine is currently v0.1.1, read-only and provider-neutral. The deterministic/mock path is live-accepted. Two target interpreter preflights are reported rejected, with final intake pending classified sanitizer aggregates; no model is selected.
+The Intelligence Engine is currently v0.1.1, read-only and provider-neutral. The deterministic/mock path is live-accepted. Qwen3 and Phi interpreter preflights are complete and rejected; no local model is selected.
 
 ## Repository
 

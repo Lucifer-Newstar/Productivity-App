@@ -47,7 +47,7 @@ ai/evaluation/v0.1.1/model-phase/config/*.local.json  LOCAL-ONLY, gitignored
 ai/evaluation/v0.1.1/model-phase/results-public/  PUBLIC only after sanitization/review
 ```
 
-Every v0.1.1 public aggregate declares `"classification": "PUBLIC-SANITIZED-AGGREGATE"` and excludes raw prompts, responses and machine data. The deterministic/mock evaluator and `I1-SYNTHETIC-1` use repository-owned synthetic records only. Authorized target preflight retains attempts, local config, logs and telemetry under ignored LOCAL-ONLY paths. Generic failures are reclassified from retained evidence on-device; raw messages are never requested or uploaded. Only sanitizer-produced candidate aggregates enter review.
+Every v0.1.1 public aggregate declares `"classification": "PUBLIC-SANITIZED-AGGREGATE"` and excludes raw prompts, responses and machine data. The two final preflight files were reclassified and sanitized on-device; only those aggregates entered the repository. Raw attempts, local config, messages, logs and telemetry were never requested or uploaded, and attachment copies were deleted after validation.
 
 `sanitize_results.py` copies only approved aggregate fields; it never copies raw prompts/responses, paths, IDs or sample logs. `privacy_scan.py` blocks sensitive staged paths and common secret/identifier patterns. The tracked pre-commit hook invokes the staged scan. Contributors enable it with:
 

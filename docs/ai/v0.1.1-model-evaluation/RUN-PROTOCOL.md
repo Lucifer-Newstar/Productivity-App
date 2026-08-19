@@ -1,7 +1,7 @@
 # v0.1.1 interpreter-only local-model run protocol
 
 **Protocol:** `I1-RUN-1`
-**Status:** FROZEN BEFORE MODEL EXECUTION
+**Status:** FROZEN; PREFLIGHT COMPLETE, ALL EXECUTION CLOSED
 **Quality gate:** unchanged `V011-INT-GATE-1@1.0`
 **Candidate matrix:** `I1-CANDIDATES-1`
 
@@ -194,3 +194,7 @@ Possible candidate outcomes:
 - `PASS-FOR-SELECTION-REVIEW`
 
 There is no `SELECTED` outcome in the runner. Even a complete pass requires a sanitized report and explicit integration review.
+
+## Final protocol status
+
+Qwen3 and Phi each completed preflight intake with ten retained attempts and were rejected with `PROVIDER_HTTP_400`, failed structured/source/attempt-completion requirements and failed aggregate resource ceilings. No candidate advanced. `authorization.v2.json` closes preflight, full and operations execution.
