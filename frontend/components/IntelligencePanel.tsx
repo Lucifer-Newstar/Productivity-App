@@ -1,13 +1,14 @@
 "use client";
 /** Fixed Core Today Intelligence surface for pairing, grounded interpretation, and verified evidence. */
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { BrainCircuit, CheckCircle2, ChevronRight, Link2, LoaderCircle, LockKeyhole, ShieldCheck, Sparkles, Unplug, X } from "lucide-react";
 import { KaizenAiClient, type AiEngineState, type AiResponse } from "../lib/ai/client";
 import type { TodaySnapshot } from "../lib/ai/domainBridge";
 
 export default function IntelligencePanel({buildSnapshot}:{buildSnapshot:()=>TodaySnapshot}){
  const client=useMemo(()=>new KaizenAiClient(),[]),[paired,setPaired]=useState(client.paired),[code,setCode]=useState(""),[state,setState]=useState<AiEngineState>(client.paired?"ready":"pairing"),[response,setResponse]=useState<AiResponse|null>(null),[error,setError]=useState(""),[streaming,setStreaming]=useState(false);const abort=useRef<AbortController|null>(null);
- const pair=async()=>{if(!code.trim())return;setError("");setState("busy");try{await client.pair(code.trim());setPaired(true);setCode("");setState("ready")}catch(e){setState("pairing");setError(e instanceof Error?e.message:"Pairing failed")}};
+ const pairWith=async(value:string)=>{if(!value.trim())return;setError("");setState("busy");try{await client.pair(value.trim());setPaired(true);setCode("");setState("ready")}catch(e){setState("pairing");setError(e instanceof Error?e.message:"Pairing failed")}},pair=()=>pairWith(code);
+ useEffect(()=>{if(paired||process.env.NEXT_PUBLIC_KAIZEN_DESKTOP!=="1")return;let active=true;fetch("/api/desktop/pairing",{cache:"no-store"}).then(r=>r.ok?r.json():Promise.reject()).then(async body=>{if(!active||typeof body.pairingCode!=="string")return;setState("busy");await client.pair(body.pairingCode);if(active){setPaired(true);setState("ready")}}).catch(()=>{if(active)setState("pairing")});return()=>{active=false}},[client,paired]);
  const run=async()=>{if(!paired)return;abort.current?.abort();const controller=new AbortController();abort.current=controller;setError("");setResponse(null);setStreaming(false);try{const result=await client.focusToday(buildSnapshot,{signal:controller.signal,onState:setState,onDelta:()=>setStreaming(true)});setResponse(result);setStreaming(false)}catch(e){setStreaming(false);if(!controller.signal.aborted)setError(e instanceof Error?e.message:"Kaizen Intelligence is unavailable")}};
  const cancel=()=>{abort.current?.abort();setState("ready");setStreaming(false)};
  const disconnect=()=>{client.clear();setPaired(false);setState("pairing");setResponse(null)};

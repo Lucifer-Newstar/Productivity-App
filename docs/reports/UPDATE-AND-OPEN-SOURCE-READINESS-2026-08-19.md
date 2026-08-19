@@ -11,6 +11,7 @@ main change
 → automatic verified candidate setup artifact
 → reviewed annotated release tag
 → gated GitHub Release
+→ Electron desktop app starts frontend/engine on dynamic loopback ports
 → packaged app checks fixed official release endpoint
 → system notification
 → user downloads exact setup through local redirect

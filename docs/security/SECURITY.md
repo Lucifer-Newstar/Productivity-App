@@ -6,7 +6,7 @@ _Last reviewed: 2026-08-16_
 
 Kaizen is currently an **offline-first, single-user application**. The browser stores all live frontend data in `localStorage`; the frontend does not call the Express API. The backend is a development/reference sync service with in-memory data. It is not an internet-facing multi-user service and must not be treated as one until persistent storage, identities and per-user authorization are implemented.
 
-Health, journal, career and progress-photo data are sensitive. A user or script with access to the browser profile/origin can read localStorage. The dream-journal PIN is only a casual UI privacy gate, not cryptographic protection.
+Health, journal, career and progress-photo data are sensitive. A user or process with access to the Windows account and Kaizen Electron profile can read localStorage. The dream-journal PIN is only a casual UI privacy gate, not cryptographic protection.
 
 ## Secure deployment
 

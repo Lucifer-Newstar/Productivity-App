@@ -50,4 +50,4 @@ Root persistence, Habits and Focus catch quota exceptions and dispatch `kaizen:s
 
 ## Privacy
 
-Browser storage is not encrypted. Treat the browser profile as the security boundary. Do not use Kaizen on an untrusted shared profile for sensitive health, journal or social records.
+Desktop storage is not encrypted. Treat the Windows account and Kaizen Electron profile as the security boundary. Do not use Kaizen from an untrusted shared account for sensitive health, journal or social records.

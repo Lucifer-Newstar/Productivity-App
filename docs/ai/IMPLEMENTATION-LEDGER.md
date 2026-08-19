@@ -83,6 +83,7 @@ PR #4 merged as `06cf13c`; main run `32260387533` passed all four jobs. The sing
 | Windows build automation | CORRECTED / MANUAL RERUN PENDING | install-root depth fixed in launcher + verifier |
 | Continuous delivery | IMPLEMENTED / TAG HOLD | green main auto-candidate + provenance/privacy + install/update/verify/uninstall |
 | Installed update channel | IMPLEMENTED / RELEASE TEST PENDING | fixed GitHub release check + local notification/download + same-AppId setup |
+| Native desktop shell | IMPLEMENTED / WINDOWS VERIFY PENDING | Electron 43.4.1, stable `kaizen://app`, dynamic loopback, close-to-stop |
 | Merge action | COMPLETE | user merged PR #4 after green checks |
 
 The new gate does not supersede or weaken `W0-GATE-2`. It evaluates a different, narrower provider role with no tools.
@@ -225,7 +226,7 @@ Latest maintenance pass:
 - Root, frontend, backend and Intelligence README files aligned with the current architecture and no-model Wave 0 outcome.
 - Stale “coming soon”, placeholder/in-progress and architecture-only Intelligence descriptions removed from active docs.
 - Documentation indexes, route metadata, setup commands and quality gates synchronized.
-- All 278 maintained application and packaging source files now include explanatory commentary.
+- All 282 maintained application and packaging source files now include explanatory commentary.
 - `qa:comments` permanently enforces source-comment coverage.
 - Historical reports/bug entries remain intact and are explicitly treated as dated evidence rather than current status.
 

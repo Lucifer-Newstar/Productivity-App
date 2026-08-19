@@ -1,6 +1,6 @@
 # Kaizen
 
-Kaizen is a local-first personal operating system for productivity, projects, career development, training, health and entertainment. The browser remains authoritative; optional local services add sync/reference APIs and a read-only Intelligence foundation without taking ownership of user state.
+Kaizen is a local-first personal operating system for productivity, projects, career development, training, health and entertainment. The final Windows build runs in its own sandboxed desktop window; its embedded Chromium profile remains authoritative while dynamic loopback services provide the application and read-only deterministic Intelligence without owning user records.
 
 ## Product spaces
 
@@ -16,15 +16,13 @@ Kaizen is a local-first personal operating system for productivity, projects, ca
 ## Architecture
 
 ```text
-Next.js 16 / React 19 browser application
-  ├── React Context domain store
-  ├── slice-specific local persistence
-  ├── deterministic analytics and notifications
-  ├── App Router Home and fixed server routes
-  └── Pages Router full-screen product spaces
+Electron desktop shell — stable kaizen://app origin
+  ├── Next.js 16 / React 19 application on a dynamic loopback port
+  ├── React Context + Electron-profile local persistence
+  ├── deterministic analytics, notifications and release updates
+  └── deterministic Intelligence Engine on a second dynamic loopback port
 
-Optional Express reference API — 127.0.0.1:4000
-Optional Intelligence Engine — 127.0.0.1:4317
+Optional Express reference API — development only, never packaged
 ```
 
 The Intelligence Engine is currently v0.1.1 and read-only. Deterministic Core Today is the authoritative application AI path; model configuration fails closed, and no local model is selected.
@@ -32,9 +30,10 @@ The Intelligence Engine is currently v0.1.1 and read-only. Deterministic Core To
 ## Repository
 
 ```text
-frontend/   Next.js application and browser-authoritative state
-backend/    Optional in-memory Express reference/sync API
+frontend/   Next.js application and authoritative local state
+backend/    Optional in-memory Express reference/sync API (not packaged)
 ai/         Independent Intelligence Engine and Wave 0 validation harness
+packaging/  Electron desktop shell and Windows installer
 docs/       Architecture, reference, security, design, guides and reports
 ```
 
@@ -78,7 +77,7 @@ The Intelligence Engine prints a one-time pairing code to its local console. Ent
 
 ## Windows installer and updates
 
-The verified Windows x64 setup bundles the standalone frontend, deterministic Intelligence Engine and pinned Node runtime. It installs per user, creates branded shortcuts and registers an uninstaller. Browser records remain in the trusted browser profile at `http://127.0.0.1:3000` and are preserved across setup upgrades and uninstall.
+The verified Windows x64 setup bundles the Electron desktop shell, standalone frontend, deterministic Intelligence Engine and pinned Node runtime. It installs per user, creates branded shortcuts and registers an uninstaller. Desktop records remain in Kaizen's trusted Electron profile at the stable `kaizen://app` origin and are preserved across setup upgrades and uninstall. Closing the desktop window terminates its dynamic loopback services.
 
 After a newer stable GitHub Release is published, an installed packaged build creates a system notification with a local **Download update** action. The user stops Kaizen and runs the downloaded setup, which upgrades the existing installation through the stable installer identity. Kaizen does not silently execute installers or upload personal data.
 
@@ -126,7 +125,7 @@ Start with:
 
 ## Security and privacy
 
-- Browser storage is local and unencrypted; use a trusted browser profile.
+- Desktop-profile storage is local and unencrypted; use a trusted Windows account.
 - External catalogue access uses fixed server-side adapters and allowlists.
 - Optional services bind to loopback by default.
 - Never commit secrets, personal exports, model weights or raw benchmark data.

@@ -2,7 +2,7 @@
 
 ## Data ownership
 
-Kaizen v1 is browser-authoritative under ADR-012. Clearing browser site data removes product records unless a backup was exported.
+Kaizen records remain client-authoritative under ADR-012. The final Windows build stores them in its per-user Electron profile at `kaizen://app`; deleting that profile removes product records unless a backup was exported.
 
 ## Whole-product backup
 
@@ -32,7 +32,7 @@ When storage quota is full:
 1. Export a whole-product backup before refreshing.
 2. Remove old progress photos, fan art, cosplay photos or mood-board images.
 3. Confirm a small edit persists.
-4. Do not clear site data until the backup is verified in a separate browser profile.
+4. For one-time browser-candidate migration, do not clear browser site data until the backup is restored and verified in the Kaizen desktop profile.
 
 ## Per-space formats
 

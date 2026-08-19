@@ -2,7 +2,7 @@
 
 **Purpose:** durable handoff from the project's beginning through current state to local release
 **Current branch:** `ai`
-**Current product direction:** local/offline, browser-authoritative, deterministic Intelligence, no cloud/model expansion
+**Current product direction:** local/offline native desktop shell, Electron-profile authority, deterministic Intelligence, no cloud/model expansion
 **Read this first if another assistant, maintainer or session must continue the work.**
 
 ## 1. Canonical source order
@@ -209,7 +209,7 @@ Application configuration accepts deterministic provider only. Model settings fa
 
 ## 7. Security boundaries
 
-- Local OS account and trusted browser profile are the v1 at-rest boundary.
+- Local OS account and trusted Kaizen Electron profile are the final v1 at-rest boundary; browser-candidate data migrates once by backup/restore.
 - Browser data is not encrypted; never claim otherwise.
 - Store backups in encrypted user-controlled storage.
 - Express is loopback by default and refuses unauthenticated network bind.

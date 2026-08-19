@@ -16,7 +16,7 @@
 | Model evaluation | Closed; no model selected |
 | PR #4 | Merged as `06cf13c` |
 | Main CI | GREEN — run `32260387533`, all four jobs |
-| Windows package | Single setup executable + registered uninstaller/icons implemented; corrected rerun pending |
+| Windows package | Native Electron window + dynamic internal ports + registered installer/uninstaller; Windows rerun pending |
 | Continuous delivery | Green main CI automatically builds verified candidate; annotated tag publishes |
 | Installed updates | Fixed GitHub release check + notification + user-confirmed in-place setup upgrade |
 | Open-source license | ISC License present |
@@ -32,8 +32,10 @@ All identified P0/P1 application items are fixed, scoped or explicitly accepted.
 4. verify offline routes and stable browser origin;
 5. verify synthetic backup/restore and browser-data disclosure;
 6. verify deterministic engine pairing and no residual ports/processes;
-7. verify an installed v1.0.0 build receives and applies a later synthetic/test patch setup without browser-data loss;
-8. require green main CI and reviewed delivery manifests before authorizing an annotated release tag.
+7. migrate one browser-candidate backup into the desktop profile and verify data;
+8. verify closing the native window releases both dynamically assigned ports;
+9. verify an installed v1.0.0 desktop build receives and applies a later synthetic/test patch setup without profile-data loss;
+10. require green main CI and reviewed delivery manifests before authorizing an annotated release tag.
 
 ## Explicit non-goals
 

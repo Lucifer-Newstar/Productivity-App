@@ -11,10 +11,10 @@
 - Internal runtime staging builder.
 - One per-user Inno Setup executable containing the complete application.
 - Registered Windows uninstaller plus branded desktop, Start Menu, verification and uninstall entries.
-- Shared launcher for frontend and deterministic Intelligence Engine.
-- Fixed ports, stable browser origin, readiness checks, duplicate/occupied-port refusal and process-state file.
+- Pinned Electron 43.4.1 native desktop shell for frontend and deterministic Intelligence Engine.
+- Dynamic loopback ports, stable `kaizen://app` origin, readiness checks, single-instance behavior and process-state file.
 - Stop command and uninstall shutdown hook.
-- SHA-256 sidecars for ZIP and installer.
+- SHA-256 sidecar for the single installer.
 - Static/executable packaging contract QA.
 - Bundled privacy-safe verifier covering 39 routes, local CSP, cross-site denial, deterministic Core Today and released ports.
 - GitHub Windows workflow for build, silent install, packaged verification, silent uninstall and artifact upload.
@@ -24,10 +24,10 @@
 
 ```text
 Kaizen
-├── runtime/node
+├── desktop                  Electron runtime + native shell main process
+├── runtime/node             pinned child-service Node runtime
 ├── frontend                 Next.js standalone server
 ├── intelligence             compiled deterministic engine + production dependency
-├── scripts/launcher.cjs
 ├── scripts/stop.cjs
 ├── start-kaizen.cmd
 ├── stop-kaizen.cmd
@@ -40,7 +40,7 @@ The Express reference API, model artifacts, evaluation outputs, credentials, use
 ## Security decisions
 
 - Services bind only to `127.0.0.1`.
-- Ports remain exactly 3000 and 4317 to preserve origin and allowlist contracts.
+- The desktop shell allocates available ephemeral loopback ports and preserves storage at stable private origin `kaizen://app`.
 - The fixed Node archive URL is accompanied by the official SHA-256 value.
 - Production dependencies install from lockfiles with lifecycle scripts disabled for the engine staging copy.
 - Package artifacts are ignored and never treated as source.

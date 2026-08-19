@@ -28,3 +28,5 @@ Runtime scripts are installed under `Kaizen\scripts`. Both the verifier and norm
 - Packaging QA executes an install-root depth assertion and statically verifies the verifier expression.
 
 No test gate was weakened. The corrected Windows workflow must rebuild, install, verify and uninstall a fresh setup executable before the installer is accepted.
+
+**Subsequent topology note:** ADR-016 replaced the console/browser launcher with a native Electron lifecycle owner before public release. The verifier retains the corrected one-level install-root contract; the obsolete launcher file is no longer packaged.

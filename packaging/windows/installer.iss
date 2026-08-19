@@ -29,17 +29,17 @@ CloseApplications=yes
 Source: "{#SourceDir}\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
 
 [Icons]
-Name: "{group}\Kaizen"; Filename: "{app}\start-kaizen.cmd"; WorkingDir: "{app}"; IconFilename: "{app}\assets\kaizen.ico"
+Name: "{group}\Kaizen"; Filename: "{app}\desktop\electron.exe"; Parameters: """{app}\desktop\main.cjs"""; WorkingDir: "{app}"; IconFilename: "{app}\assets\kaizen.ico"
 Name: "{group}\Stop Kaizen"; Filename: "{app}\stop-kaizen.cmd"; WorkingDir: "{app}"; IconFilename: "{app}\assets\kaizen.ico"
 Name: "{group}\Verify Kaizen installation"; Filename: "{app}\verify-kaizen.cmd"; WorkingDir: "{app}"; IconFilename: "{app}\assets\kaizen.ico"
 Name: "{group}\Uninstall Kaizen"; Filename: "{uninstallexe}"; IconFilename: "{app}\assets\kaizen.ico"
-Name: "{userdesktop}\Kaizen"; Filename: "{app}\start-kaizen.cmd"; WorkingDir: "{app}"; IconFilename: "{app}\assets\kaizen.ico"; Tasks: desktopicon
+Name: "{userdesktop}\Kaizen"; Filename: "{app}\desktop\electron.exe"; Parameters: """{app}\desktop\main.cjs"""; WorkingDir: "{app}"; IconFilename: "{app}\assets\kaizen.ico"; Tasks: desktopicon
 
 [Tasks]
 Name: "desktopicon"; Description: "Create a Kaizen desktop shortcut"; GroupDescription: "Additional shortcuts:"
 
 [Run]
-Filename: "{app}\start-kaizen.cmd"; Description: "Launch Kaizen"; Flags: postinstall nowait skipifsilent
+Filename: "{app}\desktop\electron.exe"; Parameters: """{app}\desktop\main.cjs"""; Description: "Launch Kaizen"; Flags: postinstall nowait skipifsilent
 
 [UninstallRun]
 Filename: "{app}\stop-kaizen.cmd"; Flags: runhidden waituntilterminated skipifdoesntexist

@@ -12,9 +12,9 @@ Include the affected version, component, reproduction steps, impact and a minima
 
 ## Security boundaries
 
-- Kaizen is a local single-user application and trusts the Windows account and browser profile.
-- Browser records are local and unencrypted; exported backups must be protected by the user.
-- Packaged services bind to loopback.
+- Kaizen is a local single-user application and trusts the Windows account and per-user Electron profile.
+- Electron-profile records are local and unencrypted; exported backups must be protected by the user.
+- The sandboxed desktop shell owns dynamically assigned loopback services and terminates them when closed.
 - The installed update checker reads only public release metadata from the fixed official GitHub repository.
 - Kaizen does not silently execute downloaded installers.
 - No cloud account, remote AI provider, model runtime, AI memory, Health AI or AI write automation is included.

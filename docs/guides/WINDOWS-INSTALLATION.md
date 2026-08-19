@@ -16,7 +16,7 @@ The installer bundles Node.js 20.19.0, the Next.js standalone server and determi
 2. Run the setup executable as the intended Windows user.
 3. Optionally allow setup to create the desktop shortcut.
 4. Launch **Kaizen** from the desktop or Start Menu.
-5. Keep the Kaizen console open while using the application; closing it stops the local runtime.
+5. Kaizen opens in its own desktop window. No browser or console interaction is required; closing the window stops its internal services.
 
 The installer is per-user and does not require administrator privileges.
 
@@ -37,7 +37,7 @@ Updater-enabled packaged builds check the official Kaizen GitHub Releases channe
 
 1. Export a backup before a significant update.
 2. Select **Download update** to retrieve the exact official setup executable.
-3. Run **Stop Kaizen** or close the Kaizen console.
+3. Close the Kaizen desktop window (or run **Stop Kaizen** if recovery is needed).
 4. Run the downloaded setup executable.
 5. Setup detects the stable Kaizen `AppId`, reuses the existing install directory, stops any remaining package processes and upgrades installed files.
 6. Launch Kaizen and run **Verify Kaizen installation**.
@@ -48,20 +48,21 @@ The update does not move or delete browser-profile records. Kaizen never silentl
 
 Use **Uninstall Kaizen** from the Start Menu or Windows **Settings → Apps → Installed apps**. The uninstaller first stops the package-owned local services and then removes installed runtime files and shortcuts.
 
-Product records remain in the browser profile under `http://127.0.0.1:3000`; uninstall intentionally does not erase them. Export a whole-product backup before uninstalling, changing browsers or deleting the browser profile.
+Final desktop records remain in Kaizen's per-user Electron profile under the stable private origin `kaizen://app`; uninstall intentionally does not erase them. Export a whole-product backup before uninstalling or deleting the Windows profile.
 
 ## Data boundary
 
-Browser records are not stored in the installation directory and are not encrypted by Kaizen. Do not use Kaizen in an untrusted/shared Windows account or browser profile. Store exported backups in an encrypted user-controlled location.
+Desktop records are not stored in the installation directory and are not encrypted by Kaizen. Do not use Kaizen in an untrusted/shared Windows account. Store exported backups in an encrypted user-controlled location.
+
+### One-time migration from the browser candidate
+
+The earlier browser-served candidate and final desktop shell use different storage profiles. Before installing the final desktop build, export a whole-product backup from the browser candidate. After installation, open **Local data recovery** in the desktop app and restore that backup. Future desktop setup updates keep the same `kaizen://app` origin and Electron profile, so this migration occurs once.
 
 ## Runtime behavior
 
-The launcher reserves:
+The desktop shell selects two currently available ephemeral loopback ports for the Next.js application and deterministic Intelligence Engine. The user-facing origin remains `kaizen://app`, so occupied conventional ports do not block startup and changing internal ports do not change desktop storage. Internal listeners are never exposed beyond loopback.
 
-- `127.0.0.1:3000` — Next.js application;
-- `127.0.0.1:4317` — deterministic Intelligence Engine.
-
-Startup fails rather than selecting another port if either is occupied. This preserves the browser storage origin and exact security allowlists. The console displays the one-time local pairing code; it is never written to release reports.
+The desktop shell obtains the one-time engine pairing code in memory and pairs the Home Intelligence panel automatically. The code is never displayed, persisted or written to release reports. Closing the last Kaizen window terminates both child process trees and removes runtime state.
 
 ## Packaged verification
 

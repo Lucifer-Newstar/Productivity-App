@@ -1,6 +1,5 @@
-REM Starts the bundled Kaizen loopback services through the pinned Node runtime.
+REM Starts Kaizen in its native desktop window; the desktop process owns all loopback services.
 @echo off
 setlocal
 cd /d "%~dp0"
-"runtime\node\node.exe" "scripts\launcher.cjs"
-if errorlevel 1 pause
+start "" "desktop\electron.exe" "desktop\main.cjs"

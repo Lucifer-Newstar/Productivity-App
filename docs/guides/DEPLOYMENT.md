@@ -4,10 +4,11 @@
 
 ```text
 Windows/local machine
- ├── Next.js application
- │    ├── browser-authoritative local persistence
- │    └── optional Entertainment provider BFF routes
- └── deterministic Intelligence Engine on loopback
+ └── Electron desktop shell — stable kaizen://app origin
+      ├── Next.js application on an ephemeral loopback port
+      │    ├── Electron-profile authoritative local persistence
+      │    └── optional Entertainment provider BFF routes
+      └── deterministic Intelligence Engine on a second ephemeral loopback port
 ```
 
 ADR-012 excludes the Express reference API from the packaged local v1 runtime. The frontend consumes zero Express endpoints, and the service is in-memory development/reference code.
@@ -16,13 +17,13 @@ Cloud deployment, multi-user hosting and public network exposure are not part of
 
 ## Application requirements
 
-1. Install from lockfiles with Node 20.9+.
+1. Build from lockfiles with Node 22.12+; the package bundles Electron and a pinned Node 20.19 runtime for child services.
 2. Configure optional Entertainment provider credentials in local server environment only.
 3. Run all gates in [`TESTING.md`](TESTING.md).
 4. Build the frontend and deterministic engine.
 5. Bind the Intelligence Engine to loopback only.
 6. Preserve security headers from `next.config.js`.
-7. Verify browser backup/restore before packaging.
+7. Verify one-time browser-candidate backup restore into the desktop profile before release.
 
 The application remains usable without Entertainment provider credentials. Deterministic Intelligence requires the local engine/pairing flow but no model runtime.
 

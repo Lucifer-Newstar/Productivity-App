@@ -8,7 +8,7 @@ function validPid(value) { return Number.isSafeInteger(value) && value > 0 && va
 function main() {
   const file = statePath(); if (!fs.existsSync(file)) { console.log("Kaizen is not recorded as running."); return; }
   const state = JSON.parse(fs.readFileSync(file, "utf8"));
-  for (const pid of [state.frontendPid, state.enginePid, state.launcherPid]) if (validPid(pid)) spawnSync("taskkill.exe", ["/PID", String(pid), "/T", "/F"], { stdio: "ignore", windowsHide: true });
+  for (const pid of [state.frontendPid, state.enginePid, state.desktopPid, state.launcherPid]) if (validPid(pid)) spawnSync("taskkill.exe", ["/PID", String(pid), "/T", "/F"], { stdio: "ignore", windowsHide: true });
   fs.rmSync(file, { force: true }); console.log("Kaizen stopped.");
 }
 if (require.main === module) { try { main(); } catch (error) { console.error(`[kaizen] ${error.message}`); process.exitCode = 1; } }

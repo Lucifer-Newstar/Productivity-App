@@ -37,6 +37,7 @@ const nextConfig = {
   env: {
     NEXT_PUBLIC_KAIZEN_VERSION: packageVersion,
     NEXT_PUBLIC_KAIZEN_UPDATE_CHANNEL: process.env.KAIZEN_UPDATE_CHANNEL ?? "disabled",
+    NEXT_PUBLIC_KAIZEN_DESKTOP: process.env.KAIZEN_DESKTOP ?? "0",
   },
   reactStrictMode: true,
   poweredByHeader: false,

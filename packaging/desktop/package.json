@@ -1,0 +1,10 @@
+{
+  "name": "@kaizen/desktop-shell",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Native Kaizen desktop window and loopback lifecycle owner",
+  "main": "main.cjs",
+  "dependencies": {
+    "electron": "43.4.1"
+  }
+}

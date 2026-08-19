@@ -12,11 +12,12 @@ $nodeSha256 = "be72284c7bc62de07d5a9fd0ae196879842c085f11f7f2b60bf8864c0c9d6a4f"
 function Run([string]$File,[string[]]$Arguments,[string]$Directory){Push-Location $Directory;try{& $File @Arguments;if($LASTEXITCODE -ne 0){throw "$File failed with exit code $LASTEXITCODE"}}finally{Pop-Location}}
 Remove-Item $stage -Recurse -Force -ErrorAction SilentlyContinue
 New-Item $stage -ItemType Directory -Force | Out-Null
-if(-not $SkipInstall){Run "npm.cmd" @("ci") (Join-Path $root "frontend");Run "npm.cmd" @("ci") (Join-Path $root "ai")}
+if(-not $SkipInstall){Run "npm.cmd" @("ci") (Join-Path $root "frontend");Run "npm.cmd" @("ci") (Join-Path $root "ai");Run "npm.cmd" @("ci") (Join-Path $root "packaging/desktop")}
 $declaredVersion=(Get-Content (Join-Path $root "frontend/package.json") -Raw|ConvertFrom-Json).version
 if($Version -ne $declaredVersion){throw "Installer version $Version does not match frontend package $declaredVersion"}
 $env:KAIZEN_LOCAL_PACKAGE="1"
 $env:KAIZEN_UPDATE_CHANNEL="github"
+$env:KAIZEN_DESKTOP="1"
 Run "npm.cmd" @("run","build") (Join-Path $root "frontend")
 Run "npm.cmd" @("run","build") (Join-Path $root "ai")
 $frontend=Join-Path $stage "frontend";New-Item $frontend -ItemType Directory -Force|Out-Null
@@ -39,6 +40,9 @@ New-Item (Join-Path $stage "runtime") -ItemType Directory -Force|Out-Null
 Move-Item (Join-Path $nodeExtract "node-v$nodeVersion-win-x64") (Join-Path $stage "runtime/node")
 New-Item (Join-Path $stage "scripts") -ItemType Directory -Force|Out-Null
 New-Item (Join-Path $stage "assets") -ItemType Directory -Force|Out-Null
+$desktop=Join-Path $stage "desktop";New-Item $desktop -ItemType Directory -Force|Out-Null
+Copy-Item (Join-Path $root "packaging/desktop/node_modules/electron/dist/*") $desktop -Recurse -Force
+Copy-Item (Join-Path $root "packaging/desktop/main.cjs") $desktop
 Copy-Item (Join-Path $PSScriptRoot "runtime/*.cjs") (Join-Path $stage "scripts")
 Copy-Item (Join-Path $PSScriptRoot "runtime/*.mjs") (Join-Path $stage "scripts")
 Copy-Item (Join-Path $PSScriptRoot "assets/kaizen.ico") (Join-Path $stage "assets")
@@ -47,5 +51,5 @@ Copy-Item (Join-Path $PSScriptRoot "stop-kaizen.cmd") $stage
 Copy-Item (Join-Path $PSScriptRoot "verify-kaizen.cmd") $stage
 Copy-Item (Join-Path $root "LICENSE") $stage
 Set-Content (Join-Path $stage "VERSION") $Version -NoNewline
-Set-Content (Join-Path $stage "README.txt") "Launch Kaizen from its desktop or Start Menu shortcut. Keep the console open while using Kaizen. Product data remains in the browser profile and is not removed by uninstall."
+Set-Content (Join-Path $stage "README.txt") "Launch Kaizen from its desktop or Start Menu shortcut. It opens in a native desktop window and owns dynamic loopback services until that window closes. Product data remains in the Kaizen desktop profile and is not removed by uninstall. Browser-candidate users should migrate once with whole-product backup and restore."
 Write-Host "Staged package: $stage"
