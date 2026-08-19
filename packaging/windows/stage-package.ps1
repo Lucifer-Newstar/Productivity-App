@@ -13,7 +13,10 @@ function Run([string]$File,[string[]]$Arguments,[string]$Directory){Push-Locatio
 Remove-Item $stage -Recurse -Force -ErrorAction SilentlyContinue
 New-Item $stage -ItemType Directory -Force | Out-Null
 if(-not $SkipInstall){Run "npm.cmd" @("ci") (Join-Path $root "frontend");Run "npm.cmd" @("ci") (Join-Path $root "ai")}
+$declaredVersion=(Get-Content (Join-Path $root "frontend/package.json") -Raw|ConvertFrom-Json).version
+if($Version -ne $declaredVersion){throw "Installer version $Version does not match frontend package $declaredVersion"}
 $env:KAIZEN_LOCAL_PACKAGE="1"
+$env:KAIZEN_UPDATE_CHANNEL="github"
 Run "npm.cmd" @("run","build") (Join-Path $root "frontend")
 Run "npm.cmd" @("run","build") (Join-Path $root "ai")
 $frontend=Join-Path $stage "frontend";New-Item $frontend -ItemType Directory -Force|Out-Null

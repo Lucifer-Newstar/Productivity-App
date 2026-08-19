@@ -4,7 +4,7 @@ on:
   pull_request:
     branches: [main]
   push:
-    branches: [main, ai, windows-packaging]
+    branches: [main]
 
 permissions:
   contents: read
@@ -52,6 +52,7 @@ jobs:
           npm run qa:backup
           npm run qa:resilience
           npm run qa:packaging
+          npm run qa:update
           npm run qa:docs
           npm run qa:comments
       - name: Production build

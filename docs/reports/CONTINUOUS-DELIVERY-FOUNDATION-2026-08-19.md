@@ -18,7 +18,7 @@ A tagged release requires:
 - tracked-file privacy scan;
 - reviewed version-specific release notes;
 - pinned Node.js 20.19.0 and Inno Setup 6.7.1;
-- successful setup build, silent install, packaged runtime verification and silent uninstall;
+- successful setup build, silent install, running-process in-place update, packaged runtime verification and silent uninstall;
 - sanitized package verification and delivery manifests.
 
 Failure in any gate publishes nothing.

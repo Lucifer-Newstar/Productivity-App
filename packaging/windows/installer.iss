@@ -9,6 +9,7 @@ AppName=Kaizen
 AppPublisher=Kaizen
 AppVersion={#MyAppVersion}
 DefaultDirName={localappdata}\Programs\Kaizen
+UsePreviousAppDir=yes
 DefaultGroupName=Kaizen
 PrivilegesRequired=lowest
 ArchitecturesAllowed=x64compatible
@@ -42,3 +43,13 @@ Filename: "{app}\start-kaizen.cmd"; Description: "Launch Kaizen"; Flags: postins
 
 [UninstallRun]
 Filename: "{app}\stop-kaizen.cmd"; Flags: runhidden waituntilterminated skipifdoesntexist
+
+[Code]
+function PrepareToInstall(var NeedsRestart: Boolean): String;
+var
+  ResultCode: Integer;
+begin
+  Result := '';
+  if FileExists(ExpandConstant('{app}\stop-kaizen.cmd')) then
+    Exec(ExpandConstant('{app}\stop-kaizen.cmd'), '', ExpandConstant('{app}'), SW_HIDE, ewWaitUntilTerminated, ResultCode);
+end;

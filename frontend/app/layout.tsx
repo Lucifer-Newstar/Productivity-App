@@ -4,6 +4,7 @@ import { StoreProvider } from "../lib/store";
 import { ThemeProvider } from "../lib/theme";
 import StorageErrorBanner from "../components/StorageErrorBanner";
 import NotificationCenter from "../components/NotificationCenter";
+import UpdateChecker from "../components/UpdateChecker";
 
 export const metadata: Metadata = {
   title: "Kaizen — Rule Your Realm",
@@ -36,7 +37,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       </head>
       <body className="min-h-screen">
         <ThemeProvider>
-          <StoreProvider><StorageErrorBanner /><NotificationCenter />{children}</StoreProvider>
+          <StoreProvider><StorageErrorBanner /><UpdateChecker /><NotificationCenter />{children}</StoreProvider>
         </ThemeProvider>
       </body>
     </html>

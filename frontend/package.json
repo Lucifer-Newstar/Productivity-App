@@ -1,7 +1,8 @@
 {
-  "name": "productivity-app",
+  "name": "kaizen-productivity-app",
   "version": "1.0.0",
-  "main": "index.js",
+  "private": true,
+  "repository": "https://github.com/Lucifer-Newstar/Productivity-App.git",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
@@ -24,6 +25,7 @@
     "qa:backup": "tsx scripts/qa-backup.ts",
     "qa:resilience": "tsx scripts/qa-resilience.ts",
     "qa:packaging": "node ../packaging/windows/qa-packaging.mjs",
+    "qa:update": "tsx scripts/qa-update.ts",
     "qa:comments": "node scripts/qa-comments.js"
   },
   "keywords": [],

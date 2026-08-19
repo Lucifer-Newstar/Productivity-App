@@ -81,7 +81,8 @@ PR #4 merged as `06cf13c`; main run `32260387533` passed all four jobs. The sing
 | Windows package foundation | IMPLEMENTED / HOST VERIFICATION PENDING | one setup executable + registered uninstaller/icons; ADR-014 |
 | Packaged-runtime verifier | IMPLEMENTED | 39 routes + CSP + pairing/Core Today + shutdown; sanitized aggregate only |
 | Windows build automation | CORRECTED / MANUAL RERUN PENDING | install-root depth fixed in launcher + verifier |
-| Continuous delivery | IMPLEMENTED / TAG HOLD | exact-main green CI + privacy + provenance + notes + verified manifest |
+| Continuous delivery | IMPLEMENTED / TAG HOLD | green main auto-candidate + provenance/privacy + install/update/verify/uninstall |
+| Installed update channel | IMPLEMENTED / RELEASE TEST PENDING | fixed GitHub release check + local notification/download + same-AppId setup |
 | Merge action | COMPLETE | user merged PR #4 after green checks |
 
 The new gate does not supersede or weaken `W0-GATE-2`. It evaluates a different, narrower provider role with no tools.

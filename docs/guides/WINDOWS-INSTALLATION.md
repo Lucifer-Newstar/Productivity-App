@@ -31,6 +31,19 @@ Setup creates a Kaizen Start Menu group containing:
 
 The same professional Kaizen icon is used by setup, Windows Apps, Start Menu and the optional desktop shortcut.
 
+## Updates
+
+Updater-enabled packaged builds check the official Kaizen GitHub Releases channel shortly after startup and every six hours while open. If a newer stable version is available, the global notification inbox shows **Download update**. Any installer built before this update feature was added must be manually replaced once with the final updater-enabled v1.0.0 setup; later releases can notify normally.
+
+1. Export a backup before a significant update.
+2. Select **Download update** to retrieve the exact official setup executable.
+3. Run **Stop Kaizen** or close the Kaizen console.
+4. Run the downloaded setup executable.
+5. Setup detects the stable Kaizen `AppId`, reuses the existing install directory, stops any remaining package processes and upgrades installed files.
+6. Launch Kaizen and run **Verify Kaizen installation**.
+
+The update does not move or delete browser-profile records. Kaizen never silently downloads or executes setup and sends no personal records or telemetry during the release check. Offline use continues normally when the check is unavailable.
+
 ## Uninstall
 
 Use **Uninstall Kaizen** from the Start Menu or Windows **Settings → Apps → Installed apps**. The uninstaller first stops the package-owned local services and then removes installed runtime files and shortcuts.

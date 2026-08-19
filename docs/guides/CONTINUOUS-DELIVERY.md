@@ -4,6 +4,10 @@ Kaizen continuous delivery produces verified Windows artifacts and can publish a
 
 ## Delivery modes
 
+### Automatic candidate after main CI
+
+A successful push-triggered **Kaizen CI** run on `main` automatically starts Windows Installer against that exact commit. It builds, installs, verifies, uninstalls and uploads a 14-day candidate artifact. This is continuous delivery evidence, not a public release and not a cloud deployment.
+
 ### Manual artifact
 
 Run **Windows Installer** through `workflow_dispatch`. This validates the requested semantic version, scans tracked files for privacy violations, builds and installs the setup executable, runs packaged verification, uninstalls it and uploads a 14-day Actions artifact.
@@ -21,7 +25,7 @@ An annotated `vMAJOR.MINOR.PATCH` tag activates publication. Before building, th
 5. tracked-file privacy scan passes;
 6. reviewed `docs/releases/<tag>.md` exists.
 
-The Windows job then requires build, silent install, sanitized verification and silent uninstall to pass. Only after those gates does the publish job create the GitHub Release.
+The Windows job then requires build, silent install, launch, in-place setup update with process shutdown, sanitized verification and silent uninstall to pass. Only after those gates does the publish job create the GitHub Release.
 
 ## Delivered files
 

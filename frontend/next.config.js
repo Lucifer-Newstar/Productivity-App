@@ -31,8 +31,13 @@ const securityHeaders = [
   { key: "Permissions-Policy", value: "camera=(self), microphone=(self), geolocation=(), payment=(), usb=()" },
 ];
 
+const packageVersion = require("./package.json").version;
 const nextConfig = {
   output: "standalone",
+  env: {
+    NEXT_PUBLIC_KAIZEN_VERSION: packageVersion,
+    NEXT_PUBLIC_KAIZEN_UPDATE_CHANNEL: process.env.KAIZEN_UPDATE_CHANNEL ?? "disabled",
+  },
   reactStrictMode: true,
   poweredByHeader: false,
   typescript: { ignoreBuildErrors: false },
