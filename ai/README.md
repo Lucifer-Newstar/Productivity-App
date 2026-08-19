@@ -18,7 +18,7 @@ v0.1.1 deterministic Core Today interpretation is implemented and frozen for rev
 - Source verification, evidence/freshness envelope and Home UI
 - Privacy-safe aggregate observability
 
-Wave 0 is complete with **no local model selected**. AI-ADR-019 is implemented and live-accepted for the deterministic/mock path. `V011-INT-GATE-1` passes on the public synthetic deterministic-mock aggregate. `I1-CANDIDATES-1` and `I1-RUN-1` now freeze a future Qwen3/Phi interpreter comparison, but execution remains disabled and this is not a real-model selection.
+Wave 0 is complete with **no local model selected**. AI-ADR-019 is implemented and live-accepted for the deterministic/mock path. `V011-INT-GATE-1` passes on the public synthetic deterministic-mock aggregate. The frozen Qwen3/Phi corpus and production-path harness are implemented, but every execution gate remains disabled and no model result exists.
 
 Not implemented or authorized:
 
@@ -60,6 +60,7 @@ npm test
 npm run qa:v0.1.1
 npm run eval:v0.1.1
 npm run qa:v0.1.1:model-design
+npm run qa:v0.1.1:model-harness
 npm run build
 npm audit --omit=dev
 

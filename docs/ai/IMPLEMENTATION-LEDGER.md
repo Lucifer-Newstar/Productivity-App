@@ -6,9 +6,9 @@ _Last updated: 2026-08-19_
 
 ## Current milestone
 
-> **v0.1.1 live integration accepted; interpreter-only model evaluation design frozen with execution disabled. Stop for evaluation implementation review.**
+> **Interpreter-only corpus and disabled production-path harness implemented and validated. Stop before model execution.**
 
-AI-ADR-019 governs the accepted deterministic/mock baseline. The live engine→proxy→pairing→SSE→tool-result→verified-response flow passed. `I1-CANDIDATES-1`, `I1-RUN-1` and the report format are frozen before model execution. No model was run or selected. Memory, retrieval, Health context, write actions, automation, additional domains, remote processing and v0.2 remain frozen.
+AI-ADR-019 governs the accepted deterministic/mock baseline. `I1-SYNTHETIC-1`, the guarded runner, scorer, sanitizer, semantic worksheet and harness QA now implement the frozen `I1-RUN-1` design. Both candidates remain disabled; no model process was started and no result exists. Memory, retrieval, Health context, write actions, automation, additional domains, remote processing and v0.2 remain frozen.
 
 ## Completed architecture and foundation
 
@@ -47,8 +47,13 @@ AI-ADR-019 governs the accepted deterministic/mock baseline. The live engine→p
 | Live integration acceptance | PASS | actual engine + frontend proxy + pairing/SSE/tool callback |
 | Interpreter-model candidate matrix | Frozen / disabled | `I1-CANDIDATES-1`: Qwen3 then Phi |
 | Interpreter-model run protocol | Frozen / disabled | `I1-RUN-1`, unchanged `V011-INT-GATE-1` |
+| `I1-SYNTHETIC-1` corpus | Complete / frozen | 50 cases, six strata, 100 planned attempts, SHA-256 manifest |
+| Production-path runner | Complete / disabled | real router/orchestrator/provider, zero tools, local lifecycle/telemetry |
+| Scorer and semantic review | Complete | exact attempt coverage, automatic metrics, two-reviewer adjudication |
+| Allowlist sanitizer | Complete | aggregate-only output, no selection authority |
+| Harness QA | PASS | disabled/no-spawn, loopback, corpus, failures, sanitizer boundary |
 | Interpreter-model report format | Complete | sanitized aggregate template; no selection outcome |
-| Model execution | NOT AUTHORIZED | no runner/corpus execution and no selected model |
+| Model execution | NOT AUTHORIZED | candidates/config remain disabled; no model result |
 
 The new gate does not supersede or weaken `W0-GATE-2`. It evaluates a different, narrower provider role with no tools.
 
@@ -179,13 +184,13 @@ The larger control is rejected. Wave 0 is complete with no model selected. No mo
 
 ## Next review
 
-Review the frozen interpreter-model evaluation design. Explicitly choose one of:
+Review the implemented, disabled interpreter-model harness. Explicitly choose one of:
 
-1. authorize implementation of the disabled `I1-SYNTHETIC-1` corpus and production-path runner, then stop before model execution;
-2. request bounded corrections to `I1-CANDIDATES-1`, `I1-RUN-1` or the report template before any output is opened;
-3. keep v0.1.1 deterministic/mock-only and defer model work.
+1. authorize target-laptop `I1-PREFLIGHT` execution for Qwen3 and then Phi in frozen order, with LOCAL-ONLY raw evidence and sanitized reports;
+2. request bounded harness/corpus corrections before any model output is opened;
+3. keep v0.1.1 deterministic/mock-only and defer model execution.
 
-Model execution is still prohibited. A later approval would be required after the corpus/runner is implemented and validated. Do not start remote-provider work, v0.2, memory, retrieval, Health, writes, automation or additional domains.
+Model execution remains prohibited until that decision. A preflight pass would authorize neither the 100-response full run nor integration automatically. Do not start remote-provider work, v0.2, memory, retrieval, Health, writes, automation or additional domains.
 
 ## Documentation and repository maintenance
 
@@ -194,7 +199,7 @@ Latest maintenance pass:
 - Root, frontend, backend and Intelligence README files aligned with the current architecture and no-model Wave 0 outcome.
 - Stale “coming soon”, placeholder/in-progress and architecture-only Intelligence descriptions removed from active docs.
 - Documentation indexes, route metadata, setup commands and quality gates synchronized.
-- All 247 maintained TypeScript, JavaScript, Python, PowerShell, CSS and shell source files now include explanatory commentary.
+- All 252 maintained TypeScript, JavaScript, Python, PowerShell, CSS and shell source files now include explanatory commentary.
 - `qa:comments` permanently enforces source-comment coverage.
 - Historical reports/bug entries remain intact and are explicitly treated as dated evidence rather than current status.
 

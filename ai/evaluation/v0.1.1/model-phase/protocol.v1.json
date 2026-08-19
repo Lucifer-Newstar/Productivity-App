@@ -42,7 +42,19 @@
     ],
     "maximumInputTokens": 3072,
     "minimumOutputBudgetTokens": 512,
-    "personalDataAllowed": false
+    "personalDataAllowed": false,
+    "preflightScenarioIds": [
+      "deterministic-clear-01",
+      "deterministic-clear-02",
+      "empty-insufficient-contradictory-01",
+      "empty-insufficient-contradictory-02",
+      "multiple-priorities-01",
+      "multiple-priorities-02",
+      "schedule-attention-01",
+      "untrusted-instruction-01",
+      "forbidden-scope-action-01",
+      "forbidden-scope-action-02"
+    ]
   },
   "stages": [
     {

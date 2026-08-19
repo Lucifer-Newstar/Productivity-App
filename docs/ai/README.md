@@ -1,7 +1,7 @@
 # Kaizen Intelligence Engine — architecture gate
 
-**Status:** v0.1.1 deterministic baseline accepted; interpreter-model evaluation design frozen with execution disabled<br>
-**Architecture package version:** 0.6-v0.1.1-evaluation-design<br>
+**Status:** v0.1.1 baseline accepted; interpreter-model corpus/harness implemented with execution disabled<br>
+**Architecture package version:** 0.7-v0.1.1-model-harness<br>
 **Intelligence permissions:** READ / ANALYZE / SUGGEST only
 
 The canonical future-development authority is [`MASTER-SPECIFICATION.md`](MASTER-SPECIFICATION.md), interpreted together with KAC-1, locked ADRs, versioned contracts and the current `ai` branch. Execution follows [`DELIVERY-PLAYBOOK.md`](DELIVERY-PLAYBOOK.md), and every completed step updates the living [`IMPLEMENTATION-LEDGER.md`](IMPLEMENTATION-LEDGER.md). Fragmented later instructions do not silently replace these sources.
@@ -68,6 +68,7 @@ Every design choice in this package uses one of four labels:
 - [`../reports/AI-V0.1.1-IMPLEMENTATION-2026-08-19.md`](../reports/AI-V0.1.1-IMPLEMENTATION-2026-08-19.md) — implementation, security and evaluation closeout.
 - [`v0.1.1-model-evaluation/`](v0.1.1-model-evaluation/README.md) — frozen candidate matrix, run protocol and report format; execution disabled.
 - [`../reports/AI-V0.1.1-ACCEPTANCE-AND-MODEL-EVAL-DESIGN-2026-08-19.md`](../reports/AI-V0.1.1-ACCEPTANCE-AND-MODEL-EVAL-DESIGN-2026-08-19.md) — live acceptance and evaluation-design report.
+- [`../reports/AI-V0.1.1-MODEL-HARNESS-2026-08-19.md`](../reports/AI-V0.1.1-MODEL-HARNESS-2026-08-19.md) — corpus/harness implementation and no-execution evidence.
 - [`DELIVERY-PLAYBOOK.md`](DELIVERY-PLAYBOOK.md) — mandatory pull/scope/test/privacy/docs/commit procedure.
 - [`V0.1-INTEGRATION-VALIDATION.md`](V0.1-INTEGRATION-VALIDATION.md) — deterministic/mock foundation validated; real model unavailable.
 - [`WAVE-0-REPORT.md`](WAVE-0-REPORT.md) — final no-model Selection Report.
@@ -77,4 +78,4 @@ Every design choice in this package uses one of four labels:
 
 ## Active implementation boundary
 
-The provider-neutral engine implements and has live-accepted deterministic `focus-today → get_today@1.0` routing with zero provider tool access. The deterministic/mock path passes the frozen gate and remains the accepted baseline. A two-candidate interpreter-model evaluation is designed but disabled; no corpus runner or model execution is authorized. Wave 0 remains closed with no local model selected. Health, memory, retrieval, additional domains, writes, automation, remote processing and v0.2 remain frozen.
+The provider-neutral engine implements and has live-accepted deterministic `focus-today → get_today@1.0` routing with zero provider tool access. The deterministic/mock path remains the accepted baseline. The two-candidate interpreter corpus and production-path harness are implemented, but both candidates and execution remain disabled. Wave 0 remains closed with no local model selected. Health, memory, retrieval, additional domains, writes, automation, remote processing and v0.2 remain frozen.

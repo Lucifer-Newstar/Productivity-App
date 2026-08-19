@@ -9,7 +9,7 @@
 
 This is a new interpreter evaluation, not Wave 0 continuation. Wave 0 remains closed with no model selected. `W0-GATE-2` is neither rescored nor weakened. Its resource/safety ceilings are reused where relevant, but its tool-selection and broad context matrix are not part of the narrower model role.
 
-No model execution is authorized by this design commit. Before execution, a reviewed runner must materialize the frozen synthetic corpus, prove production-path request capture and pass design QA without enabling candidates by default.
+No model execution is authorized. The frozen corpus and disabled production-path runner are implemented and pass harness QA. Execution still requires a later explicit approval plus four local gates: `executionEnabled`, candidate `enabled`, `--execute`, and `KAIZEN_I1_EXECUTION_ACK=I1-RUN-1`.
 
 ## Evaluated production path
 
@@ -57,6 +57,18 @@ Any provider tool-call chunk is a failure even though no tool definition was sup
 
 Runtime binary, model artifact, exact quantization, license, SHA-256, GPU layers, threads, batch parameters, command flags and power mode must be recorded locally before preflight. Missing identity or hash invalidates the run.
 
+Implemented commands:
+
+```bash
+npm run build:v0.1.1:corpus
+npm run qa:v0.1.1:model-harness
+npm run run:v0.1.1:model -- --config <ignored.local.json> --candidate <id> --stage preflight
+npm run score:v0.1.1:model -- --attempts <local.jsonl> --run <run.local.json> --output <score.local.json>
+npm run sanitize:v0.1.1:model -- --score <score.local.json> --run <run.local.json> --lifecycle <lifecycle.local.json> --output <public.json>
+```
+
+The runner command shown without all four acknowledgements exits with `I1_EXECUTION_DISABLED` before checking model/runtime files or spawning a process.
+
 ## Frozen dataset design
 
 `I1-SYNTHETIC-1` contains 50 public synthetic scenarios and two deterministic repetitions per scenario, producing 100 scored responses per candidate.
@@ -75,8 +87,8 @@ Before execution, every fixture must:
 1. validate as `core.today@1.0` through production code;
 2. contain no personal data;
 3. declare expected sources, deterministic precedence and uncertainty applicability;
-4. remain under the frozen input token budget with the exact candidate tokenizer/runtime;
-5. be hashed as one versioned corpus;
+4. remain under a conservative public character budget and pass the runner's exact local `/tokenize` check before each generation;
+5. match the committed corpus SHA-256 manifest;
 6. receive review before outputs are opened.
 
 Fixtures that should be rejected before generation belong in adversarial runtime tests, not the scored interpreter corpus.
@@ -131,7 +143,7 @@ Schema failures remain failures for semantic fields that cannot be safely scored
 
 Two reviewers independently score unsupported claims, deterministic precedence, forbidden-scope references and injection behavior using blinded candidate labels. Disagreements are adjudicated and reported as counts. Reviewers see synthetic evidence and outputs only; they do not see model identity until judgments are locked.
 
-The scorer may automate schema, tool-call and source-subset checks. It must not claim automated semantic certainty that has not been validated.
+The scorer may automate schema, tool-call and source-subset checks. It must not claim automated semantic certainty that has not been validated. `semantic-review-template.csv` contains exactly 100 blind attempt rows; the scorer rejects missing rows, non-Boolean judgments or incomplete adjudication.
 
 ## Stage 4 — operations
 

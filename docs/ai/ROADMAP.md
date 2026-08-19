@@ -43,10 +43,12 @@ Wave 0 is complete with no model selected. Architecture review has authorized a 
 - [x] deterministic/mock `V011-INT-GATE-1` evaluation
 - [x] live integration acceptance through engine, same-origin proxy, pairing, SSE and tool callback
 - [x] interpreter-only candidate matrix, run protocol and reporting format frozen
-- [ ] synthetic corpus and production-path model runner implementation
-- [ ] any target model execution, candidate report and selection review
+- [x] `I1-SYNTHETIC-1` corpus, manifest and semantic-review worksheet
+- [x] disabled production-path runner, scorer, sanitizer and harness QA
+- [ ] target-laptop candidate preflights
+- [ ] any full candidate run, operations report and selection review
 
-**Current stop:** v0.1.1 is accepted as the deterministic/mock baseline. Interpreter-model design is frozen with execution disabled. Review before implementing the corpus/runner; model execution requires another later approval. No real model is selected.
+**Current stop:** v0.1.1 remains the accepted deterministic/mock baseline. The interpreter-model harness is implemented but all execution gates remain disabled. Review before target preflights; no real model is selected.
 
 **Scope freeze:** Core Today only. Do not add memory, retrieval, Health, additional domains, writes, automation, remote processing or v0.2 work.
 

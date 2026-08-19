@@ -102,6 +102,16 @@ Health is separately consented. Secrets, session keys, provider credentials, raw
 
 Executable adversarial coverage includes unsupported intent, provider tool escalation, stale/oversized/Health-shaped evidence, fabricated sources, deterministic-precedence loss, unsupported facts, command properties, missing uncertainty and user-authored injection text.
 
+### Interpreter-model harness controls
+
+- Both frozen candidates and the public local-config template remain disabled.
+- The runner requires an ignored `*.local.json`, literal `127.0.0.1` HTTP, verified runtime/model hashes, verified license, enabled config/candidate, `--execute`, and an exact environment acknowledgement.
+- QA proves disabled execution exits before file checks or process spawn and rejects remote endpoints.
+- Every attempt is appended immediately to ignored LOCAL-ONLY JSONL; scorer coverage rejects dropped or duplicate attempts.
+- Exact candidate tokenization is checked before generation; provider tools are forbidden by the production capture wrapper.
+- Raw output, server logs, paths and per-sample telemetry stay under ignored `results-local/`.
+- The sanitizer uses an explicit aggregate allowlist, cannot report model selection, and may write only under reviewed `results-public/`.
+
 ## v0.1 implemented controls
 
 - Engine binds only to `127.0.0.1` or `::1`; configuration rejects network exposure.

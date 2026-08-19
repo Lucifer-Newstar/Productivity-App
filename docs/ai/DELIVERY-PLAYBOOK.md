@@ -29,7 +29,7 @@ Before writing code:
 4. Confirm the request does not silently expand into an unapproved phase.
 5. Surface conflicts with locked decisions instead of guessing.
 
-Current freeze: v0.1.1 deterministic/mock integration is accepted. The interpreter-model matrix/protocol/report design is frozen, but corpus/runner implementation and model execution are not authorized. Wave 0 remains closed. No v0.2 tools, memory, retrieval, Health, writes, automation or additional domains.
+Current freeze: v0.1.1 deterministic/mock integration is accepted. The interpreter-model corpus/harness is implemented, but all candidate and execution gates remain disabled; target preflights are not authorized. Wave 0 remains closed. No v0.2 tools, memory, retrieval, Health, writes, automation or additional domains.
 
 ## 3. Required implementation sequence
 

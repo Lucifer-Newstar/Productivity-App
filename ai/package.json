@@ -13,6 +13,11 @@
     "qa:v0.1.1": "tsx --test test/interpreterArchitecture.test.ts test/interpreterRuntime.test.ts",
     "eval:v0.1.1": "tsx evaluation/v0.1.1/evaluate.ts",
     "qa:v0.1.1:model-design": "python evaluation/v0.1.1/model-phase/qa_design.py",
+    "build:v0.1.1:corpus": "python evaluation/v0.1.1/model-phase/build_corpus.py",
+    "qa:v0.1.1:model-harness": "python evaluation/v0.1.1/model-phase/qa_harness.py",
+    "run:v0.1.1:model": "tsx evaluation/v0.1.1/model-phase/runner.ts",
+    "score:v0.1.1:model": "python evaluation/v0.1.1/model-phase/scorer.py",
+    "sanitize:v0.1.1:model": "python evaluation/v0.1.1/model-phase/sanitizer.py",
     "qa:wave0": "python wave0/scripts/qa_wave0.py"
   },
   "dependencies": {

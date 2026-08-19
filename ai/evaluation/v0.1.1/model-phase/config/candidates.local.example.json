@@ -7,13 +7,21 @@
     "llamaServerPath": "<LOCAL_LLAMA_SERVER_PATH>",
     "runtimeVersion": "RECORD_EXACT_VERSION",
     "runtimeSha256": "RECORD_SHA256",
-    "endpoint": "http://127.0.0.1:18080"
+    "nvidiaSmiPath": "<LOCAL_NVIDIA_SMI_PATH>",
+    "endpoint": "http://127.0.0.1:18080",
+    "startupTimeoutMs": 180000,
+    "requestTimeoutMs": 30000,
+    "gpuLayers": 99,
+    "threads": 8,
+    "batchSize": 512,
+    "ubatchSize": 128
   },
   "candidates": [
     {
       "id": "qwen3-4b-instruct-2507-q4km",
       "modelPath": "<LOCAL_QWEN3_GGUF_PATH>",
       "artifactSha256": "RECORD_SHA256",
+      "license": "RECORD_VERIFIED_LICENSE",
       "licenseVerified": false,
       "enabled": false
     },
@@ -21,6 +29,7 @@
       "id": "phi-4-mini-instruct-q4km",
       "modelPath": "<LOCAL_PHI4_GGUF_PATH>",
       "artifactSha256": "RECORD_SHA256",
+      "license": "RECORD_VERIFIED_LICENSE",
       "licenseVerified": false,
       "enabled": false
     }
