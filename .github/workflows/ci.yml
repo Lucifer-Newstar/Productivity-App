@@ -50,6 +50,7 @@ jobs:
           npm run qa:core
           npm run qa:baseline
           npm run qa:backup
+          npm run qa:resilience
           npm run qa:docs
           npm run qa:comments
       - name: Production build

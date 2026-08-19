@@ -1,7 +1,7 @@
 "use client";
 /** Coordinates Home navigation, responsive rails, and direction-aware view transitions. */
 import { useEffect, useState } from "react";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
 import TopNav from "../components/TopNav";
 import SideNav, { HOME_NAV_ITEMS } from "../components/SideNav";
@@ -27,6 +27,7 @@ const VALID: CoreView[] = [
 ];
 export default function AppShell() {
   const params = useSearchParams(),
+    router = useRouter(),
     initial = (params?.get("view") as CoreView | null) ?? "dashboard",
     [view, setView] = useState<CoreView>(
       VALID.includes(initial) ? initial : "dashboard",
@@ -34,14 +35,14 @@ export default function AppShell() {
     [direction, setDirection] = useState(1),
     { theme } = useTheme();
   useEffect(() => {
-    const v = params?.get("view") as CoreView | null;
-    if (v && VALID.includes(v)) navigate(v);
+    const requested=params?.get("view") as CoreView|null,next=requested&&VALID.includes(requested)?requested:"dashboard";
+    setView(current=>{if(next===current)return current;setDirection(VALID.indexOf(next)>=VALID.indexOf(current)?1:-1);return next});
   }, [params]);
   const navigate = (next: CoreView) => {
-    const a = VALID.indexOf(view),
-      b = VALID.indexOf(next);
-    setDirection(b >= a ? 1 : -1);
+    if(next===view)return;
+    setDirection(VALID.indexOf(next)>=VALID.indexOf(view)?1:-1);
     setView(next);
+    router.push(next==="dashboard"?"/":`/?view=${next}`,{scroll:false});
   };
   const views: Record<CoreView, React.ReactNode> = {
     dashboard: <Dashboard onNavigateView={navigate} />,

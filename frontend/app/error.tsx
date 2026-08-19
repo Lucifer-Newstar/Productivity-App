@@ -1,0 +1,5 @@
+"use client";
+/** App Router recovery boundary for unexpected Home/application failures. */
+import { AlertTriangle,Home,RotateCcw } from "lucide-react";
+import Link from "next/link";
+export default function ErrorBoundary({error,reset}:{error:Error&{digest?:string};reset:()=>void}){return <main className="min-h-screen grid place-items-center bg-[#07070b] text-white p-6"><section role="alert" className="max-w-lg rounded-2xl border border-red-400/30 bg-red-950/30 p-7 text-center"><AlertTriangle className="mx-auto text-red-300"/><h1 className="text-xl font-bold mt-3">Kaizen could not render this view.</h1><p className="text-sm text-gray-400 mt-2">Your local data has not been intentionally cleared. Retry the view, or return Home and use Data recovery if storage is involved.</p><div className="flex justify-center gap-2 mt-5"><button onClick={reset} className="btn-primary inline-flex items-center gap-1"><RotateCcw size={14}/>Retry</button><Link href="/" className="btn-ghost inline-flex items-center gap-1"><Home size={14}/>Home</Link></div>{error.digest&&<p className="text-[10px] text-gray-600 mt-4">Reference: {error.digest}</p>}</section></main>}

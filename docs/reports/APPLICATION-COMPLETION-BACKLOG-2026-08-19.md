@@ -45,12 +45,12 @@ Priorities:
 | APP-105 | Fixed as explicit session-only scope | Voice audio now states session-only, provides download-before-reload and shows transcript-only state after reload; Blob deletion revokes URL | Keep transcript persistence and download disclosure | Structural baseline QA passes |
 | APP-106 | Fixed / pending hosted proof | Hydration now waits for parsed state, corrupt keys block writes and surface recovery UI | Keep backup/corruption tests required; add browser hydration E2E later | Local TypeScript/build and recovery checks pass |
 | APP-107 | Fixed / pending hosted proof | Reference API now throws before non-loopback bind without `KAIZEN_API_KEY`; dedicated startup test added | Keep startup test required in backend CI | Local build/startup security check passes |
-| APP-108 | Security decision | Health/career/private records live unencrypted in browser localStorage | Explicitly accept for trusted-profile local release or implement encrypted packaged storage; make product copy/export threat model accurate | Signed release decision and packaging test |
+| APP-108 | Accepted risk / packaging proof pending | ADR-013 names trusted OS/browser profile as v1 at-rest boundary; no false encryption claim; backups must be stored encrypted by user | Verify disclosure and Windows/local packaging behavior | ADR approved; packaging test pending |
 | APP-109 | Fixed / pending hosted proof | Versioned ten-key whole-product export/restore added with exact-key/security validation and rollback | Keep `qa:backup` required and verify packaged browser manually | Local 8/8 backup/recovery checks pass |
-| APP-110 | Incomplete UX | No custom top-level route error/loading boundary; provider setup fetch errors are swallowed | Add mature route/offline/recovery states and telemetry-safe diagnostics | Error/offline/empty interaction tests |
-| APP-111 | Incomplete architecture | Express generic CRUD lacks domain schemas, transactions and durable persistence | If Express is included in release authority, add versioned schemas, durable DB, migrations, conflict strategy and tests; otherwise mark/exclude it as dev/reference | Decision from APP-004 implemented |
-| APP-112 | Incomplete navigation | Home internal views do not update URL/history; browser Back cannot traverse sections | Synchronize `?view=` or choose documented single-page behavior | Deep-link/back/forward tests |
-| APP-113 | Documentation drift | Health “sync” can be mistaken for server sync; backend source/docs had mixed production/reference language | Rename or clearly label profile/bridge lab; consistently mark Express as unused reference until integrated | UI/docs terminology QA |
+| APP-110 | Fixed baseline / pending hosted proof | App/Pages Router loading/error recovery added; storage warnings open recovery. Provider-specific retries remain P2 | Keep `qa:resilience` required and add browser interaction tests during packaging | Local structural/type/build checks pass |
+| APP-111 | Closed as not in v1 runtime | ADR-012 excludes Express from packaged authority; reference limitations remain documented/tested | No backend product work unless a future ADR supersedes | Architecture/deployment docs and startup security pass |
+| APP-112 | Fixed / pending hosted proof | Home navigation now pushes `?view=` and search-param changes drive view/direction | Keep `qa:resilience` required; browser E2E later | Structural/type/build checks pass |
+| APP-113 | Fixed / pending hosted proof | Health nav now says Profile / workout bridge; ADR/deployment/API docs consistently mark Express reference-only and unused | Keep docs/route terminology checks | Local docs/type checks pass |
 
 ## P2 — accepted/deferred product gaps
 
@@ -128,13 +128,11 @@ CI must assert:
 ## Recommended execution order
 
 ```text
-1. Verify fixed/implemented items on the first hosted GitHub run
-2. Resolve APP-108 sensitive localStorage release acceptance
-3. APP-110 top-level error/loading recovery
-4. APP-112 Home URL/history navigation
-5. Remaining P1 UX/persistence work
-6. Full regression + documentation release matrix
-7. Re-review PR ai → main; do not merge before gates pass
+1. Verify all fixed/implemented items on the first hosted GitHub run
+2. Run the complete local regression/release matrix
+3. Publish one current release-status matrix and close historical contradictions
+4. Re-review and create PR ai → main; do not merge before checks/review
+5. After merge only: Windows/local packaging and offline verification
 ```
 
 ## Current release gate

@@ -85,3 +85,18 @@ Concise records of decisions that affect multiple spaces.
 - sensitive localStorage risk requires explicit release acceptance;
 - Express must stay loopback or require a service key for network binding;
 - any future durable backend, account identity or synchronization requires a new ADR, migrations and conflict tests.
+
+## ADR-013 — Trusted local profile is the v1 at-rest security boundary
+
+**Decision:** v1 accepts unencrypted browser persistence for a single-user local installation, with the operating-system account and trusted browser profile as the at-rest security boundary.
+
+**Why:** Client-side encryption without an independently protected key would only obscure data, while passphrase/key custody and encrypted storage would materially expand packaging/auth scope. The release is local/offline and has no cloud account.
+
+**Required disclosure and controls:**
+
+- do not use Kaizen in an untrusted/shared browser profile;
+- protect the Windows/OS account and device storage;
+- store exported backups in an encrypted user-controlled location;
+- never claim browser records are encrypted;
+- whole-product backup, corruption recovery and local packaging verification remain mandatory;
+- a future encrypted store/key-custody design requires a new ADR and migration.

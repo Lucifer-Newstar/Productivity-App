@@ -835,6 +835,6 @@ export const HEALTH_SECTIONS: HealthSectionMeta[] = [
   { id: "apothecary", label: "Apothecary", short: "APT", route: "/health/supplements", code: "05", description: "Supplements &amp; bloodwork" },
   { id: "vitals",     label: "Vitals",     short: "VIT", route: "/health/vitals",      code: "06", description: "HR, BP, HRV, temperature" },
   { id: "mind",       label: "Mind",       short: "MND", route: "/health/mind",        code: "07", description: "Mood, stress, journal" },
-  { id: "lab",        label: "Lab",        short: "LAB", route: "/health/sync",        code: "08", description: "Profile &amp; workout sync" },
+  { id: "lab",        label: "Profile",    short: "PRF", route: "/health/sync",        code: "08", description: "Profile &amp; workout bridge" },
   { id: "reports",    label: "Reports",    short: "RPT", route: "/health/reports",     code: "09", description: "Trends, CSV export" },
 ];

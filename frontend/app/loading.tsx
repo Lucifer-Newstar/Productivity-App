@@ -1,0 +1,2 @@
+/** App Router loading shell that preserves a calm local-first startup state. */
+export default function Loading(){return <main className="min-h-screen grid place-items-center bg-[#07070b] text-white"><div role="status" className="text-center"><div className="w-8 h-8 rounded-full border-2 border-white/15 border-t-cyan-300 animate-spin mx-auto"/><p className="text-xs tracking-[.2em] uppercase text-gray-400 mt-3">Loading Kaizen</p></div></main>}
