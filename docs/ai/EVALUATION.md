@@ -95,6 +95,18 @@ Exact thresholds are an architecture-review/Wave 0 deliverable and must be set b
 7. Hardware soak.
 8. Selection report with trade-offs and no hidden manual overrides.
 
+## v0.1.1 interpreter-only gate
+
+`V011-INT-GATE-1` is frozen before implementation for the narrower role defined by [AI-ADR-019](adrs/AI-ADR-019-DETERMINISTIC-CORE-TODAY-ROUTING.md). It measures interpretation of already-selected `core.today@1.0` evidence with zero provider tools. It does not modify or supersede `W0-GATE-2`.
+
+The normative thresholds, dataset strata, scoring rules and stop conditions are in [V0.1.1-INTERPRETER-EVALUATION.md](V0.1.1-INTERPRETER-EVALUATION.md). Machine-readable gates and public synthetic fixtures live under `ai/evaluation/v0.1.1/` and `ai/test/fixtures/`.
+
+### Frozen interpreter-model design
+
+`I1-CANDIDATES-1` and `I1-RUN-1` define a future local-model evaluation through the production deterministic route. The matrix includes Qwen3 4B Instruct 2507 Q4_K_M and Phi-4 Mini Instruct Q4_K_M only. The design fixes 50 scenarios, two repetitions, a 4K context, zero provider tools, blinded semantic review, unchanged `V011-INT-GATE-1` thresholds and unchanged W0 resource/safety ceilings where applicable.
+
+The package is documented under [`v0.1.1-model-evaluation/`](v0.1.1-model-evaluation/README.md). Valid classified aggregates confirm Qwen3 and Phi are both `REJECTED-PREFLIGHT` with `PROVIDER_HTTP_400`, incomplete/invalid structured-source flow and failed aggregate resource ceilings. Neither is eligible for full or operations. All model stages are closed by `I1-PREFLIGHT-CLOSURE-1`; Wave 0 remains closed.
+
 ## Feedback and future learning
 
 Significant recommendations may later store model/prompt/context references, user feedback, action and outcome. This supports evaluation and only later a fine-tuning feasibility review. Fine-tuning is deferred until evidence shows prompting, tools, retrieval and memory are insufficient.

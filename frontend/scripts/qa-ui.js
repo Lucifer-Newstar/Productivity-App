@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+/** Regression gate for qa ui contracts. */
 const fs = require("fs"),
   path = require("path"),
   root = path.resolve(__dirname, ".."),

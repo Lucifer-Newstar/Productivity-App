@@ -51,34 +51,20 @@ import { SEED_ENTERTAINMENT, migrateEntertainment } from "./entertainmentTypes";
 import type { NotificationState, KaizenNotification } from "./notificationTypes";
 import { EMPTY_NOTIFICATION_STATE, migrateNotifications } from "./notificationTypes";
 import { isDoneStatus as isTaskDone } from "../components/forge/forgeUtils";
+import { localDateKey } from "./localDate";
+import { DEMO_TOOLS_ENABLED } from "./demoMode";
 
 // Generate ids for runtime-created entities.
 const uid = () => Math.random().toString(36).slice(2, 10) + Date.now().toString(36);
 const DAY = 86_400_000;
-const todayIso = () => new Date().toISOString().slice(0, 10);
+const todayIso = () => localDateKey();
 
 // ---------------- Seeds (module-level constants) ----------------
 const A = Date.now();
-const H = 3_600_000;
 
-const seedTasks: Task[] = [
-  { id: "t1",  title: "Design the landing page hero", completed: false, priority: "high",   space: "projects",      createdAt: A - 2 * DAY },
-  { id: "t2",  title: "Set up CI/CD pipeline",       completed: false, priority: "medium", space: "projects",      createdAt: A - DAY },
-  { id: "t3",  title: "Push day — chest & triceps",  completed: true,  priority: "medium", space: "workout",       createdAt: A - H },
-  { id: "t4",  title: "Leg day session",            completed: false, priority: "high",   space: "workout",       createdAt: A - 2 * H },
-  { id: "t5",  title: "Update resume & LinkedIn",   completed: false, priority: "medium", space: "career",        createdAt: A - 5 * H },
-  { id: "t6",  title: "Schedule 1:1 with mentor",   completed: true,  priority: "low",    space: "career",        createdAt: A - DAY },
-  { id: "t7",  title: "Watch Dune: Part Two",       completed: false, priority: "low",    space: "entertainment", createdAt: A - 3 * DAY },
-  { id: "t8",  title: "Try the new ramen shop",     completed: false, priority: "low",    space: "entertainment", createdAt: A - 6 * DAY },
-  { id: "t9",  title: "Drink 2L of water today",    completed: true,  priority: "medium", space: "health",        createdAt: A - H },
-  { id: "t10", title: "7+ hours sleep",             completed: false, priority: "high",   space: "health",        createdAt: A - 2 * H },
-];
-
-const seedNotes: Note[] = [
-  { id: "n1", title: "Product ideas",  content: "- AI writing assistant\n- Habit tracker with streaks\n- Minimal pomodoro that plays lo-fi", color: "#8b5cf6", pinned: true,  updatedAt: A - 100_000 },
-  { id: "n2", title: "Books to read",  content: "1. Deep Work — Cal Newport\n2. Atomic Habits\n3. The Pragmatic Programmer", color: "#06b6d4", pinned: false, updatedAt: A - 500_000 },
-  { id: "n3", title: "Sprint kickoff", content: "Sprint 24:\n- Auth refresh\n- Dashboard widgets\n- Performance budget", color: "#ec4899", pinned: false, updatedAt: A - 2_000_000 },
-];
+// Fresh production profiles begin without fabricated personal history.
+const seedTasks: Task[] = [];
+const seedNotes: Note[] = [];
 
 const SEED_CAREER: CareerState = (() => {
   // Legacy tracks — kept for backwards compatibility with old components.
@@ -167,6 +153,10 @@ const SEED_CAREER: CareerState = (() => {
     linkedin: "",
   };
 })();
+const EMPTY_CAREER: CareerState = {
+  ...SEED_CAREER,
+  roadmaps: [], tracks: [], goals: [], achievements: [], bullets: [], notes: [],
+};
 
 // ---------------- Forge / Projects OS seed ----------------
 const EMPTY_PROJECT_DEFAULTS = {
@@ -311,11 +301,12 @@ const SEED_FORGE: ForgeState = (() => {
     },
   };
 })();
+const EMPTY_FORGE: ForgeState = { ...SEED_FORGE, projects: [], tasks: [], auditLog: [] };
 
 function migrateForge(raw: any): ForgeState {
-  if (!raw || typeof raw !== "object") return SEED_FORGE;
-  return { ...SEED_FORGE, ...raw,
-    projects: (raw.projects ?? SEED_FORGE.projects).map(upgradeProject),
+  if (!raw || typeof raw !== "object") return EMPTY_FORGE;
+  return { ...EMPTY_FORGE, ...raw,
+    projects: (raw.projects ?? []).map(upgradeProject),
     tasks: (raw.tasks ?? []).map(upgradeTask),
     scratch: raw.scratch ?? [],
     decisions: raw.decisions ?? [],
@@ -640,6 +631,20 @@ const SEED_WORKOUT: WorkoutState = (() => {
     kanban: seedKanban,
   };
 })();
+const BASE_WORKOUT: WorkoutState = {
+  ...SEED_WORKOUT,
+  prs: [], skills: [], board: [],
+  caliChains: SEED_WORKOUT.caliChains.map(chain=>({...chain,progressions:chain.progressions.map(item=>({...item,achieved:false,achievedDate:undefined,bestReps:undefined}))})),
+  kanban: SEED_WORKOUT.kanban.map(column=>({...column,cards:[]})),
+};
+
+/** Auditable separation between empty user records and retained product catalogs/templates. */
+export const FRESH_PROFILE_COUNTS = Object.freeze({
+  tasks:seedTasks.length,notes:seedNotes.length,careerRoadmaps:EMPTY_CAREER.roadmaps.length,careerAchievements:EMPTY_CAREER.achievements.length,
+  forgeProjects:EMPTY_FORGE.projects.length,workoutPRs:BASE_WORKOUT.prs.length,workoutSkills:BASE_WORKOUT.skills.length,workoutBoard:BASE_WORKOUT.board.length,
+  workoutKanbanCards:BASE_WORKOUT.kanban.reduce((total,column)=>total+column.cards.length,0),entertainmentItems:SEED_ENTERTAINMENT.items.length,
+  exerciseCatalog:BASE_WORKOUT.exercises.length,routineTemplates:BASE_WORKOUT.routines.length,calisthenicsTemplates:BASE_WORKOUT.caliChains.length,
+});
 
 // ---------------- Store interface ----------------
 interface StoreState {
@@ -760,16 +765,10 @@ const StoreContext = createContext<StoreState | null>(null);
 
 /** Hydration-safe localStorage hook. */
 function useLocalState<T>(key: string, seed: T, migrate?: (raw: any) => T): [T, React.Dispatch<React.SetStateAction<T>>] {
-  const [v, setV] = useState<T>(seed);
-  const hydrated = useRef(false);
-  useEffect(() => {
-    const raw = localStorage.getItem(key);
-    if (raw) { try { setV(migrate ? migrate(JSON.parse(raw)) : JSON.parse(raw)); } catch { /* ignore */ } }
-    hydrated.current = true;
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [key]);
-  useEffect(() => { if (!hydrated.current) return; try { localStorage.setItem(key, JSON.stringify(v)); } catch (error) { window.dispatchEvent(new CustomEvent("kaizen:storage-error", { detail: { key, reason: error instanceof Error ? error.name : "storage-error" } })); } }, [key, v]);
-  return [v, setV];
+  const [v,setV]=useState<T>(seed),[hydrated,setHydrated]=useState(false),blocked=useRef(false);
+  useEffect(()=>{blocked.current=false;const raw=localStorage.getItem(key);if(raw){try{setV(migrate?migrate(JSON.parse(raw)):JSON.parse(raw))}catch{blocked.current=true;window.dispatchEvent(new CustomEvent("kaizen:storage-error",{detail:{key,reason:"corrupt"}}))}}setHydrated(true)},[key]);
+  useEffect(()=>{if(!hydrated||blocked.current)return;try{localStorage.setItem(key,JSON.stringify(v))}catch(error){window.dispatchEvent(new CustomEvent("kaizen:storage-error",{detail:{key,reason:error instanceof Error?error.name:"storage-error"}}))}},[hydrated,key,v]);
+  return[v,setV];
 }
 
 const migrateCareer = (raw: any): CareerState => {
@@ -781,10 +780,8 @@ const migrateCareer = (raw: any): CareerState => {
       subConcepts: m.description ? [{ id: uid(), title: m.description, done: !!m.done }] : [] })) };
   });
 
-  // Roadmaps: if none exist, seed all 5 templates from scratch.
-  const roadmaps: CareerRoadmap[] = Array.isArray(raw.roadmaps) && raw.roadmaps.length
-    ? raw.roadmaps
-    : TEMPLATE_LIST.map((tpl) => cloneTemplate(tpl.template!)!);
+  // Templates remain available in the forge; they are not fabricated user roadmaps.
+  const roadmaps: CareerRoadmap[] = Array.isArray(raw.roadmaps) ? raw.roadmaps : [];
 
   // Normalize achievements (new shape uses category; old shape only had trackId/icon).
   const achievements = (raw.achievements ?? []).map((a: any) => ({
@@ -829,23 +826,23 @@ const migrateCareer = (raw: any): CareerState => {
 };
 
 const migrateWorkout = (raw: any): WorkoutState => ({
-  ...SEED_WORKOUT, ...raw,
-  exercises:    raw.exercises    ?? SEED_WORKOUT.exercises,
-  prs:          raw.prs          ?? SEED_WORKOUT.prs,
-  skills:       raw.skills       ?? SEED_WORKOUT.skills,
-  routines:     raw.routines     ?? SEED_WORKOUT.routines,
-  sessions:     raw.sessions     ?? SEED_WORKOUT.sessions,
+  ...BASE_WORKOUT, ...raw,
+  exercises:    raw.exercises    ?? BASE_WORKOUT.exercises,
+  prs:          raw.prs          ?? [],
+  skills:       raw.skills       ?? [],
+  routines:     raw.routines     ?? BASE_WORKOUT.routines,
+  sessions:     raw.sessions     ?? [],
   readiness:    raw.readiness    ?? [],
   badges:       raw.badges       ?? [],
   bodyweight:   raw.bodyweight   ?? [],
-  settings:     { ...SEED_WORKOUT.settings, ...(raw.settings ?? {}) },
-  caliChains:   raw.caliChains   ?? SEED_WORKOUT.caliChains,
-  caliSkills:   raw.caliSkills   ?? SEED_WORKOUT.caliSkills,
+  settings:     { ...BASE_WORKOUT.settings, ...(raw.settings ?? {}) },
+  caliChains:   raw.caliChains   ?? BASE_WORKOUT.caliChains,
+  caliSkills:   raw.caliSkills   ?? BASE_WORKOUT.caliSkills,
   caliFlows:    raw.caliFlows    ?? [],
   gtg:          raw.gtg          ?? [],
   isometricLogs:raw.isometricLogs ?? [],
   intervalLogs: raw.intervalLogs ?? [],
-  mobilityDrills: raw.mobilityDrills ?? SEED_WORKOUT.mobilityDrills,
+  mobilityDrills: raw.mobilityDrills ?? BASE_WORKOUT.mobilityDrills,
   mobilitySessions: raw.mobilitySessions ?? [],
   plancheEntries: raw.plancheEntries ?? [],
   cardioLogs:   raw.cardioLogs   ?? [],
@@ -855,9 +852,9 @@ const migrateWorkout = (raw: any): WorkoutState => ({
   goals:        raw.goals        ?? [],
   challenges:   raw.challenges   ?? [],
   journal:      raw.journal      ?? [],
-  board:        raw.board        ?? SEED_WORKOUT.board,
+  board:        raw.board        ?? [],
   restDays:     raw.restDays     ?? [],
-  kanban:       raw.kanban       ?? SEED_WORKOUT.kanban,
+  kanban:       raw.kanban       ?? BASE_WORKOUT.kanban,
   lastWorkoutDate: raw.lastWorkoutDate,
   currentStreak: raw.currentStreak ?? 0,
   longestStreak: raw.longestStreak ?? 0,
@@ -880,9 +877,9 @@ function applyStreak(state: WorkoutState, sessionDate: string): WorkoutState {
 export function StoreProvider({ children }: { children: React.ReactNode }) {
   const [tasks, setTasks]     = useLocalState<Task[]>("kaizen.tasks", seedTasks);
   const [notes, setNotes]     = useLocalState<Note[]>("kaizen.notes", seedNotes);
-  const [career, setCareer]   = useLocalState<CareerState>("kaizen.career", SEED_CAREER, migrateCareer);
-  const [workout, setWorkout] = useLocalState<WorkoutState>("kaizen.workout", SEED_WORKOUT, migrateWorkout);
-  const [forge, setForge]     = useLocalState<ForgeState>("kaizen.forge", SEED_FORGE, migrateForge);
+  const [career, setCareer]   = useLocalState<CareerState>("kaizen.career", EMPTY_CAREER, migrateCareer);
+  const [workout, setWorkout] = useLocalState<WorkoutState>("kaizen.workout", BASE_WORKOUT, migrateWorkout);
+  const [forge, setForge]     = useLocalState<ForgeState>("kaizen.forge", EMPTY_FORGE, migrateForge);
   const [health, setHealth]   = useLocalState<HealthState>("kaizen.health", SEED_HEALTH, migrateHealth);
   const [entertainment, setEntertainment] = useLocalState<EntertainmentState>("kaizen.entertainment", SEED_ENTERTAINMENT, migrateEntertainment);
   const [notifications, setNotifications] = useLocalState<NotificationState>("kaizen.notifications", EMPTY_NOTIFICATION_STATE, migrateNotifications);
@@ -940,6 +937,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     }), [setForge]);
 
   const seedForgeDemo = useCallback<StoreState["seedForgeDemo"]>(() => {
+    if(!DEMO_TOOLS_ENABLED)return;
     import("./forgeDemo").then(({ buildForgeDemo }) => setForge(buildForgeDemo()));
   }, [setForge]);
 
@@ -1028,6 +1026,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
 
   // seedCareerDemo: populate every career module with rich mock data (QA/demo).
   const seedCareerDemo = useCallback(() => {
+    if(!DEMO_TOOLS_ENABLED)return;
     import("./careerDemo").then(({ buildCareerDemo }) => {
       const demo = buildCareerDemo();
       // Reseed templates
@@ -1483,6 +1482,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
   // seedDemoData: lazy-imports the mock generator and overwrites logs (keeps
   // library / routines / settings) with ~12 weeks of realistic history for QA.
   const seedDemoData = useCallback<StoreState["seedDemoData"]>(() => {
+    if(!DEMO_TOOLS_ENABLED)return;
     import("./mockData").then(({ generateSeedData }) => {
       setWorkout((w) => {
         const data = generateSeedData({ exercises: w.exercises, routines: w.routines });
@@ -1523,22 +1523,22 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
   const resetWorkoutData = useCallback<StoreState["resetWorkoutData"]>(() => {
     setWorkout((w) => ({
       ...w,
-      sessions: SEED_WORKOUT.sessions,
-      prs: SEED_WORKOUT.prs,
-      readiness: SEED_WORKOUT.readiness,
-      bodyweight: SEED_WORKOUT.bodyweight,
-      goals: SEED_WORKOUT.goals,
-      challenges: SEED_WORKOUT.challenges,
-      journal: SEED_WORKOUT.journal,
-      cardioLogs: SEED_WORKOUT.cardioLogs,
-      restDays: SEED_WORKOUT.restDays,
-      kanban: SEED_WORKOUT.kanban,
-      gtg: SEED_WORKOUT.gtg,
-      isometricLogs: SEED_WORKOUT.isometricLogs,
-      intervalLogs: SEED_WORKOUT.intervalLogs,
-      caliFlows: SEED_WORKOUT.caliFlows,
-      mobilitySessions: SEED_WORKOUT.mobilitySessions,
-      plancheEntries: SEED_WORKOUT.plancheEntries,
+      sessions: BASE_WORKOUT.sessions,
+      prs: BASE_WORKOUT.prs,
+      readiness: BASE_WORKOUT.readiness,
+      bodyweight: BASE_WORKOUT.bodyweight,
+      goals: BASE_WORKOUT.goals,
+      challenges: BASE_WORKOUT.challenges,
+      journal: BASE_WORKOUT.journal,
+      cardioLogs: BASE_WORKOUT.cardioLogs,
+      restDays: BASE_WORKOUT.restDays,
+      kanban: BASE_WORKOUT.kanban,
+      gtg: BASE_WORKOUT.gtg,
+      isometricLogs: BASE_WORKOUT.isometricLogs,
+      intervalLogs: BASE_WORKOUT.intervalLogs,
+      caliFlows: BASE_WORKOUT.caliFlows,
+      mobilitySessions: BASE_WORKOUT.mobilitySessions,
+      plancheEntries: BASE_WORKOUT.plancheEntries,
       currentStreak: 0,
       longestStreak: 0,
       lastWorkoutDate: undefined,

@@ -1,69 +1,88 @@
-# 🌸 Kaizen — Continuous Improvement
+# Kaizen Frontend
 
-A sleek, modern life-OS app built with **Next.js 16**, **React 19**, **TypeScript**, **Tailwind CSS**, and **Framer Motion**.
+The browser-authoritative Kaizen application, built with Next.js 16, React 19, TypeScript, Tailwind CSS 3, Framer Motion and Lucide icons.
 
-## ✨ Features
+## Responsibilities
 
-### Core tools
-- 📊 **Dashboard** — Greeting, completion rate, stats overview, recent tasks
-- ✅ **Tasks** — Add/complete/delete, priority levels (low/medium/high), projects, search, filtering
-- 🍅 **Pomodoro Timer** — Focus, short break, long break modes with animated circular progress & session tracking
-- 📝 **Notes** — Colorful sticky-note cards, pinning, search, modal editor, 6 accent colors
-- 🔥 **Habits** — Daily streaks, 7-day tracker grid, custom icons & colors
-- 📅 **Calendar** — Month view with task indicators, day detail view
+- Home Command Center and core productivity tools
+- Full-screen Forge, Career, Workout, Health and AFTERGLOW spaces
+- React Context domain state with defensive local migrations
+- Deterministic cross-space analytics and notifications
+- Fixed same-origin provider and Intelligence Engine proxy routes
+- Local-first operation without required backend services
 
-### Life spaces (coming soon)
-- 📁 **Projects**
-- 💪 **Workout**
-- 💼 **Career**
-- 🎮 **Entertainment**
-- ❤️ **Health**
-
-## 🎨 Design
-
-- Dark glassmorphism UI with violet → cyan → pink gradient accents
-- Smooth page/element animations via Framer Motion
-- Mesh-gradient background
-- Custom scrollbars and glowing checkboxes
-- Inter + JetBrains Mono typography
-- LocalStorage persistence (tasks, notes, habits, projects)
-
-## 🚀 Getting Started
+## Run locally
 
 ```bash
-cd productivity-app
-npm install
+cd frontend
+npm ci
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) in your browser.
+Open `http://localhost:3000`.
 
-## 📁 Project Structure
+Optional services are documented in the root [`README.md`](../README.md). The frontend remains usable when they are offline.
 
-```
-productivity-app/
-├── app/
-│   ├── globals.css      # Tailwind + custom styles
-│   ├── layout.tsx       # Root layout w/ StoreProvider
-│   └── page.tsx         # Main app shell w/ view routing
-├── components/
-│   ├── Sidebar.tsx
-│   ├── Dashboard.tsx
-│   ├── Tasks.tsx
-│   ├── Pomodoro.tsx
-│   ├── Notes.tsx
-│   ├── Habits.tsx
-│   └── Calendar.tsx
-└── lib/
-    ├── types.ts
-    └── store.tsx        # React Context store w/ localStorage
+## Router layout
+
+```text
+app/
+  page.tsx                    Home / App Router
+  api/entertainment/*         fixed catalogue provider routes
+  api/ai/[...path]            fixed loopback Intelligence proxy
+
+pages/
+  projects/*                  Forge
+  career/*                    Career
+  workout/*                   Workout
+  health/*                    VITAL-SIGN
+  entertainment/*             AFTERGLOW
 ```
 
-## 🛠 Tech Stack
+Pages declaring `fullScreen = true` render their own space-specific navigation and visual system.
 
-- Next.js 16 (App Router + Pages Router)
-- React 19
-- TypeScript
-- Tailwind CSS 3
-- Framer Motion
-- Lucide React icons
+## State and persistence
+
+`lib/store.tsx` owns the browser-authoritative Core, Forge, Career, Workout, Health, Entertainment and Notification slices. Functional mutators prevent stale-closure data loss. Home Habits and global theme use dedicated keys.
+
+Persistence ownership and migration details:
+
+- [`../docs/architecture/DATA-MODEL.md`](../docs/architecture/DATA-MODEL.md)
+- [`../docs/reference/PERSISTENCE-KEYS.md`](../docs/reference/PERSISTENCE-KEYS.md)
+
+## Visual systems
+
+Each major space has a distinct dark/light identity while sharing accessible controls, semantic Lucide icons, self-hosted font packages and reduced-motion handling.
+
+- [`../docs/design/THEME-SYSTEMS.md`](../docs/design/THEME-SYSTEMS.md)
+- [`../docs/design/ICONOGRAPHY.md`](../docs/design/ICONOGRAPHY.md)
+- [`../docs/design/MOTION.md`](../docs/design/MOTION.md)
+
+## Quality gates
+
+```bash
+npx tsc --noEmit
+npm run lint
+npm run qa:ai
+npm run qa:comments
+npm run qa:csp
+npm run qa:home
+npm run qa:notifications
+npm run qa:security
+npm run qa:docs
+node scripts/qa-health.js
+npm run build
+npm audit --omit=dev
+```
+
+Additional Entertainment suites are listed in [`../docs/guides/TESTING.md`](../docs/guides/TESTING.md).
+
+## Security boundaries
+
+- Do not place secrets in `NEXT_PUBLIC_*` variables.
+- Do not render raw user HTML.
+- Keep external URLs behind fixed server adapters.
+- Keep restored images and imports bounded and revalidated.
+- The AI proxy accepts no arbitrary upstream target.
+
+See [`../docs/security/SECURITY.md`](../docs/security/SECURITY.md).

@@ -1,6 +1,6 @@
 # Kaizen QA index
 
-_Last synchronized: 2026-08-17 on merged `main`._
+_Last synchronized: 2026-08-18. Historical reports retain their original dates and measurements._
 
 ## Current release gates
 

@@ -1,3 +1,4 @@
+/** Provider adapter for route inference behavior. */
 import { NextRequest, NextResponse } from "next/server";
 import { providerStatus } from "../../../../lib/entertainmentProviders";
 import { guardEntertainmentRequest } from "../_guard";

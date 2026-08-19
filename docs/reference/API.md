@@ -11,9 +11,23 @@ Base URL: `http://127.0.0.1:4000/api` (loopback-only by default)
 
 Current model surface: **138 collection tables and 12 singleton documents** across Core, Workout, Career, Forge, Health and Entertainment.
 
-## Intelligence Engine status
+## Intelligence Engine v0.1
 
-There are currently **no AI API routes**. The architecture package proposes an independently runnable loopback service and a client-mediated Domain Bridge, but transport remains a technical spike and Wave 0 is not authorized. Do not treat the existing Express sync API as the AI's source of truth. See [`../ai/ARCHITECTURE.md`](../ai/ARCHITECTURE.md) and [`../ai/DOMAIN-BRIDGE.md`](../ai/DOMAIN-BRIDGE.md).
+The independent engine binds to `127.0.0.1:4317` by default. Browser traffic uses the fixed same-origin proxy `/api/ai/[...path]`; the proxy cannot select another host.
+
+| Method | Engine path | Purpose |
+|---|---|---|
+| GET | `/health` | Public bounded engine/provider status |
+| POST | `/v1/pair` | One-time pairing code → expiring session token |
+| GET | `/v1/status` | Authenticated provider identity/capabilities |
+| GET | `/v1/metrics` | Authenticated aggregate counters/durations/error codes; no prompt content |
+| DELETE | `/v1/session` | Revoke local session |
+| POST | `/v1/requests` | Start fixed Core Today interpretation with `{ "intent": "focus-today", "localDate": "YYYY-MM-DD" }` |
+| GET | `/v1/requests/:id/events` | Authenticated SSE event stream via fetch |
+| POST | `/v1/requests/:id/tool-results` | Return validated client Domain Bridge result |
+| DELETE | `/v1/requests/:id` | Cancel request |
+
+Tokens travel only in `Authorization`; pairing codes use `X-Kaizen-Pairing-Code`. The gateway enforces loopback, host/origin allowlists, body/rate limits, unsafe-key rejection and no-store/security headers. Current tool surface is only `get_today@1.0`, selected by trusted engine code. Application provider status is deterministic with `nativeToolCalling: false`; model settings fail startup validation. Generic prompts, extra request fields and provider tool calls are rejected. The Express sync API is not an AI source of truth.
 
 ## Common
 

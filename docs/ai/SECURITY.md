@@ -85,6 +85,53 @@ Record artifact source, license, hash, model card, quantization, download timest
 
 Health is separately consented. Secrets, session keys, provider credentials, raw media and hidden configuration never enter prompts, tool output, memory or logs. Remote mode changes the trust boundary and requires explicit request-level disclosure.
 
+## v0.1.1 interpreter boundary
+
+[AI-ADR-019](adrs/AI-ADR-019-DETERMINISTIC-CORE-TODAY-ROUTING.md) removes model routing authority for the approved slice. Trusted code fixes `focus-today → get_today@1.0`; the provider receives one validated `core.today@1.0` snapshot and no tool definitions. Provider tool calls, unknown source IDs, command-shaped output, additional domains and policy changes embedded in user-authored fields are rejected. Health, memory, retrieval, writes, automation and remote processing remain unavailable.
+
+### v0.1.1 implemented controls
+
+- Gateway accepts only `{ intent: "focus-today", localDate }`; generic prompts, unknown intents and extra fields fail before request creation.
+- Trusted engine code constructs and schema-validates the only route and tool arguments.
+- Provider requests omit `tools` and contain no `tool` role message; any provider tool-call chunk fails with `MODEL_TOOL_CALL`.
+- Snapshot validation applies exact top-level, data, record, analytics, redaction and revision allowlists; stale, oversized and nested extra-scope payloads fail closed.
+- Factual/deterministic rationale claims require supplied sources; rationale IDs must also be response-level verified sources.
+- Deterministic Next Action evidence must be preserved; empty evidence requires uncertainty.
+- Browser validation pins the tool/version/arguments/contract, checks source and snapshot IDs, and rejects revision drift before rendering.
+- The fixed-purpose UI has no generic prompt input.
+
+Executable adversarial coverage includes unsupported intent, provider tool escalation, stale/oversized/Health-shaped evidence, fabricated sources, deterministic-precedence loss, unsupported facts, command properties, missing uncertainty and user-authored injection text.
+
+### Interpreter-model harness controls
+
+- Both frozen candidates and the public local-config template remain disabled; the authorized wrapper creates one transient single-candidate config at a time.
+- Historical `authorization.v1.json` allowed preflight only. Current `authorization.v2.json` blocks preflight, full and operations with `STAGE_NOT_AUTHORIZED` after both rejections.
+- The runner requires an ignored `*.local.json`, literal `127.0.0.1` HTTP, verified runtime/model hashes, verified license, enabled config/candidate, `--execute`, and an exact environment acknowledgement.
+- Runtime/model SHA-256 verification streams artifacts incrementally, avoiding whole-file buffers and supporting multi-gigabyte GGUFs without weakening exact-hash checks.
+- QA proves disabled execution exits before file checks or process spawn and rejects remote endpoints.
+- Every attempt is appended immediately to ignored LOCAL-ONLY JSONL; scorer coverage rejects dropped or duplicate attempts.
+- Exact candidate tokenization is checked before generation; provider tools are forbidden by the production capture wrapper.
+- Raw output, server logs, paths and per-sample telemetry stay under ignored `results-local/`.
+- Generic provider errors are classified locally into bounded HTTP/transport/timeout/tokenizer/stream codes; private messages never enter public output.
+- The sanitizer uses an explicit aggregate allowlist, cannot report model selection, and may write only under reviewed `results-public/`.
+
+## v0.1 implemented controls
+
+- Application configuration defaults to deterministic mode and rejects model-provider or legacy llama environment settings.
+- Application `ProviderRegistry` has no model adapter branch; the deterministic provider rejects tool-bearing requests and advertises no native tool authority.
+- Engine binds only to `127.0.0.1` or `::1`; configuration rejects network exposure.
+- llama.cpp/provider URLs must be loopback HTTP.
+- One-time pairing code is printed only to the local engine console.
+- Session tokens are random, stored hashed by the engine and held only in browser `sessionStorage`.
+- Host and exact browser Origin checks run before authenticated routes.
+- Fixed-window rate limits, bounded JSON body/depth/node/string checks and unsafe-key rejection apply.
+- The Next.js proxy has a fixed loopback target, header allowlist and one-megabyte body limit.
+- SSE uses authenticated fetch; tokens never appear in URLs.
+- Orchestration exposes only registered `get_today@1.0`, one tool call and no write path.
+- Model JSON, tool arguments and returned source IDs are validated before rendering.
+- The browser snapshot excludes notes and Health data and carries explicit redactions.
+- No prompts, responses or snapshots are logged or persisted by the engine.
+
 ## Security evaluation
 
 Required suites include prompt injection by every trust class, unauthorized tools, fabricated IDs, traversal/URL attempts, oversized responses, model timeout, stream truncation, session hijack, replayed approval, memory poisoning, consent revocation and model-artifact provenance.

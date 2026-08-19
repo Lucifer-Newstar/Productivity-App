@@ -11,6 +11,7 @@ import { Dumbbell, Play, Download, Zap, Flame, Award, Sparkles, AlertCircle, His
 import { useRouter } from "next/router";
 import MuscleHeatmap from "./MuscleHeatmap";
 import { useStore } from "../../lib/store";
+import { DEMO_TOOLS_ENABLED } from "../../lib/demoMode";
 import { intensityMultiplier, weeklyMuscleVolume, suggestNextWorkout, recommendedAccessories } from "../../lib/workoutAnalytics";
 import {
   waterGoalMl, proteinTargetG, tdee as tdeeFn,
@@ -213,7 +214,7 @@ export default function OverviewContent() {
         onGoToSchedule={() => router.push("/workout/schedule")}
         onGoToLibrary={() => router.push("/workout/library")}
         onStartRoutine={todaysRoutine ? () => { startSession(todaysRoutine.name, todaysRoutine.id, todayReadiness?.score); } : null}
-        onSeedDemo={() => seedDemoData()}
+        onSeedDemo={DEMO_TOOLS_ENABLED?()=>seedDemoData():null}
         todaysRoutineName={todaysRoutine?.name ?? null}
         healthAdvisory={{ preWO, rec, bank, waterPct, tStatus, injuries, restr }}
         onGoToHealth={() => router.push("/health")}
@@ -281,11 +282,11 @@ function OverviewBody({ volume, readiness, onLogReadiness, badges, streak, longe
               {Object.keys(volume).length === 0 && (
                 <div className="rounded-xl border border-dashed border-white/10 p-4 text-center">
                   <p className="text-sm text-gray-300">No volume this week yet.</p>
-                  <p className="text-xs text-gray-500 mt-1">Start a workout or load demo data to populate the heatmap.</p>
-                  <button onClick={onSeedDemo}
+                  <p className="text-xs text-gray-500 mt-1">Start a workout to populate the heatmap.</p>
+                  {onSeedDemo&&<button onClick={onSeedDemo}
                     className="mt-3 btn-primary text-xs inline-flex items-center gap-1 !bg-gradient-to-r !from-pink-500 !to-violet-500">
                     <Database size={12} /> Load demo data
-                  </button>
+                  </button>}
                 </div>
               )}
             </div>
@@ -458,16 +459,16 @@ function RecentTimeline() {
       {recent.length === 0 ? (
         <div className="rounded-xl border border-dashed border-white/10 p-5 text-center">
           <p className="text-sm text-gray-300">No sessions logged yet.</p>
-          <p className="text-xs text-gray-500 mt-1">Kick things off with today's routine or preview with demo data.</p>
+          <p className="text-xs text-gray-500 mt-1">Kick things off with today's routine.</p>
           <div className="flex gap-2 justify-center mt-3 flex-wrap">
             <button onClick={() => router.push("/workout/gym")}
               className="btn-primary text-xs inline-flex items-center gap-1">
               <Play size={12} fill="white" /> Start a workout
             </button>
-            <button onClick={() => seedDemoData()}
+            {DEMO_TOOLS_ENABLED&&<button onClick={() => seedDemoData()}
               className="btn-ghost text-xs inline-flex items-center gap-1">
               <Database size={12} /> Load demo data
-            </button>
+            </button>}
           </div>
         </div>
       ) : (

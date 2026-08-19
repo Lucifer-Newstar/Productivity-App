@@ -7,5 +7,43 @@
 - [`HOME-CORE-SECTIONS-2026-08-17.md`](HOME-CORE-SECTIONS-2026-08-17.md) — Tasks, Focus, Notes, Habits, and Calendar interface refresh.
 - [`AI-ARCHITECTURE-GATE-2026-08-17.md`](AI-ARCHITECTURE-GATE-2026-08-17.md) — Intelligence Engine architecture package and deliberate non-implementation boundary.
 - [`AI-ARCHITECTURE-REVIEW-2026-08-17.md`](AI-ARCHITECTURE-REVIEW-2026-08-17.md) — conditional review resolutions and Wave 0 preparation status.
+- [`AI-WAVE-0-HARNESS-2026-08-17.md`](AI-WAVE-0-HARNESS-2026-08-17.md) — validation harness, synthetic measurements and target-hardware blockers.
+- [`AI-WAVE-0-HARNESS-FIX-2026-08-17.md`](AI-WAVE-0-HARNESS-FIX-2026-08-17.md) — request cancellation, cold-load, native bench, concurrency and endpoint-security corrections.
+- [`AI-WAVE-0-TARGET-RESULT-1-2026-08-18.md`](AI-WAVE-0-TARGET-RESULT-1-2026-08-18.md) — first sanitized Qwen AC-balanced result, measured strengths and rejection blockers.
+- [`AI-DOCUMENTATION-PROCESS-2026-08-18.md`](AI-DOCUMENTATION-PROCESS-2026-08-18.md) — mandatory documentation closeout and living implementation ledger.
+- [`AI-WAVE-0-ATTACHMENT-INTAKE-2026-08-18.md`](AI-WAVE-0-ATTACHMENT-INTAKE-2026-08-18.md) — duplicate pre-fix aggregate detection and raw-upload privacy cleanup.
+- [`AI-WAVE-0-QWEN-PREFLIGHT-2026-08-18.md`](AI-WAVE-0-QWEN-PREFLIGHT-2026-08-18.md) — corrected schema/telemetry success and Qwen rejection on tool behavior.
+- [`AI-WAVE-0-GEMMA-PREFLIGHT-2026-08-18.md`](AI-WAVE-0-GEMMA-PREFLIGHT-2026-08-18.md) — Gemma rejection after structured HTTP 400 and zero tool calls.
+- [`AI-WAVE-0-PHI-PREFLIGHT-2026-08-18.md`](AI-WAVE-0-PHI-PREFLIGHT-2026-08-18.md) — Phi rejection after structured success but zero tool calls.
+- [`AI-WAVE-0-LARGER-CONTROL-DECISION-2026-08-18.md`](AI-WAVE-0-LARGER-CONTROL-DECISION-2026-08-18.md) — final preflight-only Qwen2.5 7B control definition and stop rules.
+- [`AI-WAVE-0-FINAL-CLOSURE-2026-08-18.md`](AI-WAVE-0-FINAL-CLOSURE-2026-08-18.md) — four candidate rejections and final no-model selection decision.
+- [`DOCS-AND-COMMENTARY-POLISH-2026-08-18.md`](DOCS-AND-COMMENTARY-POLISH-2026-08-18.md) — README alignment, active-doc cleanup and complete source-comment coverage.
+- [`AI-V0.1.1-ARCHITECTURE-2026-08-19.md`](AI-V0.1.1-ARCHITECTURE-2026-08-19.md) — deterministic Core Today routing ADR, frozen contracts/gates and synthetic pre-implementation tests.
+- [`AI-V0.1.1-IMPLEMENTATION-2026-08-19.md`](AI-V0.1.1-IMPLEMENTATION-2026-08-19.md) — trusted router, zero-tool interpreter runtime, adversarial validation and deterministic/mock gate result.
+- [`AI-V0.1.1-ACCEPTANCE-AND-MODEL-EVAL-DESIGN-2026-08-19.md`](AI-V0.1.1-ACCEPTANCE-AND-MODEL-EVAL-DESIGN-2026-08-19.md) — live integration acceptance plus frozen, execution-disabled interpreter-model evaluation design.
+- [`AI-V0.1.1-MODEL-HARNESS-2026-08-19.md`](AI-V0.1.1-MODEL-HARNESS-2026-08-19.md) — frozen synthetic corpus, disabled production-path runner, scorer, sanitizer and harness QA.
+- [`AI-V0.1.1-PREFLIGHT-AUTHORIZATION-2026-08-19.md`](AI-V0.1.1-PREFLIGHT-AUTHORIZATION-2026-08-19.md) — preflight-only authorization, machine stage block and target-laptop runbook.
+- [`AI-V0.1.1-PREFLIGHT-INTAKE-HASH-FIX-2026-08-19.md`](AI-V0.1.1-PREFLIGHT-INTAKE-HASH-FIX-2026-08-19.md) — no-inference Qwen intake failure and streaming SHA-256 correction for multi-gigabyte artifacts.
+- [`AI-V0.1.1-PREFLIGHT-ATTACHMENT-MISMATCH-2026-08-19.md`](AI-V0.1.1-PREFLIGHT-ATTACHMENT-MISMATCH-2026-08-19.md) — legacy attachment mismatch and local safe failure reclassification workflow.
+- [`AI-V0.1.1-PREFLIGHT-FINAL-2026-08-19.md`](AI-V0.1.1-PREFLIGHT-FINAL-2026-08-19.md) — validated Qwen3/Phi rejections, no-model decision and all-stage closure.
+- [`AI-V0.1.1-APPLICATION-INTEGRATION-REVIEW-2026-08-19.md`](AI-V0.1.1-APPLICATION-INTEGRATION-REVIEW-2026-08-19.md) — deterministic provider composition lock, Home disclosure and live default-config review.
+- [`AI-BRANCH-PR-INTEGRATION-REVIEW-2026-08-19.md`](AI-BRANCH-PR-INTEGRATION-REVIEW-2026-08-19.md) — complete `ai`→`main` pre-merge application, API, auth, security and regression review.
+- [`AI-BRANCH-PR-CHANGED-FILES-2026-08-19.md`](AI-BRANCH-PR-CHANGED-FILES-2026-08-19.md) — complete per-file PR diff status and line-count summary.
+- [`APPLICATION-GAP-AUDIT-2026-08-19.md`](APPLICATION-GAP-AUDIT-2026-08-19.md) — current frontend/backend/integration truth, persistence, mock-data and release-gap audit.
+- [`APPLICATION-COMPLETION-BACKLOG-2026-08-19.md`](APPLICATION-COMPLETION-BACKLOG-2026-08-19.md) — prioritized broken/incomplete/security/deferred backlog and CI specification.
+- [`CI-FOUNDATION-2026-08-19.md`](CI-FOUNDATION-2026-08-19.md) — four-job hosted correctness workflow and deterministic live integration runner.
+- [`CI-RUN-1-INTAKE-2026-08-19.md`](CI-RUN-1-INTAKE-2026-08-19.md) — stale-head Entertainment assertion failure and Node 24 action-runtime upgrades.
+- [`CI-RUN-2-INTAKE-2026-08-19.md`](CI-RUN-2-INTAKE-2026-08-19.md) — stale Entertainment migration seed assertion and exact empty-library correction.
+- [`CI-RUN-3-GREEN-2026-08-19.md`](CI-RUN-3-GREEN-2026-08-19.md) — all four hosted CI jobs green; unmerged PR creation authorized.
+- [`CORE-DATE-HABIT-CORRECTNESS-2026-08-19.md`](CORE-DATE-HABIT-CORRECTNESS-2026-08-19.md) — local-calendar utilities and history-derived habit streak corrections.
+- [`PRODUCTION-DATA-BASELINE-2026-08-19.md`](PRODUCTION-DATA-BASELINE-2026-08-19.md) — empty fresh user history with preserved product catalogs/templates.
+- [`LOCAL-RELEASE-DATA-AUTHORITY-2026-08-19.md`](LOCAL-RELEASE-DATA-AUTHORITY-2026-08-19.md) — browser-only v1 authority decision and reference API network-bind hardening.
+- [`BROWSER-BACKUP-RECOVERY-2026-08-19.md`](BROWSER-BACKUP-RECOVERY-2026-08-19.md) — whole-product backup, rollback restore and corrupt-storage protection.
+- [`P1-CORRECTNESS-POLISH-2026-08-19.md`](P1-CORRECTNESS-POLISH-2026-08-19.md) — Wilks input correctness, focus persistence and session-only voice export scope.
+- [`RELEASE-RESILIENCE-DECISIONS-2026-08-19.md`](RELEASE-RESILIENCE-DECISIONS-2026-08-19.md) — trusted-profile risk acceptance, route recovery, Home history and Health terminology.
+- [`CURRENT-RELEASE-STATUS-2026-08-19.md`](CURRENT-RELEASE-STATUS-2026-08-19.md) — single current-state release matrix and remaining hosted/PR/packaging gates.
+- [`FINAL-LOCAL-REGRESSION-2026-08-19.md`](FINAL-LOCAL-REGRESSION-2026-08-19.md) — complete latest frontend/backend/AI/integration regression evidence.
+- [`AI-WAVE-1-FOUNDATION-2026-08-17.md`](AI-WAVE-1-FOUNDATION-2026-08-17.md) — provider-neutral engine, secure gateway, Domain Bridge and read-only UI vertical slice.
+- [`AI-V0.1-INTEGRATION-FREEZE-2026-08-17.md`](AI-V0.1-INTEGRATION-FREEZE-2026-08-17.md) — canonical specification, adversarial verification and frozen next milestone.
 
 Historical product QA lives under [`../quality/`](../quality/README.md); security audits live under [`../security/`](../security/README.md).

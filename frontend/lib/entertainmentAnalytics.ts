@@ -1,3 +1,4 @@
+/** Pure domain utilities for entertainment analytics. */
 import type { EntertainmentItem, MediaType } from "./entertainmentTypes";
 const norm=(s:string)=>s.trim().toLowerCase();
 const overlap=(a:string[],b:string[])=>{const B=new Set(b.map(norm));return a.reduce((n,x)=>n+(B.has(norm(x))?1:0),0)};

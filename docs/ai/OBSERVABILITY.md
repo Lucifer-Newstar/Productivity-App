@@ -4,6 +4,10 @@
 
 Collect enough structured evidence to debug reliability, cost and safety without retaining private text by default.
 
+## v0.1 implementation
+
+The engine maintains in-memory aggregate counters for requests started/completed/failed/cancelled, tool calls, total/maximum duration and error-code counts. Authenticated `GET /v1/metrics` exposes only those aggregates. It contains no prompt, response, source label, tool payload, token or user record and resets when the engine restarts. Completed request event buffers are pruned after one hour.
+
 ## Session telemetry
 
 Recommended fields:

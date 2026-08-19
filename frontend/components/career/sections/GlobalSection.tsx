@@ -16,6 +16,7 @@ import {
   TreePine, Landmark, Zap, DollarSign, Clock, Mic, FileKey,
 } from "lucide-react";
 import { useStore } from "../../../lib/store";
+import { DEMO_TOOLS_ENABLED } from "../../../lib/demoMode";
 import type {
   VisionBoardItem, BurnoutCheck, TimelineEvent, TimelineEventType,
 } from "../../../lib/careerTypes";
@@ -203,7 +204,7 @@ export default function GlobalSection() {
             </div>
 
             {/* QA / demo seeding */}
-            <div className="rounded-sm p-3 hud-corner relative" style={{...card, borderColor:"#f472b655"}}>
+            {DEMO_TOOLS_ENABLED&&<div className="rounded-sm p-3 hud-corner relative" style={{...card, borderColor:"#f472b655"}}>
               <span className="c-tr"/><span className="c-bl"/>
               <div className="flex items-center justify-between flex-wrap gap-2">
                 <div>
@@ -235,7 +236,7 @@ export default function GlobalSection() {
                   className="text-[10px] tracking-widest font-bold px-3 py-1.5 rounded-sm"
                   style={{background:"#f472b6",color:"#000"}}>[ SEED DEMO ]</button>
               </div>
-            </div>
+            </div>}
           </motion.div>
         )}
 

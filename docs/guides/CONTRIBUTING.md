@@ -9,12 +9,7 @@
 
 ## Commit identity
 
-```bash
-git config user.name "Lucifer-Newstar"
-git config user.email "navin.jairam@gmail.com"
-```
-
-Verify with `git log -1 --format='%an <%ae>'`.
+Use the repository-owner identity configured outside tracked files. Verify it before every commit; never document personal email addresses or credentials in this public repository.
 
 ## Commit style
 
@@ -51,6 +46,14 @@ Never trust restored URLs, images or arbitrary object keys.
 - Revalidate every redirect.
 - Document attribution and commercial terms.
 
+## Source commentary
+
+- Every maintained code file must contain at least one meaningful module, invariant or behavior comment.
+- Prefer a concise file-level purpose comment plus targeted explanations for security, formulas, migrations and non-obvious state transitions.
+- Do not add comments that merely restate syntax.
+- Update comments when behavior changes; stale commentary is a defect.
+- Run `npm run qa:comments` from `frontend/`.
+
 ## UI changes
 
 - Preserve full-screen shell contracts.
@@ -59,6 +62,32 @@ Never trust restored URLs, images or arbitrary object keys.
 - Honor reduced motion.
 - Do not render user HTML.
 - Avoid external fonts/scripts/CDNs unless the security policy and offline preview are deliberately updated.
+
+## Public-repository privacy gate
+
+Enable the tracked hook once per clone:
+
+```bash
+git config core.hooksPath .githooks
+```
+
+The hook runs the Wave 0 staged privacy/secret scanner. Raw AI hardware captures, benchmark logs, prompts/outputs, machine configuration and telemetry stay in ignored `ai/wave0/results-local/` or `*.local.json`. Only reviewed allowlist-sanitized aggregates may be staged from `results-public/`.
+
+## Intelligence Engine step closeout
+
+Every AI implementation, validation, benchmark intake, fix and selection step must end by updating:
+
+1. `docs/ai/IMPLEMENTATION-LEDGER.md`;
+2. the governing contract/architecture/security/evaluation document;
+3. `docs/ai/WAVE-0-REPORT.md` or `V0.1-INTEGRATION-VALIDATION.md` when relevant;
+4. a dated report for material milestones;
+5. documentation indexes and QA expectations.
+
+Run `npm run qa:docs` from `frontend/` before the documentation commit. Follow [`../ai/DELIVERY-PLAYBOOK.md`](../ai/DELIVERY-PLAYBOOK.md).
+
+## Session handoff
+
+Before ending a long implementation session, verify [`../PROJECT-CONTINUITY-BLUEPRINT.md`](../PROJECT-CONTINUITY-BLUEPRINT.md) still reflects current architecture, completed backlog and exact next steps. Never place credentials, private paths or personal data in the handoff.
 
 ## Pull-request checklist
 

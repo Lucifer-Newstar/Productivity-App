@@ -1,6 +1,6 @@
 # Home QA
 
-_Current baseline: 2026-08-16._
+_Current baseline: 2026-08-18; Home Command Center, core-section and Intelligence foundation checks are tracked by executable QA._
 
 - [x] `/` production response HTTP 200
 - [x] App Router production prerender succeeds

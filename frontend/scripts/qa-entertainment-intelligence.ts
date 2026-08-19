@@ -1,3 +1,4 @@
+/** Regression gate for qa entertainment intelligence contracts. */
 import assert from "node:assert/strict";
 import type { EntertainmentItem, MediaType } from "../lib/entertainmentTypes";
 import { blindSpots, creatorMarathons, explorationScore, franchiseGaps, moodPick, recommendations, surprisePick } from "../lib/entertainmentAnalytics";

@@ -1,3 +1,4 @@
+/** Fixed server route for route requests. */
 import { NextRequest, NextResponse } from "next/server";
 import { ProviderError, trendingEntertainment } from "../../../../lib/entertainmentProviders";
 import type { MediaType } from "../../../../lib/entertainmentTypes";

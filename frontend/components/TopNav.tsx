@@ -1,4 +1,5 @@
 "use client";
+/** Global Home header for space navigation, theme, and notifications. */
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { motion } from "framer-motion";

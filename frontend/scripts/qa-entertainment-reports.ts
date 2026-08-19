@@ -1,3 +1,4 @@
+/** Regression gate for qa entertainment reports contracts. */
 import assert from "node:assert/strict";
 import type { EntertainmentEvent,EntertainmentItem } from "../lib/entertainmentTypes";
 import { buildEntertainmentReport } from "../lib/entertainmentReports";

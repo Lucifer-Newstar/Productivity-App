@@ -1,6 +1,6 @@
 # Intelligence Engine roadmap and acceptance gates
 
-Architecture review has authorized Wave 0 preparation and controlled feasibility spikes. Production AI feature implementation remains blocked until the Wave 0 selection report is reviewed.
+Wave 0 is complete with no model selected. Architecture review has authorized a narrowly bounded v0.1.1 deterministic Core Today routing phase; no production runtime implementation is approved beyond the reviewed contract boundary.
 
 ## Wave 0 — Architecture and feasibility seal
 
@@ -15,18 +15,48 @@ Architecture review has authorized Wave 0 preparation and controlled feasibility
 
 **Exit:** feasibility evidence resolves the required spikes; locked architecture is updated by ADR; no permanent model/backend is chosen without results.
 
-## v0.1 — Local foundation
+## v0.1 — Local foundation — implemented
 
-- independent engine service
-- provider registry and capability negotiation
-- streaming, cancellation and structured validation
-- prompt/Constitution versioning
-- minimal Intelligence UI
-- `get_today@1.0` Domain Bridge tool
-- source-linked “What should I focus on?” response
-- baseline evaluation harness
+- [x] independent engine service
+- [x] provider registry and capability negotiation
+- [x] streaming, cancellation and structured validation
+- [x] prompt/Constitution versioning
+- [x] paired local Intelligence UI
+- [x] `get_today@1.0` Domain Bridge tool
+- [x] source-linked “What should I focus on?” response
+- [x] baseline and Wave 0 evaluation harnesses
+- [x] fixed same-origin Next.js transport proxy
+- [x] loopback pairing/session/origin security
 
-**Exit:** one useful end-to-end local answer uses current browser state and deterministic Next Action, with valid evidence and no state mutation.
+**Exit status:** executable mock-backed end-to-end flow uses current browser state and deterministic Next Action with verified sources and no state mutation. Real candidate quality/performance remains gated by the incomplete Wave 0 report.
+
+**Integration result:** Wave 0 closed with no model selected. The provider-neutral deterministic/mock fallback remains authoritative.
+
+## v0.1.1 — Deterministic Core Today interpretation — live accepted
+
+- [x] AI-ADR-019 locks trusted `focus-today → get_today@1.0` routing
+- [x] route, interpreter-request and response contracts frozen at `1.0`
+- [x] `V011-INT-GATE-1` frozen before implementation
+- [x] public synthetic contract/adversarial mutants executable
+- [x] production deterministic router and interpreter path
+- [x] security/adversarial implementation validation
+- [x] deterministic/mock `V011-INT-GATE-1` evaluation
+- [x] live integration acceptance through engine, same-origin proxy, pairing, SSE and tool callback
+- [x] interpreter-only candidate matrix, run protocol and reporting format frozen
+- [x] `I1-SYNTHETIC-1` corpus, manifest and semantic-review worksheet
+- [x] disabled production-path runner, scorer, sanitizer and harness QA
+- [x] target preflight authorization record and frozen-order PowerShell wrapper
+- [x] >2 GiB artifact intake correction via streaming SHA-256
+- [x] target-laptop Qwen3 and Phi ten-attempt preflights
+- [x] classified sanitizer aggregates and final decision intake
+- [x] all model stages closed after both preflight rejections
+- [x] AI-ADR-020 locks application provider registry to deterministic baseline
+- [x] model environment settings fail closed
+- [x] default-config live application integration review
+
+**Final v0.1.1 status:** deterministic Core Today is the authoritative application AI path. No model is selected or reachable through application configuration. AI scope is closed; continue non-AI application work.
+
+**Scope freeze:** Core Today only. Do not add memory, retrieval, Health, additional domains, writes, automation, remote processing or v0.2 work.
 
 ## v0.2 — Kaizen Understands
 

@@ -10,6 +10,8 @@ import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { Flame, Plus, Check, Droplets, Dumbbell, BookOpen, Moon, X, Sprout, Repeat2, Target, CalendarCheck2 } from "lucide-react";
 import HomeSectionHeader from "./HomeSectionHeader";
+import { addLocalDays, dateFromLocalKey, localDateKey } from "../lib/localDate";
+import { habitStreak, normalizedHabitHistory } from "../lib/habitTracking";
 
 interface Habit {
   id: string;
@@ -30,19 +32,18 @@ const ICONS = [
 
 const COLORS = ["#8b5cf6", "#06b6d4", "#ec4899", "#a3e635", "#f59e0b"];
 
-const today = () => new Date().toISOString().slice(0, 10);
+const today = () => localDateKey();
 
-const seed: Habit[] = [
-  { id: "1", name: "Drink 2L water", icon: "droplet", color: "#06b6d4", streak: 5, history: [] },
-  { id: "2", name: "Workout 30 min", icon: "dumbbell", color: "#ec4899", streak: 3, history: [] },
-  { id: "3", name: "Read 20 pages", icon: "book", color: "#a3e635", streak: 7, history: [] },
-];
+const seed: Habit[] = [];
+function migrateHabits(value:unknown):Habit[]{
+  if(!Array.isArray(value))return seed;
+  return value.filter((item):item is Habit=>!!item&&typeof item==="object"&&typeof (item as Habit).id==="string"&&typeof (item as Habit).name==="string").map(item=>{const history=normalizedHabitHistory(item.history);return{...item,history,streak:habitStreak(history)}});
+}
 
 export default function Habits() {
   const [habits, setHabits] = useState<Habit[]>(() => {
     if (typeof window === "undefined") return seed;
-    const s = localStorage.getItem("kaizen.habits");
-    return s ? JSON.parse(s) : seed;
+    try{const stored=localStorage.getItem("kaizen.habits");return stored?migrateHabits(JSON.parse(stored)):seed}catch{return seed}
   });
   const [showNew, setShowNew] = useState(false);
   const [name, setName] = useState("");
@@ -51,21 +52,14 @@ export default function Habits() {
 
   useEffect(() => { try { localStorage.setItem("kaizen.habits", JSON.stringify(habits)); } catch { window.dispatchEvent(new CustomEvent("kaizen:storage-error", { detail: { key: "kaizen.habits", reason: "quota" } })); } }, [habits]);
 
-  const days = Array.from({ length: 7 }, (_, i) => {
-    const d = new Date();
-    d.setDate(d.getDate() - (6 - i));
-    return d.toISOString().slice(0, 10);
-  });
+  const days = Array.from({ length: 7 }, (_, index) => localDateKey(addLocalDays(new Date(),index-6)));
 
   const toggle = (id: string, date: string) => {
     setHabits((prev) => prev.map((h) => {
       if (h.id !== id) return h;
       const has = h.history.includes(date);
-      return {
-        ...h,
-        history: has ? h.history.filter((d) => d !== date) : [...h.history, date],
-        streak: date === today() && !has ? h.streak + 1 : h.streak,
-      };
+      const history=normalizedHabitHistory(has?h.history.filter((day)=>day!==date):[...h.history,date]);
+      return { ...h, history, streak: habitStreak(history) };
     }));
   };
 
@@ -118,7 +112,7 @@ export default function Habits() {
                   {days.map((d) => {
                     const done = h.history.includes(d);
                     const isToday = d === today();
-                    const dayLetter = new Date(d).toLocaleDateString("en-US", { weekday: "narrow" })[0];
+                    const dayLetter = (dateFromLocalKey(d)??new Date()).toLocaleDateString("en-US", { weekday: "narrow" })[0];
                     return (
                       <button
                         key={d}

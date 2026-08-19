@@ -12,6 +12,57 @@
 - Memory is visible and deletable.
 - Secrets never enter normal frontend persistence or AI context.
 
+## Public repository vs LOCAL-ONLY boundary
+
+**LOCKED DECISION:** the `ai` branch and repository are public. AI evaluation uses an allowlist publication model: raw artifacts are private unless an approved process projects public synthetic fixtures or sanitized aggregate fields.
+
+### Public repository may contain
+
+- architecture, interfaces, schemas and source code,
+- synthetic evaluation fixtures containing no real user records,
+- benchmark methodology and placeholder configuration examples,
+- sanitized aggregate measurements,
+- sanitized recommendations and rejected-candidate reasoning.
+
+### LOCAL-ONLY — never commit
+
+- personal identity/contact/education identifiers,
+- secrets, tokens, passwords, credentials and private keys,
+- usernames, home paths, hostnames, serials, MAC addresses, GPU UUIDs, BIOS/device/license identifiers,
+- raw hardware captures, per-sample telemetry, thermal CSVs, server logs and machine-specific configuration,
+- model files,
+- Kaizen state exports or real tasks, notes, habits, career/resume, health/workout, calendar or entertainment data,
+- AI conversations, memory, embeddings/vector indexes and personal documents,
+- personal benchmark prompts or raw model outputs.
+
+### Wave 0 filesystem contract
+
+```text
+ai/wave0/results-local/   LOCAL-ONLY, gitignored; raw captures and outputs
+ai/wave0/config/*.local.json  LOCAL-ONLY, gitignored machine configuration
+ai/wave0/results-public/  PUBLIC only after allowlist sanitization and review
+ai/evaluation/v0.1.1/results-public/  PUBLIC synthetic aggregates only
+ai/evaluation/v0.1.1/model-phase/results-local/  LOCAL-ONLY, gitignored
+ai/evaluation/v0.1.1/model-phase/config/*.local.json  LOCAL-ONLY, gitignored
+ai/evaluation/v0.1.1/model-phase/results-public/  PUBLIC only after sanitization/review
+```
+
+Every v0.1.1 public aggregate declares `"classification": "PUBLIC-SANITIZED-AGGREGATE"` and excludes raw prompts, responses and machine data. The two final preflight files were reclassified and sanitized on-device; only those aggregates entered the repository. Raw attempts, local config, messages, logs and telemetry were never requested or uploaded, and attachment copies were deleted after validation.
+
+`sanitize_results.py` copies only approved aggregate fields; it never copies raw prompts/responses, paths, IDs or sample logs. `privacy_scan.py` blocks sensitive staged paths and common secret/identifier patterns. The tracked pre-commit hook invokes the staged scan. Contributors enable it with:
+
+```bash
+git config core.hooksPath .githooks
+```
+
+The hook is defense in depth, not permission to commit questionable data. If uncertain, keep the file under `results-local/`.
+
+## v0.1.1 data handling
+
+The active `core.today@1.0` adapter sends at most 100 projected records: bounded active task metadata, derived scheduled-item labels, high/critical attention labels, deterministic Next Action provenance, timestamps and revision metadata. It explicitly excludes Note content and all Health state. Tool snapshots, interpreter envelopes and responses remain in process/session memory only. The browser stores only a session bearer token and non-reversible revision fingerprints.
+
+The configured local provider receives the permitted interpreter envelope during inference; local processing is not encryption. No language model is currently selected. Disconnecting removes the browser token, while restarting the engine invalidates its in-memory sessions.
+
 ## Consent model
 
 Consent is explicit, revocable and scoped by:

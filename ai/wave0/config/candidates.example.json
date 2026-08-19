@@ -1,0 +1,67 @@
+{
+  "schemaVersion": 1,
+  "runtime": {
+    "llamaServer": "<LOCAL_LLAMA_SERVER_PATH>",
+    "llamaBench": "<LOCAL_LLAMA_BENCH_PATH>",
+    "host": "127.0.0.1",
+    "port": 18080,
+    "startupTimeoutSeconds": 180,
+    "requestTimeoutSeconds": 120,
+    "runtimeVersion": "RECORD_EXACT_BUILD",
+    "runtimeSha256": "RECORD_SERVER_BINARY_SHA256",
+    "llamaBenchSha256": "RECORD_BENCH_BINARY_SHA256"
+  },
+  "defaults": {
+    "threads": 8,
+    "gpuLayers": 99,
+    "batchSize": 512,
+    "ubatchSize": 128,
+    "temperature": 0,
+    "maxOutputTokens": 256,
+    "repetitions": 3,
+    "contextSizes": [
+      2048,
+      4096,
+      8192,
+      12288,
+      16384
+    ],
+    "concurrency": [
+      1,
+      2
+    ],
+    "cancellationDelaySeconds": 1,
+    "recoveryObservationSeconds": 2,
+    "strictArtifactHashes": true,
+    "coldLoadSamples": 3
+  },
+  "candidates": [
+    {
+      "id": "small-instruct-a-q4km",
+      "label": "4B-class instruct candidate A Q4_K_M",
+      "modelPath": "<LOCAL_CANDIDATE_A_PATH>",
+      "artifactSha256": "RECORD_MODEL_SHA256",
+      "license": "RECORD_LICENSE",
+      "enabled": false,
+      "extraArgs": []
+    },
+    {
+      "id": "small-instruct-b-q4km",
+      "label": "4B-class instruct candidate B Q4_K_M",
+      "modelPath": "<LOCAL_CANDIDATE_B_PATH>",
+      "artifactSha256": "RECORD_MODEL_SHA256",
+      "license": "RECORD_LICENSE",
+      "enabled": false,
+      "extraArgs": []
+    },
+    {
+      "id": "mid-instruct-q4km",
+      "label": "7B-8B-class instruct candidate Q4_K_M spill comparison",
+      "modelPath": "<LOCAL_CANDIDATE_C_PATH>",
+      "artifactSha256": "RECORD_MODEL_SHA256",
+      "license": "RECORD_LICENSE",
+      "enabled": false,
+      "extraArgs": []
+    }
+  ]
+}

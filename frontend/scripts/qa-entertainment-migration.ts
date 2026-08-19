@@ -1,3 +1,4 @@
+/** Regression gate for qa entertainment migration contracts. */
 import assert from "node:assert/strict";
 import { migrateEntertainment } from "../lib/entertainmentTypes";
 let passed=0;const test=(name:string,fn:()=>void)=>{fn();passed++;console.log(`  ✓ ${name}`)};
@@ -12,5 +13,5 @@ test("backfills social collections",()=>{assert.deepEqual(m.friends,[]);assert.d
 test("backfills creation collections",()=>{assert.deepEqual(m.reviewDrafts,[]);assert.deepEqual(m.moodBoards,[]);assert.deepEqual(m.whatIfs,[])});
 test("invalid language falls back to English",()=>assert.equal(m.settings.language,"en"));
 test("supported Tamil language survives",()=>assert.equal(migrateEntertainment({...legacy,settings:{language:"ta"}}).settings.language,"ta"));
-test("null state safely returns seed",()=>{const seed=migrateEntertainment(null);assert.equal(seed.schemaVersion,6);assert.ok(seed.items.length>0)});
+test("null state safely returns empty production library",()=>{const state=migrateEntertainment(null);assert.equal(state.schemaVersion,6);assert.deepEqual(state.items,[])});
 console.log(`\n${passed} migration tests passed.`);

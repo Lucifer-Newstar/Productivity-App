@@ -1,8 +1,10 @@
 # Kaizen Intelligence Engine — architecture gate
 
-**Status:** architecture approved with review conditions resolved; Wave 0 preparation active<br>
-**Architecture package version:** 0.2-review<br>
-**Production AI implementation:** not started
+**Status:** deterministic v0.1.1 authoritative application baseline; AI scope closed<br>
+**Architecture package version:** 1.0-v0.1.1-application-baseline<br>
+**Intelligence permissions:** READ / ANALYZE / SUGGEST only
+
+The canonical future-development authority is [`MASTER-SPECIFICATION.md`](MASTER-SPECIFICATION.md), interpreted together with KAC-1, locked ADRs, versioned contracts and the current `ai` branch. Execution follows [`DELIVERY-PLAYBOOK.md`](DELIVERY-PLAYBOOK.md), and every completed step updates the living [`IMPLEMENTATION-LEDGER.md`](IMPLEMENTATION-LEDGER.md). Fragmented later instructions do not silently replace these sources.
 
 The Kaizen Intelligence Engine is an independent, local-first intelligence layer above Kaizen's deterministic domains. Kaizen data and algorithms remain authoritative; models interpret, plan and propose through controlled tools; the user remains the final authority.
 
@@ -57,6 +59,30 @@ Every design choice in this package uses one of four labels:
 7. Controls: agent, security, privacy and actions
 8. Evaluation, [observability](OBSERVABILITY.md), domain intelligence, roadmap and [OPEN-QUESTIONS.md](OPEN-QUESTIONS.md)
 
-## Gate rule
+## Active review milestone
 
-Architecture review authorizes **Wave 0 preparation and controlled benchmark/prototype spikes only** under [`wave-0/README.md`](wave-0/README.md). It does not authorize production AI features, user-state mutation, permanent model/vector/transport/runtime selection, or changes to authoritative application architecture. Any candidate selection requires a reviewed selection report and ADR before production implementation.
+- [`IMPLEMENTATION-LEDGER.md`](IMPLEMENTATION-LEDGER.md) — current status, completed work, blockers and next steps.
+- [AI-ADR-019](adrs/AI-ADR-019-DETERMINISTIC-CORE-TODAY-ROUTING.md) — approved deterministic `get_today` routing and interpreter-only model authority.
+- [AI-ADR-020](adrs/AI-ADR-020-DETERMINISTIC-APPLICATION-PROVIDER.md) — deterministic-only application provider composition after no-model closure.
+- [`V0.1.1-DETERMINISTIC-ROUTING-CONTRACT.md`](V0.1.1-DETERMINISTIC-ROUTING-CONTRACT.md) — frozen route, evidence and output contracts.
+- [`V0.1.1-INTERPRETER-EVALUATION.md`](V0.1.1-INTERPRETER-EVALUATION.md) — frozen interpreter-only gates and deterministic/mock result.
+- [`../reports/AI-V0.1.1-IMPLEMENTATION-2026-08-19.md`](../reports/AI-V0.1.1-IMPLEMENTATION-2026-08-19.md) — implementation, security and evaluation closeout.
+- [`v0.1.1-model-evaluation/`](v0.1.1-model-evaluation/README.md) — frozen candidate matrix, run protocol and report format; execution disabled.
+- [`../reports/AI-V0.1.1-ACCEPTANCE-AND-MODEL-EVAL-DESIGN-2026-08-19.md`](../reports/AI-V0.1.1-ACCEPTANCE-AND-MODEL-EVAL-DESIGN-2026-08-19.md) — live acceptance and evaluation-design report.
+- [`../reports/AI-V0.1.1-MODEL-HARNESS-2026-08-19.md`](../reports/AI-V0.1.1-MODEL-HARNESS-2026-08-19.md) — corpus/harness implementation and no-execution evidence.
+- [`../reports/AI-V0.1.1-PREFLIGHT-AUTHORIZATION-2026-08-19.md`](../reports/AI-V0.1.1-PREFLIGHT-AUTHORIZATION-2026-08-19.md) — target preflight authorization; results pending.
+- [`../reports/AI-V0.1.1-PREFLIGHT-INTAKE-HASH-FIX-2026-08-19.md`](../reports/AI-V0.1.1-PREFLIGHT-INTAKE-HASH-FIX-2026-08-19.md) — no-inference intake defect and streaming hash correction.
+- [`../reports/AI-V0.1.1-PREFLIGHT-ATTACHMENT-MISMATCH-2026-08-19.md`](../reports/AI-V0.1.1-PREFLIGHT-ATTACHMENT-MISMATCH-2026-08-19.md) — incorrect attachments and safe local classifier workflow.
+- [`../reports/AI-V0.1.1-PREFLIGHT-FINAL-2026-08-19.md`](../reports/AI-V0.1.1-PREFLIGHT-FINAL-2026-08-19.md) — final classified rejections and no-model closure.
+- [`../reports/AI-V0.1.1-APPLICATION-INTEGRATION-REVIEW-2026-08-19.md`](../reports/AI-V0.1.1-APPLICATION-INTEGRATION-REVIEW-2026-08-19.md) — authoritative deterministic composition and live review.
+- [`../reports/AI-BRANCH-PR-INTEGRATION-REVIEW-2026-08-19.md`](../reports/AI-BRANCH-PR-INTEGRATION-REVIEW-2026-08-19.md) — complete `ai`→`main` pre-merge review and PR body.
+- [`DELIVERY-PLAYBOOK.md`](DELIVERY-PLAYBOOK.md) — mandatory pull/scope/test/privacy/docs/commit procedure.
+- [`V0.1-INTEGRATION-VALIDATION.md`](V0.1-INTEGRATION-VALIDATION.md) — deterministic/mock foundation validated; real model unavailable.
+- [`WAVE-0-REPORT.md`](WAVE-0-REPORT.md) — final no-model Selection Report.
+- [`wave-0/PASS-FAIL-CRITERIA.md`](wave-0/PASS-FAIL-CRITERIA.md) — frozen pre-measurement gates.
+- [`wave-0/CANDIDATE-MATRIX.md`](wave-0/CANDIDATE-MATRIX.md) — candidate identities, estimates and rationale.
+- [`PRIVACY.md`](PRIVACY.md#public-repository-vs-local-only-boundary) — PUBLIC vs LOCAL-ONLY contract.
+
+## Active implementation boundary
+
+Deterministic Core Today is the authoritative application AI path. The server composition root exposes no model provider, model settings fail closed, and Home discloses deterministic/read-only operation. Wave 0 and I1 are closed with no model selected. AI capability scope is closed; ordinary non-AI application work may continue.

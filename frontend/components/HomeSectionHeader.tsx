@@ -1,3 +1,4 @@
+/** Shared heading hierarchy for the five mature Home productivity sections. */
 import type { LucideIcon } from "lucide-react";
 
 export default function HomeSectionHeader({

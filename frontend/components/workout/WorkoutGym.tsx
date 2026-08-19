@@ -22,6 +22,7 @@ import { useRouter } from "next/router";
 import { motion, AnimatePresence } from "framer-motion";
 import { Dumbbell, Calculator, BarChart3, History, Flame, Play, Database } from "lucide-react";
 import { useStore } from "../../lib/store";
+import { DEMO_TOOLS_ENABLED } from "../../lib/demoMode";
 import {
   epley1RM, trainingMax, platesForKg, dbToBbEquivalent, bbToDbEquivalent,
   wilks, strengthToWeight, rirToRpe, projectAMRAP,
@@ -37,6 +38,7 @@ export default function WorkoutGym() {
   const [weight, setWeight] = useState(80);
   const [reps, setReps] = useState(5);
   const [bw, setBw] = useState(70);
+  const [powerliftingTotal,setPowerliftingTotal]=useState(0);
   const [isFemale, setIsFemale] = useState(false);
   const [dbWeight, setDbWeight] = useState(30);
   const [bbWeight, setBbWeight] = useState(80);
@@ -44,11 +46,7 @@ export default function WorkoutGym() {
   const oneRM = useMemo(() => epley1RM(weight, reps), [weight, reps]);
   const tMax = useMemo(() => trainingMax(oneRM), [oneRM]);
   const plates = useMemo(() => platesForKg(weight * 2 + 20) ?? platesForKg(20), [weight]); // total = 2*side + 20kg bar
-  const wlks = useMemo(() => {
-    // Need a "total" — approximate from 3 lifts if present
-    const totalKg = weight * 3; // rough placeholder for demo
-    return wilks(bw, totalKg, isFemale);
-  }, [bw, weight, isFemale]);
+  const wlks = useMemo(() => powerliftingTotal>0?wilks(bw,powerliftingTotal,isFemale):0, [bw,powerliftingTotal,isFemale]);
 
   // ---- Warmup generator ----
   const warmupSets = useMemo(() => {
@@ -164,11 +162,15 @@ export default function WorkoutGym() {
                 <Result label={`${bbWeight}kg BB → DB`} value={`${bbToDbEquivalent(bbWeight)} kg`} color="#a3e635" />
               </div>
 
-              <div className="grid grid-cols-2 gap-3 mb-2">
+              <div className="grid grid-cols-3 gap-3 mb-2">
                 <label className="block text-xs text-gray-400">Bodyweight (kg)
                   <input type="number" value={bw}
                     onChange={(e) => setBw(parseFloat(e.target.value || "0"))}
                     className="input-base w-full mt-1" />
+                </label>
+                <label className="block text-xs text-gray-400">SBD total (kg)
+                  <input type="number" min="0" value={powerliftingTotal||""} placeholder="squat + bench + deadlift"
+                    onChange={(e)=>setPowerliftingTotal(Math.max(0,parseFloat(e.target.value||"0")))} className="input-base w-full mt-1"/>
                 </label>
                 <label className="block text-xs text-gray-400">
                   <div className="flex items-center gap-2 mt-1.5">
@@ -179,7 +181,7 @@ export default function WorkoutGym() {
                 </label>
               </div>
               <div className="grid grid-cols-2 gap-3">
-                <Result label="Wilks (≈3x this lift)" value={wlks.toFixed(1)} color="#8b5cf6" />
+                <Result label="Wilks (entered SBD total)" value={powerliftingTotal>0?wlks.toFixed(1):"—"} color="#8b5cf6" />
                 <Result label="1RM / BW" value={strengthToWeight(oneRM, bw).toFixed(2)} color="#f43f5e" />
               </div>
               <p className="text-[10px] text-gray-500 mt-2">
@@ -215,16 +217,16 @@ export default function WorkoutGym() {
               <div className="rounded-xl border border-dashed border-white/10 p-5 text-center">
                 <History className="mx-auto text-amber-400/60 mb-2" size={22} />
                 <p className="text-sm text-gray-300">No sessions yet.</p>
-                <p className="text-xs text-gray-500 mt-1">Start a freestyle lift or load demo data to see history here.</p>
+                <p className="text-xs text-gray-500 mt-1">Start a freestyle lift to build history here.</p>
                 <div className="flex gap-2 justify-center mt-3 flex-wrap">
                   <button onClick={() => router.push("/workout/gym/freestyle")}
                     className="btn-primary text-xs inline-flex items-center gap-1">
                     <Play size={12} fill="white" /> Start a workout
                   </button>
-                  <button onClick={() => seedDemoData()}
+                  {DEMO_TOOLS_ENABLED&&<button onClick={() => seedDemoData()}
                     className="btn-ghost text-xs inline-flex items-center gap-1">
                     <Database size={12} /> Load demo data
-                  </button>
+                  </button>}
                 </div>
               </div>
             ) : (

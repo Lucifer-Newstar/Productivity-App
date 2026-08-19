@@ -721,6 +721,7 @@ export function VoiceTab(){
     if(url) URL.revokeObjectURL(url);
     updateForge(f=>({voiceNotes:f.voiceNotes.filter(v=>v.id!==id)}));
   };
+  const download = (id:string) => { const url=(window as any).__forgeVoice?.[id];if(!url)return;const a=document.createElement("a");a.href=url;a.download=`forge-voice-${id}.webm`;a.click(); };
   const patchNote = (id:string,p:Partial<VoiceNote>) => updateForge(f=>({voiceNotes:f.voiceNotes.map(v=>v.id===id?{...v,...p}:v)}));
   const list = pid ? forge.voiceNotes.filter(v=>v.projectId===pid) : forge.voiceNotes;
   const mmss = (s:number) => `${String(Math.floor(s/60)).padStart(2,"0")}:${String(s%60).padStart(2,"0")}`;
@@ -735,7 +736,7 @@ export function VoiceTab(){
           {recording?`REC ${mmss(elapsed)} — STOP`:"RECORD VOICE NOTE"}
         </button>
         <span className="pencil text-xs italic ml-auto" style={{color:"var(--fr-fgMuted)"}}>
-          Tip: no transcription API wired — type in the transcript box below after recording.
+          Audio is session-only. Download before reload; typed transcripts persist locally.
         </span>
       </div>
       {list.length===0 && (
@@ -757,9 +758,10 @@ export function VoiceTab(){
               <div className="flex items-center gap-3 mb-2">
                 <span className="mono text-[11px] font-black" style={{color:"#f472b6"}}>▶ VOICE · {mmss(v.durationSec)}</span>
                 <span className="mono text-[10px]" style={{color:"var(--fr-fgMuted)"}}>{dt.toLocaleString()}</span>
-                <button onClick={()=>del(v.id)} className="ml-auto opacity-50 hover:opacity-100" style={{color:"var(--fr-red)"}}>✕</button>
+                {url&&<button onClick={()=>download(v.id)} className="ml-auto mono text-[9px]" style={{color:"#f472b6"}}>DOWNLOAD</button>}
+                <button onClick={()=>del(v.id)} className={url?"opacity-50 hover:opacity-100":"ml-auto opacity-50 hover:opacity-100"} style={{color:"var(--fr-red)"}}>✕</button>
               </div>
-              {url && <audio src={url} controls className="w-full mb-2" style={{height:28}}/>}
+              {url ? <audio src={url} controls className="w-full mb-2" style={{height:28}}/> : <p className="mono text-[9px] mb-2" style={{color:"var(--fr-fgMuted)"}}>SESSION AUDIO UNAVAILABLE · transcript retained</p>}
               <textarea value={v.transcript||""} onChange={e=>patchNote(v.id,{transcript:e.target.value})} rows={2}
                 placeholder="transcript / notes..."
                 className="w-full bg-transparent outline-none pencil text-xs resize-none p-1" style={{border:"1px dashed #f472b666",color:"var(--fr-fg)"}}/>

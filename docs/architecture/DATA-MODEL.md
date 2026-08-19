@@ -1,6 +1,6 @@
 # Kaizen data-model reference
 
-_Last synchronized: 2026-08-17 on merged `main`._
+_Last synchronized: 2026-08-18 across the stable product model and v0.1 Intelligence contracts._
 
 ## Root state
 
@@ -224,9 +224,9 @@ Persistence: `kaizen.notifications`. Migration: `migrateNotifications()`.
 
 Detailed rules/settings: [`notifications/README.md`](../notifications/README.md).
 
-## Proposed Intelligence Engine contracts
+## Intelligence Engine v0.1 contracts
 
-No AI state is implemented or persisted today. The architecture gate defines future data contracts without adding them to `StoreState`:
+The engine implements transport and revision metadata without adding AI-owned records to authoritative `StoreState`:
 
 - `DomainSnapshot<T>` — versioned, immutable browser projection with snapshot ID, domain revision, freshness, sensitivity, deterministic analytics and redactions.
 - `IntelligenceResponse` — validated answer/brief/recommendation/plan/proposal with evidence, uncertainty and freshness.
@@ -234,7 +234,7 @@ No AI state is implemented or persisted today. The architecture gate defines fut
 - `ActionProposal` / `AIActionAudit` — future approval-bound action and verification records.
 - Career–Forge evidence claims — recorded fact, user-confirmed fact, AI-suggested wording or missing evidence.
 
-These types remain architecture contracts until Wave 0/implementation approval. They do not imply a new `localStorage` key, backend table or authoritative-state migration. See [`../ai/DOMAIN-BRIDGE.md`](../ai/DOMAIN-BRIDGE.md), [`../ai/MEMORY.md`](../ai/MEMORY.md), and [`../ai/ACTION-CENTER.md`](../ai/ACTION-CENTER.md).
+`DomainSnapshot<T>` and `IntelligenceResponse` are active v0.1 contracts. `AIMemory`, `ActionProposal` and action audit remain unimplemented future contracts. Revision/fingerprint and session-token metadata use the keys documented in [`../reference/PERSISTENCE-KEYS.md`](../reference/PERSISTENCE-KEYS.md); they contain no authoritative domain records. See [`../ai/DOMAIN-BRIDGE.md`](../ai/DOMAIN-BRIDGE.md), [`../ai/MEMORY.md`](../ai/MEMORY.md), and [`../ai/ACTION-CENTER.md`](../ai/ACTION-CENTER.md).
 
 ## Migrations and compatibility
 

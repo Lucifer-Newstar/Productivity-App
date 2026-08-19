@@ -71,3 +71,32 @@ Concise records of decisions that affect multiple spaces.
 **Decision:** Current authoritative domain records outrank deterministic derived analytics, which outrank confirmed memory, episodic/pattern memory, inference and recommendations. Stale analytics never outrank newer records.
 
 **Why:** AI memory and generated interpretations are contextual aids, not competing databases. Conflicts trigger memory validation and user-visible disclosure rather than silent state override.
+
+## ADR-012 — Browser-only authority for the local v1 release
+
+**Decision:** The packaged local v1 application uses browser-owned React state and versioned local persistence as its sole product-data authority. The Express service is excluded from the release runtime and remains a development/reference API only.
+
+**Why:** The frontend currently consumes zero Express data endpoints, while Express is in-memory and loses data on restart. Wiring it now would reduce durability rather than improve it. The approved release is offline/local with no cloud deployment.
+
+**Required consequences:**
+
+- product copy and deployment docs must not promise server sync;
+- a complete browser backup/restore and corruption-recovery contract is required before release;
+- sensitive localStorage risk requires explicit release acceptance;
+- Express must stay loopback or require a service key for network binding;
+- any future durable backend, account identity or synchronization requires a new ADR, migrations and conflict tests.
+
+## ADR-013 — Trusted local profile is the v1 at-rest security boundary
+
+**Decision:** v1 accepts unencrypted browser persistence for a single-user local installation, with the operating-system account and trusted browser profile as the at-rest security boundary.
+
+**Why:** Client-side encryption without an independently protected key would only obscure data, while passphrase/key custody and encrypted storage would materially expand packaging/auth scope. The release is local/offline and has no cloud account.
+
+**Required disclosure and controls:**
+
+- do not use Kaizen in an untrusted/shared browser profile;
+- protect the Windows/OS account and device storage;
+- store exported backups in an encrypted user-controlled location;
+- never claim browser records are encrypted;
+- whole-product backup, corruption recovery and local packaging verification remain mandatory;
+- a future encrypted store/key-custody design requires a new ADR and migration.

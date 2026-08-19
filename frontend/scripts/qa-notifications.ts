@@ -1,3 +1,4 @@
+/** Regression gate for qa notifications contracts. */
 import assert from "node:assert/strict";
 import { evaluateNotificationRules } from "../lib/notificationRules";
 import { migrateNotifications,notificationSectionForPath,notificationVisibleInContext,notificationStillRelevant } from "../lib/notificationTypes";

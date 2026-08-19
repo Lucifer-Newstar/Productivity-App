@@ -1,0 +1,24 @@
+{
+  "schemaVersion": 1,
+  "authorizationId": "I1-PREFLIGHT-AUTH-1",
+  "status": "AUTHORIZED-TARGET-PREFLIGHT-ONLY",
+  "approvedAt": "2026-08-19",
+  "classification": "PUBLIC-EVALUATION-AUTHORIZATION",
+  "protocolId": "I1-RUN-1",
+  "matrixId": "I1-CANDIDATES-1",
+  "candidateOrder": [
+    "qwen3-4b-instruct-2507-q4km",
+    "phi-4-mini-instruct-q4km"
+  ],
+  "stages": {
+    "preflight": true,
+    "full": false,
+    "operations": false
+  },
+  "requirements": [
+    "Use the disabled production-path runner and frozen corpus.",
+    "Retain raw evidence under ignored results-local only.",
+    "Publish only sanitizer-produced aggregates.",
+    "Stop after both preflight outcomes; a pass does not authorize full or operations execution."
+  ]
+}

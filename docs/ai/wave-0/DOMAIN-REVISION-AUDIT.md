@@ -1,6 +1,6 @@
 # W0-01 domain revision source audit
 
-**Status:** initial source audit complete; prototype not yet implemented.  
+**Status:** source audit complete; isolated epoch/vector/writer-lease prototype passes 17 assertions.<br>
 **Repository baseline:** `fd0cdff` parent architecture review commit.
 
 ## Current persistence topology

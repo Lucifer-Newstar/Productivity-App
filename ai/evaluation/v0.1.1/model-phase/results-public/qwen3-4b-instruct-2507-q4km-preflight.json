@@ -1,0 +1,46 @@
+{
+  "schemaVersion": 1,
+  "classification": "PUBLIC-SANITIZED-AGGREGATE",
+  "warning": "No raw prompts, outputs, paths, machine identifiers or per-sample telemetry",
+  "protocolId": "I1-RUN-1",
+  "matrixId": "I1-CANDIDATES-1",
+  "gateId": "V011-INT-GATE-1",
+  "candidateId": "qwen3-4b-instruct-2507-q4km",
+  "stage": "preflight",
+  "corpus": {
+    "id": "I1-SYNTHETIC-1",
+    "sha256": "081a7f21a95727e2bb41f73bae639709aea7f083e41824298077d5e4910a6588"
+  },
+  "artifacts": {
+    "modelSha256": "2fde00ce69dd4899c70d020845e2638353015bba0fdf161b3eb965f2bca4464e",
+    "runtimeSha256": "76b0a5f72243ccb99079ca71ebd0332f123c52668d815c9d6716a89d46415668"
+  },
+  "attemptCount": 10,
+  "retainedAttemptCount": 10,
+  "reviewDisagreements": null,
+  "requirements": {
+    "attemptsComplete": false,
+    "portReleased": true,
+    "resourceCeilings": false,
+    "routeContract": true,
+    "shutdown": true,
+    "sources": false,
+    "structured": false,
+    "telemetry": true,
+    "tokenBudget": true,
+    "zeroToolCalls": true
+  },
+  "metrics": null,
+  "failureCodes": [
+    "PROVIDER_HTTP_400"
+  ],
+  "lifecycle": {
+    "startupMs": 3210,
+    "shutdownMs": 731,
+    "portReleased": true
+  },
+  "operations": null,
+  "outcome": "REJECTED-PREFLIGHT",
+  "modelSelected": false,
+  "wave0Reopened": false
+}

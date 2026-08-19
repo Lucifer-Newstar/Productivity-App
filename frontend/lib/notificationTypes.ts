@@ -1,3 +1,4 @@
+/** Pure domain utilities for notification types. */
 export type NotificationSection="workout"|"career"|"projects"|"health"|"entertainment"|"system";
 export type NotificationKind="reminder"|"progress"|"alert"|"celebration"|"digest";
 export type NotificationPriority="low"|"normal"|"high"|"critical";

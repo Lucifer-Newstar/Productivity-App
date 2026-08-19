@@ -1,0 +1,9 @@
+{
+  "schemaVersion": 1,
+  "corpusId": "I1-SYNTHETIC-1",
+  "corpusFile": "corpus.v1.json",
+  "sha256": "081a7f21a95727e2bb41f73bae639709aea7f083e41824298077d5e4910a6588",
+  "scenarioCount": 50,
+  "scoredResponsesPerCandidate": 100,
+  "classification": "PUBLIC-SYNTHETIC-MANIFEST"
+}

@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "source": "local owner-supplied expectation; copy to hardware.local.json and fill locally",
+  "device": {
+    "manufacturer": "<MANUFACTURER>",
+    "family": "<DEVICE_FAMILY>",
+    "model": "<MODEL_WITHOUT_SERIAL_NUMBER>"
+  },
+  "cpu": {
+    "model": "<CPU_MODEL>",
+    "physicalCores": 0,
+    "logicalCores": 0
+  },
+  "gpu": {
+    "model": "<GPU_MODEL>",
+    "dedicatedVramMiB": 0,
+    "baseTgpW": null,
+    "dynamicBoostMaximumW": null
+  },
+  "memory": {
+    "installedGiB": 0,
+    "type": "<MEMORY_TYPE>",
+    "exactSpeedMTs": null
+  },
+  "storage": {
+    "approximateInstalledTB": null
+  },
+  "os": {
+    "family": "Windows 11",
+    "edition": null,
+    "build": null
+  },
+  "power": {
+    "adapterW": null,
+    "benchmarkModes": ["AC balanced", "AC performance"]
+  }
+}

@@ -1,6 +1,6 @@
 # Career Space — Data Model & Features
 
-Last synchronized with the current route/state architecture: 2026-08-16.
+Last synchronized with the current route/state architecture: 2026-08-18.
 
 ## Overview
 

@@ -1,6 +1,6 @@
 # Entertainment — provider decision
 
-_Decided 2026-08-16. Wave 2 adapter/search implementation is in progress._
+_Provider architecture decided 2026-08-16; adapter/search implementation is shipped and maintained._
 
 All upstream calls go through same-origin `/api/entertainment/*` adapters. Implemented endpoints are `GET /api/entertainment/search?q=…&type=…`, `GET /api/entertainment/trending?type=…`, `GET /api/entertainment/details?provider=…&id=…&type=…`, `GET /api/entertainment/providers` and the internal allowlisted `GET /api/entertainment/image?url=…` proxy. Provider credentials must remain server-side; the browser receives a normalized result and never chooses an arbitrary upstream URL. Adapters will validate queries, enforce timeouts, cache slow-changing metadata, respect `429`/`Retry-After`, strip provider HTML and map failures to bounded errors.
 

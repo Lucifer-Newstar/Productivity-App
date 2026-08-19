@@ -1,0 +1,82 @@
+{
+  "schemaVersion": 1,
+  "classification": "PUBLIC-SANITIZED-AGGREGATE",
+  "warning": "No raw prompts, outputs, paths, identifiers or per-sample logs",
+  "hardware": null,
+  "models": null,
+  "retrieval": {
+    "engine": "3.46.1",
+    "fts5": true,
+    "method": "structured domain filter + FTS5 BM25 + bounded recency/importance adjustment",
+    "synthetic": true,
+    "runs": [
+      {
+        "records": 1000,
+        "queries": 200,
+        "indexMs": 3.52,
+        "latencyMs": {
+          "mean": 0.177,
+          "p50": 0.169,
+          "p95": 0.224,
+          "max": 0.352
+        },
+        "ranking": {
+          "hitAt1": 1.0,
+          "hitAt10": 1.0,
+          "mrrAt10": 1.0,
+          "filterLeakage": 0,
+          "paraphraseHitAt10": 0.0
+        },
+        "deletionVerified": true
+      },
+      {
+        "records": 10000,
+        "queries": 200,
+        "indexMs": 34.649,
+        "latencyMs": {
+          "mean": 1.462,
+          "p50": 1.42,
+          "p95": 1.739,
+          "max": 2.614
+        },
+        "ranking": {
+          "hitAt1": 1.0,
+          "hitAt10": 1.0,
+          "mrrAt10": 1.0,
+          "filterLeakage": 0,
+          "paraphraseHitAt10": 0.0
+        },
+        "deletionVerified": true
+      },
+      {
+        "records": 50000,
+        "queries": 200,
+        "indexMs": 204.984,
+        "latencyMs": {
+          "mean": 7.862,
+          "p50": 7.469,
+          "p95": 13.039,
+          "max": 14.393
+        },
+        "ranking": {
+          "hitAt1": 1.0,
+          "hitAt10": 1.0,
+          "mrrAt10": 1.0,
+          "filterLeakage": 0,
+          "paraphraseHitAt10": 0.0
+        },
+        "deletionVerified": true
+      }
+    ],
+    "passSummary": {
+      "allDeletionVerified": true,
+      "minimumHitAt1": 1.0,
+      "minimumMrrAt10": 1.0,
+      "minimumParaphraseHitAt10": 0.0,
+      "filterLeakage": 0,
+      "maximumP95Ms": 13.039
+    }
+  },
+  "embeddings": null,
+  "transport": null
+}

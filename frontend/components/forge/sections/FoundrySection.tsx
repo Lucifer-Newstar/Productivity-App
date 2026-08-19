@@ -17,6 +17,7 @@ import {
   ClipboardCheck,
 } from "lucide-react";
 import { useStore } from "../../../lib/store";
+import { DEMO_TOOLS_ENABLED } from "../../../lib/demoMode";
 import { useTheme } from "../../../lib/theme";
 import type { ForgeProject, ProjectTask } from "../../../lib/forgeTypes";
 import { FORGE_NAV } from "../ForgeShell";
@@ -388,7 +389,7 @@ export default function FoundrySection() {
       </div>
 
       {/* QA seed */}
-      {forge.projects.length <= 1 && (
+      {DEMO_TOOLS_ENABLED && forge.projects.length <= 1 && (
         <div className="rounded-sm steel-plate p-4 relative flex items-center justify-between flex-wrap gap-3" style={{borderColor:"#f472b655"}}>
           <span className="riv-tl"/><span className="riv-tr"/><span className="riv-bl"/><span className="riv-br"/>
           <div>

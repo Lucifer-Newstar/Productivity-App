@@ -1,3 +1,4 @@
+/** Fixed server route for route requests. */
 import { NextRequest, NextResponse } from "next/server";
 import { guardEntertainmentRequest } from "../_guard";
 export const runtime="nodejs";

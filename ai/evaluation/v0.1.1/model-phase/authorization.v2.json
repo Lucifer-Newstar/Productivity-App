@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 1,
+  "authorizationId": "I1-PREFLIGHT-CLOSURE-1",
+  "status": "CLOSED-NO-PASSING-CANDIDATE",
+  "closedAt": "2026-08-19",
+  "classification": "PUBLIC-EVALUATION-AUTHORIZATION",
+  "protocolId": "I1-RUN-1",
+  "matrixId": "I1-CANDIDATES-1",
+  "supersedes": "I1-PREFLIGHT-AUTH-1",
+  "candidateOrder": [
+    "qwen3-4b-instruct-2507-q4km",
+    "phi-4-mini-instruct-q4km"
+  ],
+  "stages": {
+    "preflight": false,
+    "full": false,
+    "operations": false
+  },
+  "outcomes": {
+    "qwen3-4b-instruct-2507-q4km": "REJECTED-PREFLIGHT",
+    "phi-4-mini-instruct-q4km": "REJECTED-PREFLIGHT"
+  },
+  "requirements": [
+    "No candidate is eligible for full or operations execution.",
+    "Do not rerun preflight or add candidates under I1-CANDIDATES-1.",
+    "Any future model evaluation requires a new reviewed matrix, protocol and authorization."
+  ]
+}

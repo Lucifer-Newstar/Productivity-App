@@ -1,77 +1,90 @@
-# Kaizen Backend
+# Kaizen Reference API
 
-Minimal Express REST API mirroring the **entire** Kaizen frontend domain —
-all 5 spaces (Workout, Career, Projects/Forge, Health, plus Core home
-tasks/notes). Runs on port **4000** by default and keeps all data in memory
-(no database required). It mirrors the frontend's TypeScript domain model so
-that when you're ready to add persistence/auth, you can swap the in-memory
-store for Postgres/Prisma without touching the route handlers.
+Optional Express 4 service that mirrors Kaizen domain contracts for local development, sync experiments, analytics parity and exports. The normal frontend does not depend on it and browser state remains authoritative.
 
-## Quick start
+## Important limitations
+
+- In-memory only; data resets when the process restarts.
+- Service-level API key, not multi-user identity or authorization.
+- Reference/sync boundary, not a production public database.
+- Loopback-only by default.
+
+## Run locally
 
 ```bash
 cd backend
-npm install
-npm run dev       # tsx watch — auto-reloads on change
-# API running at http://localhost:4000
+npm ci
+npm run dev
 ```
 
-For production/network access:
+Default base URL:
+
+```text
+http://127.0.0.1:4000/api
+```
+
+Set a local API key when testing protected routes:
+
+```bash
+KAIZEN_API_KEY=development-only-secret npm run dev
+```
+
+## Production-style local run
 
 ```bash
 npm run build
-HOST=0.0.0.0 \
-KAIZEN_API_KEY='use-a-long-random-secret' \
-CORS_ORIGINS='https://kaizen.example.com' \
-npm start
+KAIZEN_API_KEY=<configure-locally> npm start
 ```
 
-Do not expose the API without an API key and TLS reverse proxy. See
-`docs/security/SECURITY.md` for all controls and accepted limitations.
+Do not expose the service directly to a network. Any intentional exposure requires an HTTPS reverse proxy, a strong local secret and an explicit `CORS_ORIGINS` allowlist.
 
-## What's included
+## Surface
 
-- Loopback-only binding by default (`127.0.0.1`)
-- Explicit CORS origin allowlist
-- Optional API-key authentication for every data route
-- Helmet, read/write rate limits, strict bounded JSON and unsafe-key rejection
-- **138 collections** with generic CRUD (list/create/get/patch/delete) +
-  **12 singleton documents** (GET/PUT):
-  - **Core** — tasks, notes (`/api/core/*`)
-  - **Workout** — 25 collections (exercises, PRs, routines, sessions,
-    calisthenics chains/skills/flows/GtG/isometrics/intervals/mobility/planche,
-    cardio logs, programs, goals, challenges, journal, motivation board,
-    rest days, bodyweight, readiness, badges, custom metrics)
-  - **Career** — 25 collections (`/api/career/*`)
-  - **Forge / Projects** — 37 collections + streak/settings singletons
-    (`/api/forge/*`)
-  - **Health / VITAL-SIGN** — health collections + profile/settings/routine singletons (`/api/health/*`)
-  - **Entertainment / AFTERGLOW** — 16 collections covering library, social and creation studio + settings singleton (`/api/entertainment/*`)
-- Session-specific helpers:
-  - `POST /api/sessions` — start a new session
-  - `POST /api/sessions/:id/sets` — log a set (auto-updates total volume)
-  - `PATCH /api/sessions/:id/finish` — finalise a session
-- Analytics endpoints running the same math as the frontend:
-  - Workout: `/api/analytics/1rm/:exerciseId`, `/api/analytics/weekly-stats`,
-    `/api/analytics/streak`
-  - Health: `/api/health/analytics/bmr` (Mifflin + Katch-McArdle),
-    `/tdee`, `/water-goal` (Chennai climate multiplier), `/navy-bf`,
-    `/sleep-bank`, `/daily-summary`
-  - Forge: `/api/forge/analytics/summary`
-- Exports: `GET /api/export/csv` (workout sessions),
-  `GET /api/health/export/csv` (daily health summaries)
-- Sync: `GET /api/sync` and `POST /api/sync` for whole-state push/pull backup
-  (wrapped `{ tables, singletons }` shape; legacy flat shape still accepted)
-- Service liveness: `GET /api/health-check` (legacy alias `GET /api/health`)
+- 138 in-memory collection tables
+- 12 singleton documents
+- Generic CRUD and singleton GET/PUT
+- Whole-state sync contract
+- Workout, Forge and Health analytics mirrors
+- Workout and Health CSV exports
+- Public liveness endpoints
 
-See `docs/reference/API.md` for the full route reference, and
-`docs/reference/ALGORITHMS.md` for the math used by the analytics endpoints
-(Health formulas are §H1–H30).
+Domains:
 
-## Future work
+```text
+Core / Notifications
+Forge
+Career
+Workout
+Health
+Entertainment
+```
 
-- [ ] JWT auth / signup / login
-- [ ] Postgres via Prisma
-- [ ] WebSocket for real-time rest-timer sync across devices
-- [ ] CSV/JSON import endpoints
-- [ ] Apple Health / Google Fit ingestion
+Complete contracts:
+
+- [`../docs/reference/API.md`](../docs/reference/API.md)
+- [`../docs/architecture/SYNC-CONTRACT.md`](../docs/architecture/SYNC-CONTRACT.md)
+- [`../docs/reference/ALGORITHMS.md`](../docs/reference/ALGORITHMS.md)
+
+## Security controls
+
+- Loopback binding
+- Optional API-key authentication
+- Explicit CORS allowlist
+- Helmet headers
+- Read/write rate limits
+- Strict bounded JSON
+- Unsafe-key and ID rejection
+- Table capacity limits
+- Formula-safe CSV
+
+Verification:
+
+```bash
+npm run build
+KAIZEN_API_KEY=security-test-key npm start
+# second terminal
+KAIZEN_API_KEY=security-test-key npm run security:test
+npm audit --omit=dev
+```
+
+See [`../docs/security/SECURITY.md`](../docs/security/SECURITY.md).

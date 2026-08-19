@@ -1,3 +1,4 @@
+/** Pure domain utilities for entertainment reports. */
 import type { EntertainmentEvent, EntertainmentItem, MediaType } from "./entertainmentTypes";
 export interface CountValue { label:string;value:number }
 export interface MonthlyValue { month:string;count:number;hours:number;avgRating:number }

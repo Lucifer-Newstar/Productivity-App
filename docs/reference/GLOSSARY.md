@@ -30,7 +30,7 @@
 | Migration | Function that converts older persisted state to the current defensive shape |
 | Local-first | Browser state is primary; the product works without Express/cloud sync |
 | Bridge | A controlled cross-space read/write contract, especially Health ↔ Workout and Forge → Career |
-| Kaizen Intelligence Engine | Proposed independent local-first reasoning layer; currently architecture documentation only |
+| Kaizen Intelligence Engine | Implemented v0.1 read-only local Intelligence foundation; currently deterministic/mock-backed with no selected model |
 | Domain Bridge | Client-mediated adapter/tool boundary that projects browser-owned state into versioned AI contracts |
 | Domain snapshot | Immutable, revisioned and freshness-stamped projection returned by a Domain Bridge tool |
 | AI Constitution | Versioned behavioral and authority rules shared by every provider and domain module |

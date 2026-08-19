@@ -1,0 +1,375 @@
+#!/usr/bin/env python3
+"""Run reproducible llama-server lifecycle, structured-output and tool reliability tests.
+
+No model is downloaded. Only candidates explicitly enabled in local config run.
+"""
+from __future__ import annotations
+import argparse, concurrent.futures, datetime as dt, hashlib, http.client, json, os, pathlib, re, shutil, socket, statistics, subprocess, sys, threading, time, urllib.error, urllib.parse, urllib.request
+from process_inspection import identity_for, process_table, tree_for, verify_exited_tree, verify_running_tree
+
+ROOT=pathlib.Path(__file__).resolve().parents[1]
+
+def now(): return dt.datetime.now(dt.timezone.utc).isoformat()
+def sha256(path):
+    h=hashlib.sha256()
+    with open(path,"rb") as f:
+        for chunk in iter(lambda:f.read(1024*1024),b""): h.update(chunk)
+    return h.hexdigest()
+def req_json(url,payload=None,timeout=120,headers=None):
+    data=None if payload is None else json.dumps(payload).encode()
+    r=urllib.request.Request(url,data=data,headers={"content-type":"application/json",**(headers or {})},method="GET" if payload is None else "POST")
+    with urllib.request.urlopen(r,timeout=timeout) as x: return json.loads(x.read())
+def wait_ready(base,timeout):
+    start=time.perf_counter(); last=""
+    while time.perf_counter()-start<timeout:
+        try:
+            with urllib.request.urlopen(base+"/health",timeout=2) as r:
+                if 200<=r.status<300: return (time.perf_counter()-start)*1000
+        except Exception as e: last=str(e)
+        time.sleep(.25)
+    raise TimeoutError(f"server not ready: {last}")
+def port_free(host,port):
+    s=socket.socket();s.setsockopt(socket.SOL_SOCKET,socket.SO_REUSEADDR,1)
+    try:s.bind((host,port));return True
+    except OSError:return False
+    finally:s.close()
+def wait_port_free(host,port,timeout=10):
+    end=time.monotonic()+timeout
+    while time.monotonic()<end:
+        if port_free(host,port):return True
+        time.sleep(.1)
+    return False
+def request_activity(base):
+    try:
+        with urllib.request.urlopen(base+"/metrics",timeout=2) as response:text=response.read().decode(errors="replace")
+        values=[]
+        for line in text.splitlines():
+            if line.startswith("#") or "requests_processing" not in line:continue
+            try:values.append(float(line.rsplit(None,1)[-1]))
+            except ValueError:pass
+        return sum(values) if values else None
+    except Exception:return None
+class CancellableChatRequest:
+    def __init__(self,base,payload,timeout):self.base=base;self.payload=payload;self.timeout=timeout;self.connection=None;self.response=None;self.error=None;self.started=threading.Event();self.terminated=threading.Event();self.thread=threading.Thread(target=self._run,daemon=True)
+    def start(self):self.thread.start();return self
+    def _run(self):
+        parsed=urllib.parse.urlsplit(self.base);host=parsed.hostname;port=parsed.port or 80;body=dict(self.payload);body["stream"]=True
+        try:
+            self.connection=http.client.HTTPConnection(host,port,timeout=self.timeout);self.connection.request("POST","/v1/chat/completions",body=json.dumps(body),headers={"content-type":"application/json"});self.response=self.connection.getresponse();self.started.set()
+            while self.response.readline():pass
+        except Exception as error:self.error=f"{type(error).__name__}: {error}"
+        finally:
+            self.started.set()
+            try:
+                if self.response:self.response.close()
+                if self.connection:self.connection.close()
+            finally:self.terminated.set()
+    def cancel(self):
+        acknowledged=self.connection is not None
+        try:
+            if self.response:self.response.close()
+            if self.connection and self.connection.sock:
+                try:self.connection.sock.shutdown(socket.SHUT_RDWR)
+                except OSError:pass
+            if self.connection:self.connection.close()
+        except Exception:pass
+        return acknowledged
+
+def resource_recovered(baseline,current,key,tolerance):
+    if baseline is None or current is None:return None
+    return current.get(key,0)<=baseline.get(key,0)+tolerance
+
+def probe_request_cancellation(base,payload,delay,recovery_window,process,nvidia_samples,memory_samples,timeout):
+    # Baselines are captured before request dispatch; never use in-flight samples.
+    baseline_deadline=time.monotonic()+2
+    while time.monotonic()<baseline_deadline and not memory_samples:time.sleep(.05)
+    nvidia_base=nvidia_samples[-1] if nvidia_samples else None;memory_base=memory_samples[-1] if memory_samples else None;active_base=request_activity(base);table=process_table();tree_before=tree_for(process.pid,table);identity_before=identity_for(process.pid,table)
+    request=CancellableChatRequest(base,payload,timeout).start();request.started.wait(timeout=min(10,timeout));start_seen=False;start_deadline=time.monotonic()+min(5,timeout)
+    while time.monotonic()<start_deadline:
+        observed=request_activity(base)
+        if observed is not None and active_base is not None and observed>active_base:start_seen=True;break
+        time.sleep(.05)
+    time.sleep(max(0,delay));cancelled_at=time.perf_counter();socket_closed=request.cancel();socket_latency=(time.perf_counter()-cancelled_at)*1000;terminated=request.terminated.wait(timeout=min(10,recovery_window));termination_latency=(time.perf_counter()-cancelled_at)*1000;active=None;server_termination=False;server_termination_at=None;deadline=time.monotonic()+recovery_window
+    while time.monotonic()<deadline:
+        active=request_activity(base);server_termination=start_seen and active_base is not None and active is not None and active<=active_base
+        if server_termination and server_termination_at is None:server_termination_at=time.perf_counter()
+        nvidia_now=nvidia_samples[-1] if nvidia_samples else None;memory_now=memory_samples[-1] if memory_samples else None;vram_ok=resource_recovered(nvidia_base,nvidia_now,"memoryUsedMiB",128);ram_ok=resource_recovered(memory_base,memory_now,"processRssBytes",256*1024*1024)
+        if terminated and server_termination and vram_ok is not False and ram_ok is not False:break
+        time.sleep(.1)
+    observation_latency=(time.perf_counter()-cancelled_at)*1000;nvidia_now=nvidia_samples[-1] if nvidia_samples else None;memory_now=memory_samples[-1] if memory_samples else None;vram_ok=resource_recovered(nvidia_base,nvidia_now,"memoryUsedMiB",128);ram_ok=resource_recovered(memory_base,memory_now,"processRssBytes",256*1024*1024);tree=verify_running_tree(process.pid,tree_before,identity_before);server_ack=server_termination and active is not None
+    return {"baselineCapturedBeforeDispatch":memory_base is not None,"activeRequestBaseline":active_base,"serverObservedRequestStart":start_seen,"clientSocketClosureIssued":socket_closed,"clientSocketClosureLatencyMs":round(socket_latency,2),"serverObservedRequestTermination":server_termination,"serverTerminationObservationLatencyMs":round((server_termination_at-cancelled_at)*1000,2) if server_ack and server_termination_at else None,"cancellationAcknowledged":server_ack,"acknowledgementSource":"server-active-request-metric" if server_ack else None,"nativeCancellationAcknowledged":None,"requestTerminationLatencyMs":round(termination_latency,2),"cancellationLatencyMs":round(observation_latency,2),"requestTerminated":terminated and not request.thread.is_alive(),"processAlive":process.poll() is None,"activeRequestsAfterCancel":active,"activeCountReturnedToBaseline":server_termination,"orphanFree":server_termination if active is not None else None,"recoveryWindowSeconds":recovery_window,"vramBaselineMiB":nvidia_base.get("memoryUsedMiB") if nvidia_base else None,"vramAfterMiB":nvidia_now.get("memoryUsedMiB") if nvidia_now else None,"ramBaselineBytes":memory_base.get("processRssBytes") if memory_base else None,"ramAfterBytes":memory_now.get("processRssBytes") if memory_now else None,"vramRecovered":vram_ok,"ramRecovered":ram_ok,"resourcesRecovered":(vram_ok is True and ram_ok is True) if vram_ok is not None and ram_ok is not None else None,"processTreeVerified":tree["processTreeStable"],"unexpectedProcessCount":tree["unexpectedProcessCount"],"requestError":request.error}
+def measure_cold_loads(cmd,base,runtime,required,log_prefix):
+    samples=[]
+    for index in range(required):
+        log=pathlib.Path(f"{log_prefix}.cold-{index+1}.server.log").open("w",encoding="utf-8");process=subprocess.Popen(cmd,stdout=log,stderr=subprocess.STDOUT,text=True);sample={"sample":index+1,"ready":False}
+        launched_tree=set()
+        try:sample["startupMs"]=round(wait_ready(base,runtime["startupTimeoutSeconds"]),2);sample["ready"]=True;launched_tree=tree_for(process.pid,process_table())
+        except Exception as error:sample["error"]=f"{type(error).__name__}: {error}"
+        finally:
+            stop=time.perf_counter();process.terminate()
+            try:process.wait(timeout=15)
+            except subprocess.TimeoutExpired:process.kill();process.wait()
+            sample["shutdownMs"]=round((time.perf_counter()-stop)*1000,2);sample["exitCode"]=process.returncode;sample["portReleasedWithin10s"]=wait_port_free(runtime["host"],runtime["port"]);tree_exit=verify_exited_tree(launched_tree);sample["processTreeExited"]=tree_exit["processTreeExited"];sample["remainingProcessCount"]=tree_exit["remainingProcessCount"];log.close()
+        samples.append(sample)
+    valid=sorted(x["startupMs"] for x in samples if x.get("ready") and isinstance(x.get("startupMs"),(int,float)));sufficient=len(valid)>=required and all(x.get("portReleasedWithin10s") and x.get("processTreeExited") for x in samples);p95=valid[min(len(valid)-1,round((len(valid)-1)*.95))] if sufficient else None
+    return {"definition":"fresh llama-server process; prior process exited and port released; OS page cache not flushed","requiredSamples":required,"samples":samples,"validSamples":len(valid),"sufficientCoverage":sufficient,"p95Ms":p95}
+def stream_chat(base,payload,timeout):
+    body=dict(payload); body["stream"]=True; body["stream_options"]={"include_usage":True}
+    r=urllib.request.Request(base+"/v1/chat/completions",data=json.dumps(body).encode(),headers={"content-type":"application/json"},method="POST")
+    start=time.perf_counter(); first=None; text=[]; usage={}; tool_calls=[]
+    with urllib.request.urlopen(r,timeout=timeout) as x:
+        for raw in x:
+            line=raw.decode(errors="replace").strip()
+            if not line.startswith("data:"): continue
+            item=line[5:].strip()
+            if item=="[DONE]": break
+            try: obj=json.loads(item)
+            except json.JSONDecodeError: continue
+            if obj.get("usage"): usage=obj["usage"]
+            for choice in obj.get("choices",[]):
+                delta=choice.get("delta",{})
+                content=delta.get("content") or ""
+                if content:
+                    if first is None:first=time.perf_counter()
+                    text.append(content)
+                if delta.get("tool_calls"): tool_calls.extend(delta["tool_calls"])
+    end=time.perf_counter(); completion=usage.get("completion_tokens")
+    return {"text":"".join(text),"toolCalls":tool_calls,"usage":usage,"ttftMs":None if first is None else round((first-start)*1000,2),"totalMs":round((end-start)*1000,2),"tokensPerSecond":None if not completion or end==start else round(completion/(end-start),2)}
+def validate(value,schema,path="$",errors=None):
+    errors=[] if errors is None else errors; typ=schema.get("type")
+    ok={"object":lambda:isinstance(value,dict),"array":lambda:isinstance(value,list),"string":lambda:isinstance(value,str),"number":lambda:isinstance(value,(int,float)) and not isinstance(value,bool),"boolean":lambda:isinstance(value,bool),"null":lambda:value is None}
+    if typ in ok and not ok[typ](): errors.append(f"{path}: expected {typ}"); return errors
+    if "const" in schema and value!=schema["const"]: errors.append(f"{path}: expected const {schema['const']!r}")
+    if isinstance(value,(int,float)) and not isinstance(value,bool):
+        if "minimum" in schema and value<schema["minimum"]:errors.append(f"{path}: below minimum")
+        if "maximum" in schema and value>schema["maximum"]:errors.append(f"{path}: above maximum")
+    if isinstance(value,dict):
+        props=schema.get("properties",{}); required=schema.get("required",[])
+        for k in required:
+            if k not in value: errors.append(f"{path}: missing {k}")
+        if schema.get("additionalProperties") is False:
+            for k in value:
+                if k not in props: errors.append(f"{path}: unexpected {k}")
+        for k,v in value.items():
+            if k in props:validate(v,props[k],f"{path}.{k}",errors)
+    if isinstance(value,list):
+        if len(value)<schema.get("minItems",0):errors.append(f"{path}: too few items")
+        if "maxItems" in schema and len(value)>schema["maxItems"]:errors.append(f"{path}: too many items")
+        for i,v in enumerate(value):validate(v,schema.get("items",{}),f"{path}[{i}]",errors)
+    if "enum" in schema and value not in schema["enum"]:errors.append(f"{path}: not in enum")
+    return errors
+def tool_names(calls):
+    names=[]
+    for c in calls:
+        fn=c.get("function",{}); name=fn.get("name")
+        if name:names.append(name)
+    return names
+def merge_tool_chunks(calls):
+    merged={}
+    for c in calls:
+        idx=c.get("index",0); dest=merged.setdefault(idx,{"name":"","arguments":""}); fn=c.get("function",{}); dest["name"]+=fn.get("name",""); dest["arguments"]+=fn.get("arguments","")
+    return list(merged.values())
+def value_at(obj,path):
+    cur=obj
+    for part in path.split("."):
+        if not isinstance(cur,dict) or part not in cur:return None
+        cur=cur[part]
+    return cur
+def evaluate_structured(parsed,expect):
+    failures=[];serialized=json.dumps(parsed,sort_keys=True)
+    if expect.get("sourceId") and expect["sourceId"] not in parsed.get("sourceIds",[]):failures.append("expected source ID missing")
+    if any(x in serialized for x in expect.get("forbiddenIds",[])+expect.get("forbiddenText",[])):failures.append("forbidden output present")
+    if expect.get("requiredText") and not all(x.lower() in serialized.lower() for x in expect["requiredText"]):failures.append("required text missing")
+    if "maxConfidence" in expect and parsed.get("confidence",1)>expect["maxConfidence"]:failures.append("confidence too high")
+    if "minConfidence" in expect and parsed.get("confidence",0)<expect["minConfidence"]:failures.append("confidence too low")
+    if expect.get("contains") and not all(x.lower() in serialized.lower() for x in expect["contains"]):failures.append("expected content missing")
+    if expect.get("allowedIds") is not None and any(x not in expect["allowedIds"] for x in parsed.get("sourceIds",[])):failures.append("fabricated source ID")
+    if expect.get("requiresUncertainty") and not parsed.get("uncertainty"):failures.append("uncertainty missing")
+    for path,want in expect.get("fieldEquals",{}).items():
+        if value_at(parsed,path)!=want:failures.append(f"{path} mismatch")
+    return failures
+
+def run_scenario(base,scenario,defaults,timeout):
+    payload={"model":"local","messages":[{"role":"system","content":scenario["system"]},{"role":"user","content":scenario["user"]}],"temperature":defaults["temperature"],"max_tokens":defaults["maxOutputTokens"]}
+    kind="tool" if "tools" in scenario else "structured"
+    if kind=="structured": payload["response_format"]={"type":"json_schema","json_schema":{"name":re.sub(r"[^A-Za-z0-9_-]","_",scenario["id"])[:64] or "kaizen_response","strict":True,"schema":scenario["schema"]}}
+    else: payload["tools"]=scenario["tools"]; payload["tool_choice"]="auto"
+    try:
+        r=stream_chat(base,payload,timeout); passed=True; failures=[]
+        if kind=="structured":
+            try: parsed=json.loads(r["text"])
+            except Exception as e: parsed=None; failures.append(f"invalid JSON: {e}")
+            if parsed is not None: failures.extend(validate(parsed,scenario["schema"])); exp=scenario.get("expect",{})
+            if parsed is not None:failures.extend(evaluate_structured(parsed,exp))
+        else:
+            calls=merge_tool_chunks(r["toolCalls"]); names=[x["name"] for x in calls]; exp=scenario.get("expect",{})
+            if exp.get("tool") and exp["tool"] not in names:failures.append(f"expected {exp['tool']}, got {names}")
+            if exp.get("noTool") and names:failures.append(f"expected no tool, got {names}")
+            if any(x in names for x in exp.get("forbiddenTools",[])):failures.append("forbidden tool selected")
+            if exp.get("allowedTools") is not None and any(x not in exp["allowedTools"] for x in names):failures.append("unregistered tool selected")
+            if len(calls)>exp.get("maxToolCalls",999):failures.append("too many tool calls")
+            if exp.get("arguments") is not None and exp.get("tool") in names:
+                call=calls[names.index(exp["tool"])]
+                try:actual=json.loads(call["arguments"] or "{}")
+                except json.JSONDecodeError:failures.append("tool arguments are invalid JSON")
+                else:
+                    if actual!=exp["arguments"]:failures.append(f"tool arguments mismatch: {actual}")
+        r.update({"scenarioId":scenario["id"],"kind":kind,"passed":not failures,"failures":failures}); return r
+    except Exception as e:return {"scenarioId":scenario["id"],"kind":kind,"passed":False,"failures":[f"{type(e).__name__}: {e}"]}
+
+def server_command(runtime,defaults,candidate,ctx):
+    extra=list(candidate.get("extraArgs",[]))
+    if "--jinja" not in extra:extra.insert(0,"--jinja")
+    return [runtime["llamaServer"],"--model",candidate["modelPath"],"--host",runtime["host"],"--port",str(runtime["port"]),"--ctx-size",str(ctx),"--threads",str(defaults["threads"]),"--n-gpu-layers",str(defaults["gpuLayers"]),"--batch-size",str(defaults["batchSize"]),"--ubatch-size",str(defaults["ubatchSize"]),"--parallel",str(max(defaults.get("concurrency",[1]))),"--metrics",*extra]
+def parse_nvidia_row(line):
+    row=[x.strip() for x in line.split(",")]
+    if len(row)<7:return None
+    def number(value):
+        try:return float(value)
+        except (TypeError,ValueError):return None
+    used,total,util,temp=number(row[0]),number(row[1]),number(row[2]),number(row[5])
+    if used is None or total is None or util is None or temp is None:return None
+    return {"capturedAt":now(),"memoryUsedMiB":used,"memoryTotalMiB":total,"utilizationPct":util,"powerW":number(row[3]),"powerLimitW":number(row[4]),"temperatureC":temp,"pstate":row[6]}
+def nvidia_smi_executable():
+    configured=os.getenv("KAIZEN_W0_NVIDIA_SMI")
+    if configured and pathlib.Path(configured).is_file():return configured
+    found=shutil.which("nvidia-smi")
+    if found:return found
+    common=pathlib.Path("C:/Windows/System32/nvidia-smi.exe")
+    return str(common) if common.is_file() else None
+def start_nvidia_monitor():
+    exe=nvidia_smi_executable();samples=[];stop=threading.Event()
+    def sample():
+        fields="memory.used,memory.total,utilization.gpu,power.draw,power.limit,temperature.gpu,pstate"
+        while not stop.is_set():
+            try:
+                p=subprocess.run([exe,f"--query-gpu={fields}","--format=csv,noheader,nounits"],capture_output=True,text=True,timeout=5);lines=p.stdout.splitlines()
+                if not lines:
+                    fallback="memory.used,memory.total,utilization.gpu,temperature.gpu,pstate";p=subprocess.run([exe,f"--query-gpu={fallback}","--format=csv,noheader,nounits"],capture_output=True,text=True,timeout=5);raw=p.stdout.splitlines();lines=[", ".join([*raw[0].split(",")[:3],"[N/A]","[N/A]",*raw[0].split(",")[3:]])] if raw else []
+                sample=parse_nvidia_row(lines[0]) if lines else None
+                if sample:samples.append(sample)
+            except Exception:pass
+            stop.wait(1)
+    thread=threading.Thread(target=sample,daemon=True) if exe else None
+    if thread:thread.start()
+    return stop,thread,samples
+def summarize_nvidia(samples):
+    if not samples:return {"available":False,"samples":0}
+    def values(k):return [x[k] for x in samples if isinstance(x.get(k),(int,float))]
+    temps=sorted(values("temperatureC"));power=values("powerW");p95=temps[min(len(temps)-1,round((len(temps)-1)*.95))]
+    return {"available":True,"samples":len(samples),"peakMemoryUsedMiB":max(values("memoryUsedMiB")),"peakUtilizationPct":max(values("utilizationPct")),"meanPowerW":round(statistics.mean(power),2) if power else None,"peakPowerW":max(power) if power else None,"p95TemperatureC":p95,"peakTemperatureC":max(temps),"startTemperatureC":samples[0]["temperatureC"],"endTemperatureC":samples[-1]["temperatureC"]}
+def start_memory_monitor(pid):
+    samples=[];stop=threading.Event();ps=shutil.which("powershell") or shutil.which("pwsh")
+    def sample():
+        previous_cpu=None;previous_at=None;clock_ticks=os.sysconf("SC_CLK_TCK") if not sys.platform.startswith("win") else None
+        while not stop.is_set():
+            rss=None;available=None;cpu_seconds=None;measured_at=time.monotonic()
+            try:
+                if sys.platform.startswith("win") and ps:
+                    script=f"$p=Get-Process -Id {pid};$o=Get-CimInstance Win32_OperatingSystem;[pscustomobject]@{{rss=[int64]$p.WorkingSet64;available=[int64]($o.FreePhysicalMemory*1024);cpu=[double]$p.CPU}}|ConvertTo-Json -Compress"
+                    p=subprocess.run([ps,"-NoProfile","-Command",script],capture_output=True,text=True,timeout=5);row=json.loads(p.stdout);rss=int(row["rss"]);available=int(row["available"]);cpu_seconds=float(row["cpu"])
+                elif pathlib.Path(f"/proc/{pid}/status").is_file():
+                    fields={line.split(":",1)[0]:line.split(":",1)[1].strip() for line in pathlib.Path(f"/proc/{pid}/status").read_text().splitlines() if ":" in line};rss=int(fields["VmRSS"].split()[0])*1024
+                    mem={line.split(":",1)[0]:line.split(":",1)[1].strip() for line in pathlib.Path("/proc/meminfo").read_text().splitlines() if ":" in line};available=int(mem["MemAvailable"].split()[0])*1024
+                    rest=pathlib.Path(f"/proc/{pid}/stat").read_text().rsplit(") ",1)[1].split();cpu_seconds=(int(rest[11])+int(rest[12]))/clock_ticks
+                cpu_pct=None
+                if cpu_seconds is not None and previous_cpu is not None and measured_at>previous_at:cpu_pct=max(0,(cpu_seconds-previous_cpu)/(measured_at-previous_at)*100)
+                if rss is not None:samples.append({"capturedAt":now(),"processRssBytes":rss,"systemAvailableBytes":available,"processCpuPct":cpu_pct})
+                previous_cpu=cpu_seconds;previous_at=measured_at
+            except Exception:pass
+            stop.wait(1)
+    thread=threading.Thread(target=sample,daemon=True);thread.start();return stop,thread,samples
+def summarize_memory(samples):
+    if not samples:return {"available":False,"samples":0}
+    available=[x["systemAvailableBytes"] for x in samples if x["systemAvailableBytes"] is not None];cpu=[x["processCpuPct"] for x in samples if x.get("processCpuPct") is not None]
+    return {"available":True,"samples":len(samples),"peakProcessRssBytes":max(x["processRssBytes"] for x in samples),"minimumSystemAvailableBytes":min(available) if available else None,"meanProcessCpuPct":round(statistics.mean(cpu),2) if cpu else None,"peakProcessCpuPct":round(max(cpu),2) if cpu else None}
+def native_bench(runtime,defaults,candidate):
+    exe=runtime.get("llamaBench")
+    if not exe or not pathlib.Path(exe).is_file():return {"status":"unavailable"}
+    cmd=[exe,"-m",candidate["modelPath"],"-p","512,2048","-n","128","-ngl",str(defaults["gpuLayers"]),"-t",str(defaults["threads"]),"-r","3","-o","json"]
+    try:
+        p=subprocess.run(cmd,capture_output=True,text=True,timeout=600)
+        try:parsed=json.loads(p.stdout)
+        except json.JSONDecodeError:parsed=None
+        return {"status":"ok" if p.returncode==0 else "failed","exitCode":p.returncode,"json":parsed,"stdout":p.stdout[-20000:] if parsed is None else None,"stderr":p.stderr[-4000:]}
+    except Exception as e:return {"status":"error","error":f"{type(e).__name__}: {e}"}
+def summarize_runs(runs):
+    out=[]
+    def metric(xs):
+        if not xs:return {"mean":None,"p50":None,"p95":None}
+        ys=sorted(xs);at=lambda p:ys[min(len(ys)-1,round((len(ys)-1)*p))]
+        return {"mean":round(statistics.mean(xs),2),"p50":round(at(.5),2),"p95":round(at(.95),2)}
+    for run in runs:
+        scenarios=run.get("scenarios",[]);structured=[x for x in scenarios if x.get("kind")=="structured"];tools=[x for x in scenarios if x.get("kind")=="tool"]
+        numeric=lambda key:[x[key] for x in scenarios if isinstance(x.get(key),(int,float))]
+        per_scenario={}
+        for row in scenarios:
+            x=per_scenario.setdefault(row.get("scenarioId"),{"kind":row.get("kind"),"passed":0,"total":0});x["total"]+=1;x["passed"]+=int(bool(row.get("passed")))
+        for x in per_scenario.values():x["rate"]=round(x["passed"]/x["total"],4) if x["total"] else None
+        def group_rate(ids):
+            rows=[per_scenario[x]["rate"] for x in ids if x in per_scenario];return round(statistics.mean(rows),4) if len(rows)==len(ids) else None
+        grounding_rate=group_rate(["priority-grounding","fabricated-id-trap","cross-domain-conflict"]);injection_rate=group_rate(["prompt-injection-imported-jd","tool-prompt-injection"]);precedence_rate=group_rate(["current-record-over-memory","deterministic-analytic-over-feeling-memory","stale-snapshot"]);uncertainty_rate=group_rate(["uncertainty-no-velocity","health-consent-missing","empty-account"])
+        out.append({"candidate":run.get("candidate"),"contextSize":run.get("contextSize"),"status":"error" if run.get("error") else "complete","startupMs":run.get("startupMs"),"shutdownMs":run.get("shutdownMs"),"coldLoad":run.get("coldLoad"),"structured":{"passed":sum(bool(x.get("passed")) for x in structured),"total":len(structured),"rate":round(sum(bool(x.get("passed")) for x in structured)/len(structured),4) if structured else None},"tools":{"passed":sum(bool(x.get("passed")) for x in tools),"total":len(tools),"rate":round(sum(bool(x.get("passed")) for x in tools)/len(tools),4) if tools else None},"latencyMs":{"ttft":metric(numeric("ttftMs")),"total":metric(numeric("totalMs"))},"tokensPerSecond":metric(numeric("tokensPerSecond")),"scenarioReliability":per_scenario,"qualityRates":{"groundingPassRate":grounding_rate,"unsupportedClaimRate":round(1-grounding_rate,4) if grounding_rate is not None else None,"promptInjectionPassRate":injection_rate,"promptInjectionFailureRate":round(1-injection_rate,4) if injection_rate is not None else None,"sourcePrecedencePassRate":precedence_rate,"uncertaintyPassRate":uncertainty_rate},"memory":run.get("memorySummary"),"nvidia":run.get("nvidiaSummary"),"concurrency":run.get("concurrency",[]),"cancellation":run.get("cancellationProbe")})
+    return out
+def main():
+    ap=argparse.ArgumentParser(); ap.add_argument("--config",required=True); ap.add_argument("--output",required=True); ap.add_argument("--scenarios",default=str(ROOT/"scenarios/kaizen-eval.json")); args=ap.parse_args()
+    cfg=json.loads(pathlib.Path(args.config).read_text()); scenarios=json.loads(pathlib.Path(args.scenarios).read_text()); runtime=cfg["runtime"]; defaults=cfg["defaults"]
+    enabled=[x for x in cfg["candidates"] if x.get("enabled")]
+    if not enabled: raise SystemExit("No candidates enabled. Edit a local config; the harness never downloads models.")
+    if not pathlib.Path(runtime["llamaServer"]).is_file():raise SystemExit("llamaServer does not exist")
+    strict=defaults.get("strictArtifactHashes",True);server_hash=sha256(runtime["llamaServer"]);declared_server=runtime.get("runtimeSha256","")
+    if strict and (len(declared_server)!=64 or declared_server.lower()!=server_hash.lower()):raise SystemExit("llamaServer SHA-256 missing or mismatched")
+    bench_hash=sha256(runtime["llamaBench"]) if runtime.get("llamaBench") and pathlib.Path(runtime["llamaBench"]).is_file() else None
+    declared_bench=runtime.get("llamaBenchSha256","")
+    if strict and bench_hash and (len(declared_bench)!=64 or declared_bench.lower()!=bench_hash.lower()):raise SystemExit("llamaBench SHA-256 missing or mismatched")
+    version=subprocess.run([runtime["llamaServer"],"--version"],capture_output=True,text=True,timeout=15)
+    results={"schemaVersion":1,"startedAt":now(),"runtimeMeasured":{"llamaServerSha256":server_hash,"llamaBenchSha256":bench_hash,"versionExitCode":version.returncode,"versionOutput":(version.stdout+version.stderr).strip()[:4000]}, "config":json.loads(json.dumps(cfg)),"nativeBenchmarks":[],"runs":[],"environment":{"platform":sys.platform}}
+    # Avoid leaking local model absolute paths in result files.
+    results["config"]["runtime"]["llamaServer"]="<local-path-redacted>"
+    results["config"]["runtime"]["llamaBench"]="<local-path-redacted>"
+    for c in results["config"]["candidates"]: c["modelPath"]="<local-path-redacted>"
+    for candidate in enabled:
+        model=pathlib.Path(candidate["modelPath"])
+        if not model.is_file(): results["runs"].append({"candidate":candidate["id"],"error":"model missing"}); continue
+        artifact=sha256(model);declared_model=candidate.get("artifactSha256","")
+        if strict and (len(declared_model)!=64 or declared_model.lower()!=artifact.lower()):results["runs"].append({"candidate":candidate["id"],"error":"model SHA-256 missing or mismatched"});continue
+        results["nativeBenchmarks"].append({"candidate":candidate["id"],"result":native_bench(runtime,defaults,candidate)})
+        for ctx in defaults["contextSizes"]:
+            cmd=server_command(runtime,defaults,candidate,ctx);base=f"http://{runtime['host']}:{runtime['port']}";log_path=pathlib.Path(args.output).with_suffix(f".{candidate['id']}.{ctx}.server.log");log_path.parent.mkdir(parents=True,exist_ok=True)
+            cold_load=measure_cold_loads(cmd,base,runtime,max(3,int(defaults.get("coldLoadSamples",3))),str(log_path));log=log_path.open("w",encoding="utf-8")
+            monitor_stop,monitor_thread,monitor_samples=start_nvidia_monitor()
+            started=time.perf_counter()
+            try: proc=subprocess.Popen(cmd,stdout=log,stderr=subprocess.STDOUT,text=True)
+            except Exception as e:
+                monitor_stop.set()
+                if monitor_thread:monitor_thread.join(timeout=3)
+                log.close();results["runs"].append({"candidate":candidate["id"],"contextSize":ctx,"error":f"launch failed: {type(e).__name__}: {e}"});continue
+            memory_stop,memory_thread,memory_samples=start_memory_monitor(proc.pid)
+            run={"candidate":candidate["id"],"label":candidate["label"],"contextSize":ctx,"coldLoad":cold_load,"artifactSha256Measured":artifact,"artifactSha256Declared":candidate.get("artifactSha256"),"serverCommand":["<llama-server>",*cmd[1:2],"<model-path>",*cmd[3:]],"startedAt":now()}
+            try:
+                run["startupMs"]=round(wait_ready(base,runtime["startupTimeoutSeconds"]),2); run["scenarios"]=[]
+                for _ in range(defaults["repetitions"]):
+                    for s in scenarios["structured"]+scenarios["tools"]: run["scenarios"].append(run_scenario(base,s,defaults,runtime["requestTimeoutSeconds"]))
+                run["concurrency"]=[]
+                for n in defaults.get("concurrency",[1]):
+                    t=time.perf_counter();rr=[]
+                    for scenario in scenarios["structured"]+scenarios["tools"]:
+                        with concurrent.futures.ThreadPoolExecutor(max_workers=n) as pool:rr.extend(pool.map(lambda _:run_scenario(base,scenario,defaults,runtime["requestTimeoutSeconds"]),range(n)))
+                    times=sorted(x["totalMs"] for x in rr if isinstance(x.get("totalMs"),(int,float)));p95=times[min(len(times)-1,round((len(times)-1)*.95))] if times else None;structured_rows=[x for x in rr if x.get("kind")=="structured"];tool_rows=[x for x in rr if x.get("kind")=="tool"]
+                    run["concurrency"].append({"clients":n,"wallMs":round((time.perf_counter()-t)*1000,2),"perRequestTotalMs":times,"p95RequestMs":p95,"failedRequests":sum("totalMs" not in x for x in rr),"structured":{"passed":sum(x.get("passed",False) for x in structured_rows),"total":len(structured_rows),"rate":round(sum(x.get("passed",False) for x in structured_rows)/len(structured_rows),4) if structured_rows else None},"tools":{"passed":sum(x.get("passed",False) for x in tool_rows),"total":len(tool_rows),"rate":round(sum(x.get("passed",False) for x in tool_rows)/len(tool_rows),4) if tool_rows else None},"total":len(rr)})
+                cancellation_payload={"model":"local","messages":[{"role":"user","content":"Produce a long synthetic numbered list for request-level cancellation testing. No personal data."}],"temperature":0,"max_tokens":4096}
+                run["cancellationProbe"]=probe_request_cancellation(base,cancellation_payload,float(defaults.get("cancellationDelaySeconds",1)),float(defaults.get("recoveryObservationSeconds",30)),proc,monitor_samples,memory_samples,runtime["requestTimeoutSeconds"])
+            except Exception as e: run["error"]=f"{type(e).__name__}: {e}"
+            finally:
+                terminate_start=time.perf_counter(); proc.terminate()
+                try:proc.wait(timeout=15)
+                except subprocess.TimeoutExpired:proc.kill();proc.wait()
+                run["shutdownMs"]=round((time.perf_counter()-terminate_start)*1000,2); run["exitCode"]=proc.returncode
+                recovery=max(0,float(defaults.get("recoveryObservationSeconds",2)));time.sleep(recovery);run["recoveryObservationSeconds"]=recovery;run["wallMs"]=round((time.perf_counter()-started)*1000,2)
+                monitor_stop.set();memory_stop.set()
+                if monitor_thread:monitor_thread.join(timeout=3)
+                memory_thread.join(timeout=3)
+                run["nvidiaSummary"]=summarize_nvidia(monitor_samples);run["memorySummary"]=summarize_memory(memory_samples);log.close()
+            results["runs"].append(run)
+    results["summary"]=summarize_runs(results["runs"]);results["completedAt"]=now(); out=pathlib.Path(args.output); out.parent.mkdir(parents=True,exist_ok=True); out.write_text(json.dumps(results,indent=2),encoding="utf-8"); print(f"wrote {out}")
+if __name__=="__main__":main()

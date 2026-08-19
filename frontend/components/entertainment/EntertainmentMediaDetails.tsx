@@ -1,4 +1,5 @@
 "use client";
+/** AFTERGLOW interface for entertainment media details workflows. */
 import { useMemo, useState } from "react";
 import { Bell, BookOpen, Check, Clock3, Headphones, Library, Mic2, MonitorPlay, Plus, Star } from "lucide-react";
 import type { EntertainmentItem, SeasonState, VolumeState } from "../../lib/entertainmentTypes";

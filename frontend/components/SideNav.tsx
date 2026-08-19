@@ -1,4 +1,5 @@
 "use client";
+/** Desktop navigation and completion summary for Home core sections. */
 import { motion } from "framer-motion";
 import {
   LayoutDashboard,

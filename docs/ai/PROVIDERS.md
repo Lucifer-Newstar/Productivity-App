@@ -118,6 +118,12 @@ interface ProviderRegistry {
 
 Profiles refer to configuration, not hard-coded model names.
 
+### Current application registry
+
+**IMPLEMENTED BASELINE:** after Wave 0 and I1 both closed with no selected model, application `ProviderRegistry` resolves only the deterministic provider. It advertises no native tool calling, rejects tool-bearing generation requests, and is the default with no environment configuration. `KAIZEN_AI_PROVIDER=llama` and all `KAIZEN_LLAMA_*` application settings fail closed.
+
+`LlamaCppProvider` remains isolated protocol-test/evaluation code. It is not reachable from the server/gateway application composition root. Re-enabling any model provider requires a new reviewed authorization; no environment variable can bypass this boundary.
+
 ## Runtime selection
 
 - **LOCAL:** initial and locked target mode.

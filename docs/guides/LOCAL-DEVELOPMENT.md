@@ -40,6 +40,18 @@ The API is in-memory and resets when the process restarts. Set `KAIZEN_API_KEY` 
 KAIZEN_API_KEY=development-only-secret npm run dev
 ```
 
+## Run the Intelligence Engine v0.1
+
+For a deterministic end-to-end development flow:
+
+```bash
+cd ai
+npm ci
+npm run dev
+```
+
+The local console prints a one-time pairing code. Enter it in the Home dashboard's Kaizen Intelligence panel. For a verified llama.cpp candidate, configure the loopback variables in [`CONFIGURATION.md`](CONFIGURATION.md); Kaizen never downloads a model.
+
 ## Production-mode local run
 
 ```bash
@@ -54,14 +66,7 @@ KAIZEN_API_KEY=development-only-secret npm start
 
 ## Git identity
 
-Repository commits use:
-
-```bash
-git config user.name "Lucifer-Newstar"
-git config user.email "navin.jairam@gmail.com"
-```
-
-The sandbox does not persist `.git/config` between every environment restoration, so verify identity before committing.
+Configure the repository-owner identity locally and verify it before committing. Do not place personal email addresses, tokens or credentials in tracked setup documentation.
 
 ## Common problems
 

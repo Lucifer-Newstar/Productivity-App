@@ -29,6 +29,7 @@ import {
   Database, RefreshCcw,
 } from "lucide-react";
 import { useStore } from "../../lib/store";
+import { DEMO_TOOLS_ENABLED } from "../../lib/demoMode";
 import { assertImportFileSize, csvCell } from "../../lib/security";
 import { weeklyStats, frequencyByDay, timePreference, consistencyScore, shouldDeload, goalProgress } from "../../lib/workoutAnalytics";
 import CelebrationModal from "./CelebrationModal";
@@ -396,9 +397,8 @@ export default function WorkoutGlobal() {
         </div>
       </div>
 
-      {/* QA / demo data card — quickly load rich mock history so every chart/
-          metric card has content to display during QA or demos. */}
-      <div className="card flex items-center justify-between gap-3 flex-wrap border-violet-500/30 bg-violet-500/5">
+      {/* QA / demo data card — explicitly excluded from production builds. */}
+      {DEMO_TOOLS_ENABLED&&<div className="card flex items-center justify-between gap-3 flex-wrap border-violet-500/30 bg-violet-500/5">
         <div>
           <h4 className="font-semibold text-white text-sm flex items-center gap-2"><Database size={16} className="text-violet-400" /> Demo / QA Data</h4>
           <p className="text-xs text-gray-400 mt-0.5">
@@ -425,7 +425,7 @@ export default function WorkoutGlobal() {
             <RefreshCcw size={13} /> Reset
           </button>
         </div>
-      </div>
+      </div>}
 
       <div className="grid md:grid-cols-2 gap-4">
         {/* Year heatmap */}

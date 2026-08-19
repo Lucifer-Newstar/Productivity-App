@@ -1,6 +1,8 @@
 # Kaizen documentation
 
-_Last synchronized on 2026-08-17 from `main`._
+_Last synchronized on 2026-08-19 from the persistent `ai` branch._
+
+Crash/handoff entry point: [`PROJECT-CONTINUITY-BLUEPRINT.md`](PROJECT-CONTINUITY-BLUEPRINT.md).
 
 Kaizen is a local-first productivity and life OS built as one Next.js application with five dedicated spaces. The frontend uses React Context state slices persisted under separate browser-storage keys; the Express service is an optional in-memory reference/sync API and is not required for normal frontend use.
 
@@ -12,14 +14,14 @@ Kaizen is a local-first productivity and life OS built as one Next.js applicatio
 | Workout | `/workout/*` | Full-screen imperial training OS | Shipped; 12 routes |
 | Projects / Forge | `/projects/*` | Full-screen Foundry/Drafting Room | v1.0 shipped; 5 routes, 31 Smelter tabs |
 | Career | `/career/*` | Full-screen Night HUD/Blueprint | Shipped; 10 routes including redirect |
-| Health / VITAL-SIGN | `/health/*` | Full-screen medical OS | v1.1 shipped; 10 routes, 216✅/2🟡/63 deferred |
-| Entertainment / AFTERGLOW | `/entertainment` | Full-screen cinema OS | v1.0 Waves 0–9; 94✅/2🟡/0❌ |
+| Health / VITAL-SIGN | `/health/*` | Full-screen medical OS | v1.1 shipped; 10 routes; detailed audit maintained in space docs |
+| Entertainment / AFTERGLOW | `/entertainment` | Full-screen cinema OS | v1.0 Waves 0–9 shipped; detailed audit maintained in space docs |
 
 A global local-first NotificationCenter is mounted across Home and every full-screen space, with section/category controls and an initial high-value rule catalog.
 
-The proposed **Kaizen Intelligence Engine** has passed architecture review and is in Wave 0 preparation. No production AI implementation, permanent model, vector backend or AI route exists yet. See [`ai/README.md`](ai/README.md) for the consolidated architecture package and review status.
+**Kaizen Intelligence v0.1** now provides a provider-neutral local engine, paired loopback gateway, read-only `get_today@1.0` Domain Bridge and source-linked Home Intelligence panel. No permanent model/vector backend, Health context, memory or write tool is selected. See [`ai/README.md`](ai/README.md).
 
-Current production verification: **39/39 user routes return HTTP 200**, five same-origin Entertainment provider routes are dynamic, all remaining pages are statically prerendered, TypeScript and ESLint pass, and both dependency audits are clean.
+Current production verification: **39/39 user routes return HTTP 200**, five Entertainment provider routes plus the fixed AI proxy are dynamic, all user pages remain statically prerendered, TypeScript and ESLint pass, and dependency audits are clean.
 
 ## Documentation map
 
@@ -29,7 +31,7 @@ Current production verification: **39/39 user routes return HTTP 200**, five sam
 |---|---|
 | [`architecture/ARCHITECTURE.md`](architecture/ARCHITECTURE.md) | Routers, providers, shells, state, rendering and system boundaries |
 | [`architecture/DATA-MODEL.md`](architecture/DATA-MODEL.md) | State slices, major entities, relationships and migrations |
-| [`reference/API.md`](reference/API.md) | Express resources and Next.js Entertainment provider routes |
+| [`reference/API.md`](reference/API.md) | Express resources, fixed provider routes and Intelligence Engine gateway |
 | [`reference/FEATURES.md`](reference/FEATURES.md) | Cross-space feature audit and links to detailed specifications |
 | [`reference/ALGORITHMS.md`](reference/ALGORITHMS.md) | Workout, Forge and Health formulas |
 | [`security/SECURITY.md`](security/SECURITY.md) | Threat model, secure deployment and verification commands |
@@ -39,18 +41,46 @@ Current production verification: **39/39 user routes return HTTP 200**, five sam
 | [`reports/UI-REFRESH-2026-08-17.md`](reports/UI-REFRESH-2026-08-17.md) | Icon, typography, theme and motion foundation |
 | [`reports/HOME-COMMAND-CENTER-2026-08-17.md`](reports/HOME-COMMAND-CENTER-2026-08-17.md) | Cross-space home intelligence redesign |
 | [`reports/AI-ARCHITECTURE-GATE-2026-08-17.md`](reports/AI-ARCHITECTURE-GATE-2026-08-17.md) | Intelligence Engine architecture package and review boundary |
+| [`reports/AI-V0.1.1-ARCHITECTURE-2026-08-19.md`](reports/AI-V0.1.1-ARCHITECTURE-2026-08-19.md) | Deterministic Core Today routing contracts, gates and synthetic tests |
+| [`reports/AI-V0.1.1-IMPLEMENTATION-2026-08-19.md`](reports/AI-V0.1.1-IMPLEMENTATION-2026-08-19.md) | Trusted router, zero-tool runtime, security tests and deterministic/mock evaluation |
+| [`reports/AI-V0.1.1-ACCEPTANCE-AND-MODEL-EVAL-DESIGN-2026-08-19.md`](reports/AI-V0.1.1-ACCEPTANCE-AND-MODEL-EVAL-DESIGN-2026-08-19.md) | Live acceptance and frozen interpreter-model evaluation design |
+| [`reports/AI-V0.1.1-MODEL-HARNESS-2026-08-19.md`](reports/AI-V0.1.1-MODEL-HARNESS-2026-08-19.md) | Frozen corpus, disabled production-path runner and privacy-safe scoring harness |
+| [`reports/AI-V0.1.1-PREFLIGHT-AUTHORIZATION-2026-08-19.md`](reports/AI-V0.1.1-PREFLIGHT-AUTHORIZATION-2026-08-19.md) | Preflight-only target authorization and hard full/operations block |
+| [`reports/AI-V0.1.1-PREFLIGHT-INTAKE-HASH-FIX-2026-08-19.md`](reports/AI-V0.1.1-PREFLIGHT-INTAKE-HASH-FIX-2026-08-19.md) | No-inference Qwen intake failure and streaming large-artifact hash fix |
+| [`reports/AI-V0.1.1-PREFLIGHT-ATTACHMENT-MISMATCH-2026-08-19.md`](reports/AI-V0.1.1-PREFLIGHT-ATTACHMENT-MISMATCH-2026-08-19.md) | Legacy attachment mismatch and private-local failure reclassification |
+| [`reports/AI-V0.1.1-PREFLIGHT-FINAL-2026-08-19.md`](reports/AI-V0.1.1-PREFLIGHT-FINAL-2026-08-19.md) | Final Qwen3/Phi rejections, no-model decision and execution closure |
+| [`reports/AI-V0.1.1-APPLICATION-INTEGRATION-REVIEW-2026-08-19.md`](reports/AI-V0.1.1-APPLICATION-INTEGRATION-REVIEW-2026-08-19.md) | Deterministic application provider lock and live integration review |
+| [`reports/AI-BRANCH-PR-INTEGRATION-REVIEW-2026-08-19.md`](reports/AI-BRANCH-PR-INTEGRATION-REVIEW-2026-08-19.md) | Complete `ai`→`main` pre-merge integration and security review |
+| [`reports/AI-BRANCH-PR-CHANGED-FILES-2026-08-19.md`](reports/AI-BRANCH-PR-CHANGED-FILES-2026-08-19.md) | Complete changed-file and line-count PR diff |
+| [`reports/APPLICATION-GAP-AUDIT-2026-08-19.md`](reports/APPLICATION-GAP-AUDIT-2026-08-19.md) | Current frontend/backend/integration and product-completion audit |
+| [`reports/APPLICATION-COMPLETION-BACKLOG-2026-08-19.md`](reports/APPLICATION-COMPLETION-BACKLOG-2026-08-19.md) | Prioritized release backlog and CI foundation specification |
+| [`reports/CI-FOUNDATION-2026-08-19.md`](reports/CI-FOUNDATION-2026-08-19.md) | Hosted correctness workflow and deterministic integration runner |
+| [`reports/CI-RUN-1-INTAKE-2026-08-19.md`](reports/CI-RUN-1-INTAKE-2026-08-19.md) | First hosted failure intake and action-runtime compatibility fixes |
+| [`reports/CI-RUN-2-INTAKE-2026-08-19.md`](reports/CI-RUN-2-INTAKE-2026-08-19.md) | Second hosted failure intake and empty-library migration QA correction |
+| [`reports/CI-RUN-3-GREEN-2026-08-19.md`](reports/CI-RUN-3-GREEN-2026-08-19.md) | Green four-job hosted CI evidence authorizing unmerged PR creation |
+| [`reports/CORE-DATE-HABIT-CORRECTNESS-2026-08-19.md`](reports/CORE-DATE-HABIT-CORRECTNESS-2026-08-19.md) | Local-date and habit-streak correctness fixes |
+| [`reports/PRODUCTION-DATA-BASELINE-2026-08-19.md`](reports/PRODUCTION-DATA-BASELINE-2026-08-19.md) | Empty fresh user history and retained product catalogs/templates |
+| [`reports/LOCAL-RELEASE-DATA-AUTHORITY-2026-08-19.md`](reports/LOCAL-RELEASE-DATA-AUTHORITY-2026-08-19.md) | Browser-only release authority and reference API hardening |
+| [`reports/BROWSER-BACKUP-RECOVERY-2026-08-19.md`](reports/BROWSER-BACKUP-RECOVERY-2026-08-19.md) | Whole-product backup, rollback restore and corruption recovery |
+| [`reports/P1-CORRECTNESS-POLISH-2026-08-19.md`](reports/P1-CORRECTNESS-POLISH-2026-08-19.md) | Wilks, focus persistence and voice-session correctness polish |
+| [`reports/RELEASE-RESILIENCE-DECISIONS-2026-08-19.md`](reports/RELEASE-RESILIENCE-DECISIONS-2026-08-19.md) | Trusted-profile security decision, route recovery and navigation history |
+| [`reports/CURRENT-RELEASE-STATUS-2026-08-19.md`](reports/CURRENT-RELEASE-STATUS-2026-08-19.md) | Current release matrix and remaining hosted/PR/packaging gates |
+| [`reports/FINAL-LOCAL-REGRESSION-2026-08-19.md`](reports/FINAL-LOCAL-REGRESSION-2026-08-19.md) | Complete latest frontend/backend/AI/integration regression evidence |
 | [`notifications/README.md`](notifications/README.md) | Global inbox, rule catalog, settings and scope decisions |
 
-### Kaizen Intelligence Engine — architecture gate
+### Kaizen Intelligence Engine
 
-- [`ai/README.md`](ai/README.md) — architecture-gate index and 24-deliverable coverage matrix.
+- [`ai/MASTER-SPECIFICATION.md`](ai/MASTER-SPECIFICATION.md) — canonical product, architecture, privacy, MLOps and phase specification.
+- [`ai/DELIVERY-PLAYBOOK.md`](ai/DELIVERY-PLAYBOOK.md) — mandatory start/scope/test/privacy/documentation/commit procedure.
+- [`ai/IMPLEMENTATION-LEDGER.md`](ai/IMPLEMENTATION-LEDGER.md) — living completed/pending/blocker/next-step status.
+- [`ai/README.md`](ai/README.md) — architecture and implementation index.
 - [`ai/CONSTITUTION.md`](ai/CONSTITUTION.md) — versioned behavioral and authority rules.
 - [`ai/ARCHITECTURE.md`](ai/ARCHITECTURE.md) — independent engine and client-mediated Domain Bridge boundary.
 - [`ai/DECISION-REGISTER.md`](ai/DECISION-REGISTER.md) — locked, proposed, spike-required and deferred decisions.
 - [`ai/OPEN-QUESTIONS.md`](ai/OPEN-QUESTIONS.md) — unresolved choices that must not be guessed.
 - [`ai/ROADMAP.md`](ai/ROADMAP.md) — documentation gate through v1.0 acceptance criteria.
 
-Wave 0 preparation and controlled spikes are authorized; production AI features remain blocked pending the reviewed selection report.
+Wave 0 is complete with no passing local model selected. The v0.1 provider-neutral read-only foundation remains deterministic/mock-backed pending an explicit next-scope review.
 
 ### Design
 
@@ -65,6 +95,7 @@ Wave 0 preparation and controlled spikes are authorized; production AI features 
 - [`guides/DEPLOYMENT.md`](guides/DEPLOYMENT.md) — production topology and security requirements.
 - [`guides/DATA-BACKUP-RESTORE.md`](guides/DATA-BACKUP-RESTORE.md) — browser data, exports and recovery.
 - [`guides/TESTING.md`](guides/TESTING.md) — every automated and runtime QA gate.
+- [`guides/CI.md`](guides/CI.md) — hosted frontend/backend/AI/integration jobs with no model execution.
 - [`guides/CONTRIBUTING.md`](guides/CONTRIBUTING.md) — branches, commits, migrations and review expectations.
 
 ### Architecture notes
@@ -108,8 +139,16 @@ npm run qa:entertainment:reports
 npm run qa:entertainment:social
 npm run qa:entertainment:migration
 npm run qa:security
+npm run qa:ai
+npm run qa:comments
 npm run qa:docs
 node scripts/qa-health.js
+npm run build
+
+cd ../ai
+npm ci
+npm run typecheck
+npm test
 npm run build
 
 cd ../backend
@@ -120,8 +159,12 @@ KAIZEN_API_KEY=security-test-key npm start
 KAIZEN_API_KEY=security-test-key npm run security:test
 ```
 
-## Git state used by these docs
+## Git and documentation workflow
 
-- Stable baseline: `main` / `origin/main`, including AFTERGLOW v1.0, global notifications and security/docs hardening.
-- The `entertainment` feature branch was merged through pull request #2 on 2026-08-17.
-- Feature commit author: `Lucifer-Newstar <navin.jairam@gmail.com>`.
+- `main` remains the stable product baseline.
+- Intelligence work continues on the persistent `ai` branch; do not create a branch per wave.
+- Start every step with `git pull --rebase`.
+- End every step by updating the governing docs and `ai/IMPLEMENTATION-LEDGER.md`, running documentation QA and creating focused commits.
+- Configure repository-owner identity outside tracked files.
+
+See [`ai/DELIVERY-PLAYBOOK.md`](ai/DELIVERY-PLAYBOOK.md) and [`guides/CONTRIBUTING.md`](guides/CONTRIBUTING.md).

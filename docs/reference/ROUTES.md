@@ -1,6 +1,6 @@
 # Route inventory
 
-_Last verified: 2026-08-16; 39/39 user routes HTTP 200._
+_Last synchronized: 2026-08-18. The latest production build emits 39 user routes plus fixed dynamic provider/AI routes._
 
 ## Home
 
@@ -30,6 +30,12 @@ Same-origin dynamic routes:
 - `/api/entertainment/details?provider=&id=&type=&lang=`
 - `/api/entertainment/providers`
 - `/api/entertainment/image?url=`
+
+## Intelligence Engine proxy
+
+- `/api/ai/[...path]` — dynamic fixed loopback proxy for paired engine status, request, SSE, tool-result and cancellation traffic
+
+The browser cannot supply an upstream AI URL. Engine-native routes are documented in [`API.md`](API.md).
 
 ## Health
 

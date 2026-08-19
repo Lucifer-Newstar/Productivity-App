@@ -1,4 +1,5 @@
 "use client";
+/** Cross-space Priority Desk for capture, filtering, due dates, and completion. */
 
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -8,6 +9,7 @@ import { useStore } from "../lib/store";
 import { SPACES } from "../lib/types";
 import SpaceIcon from "./SpaceIcon";
 import HomeSectionHeader from "./HomeSectionHeader";
+import { localDateKey } from "../lib/localDate";
 import type { Priority, SpaceId } from "../lib/types";
 
 const priorityStyles: Record<Priority, { label: string; rank: string }> = {
@@ -26,7 +28,7 @@ export default function Tasks() {
   const filtered = tasks.filter((t) => (filter !== "active" || !t.completed) && (filter !== "completed" || t.completed) && (spaceFilter === "all" || t.space === spaceFilter) && (!query || t.title.toLowerCase().includes(query.toLowerCase())));
   const activeCount = tasks.filter((t) => !t.completed).length;
   const completed = tasks.length - activeCount;
-  const overdue = tasks.filter((t) => !t.completed && t.dueDate && t.dueDate < new Date().toISOString().slice(0, 10)).length;
+  const overdue = tasks.filter((t) => !t.completed && t.dueDate && t.dueDate < localDateKey()).length;
   const completion = tasks.length ? Math.round((completed / tasks.length) * 100) : 0;
   const submit = (e: React.FormEvent) => { e.preventDefault(); if (!title.trim()) return; addTask({ title: title.trim(), priority, dueDate: dueDate || undefined, space: spaceFilter === "all" ? "projects" : spaceFilter }); setTitle(""); setPriority("medium"); setDueDate(""); };
 
