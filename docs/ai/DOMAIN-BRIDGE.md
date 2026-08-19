@@ -2,7 +2,7 @@
 
 ## Decision
 
-**LOCKED DECISION:** V1 uses a client-mediated Domain Bridge because current authoritative state is browser-owned.
+**LOCKED DECISION:** V1 uses a client-mediated Domain Bridge because current authoritative state is owned by the renderer client (the final Windows build uses the sandboxed Electron profile).
 
 ```text
 React state/local persistence

@@ -103,6 +103,8 @@ Concise records of decisions that affect multiple spaces.
 
 ## ADR-014 — Single-file browser-served Windows package
 
+**Status:** Single-installer, bundled-runtime and exclusion decisions remain active. ADR-016 supersedes the fixed browser-origin/port topology before public release.
+
 **Decision:** Windows local v1 publishes one per-user x64 setup executable. It bundles the official checksum-pinned Node.js runtime, Next.js standalone application and deterministic Intelligence Engine. The installer creates branded desktop and Start Menu entries and registers its generated uninstaller with Windows Settings. A launcher fixes the browser origin to `http://127.0.0.1:3000` and the engine to `127.0.0.1:4317`. Express is excluded.
 
 **Why:** One installer reduces user confusion, provides consistent update/uninstall behavior and creates one checksum/signing target. Keeping the established browser origin preserves browser-authoritative state and avoids an unreviewed desktop-webview storage boundary. Bundling Node removes a machine-wide runtime prerequisite while retaining the tested server/proxy architecture.
@@ -133,3 +135,20 @@ Concise records of decisions that affect multiple spaces.
 - setup stops the existing package-owned processes before overwriting files and keeps the stable `AppId` and install directory;
 - browser data remains untouched by update and uninstall, with backup still recommended before upgrades;
 - automatic download/execution and background privileged installation remain prohibited.
+
+## ADR-016 — Native desktop shell with dynamic internal ports
+
+**Decision:** The final Windows installer launches Kaizen in a pinned Electron desktop window, not the user's default browser. The shell owns the standalone frontend and deterministic engine as child processes, assigns available ephemeral loopback ports at each launch, and exposes the UI through the stable privileged origin `kaizen://app` with persistent partition `persist:kaizen`.
+
+**Why:** Fixed ports can collide with unrelated applications, and an external browser leaves lifecycle ownership ambiguous. A stable custom origin keeps desktop localStorage independent of changing internal ports, while one native window can guarantee child shutdown when the user closes Kaizen.
+
+**Required consequences:**
+
+- internal frontend and engine listeners remain loopback-only and are never shown as the user-facing address;
+- the shell uses context isolation, sandboxing, disabled Node integration and denied external navigation;
+- only reviewed official GitHub links may leave the desktop shell;
+- closing the last window or uninstall/update shutdown terminates both child process trees and removes runtime state;
+- the previous browser profile and new Electron profile are separate security/storage boundaries;
+- existing candidate users migrate once by exporting a whole-product backup in the browser build and restoring it in the final desktop build;
+- future setup updates preserve the Electron profile and stable custom origin;
+- Electron/runtime versions and desktop lifecycle receive executable packaging gates.

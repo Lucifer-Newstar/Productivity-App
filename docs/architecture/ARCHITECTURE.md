@@ -185,7 +185,7 @@ It is in-memory, has no user accounts and must not be presented as a public mult
 
 ## Intelligence Engine v0.1 boundary
 
-The independently runnable Intelligence Engine now implements the approved browser-authoritative boundary:
+The independently runnable Intelligence Engine implements the approved renderer-authoritative boundary (browser during development, sandboxed Electron renderer in the final package):
 
 ```text
 React Context/local persistence
