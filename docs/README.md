@@ -41,6 +41,7 @@ Current production verification: **39/39 user routes return HTTP 200**, five Ent
 | [`reports/AI-ARCHITECTURE-GATE-2026-08-17.md`](reports/AI-ARCHITECTURE-GATE-2026-08-17.md) | Intelligence Engine architecture package and review boundary |
 | [`reports/AI-V0.1.1-ARCHITECTURE-2026-08-19.md`](reports/AI-V0.1.1-ARCHITECTURE-2026-08-19.md) | Deterministic Core Today routing contracts, gates and synthetic tests |
 | [`reports/AI-V0.1.1-IMPLEMENTATION-2026-08-19.md`](reports/AI-V0.1.1-IMPLEMENTATION-2026-08-19.md) | Trusted router, zero-tool runtime, security tests and deterministic/mock evaluation |
+| [`reports/AI-V0.1.1-ACCEPTANCE-AND-MODEL-EVAL-DESIGN-2026-08-19.md`](reports/AI-V0.1.1-ACCEPTANCE-AND-MODEL-EVAL-DESIGN-2026-08-19.md) | Live acceptance and frozen interpreter-model evaluation design |
 | [`notifications/README.md`](notifications/README.md) | Global inbox, rule catalog, settings and scope decisions |
 
 ### Kaizen Intelligence Engine

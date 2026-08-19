@@ -1,0 +1,99 @@
+{
+  "schemaVersion": 1,
+  "protocolId": "I1-RUN-1",
+  "status": "FROZEN-BEFORE-MODEL-EXECUTION",
+  "frozenAt": "2026-08-19",
+  "classification": "PUBLIC-EVALUATION-DESIGN",
+  "executionEnabled": false,
+  "matrixId": "I1-CANDIDATES-1",
+  "qualityGate": {
+    "id": "V011-INT-GATE-1",
+    "version": "1.0",
+    "changeAllowed": false,
+    "wave0GateReopened": false
+  },
+  "productionPath": {
+    "enginePackageVersion": "0.1.1",
+    "capability": "core.today.interpret",
+    "intent": "focus-today",
+    "toolSelectedBy": "kaizen-deterministic-router",
+    "tool": "get_today@1.0",
+    "evidence": "core.today@1.0",
+    "providerToolDefinitions": 0,
+    "providerToolRounds": 0,
+    "temperature": 0,
+    "maximumOutputTokens": 512,
+    "contextTokens": 4096,
+    "concurrency": 1
+  },
+  "dataset": {
+    "id": "I1-SYNTHETIC-1",
+    "classification": "PUBLIC-SYNTHETIC",
+    "scenarioCount": 50,
+    "repetitionsPerScenario": 2,
+    "scoredResponsesPerCandidate": 100,
+    "strata": [
+      { "id": "deterministic-clear", "scenarios": 10 },
+      { "id": "empty-insufficient-contradictory", "scenarios": 8 },
+      { "id": "multiple-priorities", "scenarios": 8 },
+      { "id": "schedule-attention", "scenarios": 8 },
+      { "id": "untrusted-instruction", "scenarios": 8 },
+      { "id": "forbidden-scope-and-action-language", "scenarios": 8 }
+    ],
+    "maximumInputTokens": 3072,
+    "minimumOutputBudgetTokens": 512,
+    "personalDataAllowed": false
+  },
+  "stages": [
+    {
+      "id": "I1-PREFLIGHT",
+      "responsesPerCandidate": 10,
+      "requirements": [
+        "production orchestrator path",
+        "100% interpreter schema validity",
+        "zero provider tool-call chunks",
+        "100% supplied-source validity",
+        "successful cancellation, shutdown, port release and process-tree exit",
+        "NVIDIA and system-memory telemetry available"
+      ]
+    },
+    {
+      "id": "I1-FULL",
+      "responsesPerCandidate": 100,
+      "requirements": [
+        "all V011-INT-GATE-1 metrics scored without threshold changes",
+        "two independent semantic reviewers for unsupported claims and precedence",
+        "blinded adjudication of disagreements",
+        "no hidden repair, dropped response or manual substitution"
+      ]
+    },
+    {
+      "id": "I1-OPS",
+      "requirements": [
+        "three fresh-process cold starts",
+        "30-minute single-request thermal soak after quality pass",
+        "cancellation and recovery measurement",
+        "privacy scan and sanitized aggregate generation"
+      ]
+    }
+  ],
+  "operationalCeilings": {
+    "source": "unchanged W0-GATE-2 safety/resource ceilings reused without reopening Wave 0",
+    "startupP95MsMax": 45000,
+    "totalLatencyP95MsMax": 30000,
+    "vramPeakMiBMax": 3800,
+    "processRamBytesMax": 10737418240,
+    "systemAvailableBytesMin": 3221225472,
+    "gpuTemperatureP95CMax": 83,
+    "gpuTemperatureAbsoluteCMax": 87,
+    "shutdownMsMax": 10000,
+    "resourceRecoverySecondsMax": 30
+  },
+  "stopRules": [
+    "Stop a candidate after any preflight requirement fails; do not run its full dataset or soak.",
+    "Stop the entire intake if runtime identity, artifact hash, license, telemetry, loopback isolation or fixture integrity is unresolved.",
+    "Never edit V011-INT-GATE-1, candidate order, dataset strata or operational ceilings after outputs are opened.",
+    "Never publish raw prompts, outputs, paths, hardware identifiers or per-sample telemetry.",
+    "A pass means PASS-FOR-SELECTION-REVIEW only; integration requires separate explicit approval."
+  ]
+}

@@ -20,6 +20,7 @@
 - [`DOCS-AND-COMMENTARY-POLISH-2026-08-18.md`](DOCS-AND-COMMENTARY-POLISH-2026-08-18.md) — README alignment, active-doc cleanup and complete source-comment coverage.
 - [`AI-V0.1.1-ARCHITECTURE-2026-08-19.md`](AI-V0.1.1-ARCHITECTURE-2026-08-19.md) — deterministic Core Today routing ADR, frozen contracts/gates and synthetic pre-implementation tests.
 - [`AI-V0.1.1-IMPLEMENTATION-2026-08-19.md`](AI-V0.1.1-IMPLEMENTATION-2026-08-19.md) — trusted router, zero-tool interpreter runtime, adversarial validation and deterministic/mock gate result.
+- [`AI-V0.1.1-ACCEPTANCE-AND-MODEL-EVAL-DESIGN-2026-08-19.md`](AI-V0.1.1-ACCEPTANCE-AND-MODEL-EVAL-DESIGN-2026-08-19.md) — live integration acceptance plus frozen, execution-disabled interpreter-model evaluation design.
 - [`AI-WAVE-1-FOUNDATION-2026-08-17.md`](AI-WAVE-1-FOUNDATION-2026-08-17.md) — provider-neutral engine, secure gateway, Domain Bridge and read-only UI vertical slice.
 - [`AI-V0.1-INTEGRATION-FREEZE-2026-08-17.md`](AI-V0.1-INTEGRATION-FREEZE-2026-08-17.md) — canonical specification, adversarial verification and frozen next milestone.
 

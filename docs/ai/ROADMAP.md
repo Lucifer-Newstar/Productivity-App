@@ -32,7 +32,7 @@ Wave 0 is complete with no model selected. Architecture review has authorized a 
 
 **Integration result:** Wave 0 closed with no model selected. The provider-neutral deterministic/mock fallback remains authoritative.
 
-## v0.1.1 — Deterministic Core Today interpretation — implemented for review
+## v0.1.1 — Deterministic Core Today interpretation — live accepted
 
 - [x] AI-ADR-019 locks trusted `focus-today → get_today@1.0` routing
 - [x] route, interpreter-request and response contracts frozen at `1.0`
@@ -41,10 +41,12 @@ Wave 0 is complete with no model selected. Architecture review has authorized a 
 - [x] production deterministic router and interpreter path
 - [x] security/adversarial implementation validation
 - [x] deterministic/mock `V011-INT-GATE-1` evaluation
-- [ ] explicit integration review
-- [ ] any future real-model candidate evaluation and selection review
+- [x] live integration acceptance through engine, same-origin proxy, pairing, SSE and tool callback
+- [x] interpreter-only candidate matrix, run protocol and reporting format frozen
+- [ ] synthetic corpus and production-path model runner implementation
+- [ ] any target model execution, candidate report and selection review
 
-**Current stop:** implementation, security tests and deterministic/mock evaluation are complete. Review before any integration expansion. The provider receives no tools, unsupported intents fail closed, and no real model is selected.
+**Current stop:** v0.1.1 is accepted as the deterministic/mock baseline. Interpreter-model design is frozen with execution disabled. Review before implementing the corpus/runner; model execution requires another later approval. No real model is selected.
 
 **Scope freeze:** Core Today only. Do not add memory, retrieval, Health, additional domains, writes, automation, remote processing or v0.2 work.
 

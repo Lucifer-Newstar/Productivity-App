@@ -42,6 +42,9 @@ ai/wave0/results-local/   LOCAL-ONLY, gitignored; raw captures and outputs
 ai/wave0/config/*.local.json  LOCAL-ONLY, gitignored machine configuration
 ai/wave0/results-public/  PUBLIC only after allowlist sanitization and review
 ai/evaluation/v0.1.1/results-public/  PUBLIC synthetic aggregates only
+ai/evaluation/v0.1.1/model-phase/results-local/  LOCAL-ONLY, gitignored
+ai/evaluation/v0.1.1/model-phase/config/*.local.json  LOCAL-ONLY, gitignored
+ai/evaluation/v0.1.1/model-phase/results-public/  PUBLIC only after sanitization/review
 ```
 
 Every v0.1.1 public aggregate declares `"classification": "PUBLIC-SANITIZED-AGGREGATE"` and excludes raw prompts, responses and machine data. The deterministic/mock evaluator uses repository-owned synthetic records only.

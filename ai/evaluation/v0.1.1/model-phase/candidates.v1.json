@@ -1,0 +1,54 @@
+{
+  "schemaVersion": 1,
+  "matrixId": "I1-CANDIDATES-1",
+  "status": "FROZEN-BEFORE-MODEL-EXECUTION",
+  "frozenAt": "2026-08-19",
+  "classification": "PUBLIC-EVALUATION-DESIGN",
+  "executionEnabled": false,
+  "scope": "core.today.interpret@1.0",
+  "included": [
+    {
+      "order": 1,
+      "id": "qwen3-4b-instruct-2507-q4km",
+      "label": "Qwen3 4B Instruct 2507 Q4_K_M",
+      "artifactFamily": "Qwen3-4B-Instruct-2507",
+      "quantization": "Q4_K_M",
+      "role": "primary compact interpreter candidate",
+      "priorPublicEvidence": {
+        "wave0StructuredRate": 1,
+        "wave0ToolRate": 0.5,
+        "wave0Decision": "REJECTED-FOR-WAVE0"
+      },
+      "rationale": "Structured preflight succeeded; the measured blocker was model-selected tool omission, which is outside the v0.1.1 interpreter role."
+    },
+    {
+      "order": 2,
+      "id": "phi-4-mini-instruct-q4km",
+      "label": "Phi-4 Mini Instruct Q4_K_M",
+      "artifactFamily": "Phi-4-mini-instruct",
+      "quantization": "Q4_K_M",
+      "role": "compact comparator",
+      "priorPublicEvidence": {
+        "wave0StructuredRate": 1,
+        "wave0ToolRate": 0,
+        "wave0Decision": "REJECTED-FOR-WAVE0"
+      },
+      "rationale": "Structured preflight succeeded; zero tool reliability caused Wave 0 rejection but does not predict evidence-only interpretation."
+    }
+  ],
+  "excluded": [
+    {
+      "id": "gemma-3-4b-it-qat-q4",
+      "reason": "Wave 0 preflight produced HTTP 400, 0% structured output and 0% tools; no public evidence supports interpreter-schema compatibility."
+    },
+    {
+      "id": "qwen2.5-7b-instruct-q4km-control",
+      "reason": "Wave 0 control produced 50% structured output, exceeded confidence bounds and has materially higher target-hardware resource cost."
+    }
+  ],
+  "freezeRules": [
+    "No candidate may be added, removed, reordered, requantized or substituted after any interpreter-model output is opened.",
+    "A matrix change requires I1-CANDIDATES-2, written rationale and explicit review before execution.",
+    "Inclusion does not reverse any Wave 0 rejection and does not select a model."
+  ]
+}

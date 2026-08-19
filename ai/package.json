@@ -12,6 +12,7 @@
     "typecheck": "tsc --noEmit -p tsconfig.json",
     "qa:v0.1.1": "tsx --test test/interpreterArchitecture.test.ts test/interpreterRuntime.test.ts",
     "eval:v0.1.1": "tsx evaluation/v0.1.1/evaluate.ts",
+    "qa:v0.1.1:model-design": "python evaluation/v0.1.1/model-phase/qa_design.py",
     "qa:wave0": "python wave0/scripts/qa_wave0.py"
   },
   "dependencies": {

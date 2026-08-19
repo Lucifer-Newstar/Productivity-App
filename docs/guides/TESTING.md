@@ -93,9 +93,10 @@ Engine tests cover contracts, schema rejection, provider configuration, mock too
 cd ai
 npm run qa:v0.1.1
 npm run eval:v0.1.1
+npm run qa:v0.1.1:model-design
 ```
 
-This suite validates the fixed `focus-today → get_today@1.0` route, zero provider tool authority, Core Today-only scope, frozen `V011-INT-GATE-1` thresholds, exact/bounded/fresh evidence, source-subset grounding, deterministic precedence, required uncertainty, browser revision verification, and rejection mutants for provider tool calls, fabricated IDs, extra domains and command-shaped output. The evaluator writes a public sanitized deterministic/mock aggregate; it is not a real-model result.
+This suite validates the fixed `focus-today → get_today@1.0` route, zero provider tool authority, Core Today-only scope, frozen `V011-INT-GATE-1` thresholds, exact/bounded/fresh evidence, source-subset grounding, deterministic precedence, required uncertainty, browser revision verification, and rejection mutants for provider tool calls, fabricated IDs, extra domains and command-shaped output. The evaluator writes a public sanitized deterministic/mock aggregate; it is not a real-model result. Model-design QA verifies the frozen/disabled candidate matrix, protocol, dataset counts, unchanged gate, zero-tool path, local template and no-result boundary without starting a model.
 
 ## Intelligence Engine Wave 0
 

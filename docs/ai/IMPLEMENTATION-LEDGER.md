@@ -6,9 +6,9 @@ _Last updated: 2026-08-19_
 
 ## Current milestone
 
-> **v0.1.1 deterministic Core Today routing implemented, security-tested and evaluated with deterministic mock. Stop for integration review.**
+> **v0.1.1 live integration accepted; interpreter-only model evaluation design frozen with execution disabled. Stop for evaluation implementation review.**
 
-AI-ADR-019 now governs the runtime: trusted code selects `get_today@1.0`, validates bounded/fresh `core.today@1.0`, and invokes the provider with no tools. `V011-INT-GATE-1` passes for the deterministic/mock implementation. No real model is selected. Memory, retrieval, Health context, write actions, automation, additional domains, remote processing and v0.2 remain frozen.
+AI-ADR-019 governs the accepted deterministic/mock baseline. The live engine→proxy→pairing→SSE→tool-result→verified-response flow passed. `I1-CANDIDATES-1`, `I1-RUN-1` and the report format are frozen before model execution. No model was run or selected. Memory, retrieval, Health context, write actions, automation, additional domains, remote processing and v0.2 remain frozen.
 
 ## Completed architecture and foundation
 
@@ -44,7 +44,11 @@ AI-ADR-019 now governs the runtime: trusted code selects `get_today@1.0`, valida
 | Browser verification/UI | Complete | exact route envelope, source/snapshot/revision checks, fixed-purpose action |
 | Security/adversarial tests | PASS | `interpreterRuntime.test.ts` plus injection/gateway suites |
 | Deterministic/mock evaluation | PASS | public `V011-INT-GATE-1` aggregate, 10/10 metrics |
-| Real model integration | BLOCKED | no selected model; later candidate must pass the gate and review |
+| Live integration acceptance | PASS | actual engine + frontend proxy + pairing/SSE/tool callback |
+| Interpreter-model candidate matrix | Frozen / disabled | `I1-CANDIDATES-1`: Qwen3 then Phi |
+| Interpreter-model run protocol | Frozen / disabled | `I1-RUN-1`, unchanged `V011-INT-GATE-1` |
+| Interpreter-model report format | Complete | sanitized aggregate template; no selection outcome |
+| Model execution | NOT AUTHORIZED | no runner/corpus execution and no selected model |
 
 The new gate does not supersede or weaken `W0-GATE-2`. It evaluates a different, narrower provider role with no tools.
 
@@ -175,14 +179,13 @@ The larger control is rejected. Wave 0 is complete with no model selected. No mo
 
 ## Next review
 
-Review the completed v0.1.1 implementation, security evidence and deterministic/mock evaluation. Explicitly choose one of:
+Review the frozen interpreter-model evaluation design. Explicitly choose one of:
 
-1. accept v0.1.1 as the deterministic/mock production-quality baseline and keep real-model integration deferred;
-2. authorize a separately defined interpreter-only local-model candidate evaluation against the unchanged `V011-INT-GATE-1` (not a Wave 0 reopening);
-3. request bounded implementation corrections within AI-ADR-019;
-4. defer further Intelligence work.
+1. authorize implementation of the disabled `I1-SYNTHETIC-1` corpus and production-path runner, then stop before model execution;
+2. request bounded corrections to `I1-CANDIDATES-1`, `I1-RUN-1` or the report template before any output is opened;
+3. keep v0.1.1 deterministic/mock-only and defer model work.
 
-Do not start a real-model run, remote-provider ADR, v0.2, memory, retrieval, Health, writes, automation or additional domains without separate approval.
+Model execution is still prohibited. A later approval would be required after the corpus/runner is implemented and validated. Do not start remote-provider work, v0.2, memory, retrieval, Health, writes, automation or additional domains.
 
 ## Documentation and repository maintenance
 
@@ -191,7 +194,7 @@ Latest maintenance pass:
 - Root, frontend, backend and Intelligence README files aligned with the current architecture and no-model Wave 0 outcome.
 - Stale “coming soon”, placeholder/in-progress and architecture-only Intelligence descriptions removed from active docs.
 - Documentation indexes, route metadata, setup commands and quality gates synchronized.
-- All 246 maintained TypeScript, JavaScript, Python, PowerShell, CSS and shell source files now include explanatory commentary.
+- All 247 maintained TypeScript, JavaScript, Python, PowerShell, CSS and shell source files now include explanatory commentary.
 - `qa:comments` permanently enforces source-comment coverage.
 - Historical reports/bug entries remain intact and are explicitly treated as dated evidence rather than current status.
 

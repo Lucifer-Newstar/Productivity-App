@@ -83,6 +83,8 @@ ai/wave0/results-local/
 ai/wave0/results/
 ai/wave0/models/
 ai/wave0/config/*.local.json
+ai/evaluation/v0.1.1/model-phase/results-local/
+ai/evaluation/v0.1.1/model-phase/config/*.local.json
 ai/wave0/config/*.local.yaml
 ai/wave0/config/*.local.yml
 !ai/wave0/config/candidates.local.example.json

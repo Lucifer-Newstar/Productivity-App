@@ -101,6 +101,12 @@ Exact thresholds are an architecture-review/Wave 0 deliverable and must be set b
 
 The normative thresholds, dataset strata, scoring rules and stop conditions are in [V0.1.1-INTERPRETER-EVALUATION.md](V0.1.1-INTERPRETER-EVALUATION.md). Machine-readable gates and public synthetic fixtures live under `ai/evaluation/v0.1.1/` and `ai/test/fixtures/`.
 
+### Frozen interpreter-model design
+
+`I1-CANDIDATES-1` and `I1-RUN-1` define a future local-model evaluation through the production deterministic route. The matrix includes Qwen3 4B Instruct 2507 Q4_K_M and Phi-4 Mini Instruct Q4_K_M only. The design fixes 50 scenarios, two repetitions, a 4K context, zero provider tools, blinded semantic review, unchanged `V011-INT-GATE-1` thresholds and unchanged W0 resource/safety ceilings where applicable.
+
+The design is documented under [`v0.1.1-model-evaluation/`](v0.1.1-model-evaluation/README.md). Execution is disabled. No model result exists, Wave 0 remains closed and a later review is required before corpus/runner implementation.
+
 ## Feedback and future learning
 
 Significant recommendations may later store model/prompt/context references, user feedback, action and outcome. This supports evaluation and only later a fine-tuning feasibility review. Fine-tuning is deferred until evidence shows prompting, tools, retrieval and memory are insufficient.

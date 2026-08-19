@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 1,
+  "classification": "LOCAL-CONFIG-TEMPLATE",
+  "executionEnabled": false,
+  "protocolId": "I1-RUN-1",
+  "runtime": {
+    "llamaServerPath": "<LOCAL_LLAMA_SERVER_PATH>",
+    "runtimeVersion": "RECORD_EXACT_VERSION",
+    "runtimeSha256": "RECORD_SHA256",
+    "endpoint": "http://127.0.0.1:18080"
+  },
+  "candidates": [
+    {
+      "id": "qwen3-4b-instruct-2507-q4km",
+      "modelPath": "<LOCAL_QWEN3_GGUF_PATH>",
+      "artifactSha256": "RECORD_SHA256",
+      "licenseVerified": false,
+      "enabled": false
+    },
+    {
+      "id": "phi-4-mini-instruct-q4km",
+      "modelPath": "<LOCAL_PHI4_GGUF_PATH>",
+      "artifactSha256": "RECORD_SHA256",
+      "licenseVerified": false,
+      "enabled": false
+    }
+  ]
+}
