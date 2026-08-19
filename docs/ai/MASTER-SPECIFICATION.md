@@ -165,7 +165,7 @@ Global UI offers purposeful workflows (plan today, needs attention, review week,
 ## 21. Phases
 
 - **v0.1 Foundation:** implemented and validated with deterministic/mock provider.
-- **v0.1.1 Deterministic Core Today interpretation:** architecture, contracts, interpreter-only gates and synthetic tests frozen before production implementation.
+- **v0.1.1 Deterministic Core Today interpretation:** trusted routing, zero-tool provider interpretation, security controls and deterministic/mock evaluation implemented; frozen for integration review.
 - **v0.2 Understands:** more read tools, orchestration, retrieval/memory foundation, cross-domain context and consent—still frozen.
 - **v0.3 Reasons:** Daily/Weekly intelligence, momentum/conflicts/alignment, Forge/Career reasoning.
 - **v0.4 Acts:** proposals, approval, dry run, stale checks, idempotency, verification, audit and undo.

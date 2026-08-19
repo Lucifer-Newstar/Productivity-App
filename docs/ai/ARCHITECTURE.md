@@ -50,7 +50,7 @@ Authenticates the local client session, validates request envelopes, applies rat
 
 Routes intent to domains, requests relevant tool data, retrieves memories/documents, includes deterministic analytics, applies consent and token budgets, and serializes trust-labeled context.
 
-For the approved v0.1.1 slice, [AI-ADR-019](adrs/AI-ADR-019-DETERMINISTIC-CORE-TODAY-ROUTING.md) narrows this general architecture: trusted code recognizes only `focus-today`, selects `get_today@1.0`, validates `core.today@1.0`, and sends the provider evidence without tool definitions. Memory, retrieval and additional domains remain unavailable.
+For the implemented v0.1.1 slice, [AI-ADR-019](adrs/AI-ADR-019-DETERMINISTIC-CORE-TODAY-ROUTING.md) narrows this general architecture: trusted code recognizes only `focus-today`, selects `get_today@1.0`, validates bounded/fresh `core.today@1.0`, and sends the provider evidence without tool definitions. The browser independently verifies tool arguments, sources and revision freshness. Memory, retrieval and additional domains remain unavailable.
 
 ### Agent
 

@@ -13,7 +13,7 @@ const snapshot = {
 
 test("orchestrator grounds a response through get_today", async () => {
   const orchestrator = new IntelligenceOrchestrator(new MockGenerationProvider(), 5_000), events: string[] = [];
-  const response = await orchestrator.run({ prompt: "What should I focus on?", intent: "focus-today", permissions: { mode: "local", domains: ["core", "notifications"], healthConsent: false, tools: ["get_today"] } }, "session", "request", async (toolRequest) => ({ requestId: "request", callId: toolRequest.callId, status: "ok", snapshot } as BridgeToolResult), (event) => events.push(event.type), new AbortController().signal);
+  const response = await orchestrator.run({ intent: "focus-today", localDate: "2026-08-17", permissions: { mode: "local", domains: ["core", "notifications"], healthConsent: false, tools: ["get_today"] } }, "session", "request", async (toolRequest) => ({ requestId: "request", callId: toolRequest.callId, status: "ok", snapshot } as BridgeToolResult), (event) => events.push(event.type), new AbortController().signal);
   assert.equal(response.title, "Ship auth");
   assert.equal(response.sources[0]?.entityId, "t1");
   assert.deepEqual(events, ["tool.requested", "tool.completed", "generation.delta"]);
@@ -21,5 +21,5 @@ test("orchestrator grounds a response through get_today", async () => {
 
 test("orchestrator rejects unavailable tool permission", async () => {
   const orchestrator = new IntelligenceOrchestrator(new MockGenerationProvider(), 5_000);
-  await assert.rejects(() => orchestrator.run({ prompt: "Focus", intent: "focus-today", permissions: { mode: "local", domains: [], healthConsent: false, tools: [] } }, "s", "r", async () => { throw new Error(); }, () => {}, new AbortController().signal), /permission/);
+  await assert.rejects(() => orchestrator.run({ intent: "focus-today", localDate: "2026-08-17", permissions: { mode: "local", domains: [], healthConsent: false, tools: [] } }, "s", "r", async () => { throw new Error(); }, () => {}, new AbortController().signal), /permission/);
 });

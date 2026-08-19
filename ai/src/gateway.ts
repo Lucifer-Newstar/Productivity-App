@@ -6,7 +6,9 @@ import type { EngineConfig } from "./config.js";
 import type { BridgeToolResult } from "./contracts/tools.js";
 import type { IntelligenceRequestInput, PublicError } from "./contracts/protocol.js";
 import { ProviderRegistry } from "./providers/registry.js";
-import { IntelligenceOrchestrator, IntelligenceError } from "./runtime/orchestrator.js";
+import { IntelligenceOrchestrator } from "./runtime/orchestrator.js";
+import { IntelligenceError } from "./runtime/errors.js";
+import { isValidLocalDate } from "./runtime/deterministicRouter.js";
 import { RequestManager } from "./runtime/requestManager.js";
 import { assertSafeJson } from "./security/json.js";
 import { PairingManager } from "./security/pairing.js";
@@ -99,8 +101,11 @@ export function createEngineGateway(config: EngineConfig): EngineGateway {
       if (request.method === "GET" && url.pathname === "/v1/metrics") { json(response, 200, requests.metrics()); return; }
       if (request.method === "DELETE" && url.pathname === "/v1/session") { pairing.revoke(token); response.statusCode = 204; response.end(); return; }
       if (request.method === "POST" && url.pathname === "/v1/requests") {
-        const body = await readJson(request, config.maximumBodyBytes) as { prompt?: unknown; intent?: unknown };
-        const input: IntelligenceRequestInput = { prompt: typeof body.prompt === "string" ? body.prompt : "", intent: body.intent === "focus-today" ? "focus-today" : "ask", permissions: session.permissions };
+        const body = await readJson(request, config.maximumBodyBytes) as Record<string, unknown>;
+        if (body.intent !== "focus-today") throw new IntelligenceError("UNSUPPORTED_INTENT", "Only the Core Today focus request is available in v0.1.1.");
+        if (!isValidLocalDate(body.localDate)) throw new IntelligenceError("INVALID_REQUEST", "A trusted local date in YYYY-MM-DD format is required.");
+        if (Object.keys(body).some((key) => key !== "intent" && key !== "localDate")) throw new IntelligenceError("INVALID_REQUEST", "The Core Today request contains unsupported fields.");
+        const input: IntelligenceRequestInput = { intent: "focus-today", localDate: body.localDate, permissions: session.permissions };
         const id = requests.create(input, sid); json(response, 202, { requestId: id }); return;
       }
       const events = url.pathname.match(/^\/v1\/requests\/([0-9a-f-]+)\/events$/i);

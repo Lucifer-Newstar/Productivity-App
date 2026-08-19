@@ -92,9 +92,10 @@ Engine tests cover contracts, schema rejection, provider configuration, mock too
 ```bash
 cd ai
 npm run qa:v0.1.1
+npm run eval:v0.1.1
 ```
 
-This pre-implementation suite validates the fixed `focus-today → get_today@1.0` route, zero provider tool authority, Core Today-only scope, frozen `V011-INT-GATE-1` thresholds, source-subset grounding, required uncertainty, and rejection mutants for provider tool calls, fabricated IDs, extra domains and command-shaped output. It is synthetic contract evidence, not a model result.
+This suite validates the fixed `focus-today → get_today@1.0` route, zero provider tool authority, Core Today-only scope, frozen `V011-INT-GATE-1` thresholds, exact/bounded/fresh evidence, source-subset grounding, deterministic precedence, required uncertainty, browser revision verification, and rejection mutants for provider tool calls, fabricated IDs, extra domains and command-shaped output. The evaluator writes a public sanitized deterministic/mock aggregate; it is not a real-model result.
 
 ## Intelligence Engine Wave 0
 

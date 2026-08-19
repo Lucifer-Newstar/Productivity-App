@@ -40,6 +40,7 @@ Current production verification: **39/39 user routes return HTTP 200**, five Ent
 | [`reports/HOME-COMMAND-CENTER-2026-08-17.md`](reports/HOME-COMMAND-CENTER-2026-08-17.md) | Cross-space home intelligence redesign |
 | [`reports/AI-ARCHITECTURE-GATE-2026-08-17.md`](reports/AI-ARCHITECTURE-GATE-2026-08-17.md) | Intelligence Engine architecture package and review boundary |
 | [`reports/AI-V0.1.1-ARCHITECTURE-2026-08-19.md`](reports/AI-V0.1.1-ARCHITECTURE-2026-08-19.md) | Deterministic Core Today routing contracts, gates and synthetic tests |
+| [`reports/AI-V0.1.1-IMPLEMENTATION-2026-08-19.md`](reports/AI-V0.1.1-IMPLEMENTATION-2026-08-19.md) | Trusted router, zero-tool runtime, security tests and deterministic/mock evaluation |
 | [`notifications/README.md`](notifications/README.md) | Global inbox, rule catalog, settings and scope decisions |
 
 ### Kaizen Intelligence Engine

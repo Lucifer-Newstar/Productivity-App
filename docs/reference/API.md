@@ -22,12 +22,12 @@ The independent engine binds to `127.0.0.1:4317` by default. Browser traffic use
 | GET | `/v1/status` | Authenticated provider identity/capabilities |
 | GET | `/v1/metrics` | Authenticated aggregate counters/durations/error codes; no prompt content |
 | DELETE | `/v1/session` | Revoke local session |
-| POST | `/v1/requests` | Start read-only Intelligence request |
+| POST | `/v1/requests` | Start fixed Core Today interpretation with `{ "intent": "focus-today", "localDate": "YYYY-MM-DD" }` |
 | GET | `/v1/requests/:id/events` | Authenticated SSE event stream via fetch |
 | POST | `/v1/requests/:id/tool-results` | Return validated client Domain Bridge result |
 | DELETE | `/v1/requests/:id` | Cancel request |
 
-Tokens travel only in `Authorization`; pairing codes use `X-Kaizen-Pairing-Code`. The gateway enforces loopback, host/origin allowlists, body/rate limits, unsafe-key rejection and no-store/security headers. Current tool surface is only `get_today@1.0`. The Express sync API is not an AI source of truth.
+Tokens travel only in `Authorization`; pairing codes use `X-Kaizen-Pairing-Code`. The gateway enforces loopback, host/origin allowlists, body/rate limits, unsafe-key rejection and no-store/security headers. Current tool surface is only `get_today@1.0`, selected by trusted engine code. Generic prompts, extra request fields and provider tool calls are rejected. The Express sync API is not an AI source of truth.
 
 ## Common
 

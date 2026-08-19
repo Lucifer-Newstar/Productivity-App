@@ -1,0 +1,32 @@
+/** Implementation and adversarial tests for deterministic routing and the zero-tool interpreter runtime. */
+import assert from "node:assert/strict";
+import test from "node:test";
+import type { GenerationChunk, GenerationRequest } from "../src/contracts/provider.js";
+import { MockGenerationProvider } from "../src/providers/mock.js";
+import { IntelligenceOrchestrator } from "../src/runtime/orchestrator.js";
+
+const permissions={mode:"local" as const,domains:["core","notifications"],healthConsent:false,tools:["get_today"]};
+const input={intent:"focus-today" as const,localDate:"2026-08-19",permissions};
+function snapshot(data:Record<string,unknown>={}){return{contract:"core.today",contractVersion:"1.0",domain:"core",snapshotId:"epoch:core.3",revision:{installationEpoch:"epoch",domains:{core:3}},capturedAt:new Date().toISOString(),timezone:"Asia/Kolkata",sensitivity:"personal",trust:"kaizen-derived",data:{localDate:"2026-08-19",tasks:[{id:"t1",title:"Ship deterministic routing",space:"projects",priority:"high",completed:false}],scheduled:[],attention:[],deterministicNextAction:{sourceId:"t1",title:"Ship deterministic routing",reason:"Highest deterministic priority",algorithmVersion:"1"},...data},analytics:[],redactions:[{field:"health",reason:"consent"}]}}
+
+class RecordingProvider extends MockGenerationProvider{
+  requests:GenerationRequest[]=[];
+  override async *stream(request:GenerationRequest,signal:AbortSignal):AsyncIterable<GenerationChunk>{this.requests.push(request);yield*super.stream(request,signal)}
+}
+class PayloadProvider extends MockGenerationProvider{
+  constructor(private readonly payload:unknown){super()}
+  override async *stream(_request:GenerationRequest,_signal:AbortSignal):AsyncIterable<GenerationChunk>{yield{type:"text-delta",text:JSON.stringify(this.payload)};yield{type:"complete",finishReason:"stop"}}
+}
+async function runWith(provider:MockGenerationProvider,value=snapshot()){const engine=new IntelligenceOrchestrator(provider,5000);return engine.run(input,"session","request",async request=>({requestId:"request",callId:request.callId,status:"ok",snapshot:value}),()=>{},new AbortController().signal)}
+
+const validPayload={type:"recommendation",title:"Ship deterministic routing",summary:"Start the deterministic Next Action.",rationale:[{claim:"Kaizen ranked this action first.",sourceIds:["t1"],kind:"deterministic-result"}],confidence:.9,uncertainty:[],assumptions:[],sourceIds:["t1"]};
+
+test("trusted router selects the only tool before a zero-tool provider request",async()=>{const provider=new RecordingProvider(),engine=new IntelligenceOrchestrator(provider,5000);let requested:any;const response=await engine.run(input,"session","request",async request=>{requested=request;assert.equal(provider.requests.length,0);return{requestId:"request",callId:request.callId,status:"ok",snapshot:snapshot()}},()=>{},new AbortController().signal);assert.deepEqual(requested.arguments,{localDate:"2026-08-19",includeCompleted:false,maximumItems:100});assert.equal(requested.tool,"get_today");assert.equal(provider.requests.length,1);const generation=provider.requests[0]!;assert.equal(generation.tools,undefined);assert.equal(generation.messages.some(message=>message.role==="tool"),false);const envelope=JSON.parse(generation.messages[1]!.content);assert.equal(envelope.route.selectedBy,"kaizen-deterministic-router");assert.equal(envelope.route.modelToolAccess,"none");assert.deepEqual(envelope.providerPolicy,{tools:"forbidden",additionalRetrieval:"forbidden",memory:"forbidden",writes:"forbidden"});assert.equal(response.sources[0]?.sourceId,"t1")});
+
+test("unsupported intent fails before tool execution or provider generation",async()=>{const provider=new RecordingProvider(),engine=new IntelligenceOrchestrator(provider,5000);let executed=false;await assert.rejects(()=>engine.run({...input,intent:"ask" as any},"s","r",async()=>{executed=true;throw new Error("unexpected")},()=>{},new AbortController().signal),(error:any)=>error?.code==="UNSUPPORTED_INTENT");assert.equal(executed,false);assert.equal(provider.requests.length,0)});
+
+test("snapshot validation rejects stale, oversized, and extra-scope evidence",async()=>{const stale=snapshot();stale.capturedAt=new Date(Date.now()-6*60_000).toISOString();await assert.rejects(()=>runWith(new MockGenerationProvider(),stale),(error:any)=>error?.code==="INVALID_TOOL_RESULT");const oversized=snapshot({tasks:Array.from({length:101},(_,i)=>({id:`t${i}`,title:"Bounded",space:"core",priority:"low",completed:false}))});await assert.rejects(()=>runWith(new MockGenerationProvider(),oversized),(error:any)=>error?.code==="INVALID_TOOL_RESULT");const scoped=snapshot({health:{sleepHours:8}});await assert.rejects(()=>runWith(new MockGenerationProvider(),scoped),(error:any)=>error?.code==="INVALID_TOOL_RESULT");const nested=snapshot({tasks:[{id:"t1",title:"Task",space:"core",priority:"high",completed:false,healthData:{sleepHours:8}}]});await assert.rejects(()=>runWith(new MockGenerationProvider(),nested),(error:any)=>error?.code==="INVALID_TOOL_RESULT");const duplicate=snapshot({scheduled:[{id:"t1",source:"core",title:"Colliding source"}]});await assert.rejects(()=>runWith(new MockGenerationProvider(),duplicate),(error:any)=>error?.code==="INVALID_TOOL_RESULT")});
+
+test("runtime rejects fabricated sources and deterministic precedence loss",async()=>{await assert.rejects(()=>runWith(new PayloadProvider({...validPayload,sourceIds:["invented"],rationale:[{claim:"Invented",sourceIds:["invented"],kind:"fact"}]})),(error:any)=>error?.code==="FABRICATED_SOURCE");await assert.rejects(()=>runWith(new PayloadProvider({...validPayload,sourceIds:[],rationale:[]})),(error:any)=>error?.code==="DETERMINISTIC_PRECEDENCE")});
+
+test("runtime rejects command shapes, unsupported facts, and missing uncertainty",async()=>{await assert.rejects(()=>runWith(new PayloadProvider({...validPayload,commands:[{type:"update_task"}]})),(error:any)=>error?.code==="INVALID_RESPONSE");await assert.rejects(()=>runWith(new PayloadProvider({...validPayload,rationale:[{claim:"Unsupported",sourceIds:[],kind:"fact"}]})),(error:any)=>error?.code==="UNSUPPORTED_CLAIM");const empty=snapshot({tasks:[],scheduled:[],attention:[],deterministicNextAction:undefined});await assert.rejects(()=>runWith(new PayloadProvider({...validPayload,title:"No focus",summary:"No data",sourceIds:[],rationale:[],uncertainty:[]}),empty),(error:any)=>error?.code==="UNCERTAINTY_REQUIRED")});

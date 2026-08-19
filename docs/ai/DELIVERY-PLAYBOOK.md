@@ -29,7 +29,7 @@ Before writing code:
 4. Confirm the request does not silently expand into an unapproved phase.
 5. Surface conflicts with locked decisions instead of guessing.
 
-Current freeze: Wave 0 model selection plus v0.1 integration validation. No v0.2 tools, memory, Health, writes or automation.
+Current freeze: v0.1.1 deterministic/mock implementation is complete and awaiting integration review; Wave 0 remains closed with no model. No real-model run, v0.2 tools, memory, retrieval, Health, writes, automation or additional domains.
 
 ## 3. Required implementation sequence
 

@@ -1,6 +1,6 @@
 {
   "name": "@kaizen/intelligence-engine",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "private": true,
   "type": "module",
   "description": "Independent local-first Kaizen Intelligence Engine",
@@ -10,7 +10,8 @@
     "start": "node dist/src/server.js",
     "test": "tsx --test test/*.test.ts",
     "typecheck": "tsc --noEmit -p tsconfig.json",
-    "qa:v0.1.1": "tsx --test test/interpreterArchitecture.test.ts",
+    "qa:v0.1.1": "tsx --test test/interpreterArchitecture.test.ts test/interpreterRuntime.test.ts",
+    "eval:v0.1.1": "tsx evaluation/v0.1.1/evaluate.ts",
     "qa:wave0": "python wave0/scripts/qa_wave0.py"
   },
   "dependencies": {

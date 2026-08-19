@@ -89,6 +89,19 @@ Health is separately consented. Secrets, session keys, provider credentials, raw
 
 [AI-ADR-019](adrs/AI-ADR-019-DETERMINISTIC-CORE-TODAY-ROUTING.md) removes model routing authority for the approved slice. Trusted code fixes `focus-today → get_today@1.0`; the provider receives one validated `core.today@1.0` snapshot and no tool definitions. Provider tool calls, unknown source IDs, command-shaped output, additional domains and policy changes embedded in user-authored fields are rejected. Health, memory, retrieval, writes, automation and remote processing remain unavailable.
 
+### v0.1.1 implemented controls
+
+- Gateway accepts only `{ intent: "focus-today", localDate }`; generic prompts, unknown intents and extra fields fail before request creation.
+- Trusted engine code constructs and schema-validates the only route and tool arguments.
+- Provider requests omit `tools` and contain no `tool` role message; any provider tool-call chunk fails with `MODEL_TOOL_CALL`.
+- Snapshot validation applies exact top-level, data, record, analytics, redaction and revision allowlists; stale, oversized and nested extra-scope payloads fail closed.
+- Factual/deterministic rationale claims require supplied sources; rationale IDs must also be response-level verified sources.
+- Deterministic Next Action evidence must be preserved; empty evidence requires uncertainty.
+- Browser validation pins the tool/version/arguments/contract, checks source and snapshot IDs, and rejects revision drift before rendering.
+- The fixed-purpose UI has no generic prompt input.
+
+Executable adversarial coverage includes unsupported intent, provider tool escalation, stale/oversized/Health-shaped evidence, fabricated sources, deterministic-precedence loss, unsupported facts, command properties, missing uncertainty and user-authored injection text.
+
 ## v0.1 implemented controls
 
 - Engine binds only to `127.0.0.1` or `::1`; configuration rejects network exposure.

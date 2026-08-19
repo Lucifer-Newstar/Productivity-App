@@ -18,8 +18,8 @@ export interface SessionPermissions {
 }
 
 export interface IntelligenceRequestInput {
-  prompt: string;
-  intent?: "focus-today" | "ask";
+  intent: "focus-today";
+  localDate: string;
   permissions: SessionPermissions;
 }
 

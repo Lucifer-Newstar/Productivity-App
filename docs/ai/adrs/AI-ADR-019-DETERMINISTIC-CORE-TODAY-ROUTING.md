@@ -81,10 +81,10 @@ No remote transfer is authorized. No secret, Health, memory, raw storage, privat
 - KAC-1 remains unchanged.
 - `get_today@1.0` and `core.today@1.0` remain unchanged.
 - Existing gateway, pairing, Domain Bridge and source-verification boundaries remain authoritative.
-- The v0.1 model-driven tool round remains supported only as existing foundation behavior; v0.1.1 production wiring must use the new deterministic route and cannot silently fall back to model-selected tools.
+- The v0.1 model-driven tool round is removed from production orchestration. Provider adapters retain protocol-level compatibility tests, but v0.1.1 cannot silently fall back to model-selected tools.
 - W0-GATE-2 remains frozen historical selection evidence and is not replaced or reinterpreted.
 
-No production runtime change is part of this architecture commit.
+The architecture commit contained no runtime change. The subsequent reviewed implementation follows this decision without changing its scope.
 
 ## Contract and evaluation updates
 

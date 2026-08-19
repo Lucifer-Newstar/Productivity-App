@@ -14,7 +14,7 @@
 
 ## Public repository vs LOCAL-ONLY boundary
 
-**LOCKED DECISION:** the `ai` branch and repository are public. Wave 0 uses an allowlist publication model: raw artifacts are private unless a sanitizer explicitly projects approved aggregate fields.
+**LOCKED DECISION:** the `ai` branch and repository are public. AI evaluation uses an allowlist publication model: raw artifacts are private unless an approved process projects public synthetic fixtures or sanitized aggregate fields.
 
 ### Public repository may contain
 
@@ -41,7 +41,10 @@
 ai/wave0/results-local/   LOCAL-ONLY, gitignored; raw captures and outputs
 ai/wave0/config/*.local.json  LOCAL-ONLY, gitignored machine configuration
 ai/wave0/results-public/  PUBLIC only after allowlist sanitization and review
+ai/evaluation/v0.1.1/results-public/  PUBLIC synthetic aggregates only
 ```
+
+Every v0.1.1 public aggregate declares `"classification": "PUBLIC-SANITIZED-AGGREGATE"` and excludes raw prompts, responses and machine data. The deterministic/mock evaluator uses repository-owned synthetic records only.
 
 `sanitize_results.py` copies only approved aggregate fields; it never copies raw prompts/responses, paths, IDs or sample logs. `privacy_scan.py` blocks sensitive staged paths and common secret/identifier patterns. The tracked pre-commit hook invokes the staged scan. Contributors enable it with:
 
@@ -51,11 +54,11 @@ git config core.hooksPath .githooks
 
 The hook is defense in depth, not permission to commit questionable data. If uncertain, keep the file under `results-local/`.
 
-## v0.1 data handling
+## v0.1.1 data handling
 
-The active `core.today@1.0` adapter sends at most bounded active task metadata, derived scheduled-item labels, high/critical notification labels, deterministic Next Action provenance, timestamps and revision metadata. It explicitly excludes Note content and all Health state. Tool snapshots, prompts and responses remain in process/session memory only. The browser stores only a session bearer token and non-reversible revision fingerprints.
+The active `core.today@1.0` adapter sends at most 100 projected records: bounded active task metadata, derived scheduled-item labels, high/critical attention labels, deterministic Next Action provenance, timestamps and revision metadata. It explicitly excludes Note content and all Health state. Tool snapshots, interpreter envelopes and responses remain in process/session memory only. The browser stores only a session bearer token and non-reversible revision fingerprints.
 
-The local model still receives the permitted prompt and snapshot during inference; local processing is not encryption. Disconnecting removes the browser token, while restarting the engine invalidates its in-memory sessions.
+The configured local provider receives the permitted interpreter envelope during inference; local processing is not encryption. No language model is currently selected. Disconnecting removes the browser token, while restarting the engine invalidates its in-memory sessions.
 
 ## Consent model
 

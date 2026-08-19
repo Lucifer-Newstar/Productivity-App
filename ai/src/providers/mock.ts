@@ -25,8 +25,11 @@ export class MockGenerationProvider implements GenerationProvider {
       return;
     }
     let snapshot: any = {};
-    try { snapshot = toolMessage ? JSON.parse(toolMessage.content) : {}; } catch {}
-    const data = snapshot?.snapshot?.data ?? snapshot?.data ?? {};
+    try {
+      const payload = toolMessage ? JSON.parse(toolMessage.content) : JSON.parse([...request.messages].reverse().find((message) => message.role === "user")?.content ?? "{}");
+      snapshot = payload?.evidence ?? payload?.snapshot ?? payload;
+    } catch {}
+    const data = snapshot?.data ?? {};
     const action = data.deterministicNextAction;
     const sourceId = action?.sourceId ?? data.tasks?.[0]?.id;
     const payload = {

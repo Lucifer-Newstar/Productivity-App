@@ -67,7 +67,7 @@ The tool cannot request arbitrary domains, raw localStorage, secrets or complete
 
 ## v0.1.1 deterministic route
 
-**LOCKED DECISION:** for `core.today.interpret`, trusted Kaizen code selects `get_today@1.0` before generation. The provider receives validated `core.today@1.0` evidence and no tool definitions. Any provider tool call is rejected rather than executed. This does not authorize another tool, domain, arbitrary query, memory, Health, write or automation path. See [AI-ADR-019](adrs/AI-ADR-019-DETERMINISTIC-CORE-TODAY-ROUTING.md) and the [v0.1.1 contract](V0.1.1-DETERMINISTIC-ROUTING-CONTRACT.md).
+**LOCKED AND IMPLEMENTED:** for `core.today.interpret`, trusted Kaizen code selects `get_today@1.0` before generation. The provider receives validated `core.today@1.0` evidence and no tool definitions. Any provider tool call is rejected rather than executed. The route fixes `includeCompleted: false` and `maximumItems: 100`; the browser projection and engine both enforce the bound. This does not authorize another tool, domain, arbitrary query, memory, Health, write or automation path. See [AI-ADR-019](adrs/AI-ADR-019-DETERMINISTIC-CORE-TODAY-ROUTING.md) and the [v0.1.1 contract](V0.1.1-DETERMINISTIC-ROUTING-CONTRACT.md).
 
 ## Permission evaluation
 

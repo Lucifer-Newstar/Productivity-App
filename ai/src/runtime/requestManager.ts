@@ -2,7 +2,8 @@
 import { randomUUID } from "node:crypto";
 import type { BridgeToolRequest, BridgeToolResult } from "../contracts/tools.js";
 import type { EngineEvent, IntelligenceRequestInput } from "../contracts/protocol.js";
-import { IntelligenceError, IntelligenceOrchestrator } from "./orchestrator.js";
+import { IntelligenceOrchestrator } from "./orchestrator.js";
+import { IntelligenceError } from "./errors.js";
 import { EngineTelemetry } from "../observability/telemetry.js";
 
 interface PendingTool { request: BridgeToolRequest; resolve: (result: BridgeToolResult) => void; reject: (error: Error) => void; timer: NodeJS.Timeout }

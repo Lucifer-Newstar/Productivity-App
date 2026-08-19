@@ -1,7 +1,7 @@
 # Kaizen Intelligence Engine — architecture gate
 
-**Status:** v0.1 Foundation implemented; v0.1.1 deterministic-routing architecture frozen before implementation<br>
-**Architecture package version:** 0.4-v0.1.1-contract<br>
+**Status:** v0.1.1 deterministic Core Today routing implemented and evaluated with deterministic mock; review required<br>
+**Architecture package version:** 0.5-v0.1.1-implementation<br>
 **Intelligence permissions:** READ / ANALYZE / SUGGEST only
 
 The canonical future-development authority is [`MASTER-SPECIFICATION.md`](MASTER-SPECIFICATION.md), interpreted together with KAC-1, locked ADRs, versioned contracts and the current `ai` branch. Execution follows [`DELIVERY-PLAYBOOK.md`](DELIVERY-PLAYBOOK.md), and every completed step updates the living [`IMPLEMENTATION-LEDGER.md`](IMPLEMENTATION-LEDGER.md). Fragmented later instructions do not silently replace these sources.
@@ -64,7 +64,8 @@ Every design choice in this package uses one of four labels:
 - [`IMPLEMENTATION-LEDGER.md`](IMPLEMENTATION-LEDGER.md) — current status, completed work, blockers and next steps.
 - [AI-ADR-019](adrs/AI-ADR-019-DETERMINISTIC-CORE-TODAY-ROUTING.md) — approved deterministic `get_today` routing and interpreter-only model authority.
 - [`V0.1.1-DETERMINISTIC-ROUTING-CONTRACT.md`](V0.1.1-DETERMINISTIC-ROUTING-CONTRACT.md) — frozen route, evidence and output contracts.
-- [`V0.1.1-INTERPRETER-EVALUATION.md`](V0.1.1-INTERPRETER-EVALUATION.md) — frozen interpreter-only gates and synthetic pre-implementation suite.
+- [`V0.1.1-INTERPRETER-EVALUATION.md`](V0.1.1-INTERPRETER-EVALUATION.md) — frozen interpreter-only gates and deterministic/mock result.
+- [`../reports/AI-V0.1.1-IMPLEMENTATION-2026-08-19.md`](../reports/AI-V0.1.1-IMPLEMENTATION-2026-08-19.md) — implementation, security and evaluation closeout.
 - [`DELIVERY-PLAYBOOK.md`](DELIVERY-PLAYBOOK.md) — mandatory pull/scope/test/privacy/docs/commit procedure.
 - [`V0.1-INTEGRATION-VALIDATION.md`](V0.1-INTEGRATION-VALIDATION.md) — deterministic/mock foundation validated; real model unavailable.
 - [`WAVE-0-REPORT.md`](WAVE-0-REPORT.md) — final no-model Selection Report.
@@ -74,4 +75,4 @@ Every design choice in this package uses one of four labels:
 
 ## Active implementation boundary
 
-The provider-neutral engine, gateway, read-only `get_today`, Domain Bridge and UI remain valid. Wave 0 selected no local model after four preflight failures. v0.1.1 now authorizes only deterministic `focus-today → get_today@1.0` routing and interpretation of validated Core Today evidence with zero model tool access. The architecture, contracts, gates and synthetic tests are frozen; production implementation awaits review. Health, memory, retrieval, additional domains, writes, automation, remote processing and v0.2 remain frozen.
+The provider-neutral engine now implements deterministic `focus-today → get_today@1.0` routing and interpretation of validated Core Today evidence with zero provider tool access. The deterministic/mock path passes the frozen synthetic gate and adversarial runtime tests. Wave 0 still selected no local model, so no real-model integration is approved. Health, memory, retrieval, additional domains, writes, automation, remote processing and v0.2 remain frozen.

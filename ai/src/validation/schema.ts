@@ -1,6 +1,7 @@
 /** Schema validation for schema payloads. */
 import { createRequire } from "node:module";
 import type { ErrorObject, ValidateFunction } from "ajv";
+import { DETERMINISTIC_TODAY_ROUTE_SCHEMA, TODAY_INTERPRETER_RESPONSE_SCHEMA } from "../contracts/interpreter.js";
 import { INTELLIGENCE_RESPONSE_SCHEMA } from "../contracts/responses.js";
 import { GET_TODAY_TOOL } from "../contracts/tools.js";
 
@@ -8,6 +9,8 @@ const require = createRequire(import.meta.url);
 const Ajv2020 = (require("ajv/dist/2020") as { default: new (options: object) => { compile: (schema: object) => ValidateFunction } }).default;
 const ajv = new Ajv2020({ allErrors: true, strict: true, allowUnionTypes: false });
 const intelligenceValidator = ajv.compile(INTELLIGENCE_RESPONSE_SCHEMA);
+const todayRouteValidator = ajv.compile(DETERMINISTIC_TODAY_ROUTE_SCHEMA);
+const todayInterpreterValidator = ajv.compile(TODAY_INTERPRETER_RESPONSE_SCHEMA);
 const toolValidators = new Map<string, ValidateFunction>([
   [`${GET_TODAY_TOOL.name}@${GET_TODAY_TOOL.version}`, ajv.compile(GET_TODAY_TOOL.inputSchema)],
 ]);
@@ -27,6 +30,19 @@ export function parseAndValidateIntelligence(value: string): ValidationResult<Re
   try { parsed = JSON.parse(value); }
   catch { return { ok: false, errors: ["response is not valid JSON"] }; }
   if (!intelligenceValidator(parsed)) return { ok: false, errors: messages(intelligenceValidator.errors) };
+  return { ok: true, value: parsed as Record<string, unknown>, errors: [] };
+}
+
+export function validateDeterministicTodayRoute(value: unknown): ValidationResult<Record<string, unknown>> {
+  if (!todayRouteValidator(value)) return { ok: false, errors: messages(todayRouteValidator.errors) };
+  return { ok: true, value: value as Record<string, unknown>, errors: [] };
+}
+
+export function parseAndValidateTodayInterpreter(value: string): ValidationResult<Record<string, unknown>> {
+  let parsed: unknown;
+  try { parsed = JSON.parse(value); }
+  catch { return { ok: false, errors: ["response is not valid JSON"] }; }
+  if (!todayInterpreterValidator(parsed)) return { ok: false, errors: messages(todayInterpreterValidator.errors) };
   return { ok: true, value: parsed as Record<string, unknown>, errors: [] };
 }
 

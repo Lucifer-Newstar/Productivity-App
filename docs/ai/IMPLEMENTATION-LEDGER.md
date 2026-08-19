@@ -6,9 +6,9 @@ _Last updated: 2026-08-19_
 
 ## Current milestone
 
-> **v0.1.1 deterministic Core Today routing architecture, contracts, frozen gates and synthetic tests complete. Stop for implementation review.**
+> **v0.1.1 deterministic Core Today routing implemented, security-tested and evaluated with deterministic mock. Stop for integration review.**
 
-AI-ADR-019 authorizes trusted `focus-today → get_today@1.0` routing and model interpretation of validated `core.today@1.0` evidence with zero model tool access. No production v0.1.1 runtime change has been made. Memory, retrieval, Health context, write actions, automation, additional domains, remote processing and v0.2 remain frozen.
+AI-ADR-019 now governs the runtime: trusted code selects `get_today@1.0`, validates bounded/fresh `core.today@1.0`, and invokes the provider with no tools. `V011-INT-GATE-1` passes for the deterministic/mock implementation. No real model is selected. Memory, retrieval, Health context, write actions, automation, additional domains, remote processing and v0.2 remain frozen.
 
 ## Completed architecture and foundation
 
@@ -29,7 +29,7 @@ AI-ADR-019 authorizes trusted `focus-today → get_today@1.0` routing and model 
 | Privacy-safe observability | Complete | Aggregate in-memory `/v1/metrics` |
 | Public vs LOCAL-ONLY boundary | Complete | Ignore rules, sanitizer, pre-commit scanner |
 
-## v0.1.1 architecture phase
+## v0.1.1 implementation and validation
 
 | Deliverable | Status | Evidence |
 |---|---|---|
@@ -38,8 +38,13 @@ AI-ADR-019 authorizes trusted `focus-today → get_today@1.0` routing and model 
 | Interpreter-only evaluation gate | Frozen before implementation | `V011-INT-GATE-1`, `ai/evaluation/v0.1.1/gates.v0.1.1.json` |
 | Public synthetic fixtures | Complete | `ai/test/fixtures/v0.1.1-interpreter.json` |
 | Pre-implementation executable tests | Complete | valid, empty, injection-resistant and rejection mutants |
-| Production router/interpreter wiring | NOT STARTED | review required before implementation |
-| Real model integration | BLOCKED | no selected model; later candidate must pass the new gate and review |
+| Production router/interpreter wiring | Complete | fixed intent, one trusted tool, zero-tool provider request |
+| Evidence validation | Complete | exact field/revision allowlists, 100-record and five-minute bounds |
+| Response enforcement | Complete | schema, sources, precedence, uncertainty and command rejection |
+| Browser verification/UI | Complete | exact route envelope, source/snapshot/revision checks, fixed-purpose action |
+| Security/adversarial tests | PASS | `interpreterRuntime.test.ts` plus injection/gateway suites |
+| Deterministic/mock evaluation | PASS | public `V011-INT-GATE-1` aggregate, 10/10 metrics |
+| Real model integration | BLOCKED | no selected model; later candidate must pass the gate and review |
 
 The new gate does not supersede or weaken `W0-GATE-2`. It evaluates a different, narrower provider role with no tools.
 
@@ -47,7 +52,8 @@ The new gate does not supersede or weaken `W0-GATE-2`. It evaluates a different,
 
 | Gate | Status |
 |---|---|
-| Mock provider end-to-end | PASS |
+| Mock provider end-to-end | PASS for deterministic v0.1.1 route |
+| Provider receives no tool definitions/round | PASS |
 | llama.cpp HTTP/SSE adapter protocol mock | PASS |
 | Task/notification/scheduled injection fixtures | PASS |
 | Write/second-tool escalation rejection | PASS |
@@ -76,13 +82,13 @@ See [`V0.1-INTEGRATION-VALIDATION.md`](V0.1-INTEGRATION-VALIDATION.md).
 | Guaranteed `--jinja` tool template | Complete |
 | `[N/A]`-tolerant NVIDIA sampling | Complete |
 
-Synthetic harness status: **38/38 passed** before the first target result intake; corrected rerun remains pending.
+Synthetic harness status: **38/38 passed** before the first target result intake; Wave 0 later closed with no selection.
 
 ## Received target evidence
 
 ### Qwen3 4B Instruct 2507 Q4_K_M — AC balanced
 
-Status: **REJECT CURRENT CONFIGURATION / CORRECTED RERUN PENDING**
+Status: **REJECTED; corrected preflight also failed**
 
 Measured strengths:
 
@@ -169,17 +175,14 @@ The larger control is rejected. Wave 0 is complete with no model selected. No mo
 
 ## Next review
 
-Review the completed v0.1.1 architecture package before production implementation. If implementation is approved, follow this order without expanding scope:
+Review the completed v0.1.1 implementation, security evidence and deterministic/mock evaluation. Explicitly choose one of:
 
-1. add the trusted fixed-intent router and typed unsupported result;
-2. execute only existing `get_today@1.0` through the authenticated Domain Bridge;
-3. validate `core.today@1.0` before constructing an interpreter request;
-4. invoke providers with no tool definitions and reject provider tool calls;
-5. enforce response schema, source subset, deterministic precedence and freshness;
-6. run security/adversarial suites and `V011-INT-GATE-1` evaluation;
-7. document results and stop for integration review.
+1. accept v0.1.1 as the deterministic/mock production-quality baseline and keep real-model integration deferred;
+2. authorize a separately defined interpreter-only local-model candidate evaluation against the unchanged `V011-INT-GATE-1` (not a Wave 0 reopening);
+3. request bounded implementation corrections within AI-ADR-019;
+4. defer further Intelligence work.
 
-Production memory, retrieval, Health, writes, automation, remote processing and additional domains remain frozen. No local model is selected.
+Do not start a real-model run, remote-provider ADR, v0.2, memory, retrieval, Health, writes, automation or additional domains without separate approval.
 
 ## Documentation and repository maintenance
 
@@ -188,7 +191,7 @@ Latest maintenance pass:
 - Root, frontend, backend and Intelligence README files aligned with the current architecture and no-model Wave 0 outcome.
 - Stale “coming soon”, placeholder/in-progress and architecture-only Intelligence descriptions removed from active docs.
 - Documentation indexes, route metadata, setup commands and quality gates synchronized.
-- All 240 maintained TypeScript, JavaScript, Python, PowerShell, CSS and shell source files now include explanatory commentary.
+- All 246 maintained TypeScript, JavaScript, Python, PowerShell, CSS and shell source files now include explanatory commentary.
 - `qa:comments` permanently enforces source-comment coverage.
 - Historical reports/bug entries remain intact and are explicitly treated as dated evidence rather than current status.
 
@@ -206,8 +209,7 @@ Latest maintenance pass:
 ## Latest relevant commits
 
 ```text
-fa130e2 fix(ai): correct Wave 0 schema and GPU telemetry
-f0e917b docs(ai): publish corrected Qwen rerun checklist
-6ab4181 test(ai): add first sanitized target benchmark
-95f5276 docs(ai): assess first Qwen target result
+0c2c2d8 docs(ai): freeze v0.1.1 routing architecture
+2a08bd7 chore(quality): enforce source commentary coverage
+cd015bb docs(ai): close Wave 0 with no model selected
 ```

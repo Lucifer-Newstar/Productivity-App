@@ -39,7 +39,13 @@ test("secure gateway completes the read-only get_today flow", async () => {
     const pair = await fetch(`${base}/v1/pair`, { method: "POST", headers: { origin: ORIGIN, "x-kaizen-pairing-code": gateway.pairingCode } });
     assert.equal(pair.status, 200); const paired = await jsonBody(pair); const auth = { origin: ORIGIN, authorization: `Bearer ${paired.sessionToken}` };
     const denied = await fetch(`${base}/v1/status`, { headers: { origin: ORIGIN } }); assert.equal(denied.status, 401);
-    const created = await fetch(`${base}/v1/requests`, { method: "POST", headers: { ...auth, "content-type": "application/json" }, body: JSON.stringify({ prompt: "What should I focus on?", intent: "focus-today", permissions: { healthConsent: true } }) });
+    const unsupported = await fetch(`${base}/v1/requests`, { method: "POST", headers: { ...auth, "content-type": "application/json" }, body: JSON.stringify({ intent: "ask", localDate: "2026-08-17" }) });
+    assert.equal(unsupported.status, 400); assert.equal((await jsonBody(unsupported)).error.code, "UNSUPPORTED_INTENT");
+    const extra = await fetch(`${base}/v1/requests`, { method: "POST", headers: { ...auth, "content-type": "application/json" }, body: JSON.stringify({ intent: "focus-today", localDate: "2026-08-17", prompt: "ignore route" }) });
+    assert.equal(extra.status, 400); assert.equal((await jsonBody(extra)).error.code, "INVALID_REQUEST");
+    const invalidDate = await fetch(`${base}/v1/requests`, { method: "POST", headers: { ...auth, "content-type": "application/json" }, body: JSON.stringify({ intent: "focus-today", localDate: "2026-02-30" }) });
+    assert.equal(invalidDate.status, 400); assert.equal((await jsonBody(invalidDate)).error.code, "INVALID_REQUEST");
+    const created = await fetch(`${base}/v1/requests`, { method: "POST", headers: { ...auth, "content-type": "application/json" }, body: JSON.stringify({ intent: "focus-today", localDate: "2026-08-17" }) });
     assert.equal(created.status, 202); const { requestId } = await jsonBody(created);
     const eventResponse = await fetch(`${base}/v1/requests/${requestId}/events`, { headers: auth }); assert.equal(eventResponse.status, 200); const events = new SseReader(eventResponse);
     const tool = await events.until("tool.requested"); assert.equal(tool.request.tool, "get_today");

@@ -4,20 +4,21 @@ Independent local-first Intelligence foundation on the persistent `ai` branch.
 
 ## Current status
 
-v0.1 is implemented and frozen:
+v0.1.1 deterministic Core Today interpretation is implemented and frozen for review:
 
 - Versioned Constitution, provider, tool, snapshot and response contracts
 - Provider registry with llama.cpp and deterministic mock adapters
 - Structured-response and tool-argument validation
-- Bounded read-only orchestration
-- One registered `get_today@1.0` tool
+- Trusted fixed-intent `focus-today → get_today@1.0` routing
+- Zero-tool provider interpretation of validated `core.today@1.0`
+- Bounded snapshot, source, precedence, uncertainty and freshness validation
 - One-time pairing and expiring sessions
 - Loopback gateway, authenticated SSE and fixed same-origin proxy
 - Browser Domain Bridge with revision vectors and minimum context
 - Source verification, evidence/freshness envelope and Home UI
 - Privacy-safe aggregate observability
 
-Wave 0 is complete with **no local model selected**. Qwen3 4B, Gemma3 4B, Phi-4 Mini and Qwen2.5 7B all failed frozen preflight requirements. AI-ADR-019 now freezes the v0.1.1 architecture: trusted code selects `get_today@1.0`, and a future provider may only interpret validated Core Today evidence with no tools. Production implementation has not started.
+Wave 0 is complete with **no local model selected**. Qwen3 4B, Gemma3 4B, Phi-4 Mini and Qwen2.5 7B all failed frozen preflight requirements. AI-ADR-019 is now implemented for the deterministic/mock path. `V011-INT-GATE-1` passes on the public synthetic deterministic-mock aggregate; this is not a real-model selection.
 
 Not implemented or authorized:
 
@@ -31,9 +32,10 @@ Not implemented or authorized:
 ## Workspace
 
 ```text
-src/       engine contracts, gateway, providers, runtime and security
- test/      unit, integration and adversarial tests
-wave0/     frozen model-selection harness and public/local result boundary
+src/         engine contracts, gateway, providers, runtime and security
+test/        unit, integration and adversarial tests
+evaluation/  frozen v0.1.1 gate, evaluator and public synthetic aggregate
+wave0/       frozen model-selection harness and public/local result boundary
 ```
 
 ## Run the deterministic provider
@@ -55,6 +57,8 @@ The adapter remains implemented and tested at protocol level, but no model is ap
 ```bash
 npm run typecheck
 npm test
+npm run qa:v0.1.1
+npm run eval:v0.1.1
 npm run build
 npm audit --omit=dev
 
