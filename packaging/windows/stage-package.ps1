@@ -1,6 +1,6 @@
 # Stages the bundled Windows x64 application consumed by the single-file installer build.
 [CmdletBinding()]
-param([string]$Version = "1.0.0", [switch]$SkipInstall)
+param([string]$Version = "1.0.0", [switch]$SkipInstall, [switch]$SkipBuild)
 $ErrorActionPreference = "Stop"
 $root = (Resolve-Path (Join-Path $PSScriptRoot "../..")).Path
 $artifacts = Join-Path $root "release-artifacts"
@@ -18,8 +18,9 @@ if($Version -ne $declaredVersion){throw "Installer version $Version does not mat
 $env:KAIZEN_LOCAL_PACKAGE="1"
 $env:KAIZEN_UPDATE_CHANNEL="github"
 $env:KAIZEN_DESKTOP="1"
-Run "npm.cmd" @("run","build") (Join-Path $root "frontend")
-Run "npm.cmd" @("run","build") (Join-Path $root "ai")
+if(-not $SkipBuild){Run "npm.cmd" @("run","build") (Join-Path $root "frontend");Run "npm.cmd" @("run","build") (Join-Path $root "ai")}
+$frontendOutput=Join-Path $root "frontend/.next/standalone/server.js";$engineOutput=Join-Path $root "ai/dist/src/server.js";$electronOutput=Join-Path $root "packaging/desktop/node_modules/electron/dist/electron.exe"
+foreach($required in @($frontendOutput,$engineOutput,$electronOutput)){if(-not(Test-Path $required)){throw "Required package build output is missing: $required"}}
 $frontend=Join-Path $stage "frontend";New-Item $frontend -ItemType Directory -Force|Out-Null
 Copy-Item (Join-Path $root "frontend/.next/standalone/*") $frontend -Recurse -Force
 New-Item (Join-Path $frontend ".next") -ItemType Directory -Force|Out-Null

@@ -6,13 +6,13 @@ Kaizen continuous delivery produces verified Windows artifacts and can publish a
 
 ### Automatic candidate after main CI
 
-A successful push-triggered **Kaizen CI** run on `main` automatically starts Windows Installer against that exact commit. It builds, installs, verifies, uninstalls and uploads a 14-day candidate artifact. This is continuous delivery evidence, not a public release and not a cloud deployment.
+A successful push-triggered **Kaizen CI** run on `main` automatically starts Windows Installer against that exact commit. It builds, installs, exercises a running in-place update, verifies, uninstalls and uploads a 14-day artifact. After verification, CD also moves the `continuous` tag and replaces assets on the public **Kaizen Continuous Build** prerelease. This rolling prerelease is explicitly unstable; stable installed applications ignore prereleases. It is artifact delivery, not cloud application deployment.
 
 ### Manual artifact
 
 Run **Windows Installer** through `workflow_dispatch`. This validates the requested semantic version, scans tracked files for privacy violations, builds and installs the setup executable, runs packaged verification, uninstalls it and uploads a 14-day Actions artifact.
 
-Manual delivery never runs the publish job and never creates a GitHub Release.
+Manual delivery never runs either publication job and never creates or changes a GitHub Release.
 
 ### Tagged open-source release
 
@@ -26,6 +26,10 @@ An annotated `vMAJOR.MINOR.PATCH` tag activates publication. Before building, th
 6. reviewed `docs/releases/<tag>.md` exists.
 
 The Windows job then requires build, silent install, launch, in-place setup update with process shutdown, sanitized verification and silent uninstall to pass. Only after those gates does the publish job create the GitHub Release.
+
+## GitHub Releases versus Packages
+
+The Windows setup is distributed as a GitHub Release asset. GitHub Packages supports package ecosystems such as npm, Maven, NuGet and containers; publishing the installer as a fake npm/NuGet package would be misleading and would not improve updates. GitHub automatically provides source archives with each release, while the verified setup, checksum and manifests remain canonical release assets.
 
 ## Delivered files
 

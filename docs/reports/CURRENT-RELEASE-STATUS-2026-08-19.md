@@ -17,7 +17,7 @@
 | PR #4 | Merged as `06cf13c` |
 | Main CI | GREEN — run `32260387533`, all four jobs |
 | Windows package | Native Electron window + dynamic internal ports + registered installer/uninstaller; Windows rerun pending |
-| Continuous delivery | Green main CI automatically builds verified candidate; annotated tag publishes |
+| Continuous delivery | Green main refreshes public rolling prerelease; annotated semantic tag publishes stable |
 | Installed updates | Fixed GitHub release check + notification + user-confirmed in-place setup upgrade |
 | Open-source license | ISC License present |
 | Cloud deployment | Not planned |

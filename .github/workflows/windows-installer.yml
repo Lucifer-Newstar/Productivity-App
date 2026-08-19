@@ -88,11 +88,32 @@ jobs:
       - name: Install pinned Inno Setup compiler
         shell: pwsh
         run: choco install innosetup --version=6.7.1 --yes --no-progress
+      - name: Install application and desktop dependencies
+        shell: pwsh
+        run: |
+          npm ci --prefix frontend
+          npm ci --prefix ai
+          npm ci --prefix packaging/desktop
+      - name: Build frontend and Intelligence workspaces
+        shell: pwsh
+        env:
+          KAIZEN_LOCAL_PACKAGE: "1"
+          KAIZEN_UPDATE_CHANNEL: github
+          KAIZEN_DESKTOP: "1"
+        run: |
+          npm run build --prefix frontend
+          npm run build --prefix ai
+          $required = @(
+            "frontend/.next/standalone/server.js",
+            "ai/dist/src/server.js",
+            "packaging/desktop/node_modules/electron/dist/electron.exe"
+          )
+          foreach ($path in $required) { if (-not (Test-Path $path)) { throw "Missing package build output: $path" } }
       - name: Build single-file setup
         shell: pwsh
         env:
           KAIZEN_RELEASE_VERSION: ${{ needs.delivery-gate.outputs.version }}
-        run: powershell -ExecutionPolicy Bypass -File packaging/windows/build-installer.ps1 -Version $env:KAIZEN_RELEASE_VERSION
+        run: powershell -ExecutionPolicy Bypass -File packaging/windows/build-installer.ps1 -Version $env:KAIZEN_RELEASE_VERSION -SkipInstall -SkipBuild
       - name: Install silently
         shell: pwsh
         env:
@@ -174,6 +195,38 @@ jobs:
             release-artifacts/release-manifest.json
           if-no-files-found: error
           retention-days: 14
+
+  continuous-release:
+    name: Update public continuous prerelease
+    if: github.event_name == 'workflow_run'
+    needs: [delivery-gate, build-and-verify]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.workflow_run.head_sha }}
+      - uses: actions/download-artifact@v4
+        with:
+          name: Kaizen-${{ needs.delivery-gate.outputs.version }}-win-x64
+          path: release-artifacts
+      - name: Move continuous tag and publish verified assets
+        env:
+          GH_TOKEN: ${{ github.token }}
+          DELIVERY_SHA: ${{ github.event.workflow_run.head_sha }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git tag -f continuous "$DELIVERY_SHA"
+          git push origin refs/tags/continuous --force
+          if gh release view continuous --repo "${{ github.repository }}" >/dev/null 2>&1; then
+            gh release edit continuous --repo "${{ github.repository }}" --prerelease --title "Kaizen Continuous Build" --notes "Automated verified build from main at $DELIVERY_SHA. This rolling prerelease is for testing; stable installations ignore it."
+          else
+            gh release create continuous --repo "${{ github.repository }}" --prerelease --target "$DELIVERY_SHA" --title "Kaizen Continuous Build" --notes "Automated verified build from main at $DELIVERY_SHA. This rolling prerelease is for testing; stable installations ignore it."
+          fi
+          gh release upload continuous release-artifacts/* --repo "${{ github.repository }}" --clobber
 
   github-release:
     name: Publish open-source release

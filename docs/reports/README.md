@@ -40,6 +40,7 @@
 - [`CONTINUOUS-DELIVERY-FOUNDATION-2026-08-19.md`](CONTINUOUS-DELIVERY-FOUNDATION-2026-08-19.md) — exact-main CI, provenance, manifests and tag publication gates.
 - [`UPDATE-AND-OPEN-SOURCE-READINESS-2026-08-19.md`](UPDATE-AND-OPEN-SOURCE-READINESS-2026-08-19.md) — release notification, in-place setup update and cleanup review.
 - [`NATIVE-DESKTOP-SHELL-2026-08-19.md`](NATIVE-DESKTOP-SHELL-2026-08-19.md) — native window, dynamic loopback lifecycle, security and migration gate.
+- [`WINDOWS-INSTALLER-RUN-2-INTAKE-2026-08-19.md`](WINDOWS-INSTALLER-RUN-2-INTAKE-2026-08-19.md) — explicit dependency/build/output staging after native installer failure.
 - [`CORE-DATE-HABIT-CORRECTNESS-2026-08-19.md`](CORE-DATE-HABIT-CORRECTNESS-2026-08-19.md) — local-calendar utilities and history-derived habit streak corrections.
 - [`PRODUCTION-DATA-BASELINE-2026-08-19.md`](PRODUCTION-DATA-BASELINE-2026-08-19.md) — empty fresh user history with preserved product catalogs/templates.
 - [`LOCAL-RELEASE-DATA-AUTHORITY-2026-08-19.md`](LOCAL-RELEASE-DATA-AUTHORITY-2026-08-19.md) — browser-only v1 authority decision and reference API network-bind hardening.

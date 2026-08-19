@@ -5,7 +5,7 @@
 
 ## Purpose
 
-The Windows Installer workflow now serves as a gated continuous-delivery pipeline. It produces private manual artifacts or, only for an intentional annotated version tag, a public open-source GitHub Release. This is artifact delivery, not cloud application deployment.
+The Windows Installer workflow now serves as a gated continuous-delivery pipeline. Manual runs produce private artifacts. Green `main` CI refreshes a public rolling `continuous` prerelease after Windows verification, while only an intentional annotated semantic-version tag can publish a stable open-source GitHub Release. This is artifact delivery, not cloud application deployment.
 
 ## Release gates
 

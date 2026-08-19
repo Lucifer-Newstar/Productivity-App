@@ -63,6 +63,7 @@ Current production verification: **39/39 user routes return HTTP 200**, five Ent
 | [`reports/CONTINUOUS-DELIVERY-FOUNDATION-2026-08-19.md`](reports/CONTINUOUS-DELIVERY-FOUNDATION-2026-08-19.md) | Main/tag provenance, artifact verification and open-source release gates |
 | [`reports/UPDATE-AND-OPEN-SOURCE-READINESS-2026-08-19.md`](reports/UPDATE-AND-OPEN-SOURCE-READINESS-2026-08-19.md) | Installed update flow, repository cleanup and remaining release evidence |
 | [`reports/NATIVE-DESKTOP-SHELL-2026-08-19.md`](reports/NATIVE-DESKTOP-SHELL-2026-08-19.md) | Electron window, dynamic loopback lifecycle and one-time data migration |
+| [`reports/WINDOWS-INSTALLER-RUN-2-INTAKE-2026-08-19.md`](reports/WINDOWS-INSTALLER-RUN-2-INTAKE-2026-08-19.md) | Native installer build-output failure and explicit phase correction |
 | [`reports/CORE-DATE-HABIT-CORRECTNESS-2026-08-19.md`](reports/CORE-DATE-HABIT-CORRECTNESS-2026-08-19.md) | Local-date and habit-streak correctness fixes |
 | [`reports/PRODUCTION-DATA-BASELINE-2026-08-19.md`](reports/PRODUCTION-DATA-BASELINE-2026-08-19.md) | Empty fresh user history and retained product catalogs/templates |
 | [`reports/LOCAL-RELEASE-DATA-AUTHORITY-2026-08-19.md`](reports/LOCAL-RELEASE-DATA-AUTHORITY-2026-08-19.md) | Browser-only release authority and reference API hardening |
