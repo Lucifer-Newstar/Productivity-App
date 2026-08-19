@@ -229,7 +229,7 @@ Application configuration accepts deterministic provider only. Model settings fa
 
 CI never downloads/runs models, uses GPUs or exposes a personal laptop. The live integration script is `scripts/ci/core-today-integration.mjs`.
 
-The workflow is implemented and locally reproduced. Hosted run 1 executed stale commit `ae62224` and failed the old Entertainment seed assertion; it also exposed deprecated JavaScript action runtimes. Current CI uses Node 24-compatible action majors and the empty-production-library contract. Push the latest `ai` head and require a new four-job green run.
+The workflow is implemented and locally reproduced. Hosted run 1 executed stale commit `ae62224`, failed the old Entertainment structural seed assertion and exposed deprecated JavaScript action runtimes. Run 2 (`32255006909`, `615da49`) passed the backend and Intelligence jobs but exposed a second stale seed expectation in the Entertainment migration QA; the integration job was dependency-skipped. The migration assertion now requires an exactly empty production library. Push the corrected `ai` head and require a new four-job green run.
 
 ## 9. Current completion status
 

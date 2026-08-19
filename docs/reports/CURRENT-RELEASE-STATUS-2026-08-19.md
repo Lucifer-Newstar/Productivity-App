@@ -17,7 +17,7 @@
 | Express network security | Non-loopback requires service key |
 | Deterministic Intelligence | Authoritative Core Today path |
 | Model evaluation | Closed; no model selected |
-| CI | Implemented locally; run 1 used stale commit and failed; current-head rerun pending |
+| CI | Implemented; run 2 exposed one stale empty-library migration assertion; corrected rerun pending |
 | Cloud deployment | Not planned |
 
 ## Backlog gate
@@ -26,7 +26,7 @@ All identified P0/P1 code or architecture items are now fixed, scoped or explici
 
 The final local regression is green. The release is blocked on hosted/review evidence:
 
-1. first hosted GitHub CI run;
+1. one fully green four-job hosted GitHub CI run (runs 1 and 2 supplied corrective evidence but were not green);
 2. regenerated final PR diff/review after hosted results;
 3. authenticated `ai`→`main` PR creation;
 4. human review and explicit merge approval.
