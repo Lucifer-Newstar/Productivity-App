@@ -27,11 +27,11 @@ Priorities:
 
 | ID | Category | Evidence | Required action | Exit evidence |
 |---|---|---|---|---|
-| APP-001 | Incomplete | No `.github/workflows`; green results are local/manual | Add CI foundation for frontend, backend, AI, docs/privacy and deterministic integration; no model/GPU jobs | PR workflow green on clean runner |
+| APP-001 | Implemented / pending hosted proof | `.github/workflows/ci.yml` now defines frontend, backend, deterministic AI and integration jobs | Push branch and require all four checks; fix runner-only failures without weakening suites | PR workflow green on clean runner |
 | APP-002 | Mock/placeholder | Production first run seeds personal-looking tasks, notes, achievements, goals, Forge project, PRs and media | Separate immutable product catalogs/templates from user records; default user logs to empty or explicit onboarding sample workspace | Fresh profile contains no fabricated personal history; migrations preserve existing users |
 | APP-003 | Broken | Calendar creates local dates then uses `toISOString()`, shifting days in positive-offset timezones such as IST | Introduce shared local-date utility and regression tests across Home/task/schedule date paths | IST and negative-offset calendar/task tests pass |
 | APP-004 | Incomplete architecture | Frontend uses localStorage only; Express is unused/in-memory; release durability promise is undefined | Decide and document one release authority: browser-only with complete backup/recovery, or durable integrated backend. Do not wire the in-memory API as production persistence | Approved architecture decision plus executable durability test |
-| APP-005 | Incomplete | No automated process test starts frontend + deterministic engine and exercises pairing/SSE/tool callback/source verification | Add a CI-safe deterministic integration runner; no model process | Integration job passes through fixed Next proxy on Ubuntu/Node 20 |
+| APP-005 | Implemented / pending hosted proof | `scripts/ci/core-today-integration.mjs` starts actual frontend/engine and verifies pairing/SSE/tool/source/session flow | Require integration job and keep model authorization closed | Integration job passes through fixed Next proxy on Ubuntu/Node 20 |
 | APP-006 | Documentation drift | Current status is spread across historical wave tables with contradictory early ❌ and later ✅ rows | Create one current release matrix and label historical tables as evidence, not current backlog | Docs QA enforces current-state matrix links/status |
 
 ## P1 — required before local packaging/release
@@ -128,18 +128,17 @@ CI must assert:
 ## Recommended execution order
 
 ```text
-1. APP-002 production data/onboarding truth
-2. APP-003 calendar timezone correctness
-3. APP-101 habit streak correctness
-4. APP-004 storage/backend authority decision
-5. APP-001 CI foundation
-6. APP-005 deterministic integration CI
-7. APP-107 backend exposure hard-fail
-8. Remaining P1 persistence/error/backup work
-9. Full regression + documentation release matrix
-10. Re-review PR ai → main; do not merge before gates pass
+1. Verify APP-001/APP-005 on the first hosted GitHub run
+2. APP-002 production data/onboarding truth
+3. APP-003 calendar timezone correctness
+4. APP-101 habit streak correctness
+5. APP-004 storage/backend authority decision
+6. APP-107 backend exposure hard-fail
+7. Remaining P1 persistence/error/backup work
+8. Full regression + documentation release matrix
+9. Re-review PR ai → main; do not merge before gates pass
 ```
 
 ## Current release gate
 
-**BLOCKED.** The AI chain is complete, but application release/merge readiness is not established until the P0 decisions/fixes and CI foundation are complete. This backlog supersedes “green suites imply finished product” assumptions.
+**BLOCKED.** CI and the deterministic integration runner are implemented but have not yet produced a hosted GitHub result. Production data, timezone and persistence P0 work remains. This backlog supersedes “green suites imply finished product” assumptions.

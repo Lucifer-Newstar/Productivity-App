@@ -109,7 +109,7 @@ Frontend AI QA: 15/15 PASS
 Frontend production build: PASS — 42 generated routes
 Live default-config integration: PASS
 Live model-provider rejection: PASS
-Documentation QA: 48/48 PASS
+Documentation QA: 50/50 PASS
 Source commentary QA: 255/255 PASS
 Git diff check: PASS
 Staged privacy scan: PASS

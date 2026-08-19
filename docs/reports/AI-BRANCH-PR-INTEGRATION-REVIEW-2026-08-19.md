@@ -15,10 +15,10 @@ The later whole-product gap audit established that this is not sufficient eviden
 ## PR diff summary
 
 ```text
-Commits from main: 57
-Files changed: 231
-Additions: 18504
-Deletions: 252
+Commits from main: 58
+Files changed: 236
+Additions: 18905
+Deletions: 253
 Merge base: cc8155d265f8752e20c294f4a6fd51f36d5ea291
 Merge topology: origin/main is an ancestor of ai; no conflict expected
 ```
@@ -185,7 +185,7 @@ Production CSP remains free of `unsafe-eval`; external URLs, restored images, CS
 | Home intelligence | 10/10 PASS |
 | Backend TypeScript build | PASS |
 | Backend security smoke | 13/13 PASS |
-| Documentation QA | 49/49 PASS |
+| Documentation QA | 50/50 PASS |
 | Source commentary QA | 255/255 PASS |
 | Staged privacy scan | PASS |
 | Git diff check | PASS |

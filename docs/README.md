@@ -52,6 +52,7 @@ Current production verification: **39/39 user routes return HTTP 200**, five Ent
 | [`reports/AI-BRANCH-PR-CHANGED-FILES-2026-08-19.md`](reports/AI-BRANCH-PR-CHANGED-FILES-2026-08-19.md) | Complete changed-file and line-count PR diff |
 | [`reports/APPLICATION-GAP-AUDIT-2026-08-19.md`](reports/APPLICATION-GAP-AUDIT-2026-08-19.md) | Current frontend/backend/integration and product-completion audit |
 | [`reports/APPLICATION-COMPLETION-BACKLOG-2026-08-19.md`](reports/APPLICATION-COMPLETION-BACKLOG-2026-08-19.md) | Prioritized release backlog and CI foundation specification |
+| [`reports/CI-FOUNDATION-2026-08-19.md`](reports/CI-FOUNDATION-2026-08-19.md) | Hosted correctness workflow and deterministic integration runner |
 | [`notifications/README.md`](notifications/README.md) | Global inbox, rule catalog, settings and scope decisions |
 
 ### Kaizen Intelligence Engine
@@ -81,6 +82,7 @@ Wave 0 is complete with no passing local model selected. The v0.1 provider-neutr
 - [`guides/DEPLOYMENT.md`](guides/DEPLOYMENT.md) — production topology and security requirements.
 - [`guides/DATA-BACKUP-RESTORE.md`](guides/DATA-BACKUP-RESTORE.md) — browser data, exports and recovery.
 - [`guides/TESTING.md`](guides/TESTING.md) — every automated and runtime QA gate.
+- [`guides/CI.md`](guides/CI.md) — hosted frontend/backend/AI/integration jobs with no model execution.
 - [`guides/CONTRIBUTING.md`](guides/CONTRIBUTING.md) — branches, commits, migrations and review expectations.
 
 ### Architecture notes

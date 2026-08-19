@@ -11,6 +11,8 @@ npm audit --omit=dev
 npm run build
 ```
 
+Hosted pull-request enforcement is defined in [`CI.md`](CI.md) and `.github/workflows/ci.yml`. CI uses CPU runners and never starts a rejected model.
+
 ## Domain suites
 
 ```bash

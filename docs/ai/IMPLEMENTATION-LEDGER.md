@@ -6,9 +6,9 @@ _Last updated: 2026-08-19_
 
 ## Current milestone
 
-> **Whole-product gap audit and completion backlog are complete; PR creation/merge is blocked pending P0 fixes and CI.**
+> **CI foundation and deterministic live integration automation are implemented; hosted proof and remaining P0 product fixes still block PR/merge.**
 
-The deterministic Core Today chain remains accepted and closed. The broader audit confirms 39 functional routes and extensive local features, but the frontend does not consume the in-memory Express API, first-run state contains mock personal history, release persistence is unresolved, CI is absent and correctness/security gaps remain. See the current audit/backlog under `docs/reports/`. No AI scope expansion is authorized.
+Four CPU-only jobs now cover frontend, reference API, deterministic Intelligence and the real Core Today proxy/SSE chain. CI runs no model or GPU workload. The current application backlog remains authoritative: production mock data, calendar timezone correctness and persistence/backend authority still require resolution. No AI scope expansion is authorized.
 
 ## Completed architecture and foundation
 
@@ -68,11 +68,14 @@ The deterministic Core Today chain remains accepted and closed. The broader audi
 | Home integration disclosure | PASS | deterministic/read-only/no-model copy |
 | Live default-config integration | PASS | pair/status/route/tool/SSE/source/session flow |
 | Frontend/backend regression review | PASS | all product, security, build and API suites |
-| `ai`→`main` current diff | AUDITED / HOLD | 231 files; 18,504 additions; 252 deletions |
+| `ai`→`main` current diff | AUDITED / HOLD | 236 files; 18,905 additions; 253 deletions |
 | Merge conflict precheck | PASS | `origin/main` is ancestor; merge-tree clean |
 | Whole-product gap audit | COMPLETE | 39 routes, persistence, mocks, API consumption, states and integration traced |
 | Product completion backlog | COMPLETE | P0/P1/P2, completed, rejected AI scope and CI plan |
-| GitHub PR creation | HOLD | product backlog/CI now block PR independent of credential availability |
+| CI workflow | IMPLEMENTED / HOSTED RUN PENDING | frontend, backend, deterministic AI, integration |
+| Deterministic CI integration | PASS LOCALLY | actual engine + Next proxy + pairing/SSE/tool/source/session |
+| Model/GPU CI exclusion | ENFORCED | closed authorization; no execution commands or runner |
+| GitHub PR creation | HOLD | P0 backlog and hosted CI now block PR |
 | Merge action | NOT PERFORMED | do not merge before release gates |
 
 The new gate does not supersede or weaken `W0-GATE-2`. It evaluates a different, narrower provider role with no tools.
@@ -204,7 +207,7 @@ The larger control is rejected. Wave 0 is complete with no model selected. No mo
 
 ## Next review
 
-Review and approve the evidence-based application backlog. The recommended next implementation phase is CI foundation plus the P0 production-data/timezone/storage decisions in the documented order. Regenerate the PR review only after those gates pass.
+Obtain the first hosted CI result, then implement APP-002 production data/onboarding truth, APP-003 local-date correctness and APP-101 habit streak correctness. APP-004 requires an explicit browser-only versus durable-backend authority decision before backend completion work. Regenerate the PR review only after P0 gates pass.
 
 Do not re-enable model providers, rerun candidates, add AI domains, memory, retrieval, Health, writes, automation, remote processing or v0.2 work.
 
