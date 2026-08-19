@@ -62,7 +62,7 @@ Do not package or auto-start Express for v1. Any future durable backend requires
 - [ ] Fresh profile has no fabricated personal history
 - [ ] Whole-product backup/restore passes with synthetic data
 - [ ] Sensitive localStorage risk accepted or replaced
-- [x] Windows installer and portable packaging implementation
+- [x] Single-file Windows installer, registered uninstaller and branded shortcuts implemented
 - [ ] Physical Windows install/update/uninstall and offline operation verified
 
 Build and installation instructions: [`WINDOWS-INSTALLATION.md`](WINDOWS-INSTALLATION.md).

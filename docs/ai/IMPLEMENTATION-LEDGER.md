@@ -8,7 +8,7 @@ _Last updated: 2026-08-19_
 
 > **PR #4 is merged and main CI is green; Windows package verification is the active release gate.**
 
-PR #4 merged as `06cf13c`; main run `32260387533` passed all four jobs. Windows installer and portable-package foundations now bundle only the standalone frontend, deterministic engine and checksum-pinned Node runtime. Physical Windows verification remains pending. AI scope remains closed with no model/GPU work.
+PR #4 merged as `06cf13c`; main run `32260387533` passed all four jobs. The single-file Windows installer bundles only the standalone frontend, deterministic engine and checksum-pinned Node runtime, with registered uninstall and branded shortcuts. Physical Windows verification remains pending. AI scope remains closed with no model/GPU work.
 
 ## Completed architecture and foundation
 
@@ -78,8 +78,9 @@ PR #4 merged as `06cf13c`; main run `32260387533` passed all four jobs. Windows 
 | Continuity/release handoff | COMPLETE | blueprint + current release matrix + backlog |
 | Model/GPU CI exclusion | ENFORCED | closed authorization; no execution commands or runner |
 | GitHub PR #4 | MERGED | merge `06cf13c`; main CI green |
-| Windows package foundation | IMPLEMENTED / HOST VERIFICATION PENDING | installer + portable ZIP; ADR-014 |
+| Windows package foundation | IMPLEMENTED / HOST VERIFICATION PENDING | one setup executable + registered uninstaller/icons; ADR-014 |
 | Packaged-runtime verifier | IMPLEMENTED | 39 routes + CSP + pairing/Core Today + shutdown; sanitized aggregate only |
+| Windows build automation | IMPLEMENTED / RUN PENDING | manual artifact build or opt-in `v*` GitHub Release; silent install/verify/uninstall |
 | Merge action | COMPLETE | user merged PR #4 after green checks |
 
 The new gate does not supersede or weaken `W0-GATE-2`. It evaluates a different, narrower provider role with no tools.
