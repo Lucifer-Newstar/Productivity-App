@@ -6,9 +6,9 @@ _Last updated: 2026-08-19_
 
 ## Current milestone
 
-> **Interpreter-only corpus and disabled production-path harness implemented and validated. Stop before model execution.**
+> **Target-laptop `I1-PREFLIGHT` authorized for Qwen3 then Phi; execution and results pending. Full/operations remain prohibited.**
 
-AI-ADR-019 governs the accepted deterministic/mock baseline. `I1-SYNTHETIC-1`, the guarded runner, scorer, sanitizer, semantic worksheet and harness QA now implement the frozen `I1-RUN-1` design. Both candidates remain disabled; no model process was started and no result exists. Memory, retrieval, Health context, write actions, automation, additional domains, remote processing and v0.2 remain frozen.
+AI-ADR-019 governs the accepted deterministic/mock baseline. `I1-PREFLIGHT-AUTH-1` permits only the ten-attempt preflight for each frozen candidate through the guarded target wrapper. No target model process has been started in this workspace and no preflight result exists yet. Memory, retrieval, Health context, write actions, automation, additional domains, remote processing and v0.2 remain frozen.
 
 ## Completed architecture and foundation
 
@@ -53,7 +53,9 @@ AI-ADR-019 governs the accepted deterministic/mock baseline. `I1-SYNTHETIC-1`, t
 | Allowlist sanitizer | Complete | aggregate-only output, no selection authority |
 | Harness QA | PASS | disabled/no-spawn, loopback, corpus, failures, sanitizer boundary |
 | Interpreter-model report format | Complete | sanitized aggregate template; no selection outcome |
-| Model execution | NOT AUTHORIZED | candidates/config remain disabled; no model result |
+| Preflight authorization | APPROVED / PENDING TARGET RUN | `I1-PREFLIGHT-AUTH-1`, Qwen3 then Phi only |
+| Full/operations authorization | PROHIBITED | hard-blocked by machine authorization record |
+| Preflight results | PENDING | no model process or sanitized aggregate yet |
 
 The new gate does not supersede or weaken `W0-GATE-2`. It evaluates a different, narrower provider role with no tools.
 
@@ -182,15 +184,11 @@ passedForFullRun:       false
 
 The larger control is rejected. Wave 0 is complete with no model selected. No more candidate downloads/runs are authorized under this cycle.
 
-## Next review
+## Next target action and review
 
-Review the implemented, disabled interpreter-model harness. Explicitly choose one of:
+On the target laptop, follow [`v0.1.1-model-evaluation/TARGET-PREFLIGHT-RUNBOOK.md`](v0.1.1-model-evaluation/TARGET-PREFLIGHT-RUNBOOK.md). Run Qwen3 preflight and then Phi preflight through the authorized wrapper. Keep all raw evidence LOCAL-ONLY.
 
-1. authorize target-laptop `I1-PREFLIGHT` execution for Qwen3 and then Phi in frozen order, with LOCAL-ONLY raw evidence and sanitized reports;
-2. request bounded harness/corpus corrections before any model output is opened;
-3. keep v0.1.1 deterministic/mock-only and defer model execution.
-
-Model execution remains prohibited until that decision. A preflight pass would authorize neither the 100-response full run nor integration automatically. Do not start remote-provider work, v0.2, memory, retrieval, Health, writes, automation or additional domains.
+After both runs, return only the two sanitizer-produced public aggregates for intake. The next repository step will validate, document and commit both decisions. Do not infer missing results or run the full corpus/operations. A preflight pass authorizes neither stage nor integration. Remote-provider work, v0.2, memory, retrieval, Health, writes, automation and additional domains remain frozen.
 
 ## Documentation and repository maintenance
 
@@ -199,7 +197,7 @@ Latest maintenance pass:
 - Root, frontend, backend and Intelligence README files aligned with the current architecture and no-model Wave 0 outcome.
 - Stale “coming soon”, placeholder/in-progress and architecture-only Intelligence descriptions removed from active docs.
 - Documentation indexes, route metadata, setup commands and quality gates synchronized.
-- All 252 maintained TypeScript, JavaScript, Python, PowerShell, CSS and shell source files now include explanatory commentary.
+- All 253 maintained TypeScript, JavaScript, Python, PowerShell, CSS and shell source files now include explanatory commentary.
 - `qa:comments` permanently enforces source-comment coverage.
 - Historical reports/bug entries remain intact and are explicitly treated as dated evidence rather than current status.
 

@@ -45,10 +45,11 @@ Wave 0 is complete with no model selected. Architecture review has authorized a 
 - [x] interpreter-only candidate matrix, run protocol and reporting format frozen
 - [x] `I1-SYNTHETIC-1` corpus, manifest and semantic-review worksheet
 - [x] disabled production-path runner, scorer, sanitizer and harness QA
-- [ ] target-laptop candidate preflights
+- [x] target preflight authorization record and frozen-order PowerShell wrapper
+- [ ] target-laptop Qwen3 and Phi preflight outcomes
 - [ ] any full candidate run, operations report and selection review
 
-**Current stop:** v0.1.1 remains the accepted deterministic/mock baseline. The interpreter-model harness is implemented but all execution gates remain disabled. Review before target preflights; no real model is selected.
+**Current boundary:** preflight-only target execution is authorized and pending. Full/operations are machine-blocked and require later review. No real model is selected.
 
 **Scope freeze:** Core Today only. Do not add memory, retrieval, Health, additional domains, writes, automation, remote processing or v0.2 work.
 

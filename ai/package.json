@@ -18,6 +18,7 @@
     "run:v0.1.1:model": "tsx evaluation/v0.1.1/model-phase/runner.ts",
     "score:v0.1.1:model": "python evaluation/v0.1.1/model-phase/scorer.py",
     "sanitize:v0.1.1:model": "python evaluation/v0.1.1/model-phase/sanitizer.py",
+    "preflight:v0.1.1:model:target": "powershell -ExecutionPolicy Bypass -File evaluation/v0.1.1/model-phase/run_target_preflights.ps1",
     "qa:wave0": "python wave0/scripts/qa_wave0.py"
   },
   "dependencies": {

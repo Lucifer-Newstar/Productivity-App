@@ -9,7 +9,7 @@
 
 This is a new interpreter evaluation, not Wave 0 continuation. Wave 0 remains closed with no model selected. `W0-GATE-2` is neither rescored nor weakened. Its resource/safety ceilings are reused where relevant, but its tool-selection and broad context matrix are not part of the narrower model role.
 
-No model execution is authorized. The frozen corpus and disabled production-path runner are implemented and pass harness QA. Execution still requires a later explicit approval plus four local gates: `executionEnabled`, candidate `enabled`, `--execute`, and `KAIZEN_I1_EXECUTION_ACK=I1-RUN-1`.
+`I1-PREFLIGHT-AUTH-1` authorizes target-laptop preflight only, in frozen Qwen3→Phi order. Full and operations stages remain prohibited. Preflight still requires four transient local gates: `executionEnabled`, candidate `enabled`, `--execute`, and `KAIZEN_I1_EXECUTION_ACK=I1-RUN-1`; the committed template keeps all execution flags false.
 
 ## Evaluated production path
 
@@ -62,12 +62,13 @@ Implemented commands:
 ```bash
 npm run build:v0.1.1:corpus
 npm run qa:v0.1.1:model-harness
-npm run run:v0.1.1:model -- --config <ignored.local.json> --candidate <id> --stage preflight
+powershell -ExecutionPolicy Bypass -File evaluation/v0.1.1/model-phase/run_target_preflights.ps1 -Config <ignored.local.json> -ConfirmExecution
+npm run run:v0.1.1:model -- --config <transient-ignored.local.json> --candidate <id> --stage preflight
 npm run score:v0.1.1:model -- --attempts <local.jsonl> --run <run.local.json> --output <score.local.json>
 npm run sanitize:v0.1.1:model -- --score <score.local.json> --run <run.local.json> --lifecycle <lifecycle.local.json> --output <public.json>
 ```
 
-The runner command shown without all four acknowledgements exits with `I1_EXECUTION_DISABLED` before checking model/runtime files or spawning a process.
+The runner command shown without all four acknowledgements exits with `I1_EXECUTION_DISABLED` before checking model/runtime files or spawning a process. Any `full` invocation exits with `STAGE_NOT_AUTHORIZED` regardless of local flags.
 
 ## Frozen dataset design
 

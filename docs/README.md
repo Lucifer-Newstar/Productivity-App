@@ -43,6 +43,7 @@ Current production verification: **39/39 user routes return HTTP 200**, five Ent
 | [`reports/AI-V0.1.1-IMPLEMENTATION-2026-08-19.md`](reports/AI-V0.1.1-IMPLEMENTATION-2026-08-19.md) | Trusted router, zero-tool runtime, security tests and deterministic/mock evaluation |
 | [`reports/AI-V0.1.1-ACCEPTANCE-AND-MODEL-EVAL-DESIGN-2026-08-19.md`](reports/AI-V0.1.1-ACCEPTANCE-AND-MODEL-EVAL-DESIGN-2026-08-19.md) | Live acceptance and frozen interpreter-model evaluation design |
 | [`reports/AI-V0.1.1-MODEL-HARNESS-2026-08-19.md`](reports/AI-V0.1.1-MODEL-HARNESS-2026-08-19.md) | Frozen corpus, disabled production-path runner and privacy-safe scoring harness |
+| [`reports/AI-V0.1.1-PREFLIGHT-AUTHORIZATION-2026-08-19.md`](reports/AI-V0.1.1-PREFLIGHT-AUTHORIZATION-2026-08-19.md) | Preflight-only target authorization and hard full/operations block |
 | [`notifications/README.md`](notifications/README.md) | Global inbox, rule catalog, settings and scope decisions |
 
 ### Kaizen Intelligence Engine

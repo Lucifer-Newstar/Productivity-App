@@ -64,6 +64,9 @@ try:
     disabled_config.write_text(json.dumps(remote), encoding="utf-8")
     rejected = run([str(tsx), str(RUNNER), "--config", str(disabled_config), "--candidate", "qwen3-4b-instruct-2507-q4km", "--stage", "preflight"], env=environment)
     check("runner rejects non-loopback endpoints before execution", rejected.returncode == 2 and "ENDPOINT_INVALID" in rejected.stderr and not sentinel.exists())
+    disabled_config.write_text(json.dumps(template), encoding="utf-8")
+    full = run([str(tsx), str(RUNNER), "--config", str(disabled_config), "--candidate", "qwen3-4b-instruct-2507-q4km", "--stage", "full", "--execute"], env=environment)
+    check("authorization hard-blocks full execution", full.returncode == 2 and "STAGE_NOT_AUTHORIZED" in full.stderr and not sentinel.exists())
 
     LOCAL_QA.mkdir(parents=True, exist_ok=True)
     attempts_path, run_path = LOCAL_QA / "attempts.local.jsonl", LOCAL_QA / "run.local.json"
@@ -109,7 +112,8 @@ finally:
     for path in [CONFIG_DIR / "qa-disabled.local.json", PUBLIC_QA]:
         path.unlink(missing_ok=True)
     shutil.rmtree(LOCAL_QA, ignore_errors=True)
-check("public result directory remains result-free after QA cleanup", sorted(path.name for path in (PHASE / "results-public").iterdir()) == ["README.md"])
+allowed_public = {"README.md", "qwen3-4b-instruct-2507-q4km-preflight.json", "phi-4-mini-instruct-q4km-preflight.json"}
+check("public result directory contains only authorized evidence after QA cleanup", set(path.name for path in (PHASE / "results-public").iterdir()).issubset(allowed_public))
 
 failures = [label for label, passed in checks if not passed]
 print(f"\n{len(checks) - len(failures)}/{len(checks)} interpreter-model harness checks passed")

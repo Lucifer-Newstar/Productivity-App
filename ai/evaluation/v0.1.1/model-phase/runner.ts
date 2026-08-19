@@ -22,12 +22,13 @@ const RESULTS_ROOT=resolve(PHASE,"results-local");
 const CORPUS_PATH=resolve(PHASE,"corpus.v1.json");
 const MANIFEST_PATH=resolve(PHASE,"corpus.manifest.json");
 const PROTOCOL_PATH=resolve(PHASE,"protocol.v1.json");
+const AUTHORIZATION_PATH=resolve(PHASE,"authorization.v1.json");
 
 function fail(code:string,message:string):never{const error=new Error(message) as Error&{code:string};error.code=code;throw error}
 function sha256(path:string):string{const hash=createHash("sha256");hash.update(readFileSync(path));return hash.digest("hex")}
 function exactHash(path:string,expected:string,label:string):void{if(!existsSync(path)||!/^([a-f0-9]{64})$/i.test(expected)||sha256(path).toLowerCase()!==expected.toLowerCase())fail("IDENTITY_INVALID",`${label} path/hash is invalid`)}
 function literalLoopback(value:string):URL{let url:URL;try{url=new URL(value)}catch{return fail("ENDPOINT_INVALID","runtime endpoint is invalid")};if(url.protocol!=="http:"||url.hostname!=="127.0.0.1"||url.username||url.password||url.pathname!=="/"||url.search||url.hash)fail("ENDPOINT_INVALID","runtime endpoint must be literal-loopback HTTP with no path/query/credentials");return url}
-function readJson<T>(path:string):T{return JSON.parse(readFileSync(path,"utf8")) as T}
+function readJson<T>(path:string):T{return JSON.parse(readFileSync(path,"utf8").replace(/^\uFEFF/,"")) as T}
 function args():Record<string,string|boolean>{const values:Record<string,string|boolean>={};for(let index=2;index<process.argv.length;index++){const item=process.argv[index]!;if(item.startsWith("--")){const key=item.slice(2),next=process.argv[index+1];if(next&&!next.startsWith("--")){values[key]=next;index++}else values[key]=true}}return values}
 function delay(ms:number):Promise<void>{return new Promise(resolve=>setTimeout(resolve,ms))}
 async function waitHealth(baseUrl:string,timeoutMs:number,child:ChildProcess):Promise<number>{const started=Date.now();while(Date.now()-started<timeoutMs){const spawnError=(child as ChildProcess&{spawnError?:Error}).spawnError;if(spawnError)fail("RUNTIME_START_FAILED",spawnError.message);if(child.exitCode!==null)fail("RUNTIME_EXITED",`llama-server exited with code ${child.exitCode}`);try{const response=await fetch(`${baseUrl}/health`,{signal:AbortSignal.timeout(2000)});if(response.ok)return Date.now()-started}catch{}await delay(250)}return fail("STARTUP_TIMEOUT","llama-server did not become ready")}
@@ -75,8 +76,9 @@ function validateConfig(configPath:string,config:LocalConfig):{endpoint:URL;cand
 async function main():Promise<void>{
   const cli=args(),configPath=resolve(String(cli.config??"")),candidateId=String(cli.candidate??""),stage=String(cli.stage??"");
   if(!configPath||!candidateId||!["preflight","full"].includes(stage))fail("USAGE","runner requires --config, --candidate and --stage preflight|full");
-  const config=readJson<LocalConfig>(configPath),{endpoint}=validateConfig(configPath,config),candidate=config.candidates.find(item=>item.id===candidateId);
+  const config=readJson<LocalConfig>(configPath),{endpoint}=validateConfig(configPath,config),candidate=config.candidates.find(item=>item.id===candidateId),authorization=readJson<any>(AUTHORIZATION_PATH);
   if(!candidate)fail("CANDIDATE_INVALID","candidate is not in I1-CANDIDATES-1");
+  if(authorization.authorizationId!=="I1-PREFLIGHT-AUTH-1"||authorization.protocolId!=="I1-RUN-1"||authorization.matrixId!=="I1-CANDIDATES-1"||authorization.candidateOrder?.join(",")!==config.candidates.map(item=>item.id).join(",")||authorization.stages?.[stage]!==true)fail("STAGE_NOT_AUTHORIZED",`${stage} execution is not authorized`);
   const acknowledged=cli.execute===true&&process.env.KAIZEN_I1_EXECUTION_ACK==="I1-RUN-1";
   if(!config.executionEnabled||!candidate.enabled||!acknowledged)fail("I1_EXECUTION_DISABLED","model execution remains disabled by config/candidate/acknowledgement gates");
   if(stage==="full"){
@@ -91,7 +93,7 @@ async function main():Promise<void>{
   if(selected.length!==(stage==="preflight"?10:50))fail("CORPUS_INVALID","stage scenario coverage is incomplete");
   const runId=`${candidateId}-${stage}-${new Date().toISOString().replace(/[:.]/g,"-")}-${randomUUID().slice(0,8)}`,outputDir=resolve(RESULTS_ROOT,runId);mkdirSync(outputDir,{recursive:true});
   const log=createWriteStream(resolve(outputDir,"server.log"),{flags:"wx"}),port=Number(endpoint.port),runtimeArgs=["--model",candidate.modelPath,"--host","127.0.0.1","--port",String(port),"--ctx-size","4096","--n-gpu-layers",String(config.runtime.gpuLayers),"--threads",String(config.runtime.threads),"--batch-size",String(config.runtime.batchSize),"--ubatch-size",String(config.runtime.ubatchSize),"--jinja"];
-  const child=spawn(config.runtime.llamaServerPath,runtimeArgs,{stdio:["ignore","pipe","pipe"],windowsHide:true});child.once("error",error=>{(child as ChildProcess&{spawnError?:Error}).spawnError=error});child.stdout?.pipe(log);child.stderr?.pipe(log);
+  runtimeArgs.push("--parallel","1","--metrics");const child=spawn(config.runtime.llamaServerPath,runtimeArgs,{stdio:["ignore","pipe","pipe"],windowsHide:true});child.once("error",error=>{(child as ChildProcess&{spawnError?:Error}).spawnError=error});child.stdout?.pipe(log);child.stderr?.pipe(log);
   let lifecycle:any={};
   try{
     lifecycle.startupMs=await waitHealth(endpoint.origin,config.runtime.startupTimeoutMs,child);

@@ -100,6 +100,14 @@ npm run qa:v0.1.1:model-harness
 
 This suite validates the fixed `focus-today → get_today@1.0` route, zero provider tool authority, Core Today-only scope, frozen `V011-INT-GATE-1` thresholds, exact/bounded/fresh evidence, source-subset grounding, deterministic precedence, required uncertainty, browser revision verification, and rejection mutants for provider tool calls, fabricated IDs, extra domains and command-shaped output. The deterministic evaluator is not a real-model result. Model harness QA rebuilds and hashes all 50 frozen scenarios, verifies the blank 100-row review worksheet, proves disabled/no-spawn and loopback behavior, checks complete failed-attempt accounting, exercises scoring/sanitization and leaves public model results empty.
 
+Authorized target preflight is not a routine QA command. Run it only with `I1-PREFLIGHT-AUTH-1` and the [target runbook](../ai/v0.1.1-model-evaluation/TARGET-PREFLIGHT-RUNBOOK.md):
+
+```powershell
+npm run preflight:v0.1.1:model:target -- -Config <ignored.local.json> -ConfirmExecution
+```
+
+This wrapper permits preflight only; full and operations remain hard-blocked.
+
 ## Intelligence Engine Wave 0
 
 Wave 0 has a synthetic validation harness but no production AI feature:
