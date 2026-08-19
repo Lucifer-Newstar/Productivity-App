@@ -58,6 +58,7 @@ Current production verification: **39/39 user routes return HTTP 200**, five Ent
 | [`reports/CI-RUN-1-INTAKE-2026-08-19.md`](reports/CI-RUN-1-INTAKE-2026-08-19.md) | First hosted failure intake and action-runtime compatibility fixes |
 | [`reports/CI-RUN-2-INTAKE-2026-08-19.md`](reports/CI-RUN-2-INTAKE-2026-08-19.md) | Second hosted failure intake and empty-library migration QA correction |
 | [`reports/CI-RUN-3-GREEN-2026-08-19.md`](reports/CI-RUN-3-GREEN-2026-08-19.md) | Green four-job hosted CI evidence authorizing unmerged PR creation |
+| [`reports/WINDOWS-PACKAGING-FOUNDATION-2026-08-19.md`](reports/WINDOWS-PACKAGING-FOUNDATION-2026-08-19.md) | Single-file installer/uninstaller implementation and physical-host matrix |
 | [`reports/CORE-DATE-HABIT-CORRECTNESS-2026-08-19.md`](reports/CORE-DATE-HABIT-CORRECTNESS-2026-08-19.md) | Local-date and habit-streak correctness fixes |
 | [`reports/PRODUCTION-DATA-BASELINE-2026-08-19.md`](reports/PRODUCTION-DATA-BASELINE-2026-08-19.md) | Empty fresh user history and retained product catalogs/templates |
 | [`reports/LOCAL-RELEASE-DATA-AUTHORITY-2026-08-19.md`](reports/LOCAL-RELEASE-DATA-AUTHORITY-2026-08-19.md) | Browser-only release authority and reference API hardening |
@@ -93,6 +94,7 @@ Wave 0 is complete with no passing local model selected. The v0.1 provider-neutr
 - [`guides/LOCAL-DEVELOPMENT.md`](guides/LOCAL-DEVELOPMENT.md) — install, run and troubleshoot.
 - [`guides/CONFIGURATION.md`](guides/CONFIGURATION.md) — environment variables and provider credentials.
 - [`guides/DEPLOYMENT.md`](guides/DEPLOYMENT.md) — production topology and security requirements.
+- [`guides/WINDOWS-INSTALLATION.md`](guides/WINDOWS-INSTALLATION.md) — single installer, registered uninstall, data and offline operation.
 - [`guides/DATA-BACKUP-RESTORE.md`](guides/DATA-BACKUP-RESTORE.md) — browser data, exports and recovery.
 - [`guides/TESTING.md`](guides/TESTING.md) — every automated and runtime QA gate.
 - [`guides/CI.md`](guides/CI.md) — hosted frontend/backend/AI/integration jobs with no model execution.

@@ -31,6 +31,7 @@ npm run qa:core                              # local dates and habit streak corr
 npm run qa:baseline                          # empty user history vs retained product catalogs
 npm run qa:backup                            # whole-product backup/restore and rollback security
 npm run qa:resilience                        # route errors, navigation history and corrupt storage
+npm run qa:packaging                         # Windows bundle/runtime/installer contracts
 npm run qa:docs                              # documentation links/status/contracts
 ```
 

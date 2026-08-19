@@ -1,5 +1,6 @@
 /** @type {import('next').NextConfig} */
 const isDev = process.env.NODE_ENV !== "production";
+const isLocalPackage = process.env.KAIZEN_LOCAL_PACKAGE === "1";
 const contentSecurityPolicy = [
   "default-src 'self'",
   // React/Turbopack uses eval only for development diagnostics and source maps.
@@ -14,7 +15,7 @@ const contentSecurityPolicy = [
   "base-uri 'self'",
   "form-action 'self'",
   "frame-ancestors 'none'",
-  ...(isDev ? [] : ["upgrade-insecure-requests"]),
+  ...(!isDev && !isLocalPackage ? ["upgrade-insecure-requests"] : []),
 ].join("; ");
 
 const securityHeaders = [
@@ -31,6 +32,7 @@ const securityHeaders = [
 ];
 
 const nextConfig = {
+  output: "standalone",
   reactStrictMode: true,
   poweredByHeader: false,
   typescript: { ignoreBuildErrors: false },

@@ -34,6 +34,7 @@ It does not:
 - Frontend security and CSP
 - Notifications, UI and Home intelligence
 - Deterministic AI frontend checks
+- Windows packaging-contract QA (no artifact build on Linux)
 - Documentation and commentary QA
 - Next.js production build
 - Production-dependency audit

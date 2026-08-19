@@ -9,6 +9,7 @@ node_modules/
 out/
 build/
 dist/
+release-artifacts/
 
 # Environment files
 .env

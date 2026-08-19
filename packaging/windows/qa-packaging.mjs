@@ -1,0 +1,31 @@
+#!/usr/bin/env node
+/** Static and executable contract checks for the Windows local-v1 package. */
+import assert from "node:assert/strict";
+import fs from "node:fs";
+import path from "node:path";
+import { createRequire } from "node:module";
+import { fileURLToPath } from "node:url";
+const here=path.dirname(fileURLToPath(import.meta.url)),root=path.resolve(here,"../.."),read=(p)=>fs.readFileSync(path.join(root,p),"utf8"),require=createRequire(import.meta.url);
+let passed=0;const test=(name,fn)=>{fn();passed++;console.log(`  ✓ ${name}`)};
+const stage=read("packaging/windows/stage-package.ps1"),build=read("packaging/windows/build-installer.ps1"),installer=read("packaging/windows/installer.iss"),launcherSource=read("packaging/windows/runtime/launcher.cjs"),stopSource=read("packaging/windows/runtime/stop.cjs"),nextConfig=read("frontend/next.config.js");
+const launcher=require("./runtime/launcher.cjs"),stop=require("./runtime/stop.cjs");
+console.log("\n── Windows packaging contracts ──");
+test("frontend emits standalone server",()=>assert.ok(nextConfig.includes('output: "standalone"')));
+test("local package keeps HTTP loopback usable",()=>assert.ok(nextConfig.includes("KAIZEN_LOCAL_PACKAGE")&&!nextConfig.includes("isDev ? [] : [\"upgrade-insecure-requests\"]")));
+test("staging pins Node download and SHA-256",()=>assert.ok(stage.includes("node-v$nodeVersion-win-x64.zip")&&stage.includes("be72284c7bc62de07d5a9fd0ae196879842c085f11f7f2b60bf8864c0c9d6a4f")&&stage.includes("Get-FileHash")));
+test("staging uses lockfiles and production dependencies",()=>assert.ok(stage.includes('@("ci")')&&stage.includes('"--omit=dev"')&&stage.includes('"--ignore-scripts"')));
+test("package excludes reference API",()=>assert.ok(!stage.includes('Join-Path $root "backend')&&!installer.includes("backend")));
+test("launcher fixes both services to loopback",()=>assert.ok(launcherSource.includes('KAIZEN_AI_HOST: "127.0.0.1"')&&launcherSource.includes('HOSTNAME: "127.0.0.1"')));
+test("launcher fixes expected ports and deterministic provider",()=>assert.ok(launcherSource.includes('PORT: "3000"')&&launcherSource.includes('KAIZEN_AI_PORT: "4317"')&&launcherSource.includes('KAIZEN_AI_PROVIDER: "mock"')));
+test("launcher rejects occupied ports",()=>assert.ok(launcherSource.includes("port 3000 or 4317 is already in use")));
+test("launcher uses stable browser origin",()=>assert.equal(launcher.APP_URL,"http://127.0.0.1:3000"));
+test("runtime state stays in per-user local data",()=>assert.equal(path.basename(launcher.runtimeFile({LOCALAPPDATA:"C:/Local"})),"runtime.json"));
+test("stop rejects unsafe process identifiers",()=>{assert.equal(stop.validPid(-1),false);assert.equal(stop.validPid("12"),false);assert.equal(stop.validPid(42),true)});
+test("installer is per-user and x64",()=>assert.ok(installer.includes("PrivilegesRequired=lowest")&&installer.includes("ArchitecturesAllowed=x64compatible")));
+test("uninstaller stops services without deleting browser data",()=>assert.ok(installer.includes("[UninstallRun]")&&!installer.includes("UserData")&&!installer.includes("LOCALAPPDATA\\Kaizen")));
+test("one public setup executable emits a checksum",()=>assert.ok(build.includes('Single-file installer')&&build.includes('"$setup.sha256"')&&!build.includes('portable.zip')));
+test("installer registers desktop, Start Menu and uninstaller icons",()=>assert.ok(installer.includes('SetupIconFile=assets\\kaizen.ico')&&installer.includes('{userdesktop}\\Kaizen')&&installer.includes('{group}\\Uninstall Kaizen')&&installer.includes('{uninstallexe}')));
+test("staged package includes privacy-safe executable verification",()=>{const verify=read("packaging/windows/runtime/verify-package.mjs");assert.ok(stage.includes('runtime/*.mjs')&&verify.includes('PUBLIC-SANITIZED-AGGREGATE')&&verify.includes('package-verification.json')&&verify.includes('routes.length'))});
+test("packaged verifier covers pairing, CSP and shutdown",()=>{const verify=read("packaging/windows/runtime/verify-package.mjs");assert.ok(verify.includes('response.completed')&&verify.includes('upgrade-insecure-requests')&&verify.includes('portsReleased'))});
+test("no portable, model or cloud release is emitted",()=>assert.ok(!stage.includes("Compress-Archive")&&!build.includes("portable")&&!stage.includes("gguf")&&!stage.includes("llama")&&!stage.includes("docker")));
+console.log(`\n${passed} packaging checks passed.`);
