@@ -100,3 +100,20 @@ Concise records of decisions that affect multiple spaces.
 - never claim browser records are encrypted;
 - whole-product backup, corruption recovery and local packaging verification remain mandatory;
 - a future encrypted store/key-custody design requires a new ADR and migration.
+
+## ADR-014 — Single-file browser-served Windows package
+
+**Decision:** Windows local v1 publishes one per-user x64 setup executable. It bundles the official checksum-pinned Node.js runtime, Next.js standalone application and deterministic Intelligence Engine. The installer creates branded desktop and Start Menu entries and registers its generated uninstaller with Windows Settings. A launcher fixes the browser origin to `http://127.0.0.1:3000` and the engine to `127.0.0.1:4317`. Express is excluded.
+
+**Why:** One installer reduces user confusion, provides consistent update/uninstall behavior and creates one checksum/signing target. Keeping the established browser origin preserves browser-authoritative state and avoids an unreviewed desktop-webview storage boundary. Bundling Node removes a machine-wide runtime prerequisite while retaining the tested server/proxy architecture.
+
+**Required consequences:**
+
+- the staged application directory is an internal build input; no portable ZIP is published;
+- occupied fixed ports fail startup; the launcher must not silently select a new origin;
+- packaged production CSP remains free of `unsafe-eval` and does not upgrade loopback HTTP to unavailable HTTPS;
+- runtime downloads are version- and SHA-256-pinned;
+- installer and installed shortcuts use the reviewed Kaizen icon;
+- uninstall stops package-owned processes and removes installed files/shortcuts, but intentionally leaves browser-profile records;
+- package artifacts contain no credentials, user data, Express service, models or evaluation artifacts;
+- physical Windows install/update/uninstall, offline, backup/restore and pairing evidence remains required before release.
