@@ -32,6 +32,7 @@
 - [`APPLICATION-GAP-AUDIT-2026-08-19.md`](APPLICATION-GAP-AUDIT-2026-08-19.md) — current frontend/backend/integration truth, persistence, mock-data and release-gap audit.
 - [`APPLICATION-COMPLETION-BACKLOG-2026-08-19.md`](APPLICATION-COMPLETION-BACKLOG-2026-08-19.md) — prioritized broken/incomplete/security/deferred backlog and CI specification.
 - [`CI-FOUNDATION-2026-08-19.md`](CI-FOUNDATION-2026-08-19.md) — four-job hosted correctness workflow and deterministic live integration runner.
+- [`CI-RUN-1-INTAKE-2026-08-19.md`](CI-RUN-1-INTAKE-2026-08-19.md) — stale-head Entertainment assertion failure and Node 24 action-runtime upgrades.
 - [`CORE-DATE-HABIT-CORRECTNESS-2026-08-19.md`](CORE-DATE-HABIT-CORRECTNESS-2026-08-19.md) — local-calendar utilities and history-derived habit streak corrections.
 - [`PRODUCTION-DATA-BASELINE-2026-08-19.md`](PRODUCTION-DATA-BASELINE-2026-08-19.md) — empty fresh user history with preserved product catalogs/templates.
 - [`LOCAL-RELEASE-DATA-AUTHORITY-2026-08-19.md`](LOCAL-RELEASE-DATA-AUTHORITY-2026-08-19.md) — browser-only v1 authority decision and reference API network-bind hardening.

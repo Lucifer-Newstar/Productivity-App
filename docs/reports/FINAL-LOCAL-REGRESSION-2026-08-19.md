@@ -49,7 +49,7 @@ Verified actual Next proxy and deterministic engine pairing, session, fixed rout
 
 ## Documentation/privacy
 
-- Documentation QA: 58/58 PASS at regression time
+- Documentation QA: 60/60 PASS at regression time
 - Commentary QA: 268/268 PASS
 - Diff check: PASS
 - Privacy scan: required again immediately before commit
