@@ -15,6 +15,7 @@
 - Stop command and uninstall shutdown hook.
 - SHA-256 sidecars for ZIP and installer.
 - Static/executable packaging contract QA.
+- Bundled privacy-safe verifier covering 39 routes, local CSP, cross-site denial, deterministic Core Today and released ports.
 
 ## Frozen runtime contents
 

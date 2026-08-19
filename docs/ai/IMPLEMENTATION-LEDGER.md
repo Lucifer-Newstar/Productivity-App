@@ -79,6 +79,7 @@ PR #4 merged as `06cf13c`; main run `32260387533` passed all four jobs. Windows 
 | Model/GPU CI exclusion | ENFORCED | closed authorization; no execution commands or runner |
 | GitHub PR #4 | MERGED | merge `06cf13c`; main CI green |
 | Windows package foundation | IMPLEMENTED / HOST VERIFICATION PENDING | installer + portable ZIP; ADR-014 |
+| Packaged-runtime verifier | IMPLEMENTED | 39 routes + CSP + pairing/Core Today + shutdown; sanitized aggregate only |
 | Merge action | COMPLETE | user merged PR #4 after green checks |
 
 The new gate does not supersede or weaken `W0-GATE-2`. It evaluates a different, narrower provider role with no tools.
@@ -221,7 +222,7 @@ Latest maintenance pass:
 - Root, frontend, backend and Intelligence README files aligned with the current architecture and no-model Wave 0 outcome.
 - Stale “coming soon”, placeholder/in-progress and architecture-only Intelligence descriptions removed from active docs.
 - Documentation indexes, route metadata, setup commands and quality gates synchronized.
-- All 276 maintained application and packaging source files now include explanatory commentary.
+- All 278 maintained application and packaging source files now include explanatory commentary.
 - `qa:comments` permanently enforces source-comment coverage.
 - Historical reports/bug entries remain intact and are explicitly treated as dated evidence rather than current status.
 

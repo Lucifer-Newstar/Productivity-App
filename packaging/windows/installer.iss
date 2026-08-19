@@ -26,6 +26,7 @@ Source: "{#SourceDir}\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs 
 [Icons]
 Name: "{group}\Kaizen"; Filename: "{app}\start-kaizen.cmd"; WorkingDir: "{app}"
 Name: "{group}\Stop Kaizen"; Filename: "{app}\stop-kaizen.cmd"; WorkingDir: "{app}"
+Name: "{group}\Verify Kaizen installation"; Filename: "{app}\verify-kaizen.cmd"; WorkingDir: "{app}"
 Name: "{userdesktop}\Kaizen"; Filename: "{app}\start-kaizen.cmd"; WorkingDir: "{app}"; Tasks: desktopicon
 
 [Tasks]

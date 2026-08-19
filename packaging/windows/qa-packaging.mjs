@@ -24,5 +24,7 @@ test("stop rejects unsafe process identifiers",()=>{assert.equal(stop.validPid(-
 test("installer is per-user and x64",()=>assert.ok(installer.includes("PrivilegesRequired=lowest")&&installer.includes("ArchitecturesAllowed=x64compatible")));
 test("uninstaller stops services without deleting browser data",()=>assert.ok(installer.includes("[UninstallRun]")&&!installer.includes("UserData")&&!installer.includes("LOCALAPPDATA\\Kaizen")));
 test("portable and installer emit checksums",()=>assert.ok(build.includes('"$zip.sha256"')&&read("packaging/windows/build-installer.ps1").includes('"$setup.sha256"')));
+test("assembled package includes privacy-safe executable verification",()=>{const verify=read("packaging/windows/runtime/verify-package.mjs");assert.ok(build.includes('runtime/*.mjs')&&verify.includes('PUBLIC-SANITIZED-AGGREGATE')&&verify.includes('package-verification.json')&&verify.includes('routes.length'))});
+test("packaged verifier covers pairing, CSP and shutdown",()=>{const verify=read("packaging/windows/runtime/verify-package.mjs");assert.ok(verify.includes('response.completed')&&verify.includes('upgrade-insecure-requests')&&verify.includes('portsReleased'))});
 test("no model or cloud runtime is packaged",()=>assert.ok(!build.includes("gguf")&&!build.includes("llama")&&!build.includes("docker")));
 console.log(`\n${passed} packaging checks passed.`);

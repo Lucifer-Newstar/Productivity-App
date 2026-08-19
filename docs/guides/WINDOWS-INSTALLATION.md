@@ -47,6 +47,20 @@ The launcher reserves these loopback-only ports:
 
 Startup fails rather than selecting another port if either is occupied. This preserves the browser storage origin and exact security allowlists. The console displays the one-time local pairing code; it is never written to release reports.
 
+## Packaged verification
+
+With Kaizen stopped, run `verify-kaizen.cmd`. It starts only the bundled services and checks:
+
+- required package layout and Express exclusion;
+- all 39 user routes;
+- eval-free loopback production CSP;
+- cross-site pairing denial;
+- deterministic provider identity;
+- complete synthetic Core Today request/tool/SSE/source flow;
+- service shutdown and release of ports 3000 and 4317.
+
+It writes `package-verification.json` containing only `PUBLIC-SANITIZED-AGGREGATE` results. Pairing codes and service logs are never written to that report. Delete any failed-run console capture rather than publishing it without privacy review.
+
 ## Offline scope
 
 Core personal tracking, backup/recovery and deterministic Core Today work offline. Entertainment metadata search/trending/detail features require network access and optional locally configured provider credentials. No remote AI provider is used.

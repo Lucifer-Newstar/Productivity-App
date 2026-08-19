@@ -45,8 +45,10 @@ New-Item (Join-Path $stage "runtime") -ItemType Directory -Force | Out-Null
 Move-Item (Join-Path $nodeExtract "node-v$nodeVersion-win-x64") (Join-Path $stage "runtime/node")
 New-Item (Join-Path $stage "scripts") -ItemType Directory -Force | Out-Null
 Copy-Item (Join-Path $PSScriptRoot "runtime/*.cjs") (Join-Path $stage "scripts")
+Copy-Item (Join-Path $PSScriptRoot "runtime/*.mjs") (Join-Path $stage "scripts")
 Copy-Item (Join-Path $PSScriptRoot "start-kaizen.cmd") $stage
 Copy-Item (Join-Path $PSScriptRoot "stop-kaizen.cmd") $stage
+Copy-Item (Join-Path $PSScriptRoot "verify-kaizen.cmd") $stage
 Set-Content (Join-Path $stage "VERSION") $Version -NoNewline
 Set-Content (Join-Path $stage "README.txt") "Run start-kaizen.cmd. Keep its console open while using Kaizen. Run stop-kaizen.cmd before moving, updating, or uninstalling. Product data remains in the browser profile and is not inside this folder."
 $zip = Join-Path $artifacts "Kaizen-$Version-win-x64-portable.zip"; Remove-Item $zip -Force -ErrorAction SilentlyContinue
