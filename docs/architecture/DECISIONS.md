@@ -117,3 +117,19 @@ Concise records of decisions that affect multiple spaces.
 - uninstall stops package-owned processes and removes installed files/shortcuts, but intentionally leaves browser-profile records;
 - package artifacts contain no credentials, user data, Express service, models or evaluation artifacts;
 - physical Windows install/update/uninstall, offline, backup/restore and pairing evidence remains required before release.
+
+## ADR-015 — Release-driven, user-confirmed Windows updates
+
+**Decision:** Every successful `main` CI run produces a verified candidate setup artifact through continuous delivery. Installed packaged builds check the fixed official GitHub Releases endpoint at startup and every six hours. A newer stable release creates a system notification whose local download route redirects only to the exact versioned Kaizen setup asset. The user stops Kaizen and runs that setup; the stable Inno Setup `AppId` performs an in-place upgrade.
+
+**Why:** Browser-profile data belongs to the stable loopback origin rather than the install directory, so reinstalling over the same per-user application preserves records. User-confirmed setup execution avoids a privileged silent self-updater, while GitHub Releases provides a transparent open-source delivery channel.
+
+**Required consequences:**
+
+- candidate artifacts are built automatically after green `main` CI but are not public updates until an annotated release tag passes CD;
+- update checks send no user records, identifiers or telemetry and never block offline operation;
+- release metadata, version and setup asset must match strict semantic and fixed-repository allowlists;
+- notification links remain local; only the server redirect may target the exact official GitHub release asset;
+- setup stops the existing package-owned processes before overwriting files and keeps the stable `AppId` and install directory;
+- browser data remains untouched by update and uninstall, with backup still recommended before upgrades;
+- automatic download/execution and background privileged installation remain prohibited.
