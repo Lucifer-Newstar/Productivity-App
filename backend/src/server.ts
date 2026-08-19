@@ -11,10 +11,11 @@
  *   - Health  → 20 collections + 4 singletons    (frontend/lib/healthTypes.ts)
  *   - Entertainment → 16 collections + 1 singleton (frontend/lib/entertainmentTypes.ts)
  *
- * All routes are JSON. This is intentionally minimal — no database, no auth,
- * no validation library. It lets the offline-first frontend push/pull its
- * whole state (`/api/sync`) during local development and serves as the
- * reference for a future production implementation (Postgres/Prisma, JWT).
+ * All routes are JSON. This is intentionally a reference service: no durable
+ * database or per-user identity. It provides optional service-key auth plus
+ * structural/security validation, but no generated domain-schema validator.
+ * The current offline-first frontend does not call it; `/api/sync` and CRUD
+ * routes are available for local experiments and future persistence design.
  *
  * See docs/reference/API.md for the full route reference.
  */

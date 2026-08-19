@@ -1,7 +1,10 @@
 # Kaizen Feature Status
 
-Last full cross-space feature audit: 2026-08-16. Current implementation status is synchronized through the dated reports and per-space QA files.
-All five spaces now have dedicated implementations: **Workout** (battle-tested),
+Last full cross-space feature-list audit: 2026-08-16. Whole-product gap audit: 2026-08-19 — see [`APPLICATION-GAP-AUDIT-2026-08-19.md`](../reports/APPLICATION-GAP-AUDIT-2026-08-19.md) and the prioritized [`APPLICATION-COMPLETION-BACKLOG-2026-08-19.md`](../reports/APPLICATION-COMPLETION-BACKLOG-2026-08-19.md).
+
+Feature presence does not equal release completion. P0 data/onboarding, timezone, persistence-architecture and CI gaps currently block PR/merge readiness.
+
+All five spaces have dedicated implementations: **Workout** (battle-tested),
 **Career** (Night HUD / Blueprint), **Projects / Forge** (full PM OS), **Health / VITAL-SIGN**
 (v1.1 Waves 1–9), and **Entertainment / AFTERGLOW** (v1.0 Waves 0–9; 94 complete,
 2 intentional partials, 0 missing from its approved 96-feature specification).
@@ -257,7 +260,7 @@ Routes: `/career` → redirect → `/career/projects` (the hub);
 | Typography | ✅ JetBrains Mono enforced across career via `.career-root`; `.career-root .imperial-name/emperor-title/serif-body/font-jp` overridden to mono; zero workout imperial classes used in career |
 | Keyboard nav | ✅ ↑↓/jk/hl moves, 1–9 jumps, Enter picks, Esc closes; focus ring + footer hints |
 | Dual theme on every panel | ✅ All 9 sections + wizard + toasts use CSS vars; zero hardcoded dark-only palette (`#f3e9d2`, `#d4af37`, `#1a0f0a`) remain in career sections |
-| Backend CRUD routes | ✅ `/api/career/*` prefixed in Express (untested); frontend offline-first |
+| Backend CRUD routes | 🟡 Express reference routes build/security-test; frontend does not consume them and they are in-memory |
 | All routes static-prerendered | ✅ Next `next build` shows ○ for every /career/* route |
 | tsc --noEmit clean | ✅ Zero type errors |
 
@@ -425,7 +428,7 @@ drilldown). Cross-links back to `/career` via a bridge callout on Foundry.
 | Gantt / timeline viz | ✅ Mini-Gantt SVG renders when ≥2 dated milestones |
 | Stakeholder satisfaction tracking over time | ✅ Satisfaction pulse (1–10) with sparkline in OPS tab |
 | Change requests / Resources / Quality metrics / Regulatory / Go-NoGo / Cost-benefit / Weekly reports | ✅ All in OPS tab |
-| Backend CRUD `/api/forge/*` | ❌ Frontend offline-first only |
+| Backend CRUD `/api/forge/*` | 🟡 Express reference routes exist; frontend integration/durable persistence are absent |
 | All routes static-prerendered | ✅ Next build shows ○ for `/projects`, `/projects/quarry`, `/projects/smelter`, `/projects/vault`, `/projects/p/[id]` |
 | tsc --noEmit clean | ✅ Zero type errors |
 

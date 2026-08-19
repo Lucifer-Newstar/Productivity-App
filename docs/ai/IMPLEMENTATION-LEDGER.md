@@ -6,9 +6,9 @@ _Last updated: 2026-08-19_
 
 ## Current milestone
 
-> **Deterministic v0.1.1 application integration and `ai`→`main` pre-merge review are complete; do not merge yet.**
+> **Whole-product gap audit and completion backlog are complete; PR creation/merge is blocked pending P0 fixes and CI.**
 
-Application composition resolves only deterministic Core Today, model settings fail closed, and the full frontend/backend/API/auth/Core Today review passed. The PR diff contains 228 files across 55 commits with no merge conflict expected. Complete per-file and integration reports are indexed under `docs/reports/`. All model stages and AI scope expansion remain closed.
+The deterministic Core Today chain remains accepted and closed. The broader audit confirms 39 functional routes and extensive local features, but the frontend does not consume the in-memory Express API, first-run state contains mock personal history, release persistence is unresolved, CI is absent and correctness/security gaps remain. See the current audit/backlog under `docs/reports/`. No AI scope expansion is authorized.
 
 ## Completed architecture and foundation
 
@@ -68,10 +68,12 @@ Application composition resolves only deterministic Core Today, model settings f
 | Home integration disclosure | PASS | deterministic/read-only/no-model copy |
 | Live default-config integration | PASS | pair/status/route/tool/SSE/source/session flow |
 | Frontend/backend regression review | PASS | all product, security, build and API suites |
-| `ai`→`main` complete diff | REVIEWED | 228 files; 18,018 additions; 245 deletions |
+| `ai`→`main` current diff | AUDITED / HOLD | 231 files; 18,504 additions; 252 deletions |
 | Merge conflict precheck | PASS | `origin/main` is ancestor; merge-tree clean |
-| GitHub PR creation | BLOCKED HERE | no GitHub CLI/token/HTTPS credentials; prepared compare URL/body |
-| Merge action | NOT PERFORMED | stop for PR review |
+| Whole-product gap audit | COMPLETE | 39 routes, persistence, mocks, API consumption, states and integration traced |
+| Product completion backlog | COMPLETE | P0/P1/P2, completed, rejected AI scope and CI plan |
+| GitHub PR creation | HOLD | product backlog/CI now block PR independent of credential availability |
+| Merge action | NOT PERFORMED | do not merge before release gates |
 
 The new gate does not supersede or weaken `W0-GATE-2`. It evaluates a different, narrower provider role with no tools.
 
@@ -202,7 +204,7 @@ The larger control is rejected. Wave 0 is complete with no model selected. No mo
 
 ## Next review
 
-Review the `ai`→`main` PR using the complete integration report and changed-file appendix. Do not merge until explicit human approval. If approved later, merge without expanding AI scope and rerun release gates on `main`.
+Review and approve the evidence-based application backlog. The recommended next implementation phase is CI foundation plus the P0 production-data/timezone/storage decisions in the documented order. Regenerate the PR review only after those gates pass.
 
 Do not re-enable model providers, rerun candidates, add AI domains, memory, retrieval, Health, writes, automation, remote processing or v0.2 work.
 

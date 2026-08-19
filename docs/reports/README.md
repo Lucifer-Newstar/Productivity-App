@@ -29,6 +29,8 @@
 - [`AI-V0.1.1-APPLICATION-INTEGRATION-REVIEW-2026-08-19.md`](AI-V0.1.1-APPLICATION-INTEGRATION-REVIEW-2026-08-19.md) — deterministic provider composition lock, Home disclosure and live default-config review.
 - [`AI-BRANCH-PR-INTEGRATION-REVIEW-2026-08-19.md`](AI-BRANCH-PR-INTEGRATION-REVIEW-2026-08-19.md) — complete `ai`→`main` pre-merge application, API, auth, security and regression review.
 - [`AI-BRANCH-PR-CHANGED-FILES-2026-08-19.md`](AI-BRANCH-PR-CHANGED-FILES-2026-08-19.md) — complete per-file PR diff status and line-count summary.
+- [`APPLICATION-GAP-AUDIT-2026-08-19.md`](APPLICATION-GAP-AUDIT-2026-08-19.md) — current frontend/backend/integration truth, persistence, mock-data and release-gap audit.
+- [`APPLICATION-COMPLETION-BACKLOG-2026-08-19.md`](APPLICATION-COMPLETION-BACKLOG-2026-08-19.md) — prioritized broken/incomplete/security/deferred backlog and CI specification.
 - [`AI-WAVE-1-FOUNDATION-2026-08-17.md`](AI-WAVE-1-FOUNDATION-2026-08-17.md) — provider-neutral engine, secure gateway, Domain Bridge and read-only UI vertical slice.
 - [`AI-V0.1-INTEGRATION-FREEZE-2026-08-17.md`](AI-V0.1-INTEGRATION-FREEZE-2026-08-17.md) — canonical specification, adversarial verification and frozen next milestone.
 

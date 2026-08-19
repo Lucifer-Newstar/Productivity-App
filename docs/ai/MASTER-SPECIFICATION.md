@@ -46,18 +46,23 @@ Do not discard or redesign this foundation without an ADR. Its frozen scope is R
 
 ## 4. Required architecture
 
+### Current v0.1.1 application
+
 ```text
 Browser-authoritative React state
-  → domain adapters
-  → client tool executor
+  → Core Today domain adapter
+  → authenticated client tool executor
   → typed/versioned Domain Bridge
   → independent Intelligence Engine
-       gateway / context / agent / policy
-       memory / retrieval / providers
-       evaluation / observability
-  → local inference runtime
-  → llama.cpp candidate
+       gateway / deterministic router / policy
+       deterministic provider / validation / observability
 ```
+
+There is no application inference runtime, model process, memory or retrieval subsystem. The llama.cpp adapter and model harnesses are closed historical evaluation infrastructure only.
+
+### Future provider-neutral destination — inactive
+
+A future reviewed ADR could reintroduce replaceable providers, retrieval or memory behind the same engine boundary. The earlier `local inference runtime → llama.cpp candidate` diagram described that destination and must not be read as current application composition.
 
 Absolute rule: AI tools never import React Context, Next.js UI code or application components.
 
@@ -108,7 +113,7 @@ Project→Career claims distinguish recorded fact, user-confirmed fact, suggeste
 
 Semantic, episodic and pattern memory remain separate from authoritative state. Memory records evidence, origin, confidence, sensitivity, lifecycle and expiry. Pattern memory begins as a shadow candidate, can be confirmed/contested/expired/deleted, and cannot use a model statement as evidence for itself. Users eventually inspect/edit/forget/wipe memory.
 
-**Current freeze:** no production memory until v0.1 integration and model selection are reviewed.
+**Current freeze:** no production memory. v0.1.1 review is closed; memory requires a new explicit scope decision.
 
 ## 12. Retrieval destination
 
@@ -140,17 +145,17 @@ Public repository contains code, architecture, schemas, synthetic fixtures, meth
 
 Raw local artifacts use ignored `ai/wave0/results-local/` and `*.local.json`. Only allowlist sanitizer output may enter `results-public/`. The public Arena workspace is limited (~128 MB) and is never a model, data or runtime store. Never ask the user to paste a secret/private artifact into public chat/workspace.
 
-## 17. Local model strategy and Wave 0
+## 17. Historical local-model strategy
 
-Target class is Ryzen 7 7435HS / RTX 3050 Laptop 4 GB / 16 GB RAM, but actual local capture is authoritative. Measure model/quantization, runtime build, context, load/TTFT/tokens/sec, RAM/VRAM, tool/schema/grounding quality, concurrency, cancellation, thermals and recovery. Select best intelligence-per-resource, not biggest model.
+Wave 0 and the later interpreter-only I1 cycle are closed historical evidence. Neither selected a model, and all execution authorizations are false. Their target-hardware measurements, candidate matrices and context methods remain reproducible records, not current implementation instructions.
 
-Context is provisional. Screen 2K/4K/8K and test 12K/16K where resource gates permit. No context/model/runtime value becomes architecture before the Selection Report and ADR.
+Any future model proposal starts with a new reviewed matrix/protocol/authorization after conditions materially change. It must not silently resume Wave 0 or I1.
 
-## 18. MLOps and reproducibility
+## 18. Reproducibility and CI
 
-Version model, quantization, runtime, prompt, tool schemas, evaluation data, embedding model, retrieval policy and Constitution. Build ModelOps, PromptOps, EvaluationOps, RetrievalOps and safe observability only as measured need appears. Model weights never enter Git.
+Version contracts, prompts, Constitution, deterministic fixtures and evaluation records. Historical model/runtime identities remain recorded only in sanitized evidence; model weights never enter Git.
 
-Cloud CI validates code, schema, orchestration, security and synthetic behavior. Local GPU validation measures VRAM/offload/tokens/latency/thermal/concurrency. Do not expose a personal laptop as a public runner without a separate security decision.
+Cloud CI validates code, schema, deterministic orchestration, security and synthetic behavior. It runs no rejected model, GPU benchmark, MLOps pipeline or personal-laptop workload. A personal laptop must never become a public runner without a separate security decision.
 
 ## 19. Observability and failures
 

@@ -50,6 +50,8 @@ Current production verification: **39/39 user routes return HTTP 200**, five Ent
 | [`reports/AI-V0.1.1-APPLICATION-INTEGRATION-REVIEW-2026-08-19.md`](reports/AI-V0.1.1-APPLICATION-INTEGRATION-REVIEW-2026-08-19.md) | Deterministic application provider lock and live integration review |
 | [`reports/AI-BRANCH-PR-INTEGRATION-REVIEW-2026-08-19.md`](reports/AI-BRANCH-PR-INTEGRATION-REVIEW-2026-08-19.md) | Complete `ai`→`main` pre-merge integration and security review |
 | [`reports/AI-BRANCH-PR-CHANGED-FILES-2026-08-19.md`](reports/AI-BRANCH-PR-CHANGED-FILES-2026-08-19.md) | Complete changed-file and line-count PR diff |
+| [`reports/APPLICATION-GAP-AUDIT-2026-08-19.md`](reports/APPLICATION-GAP-AUDIT-2026-08-19.md) | Current frontend/backend/integration and product-completion audit |
+| [`reports/APPLICATION-COMPLETION-BACKLOG-2026-08-19.md`](reports/APPLICATION-COMPLETION-BACKLOG-2026-08-19.md) | Prioritized release backlog and CI foundation specification |
 | [`notifications/README.md`](notifications/README.md) | Global inbox, rule catalog, settings and scope decisions |
 
 ### Kaizen Intelligence Engine

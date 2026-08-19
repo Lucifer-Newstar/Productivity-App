@@ -2,14 +2,14 @@
 
 **Generated:** 2026-08-19
 **Base:** `origin/main` (`cc8155d265f8752e20c294f4a6fd51f36d5ea291`)
-**Head:** `ai` pre-merge review
+**Head:** `ai` application-gap-audit review
 
 ## Aggregate diff
 
 ```text
-Files changed: 228
-Additions: 18018
-Deletions: 245
+Files changed: 231
+Additions: 18504
+Deletions: 252
 ```
 
 Line counts are Git numstat values. Added documentation/source files count every line; generated dependency/build directories are excluded.
@@ -22,9 +22,9 @@ Line counts are Git numstat values. Added documentation/source files count every
 | `.gitignore` | 1 | 19 | 0 |
 | `README.md` | 1 | 108 | 39 |
 | `ai` | 96 | 12500 | 0 |
-| `backend` | 2 | 79 | 65 |
-| `docs` | 76 | 5001 | 80 |
-| `frontend` | 51 | 308 | 61 |
+| `backend` | 3 | 84 | 69 |
+| `docs` | 78 | 5481 | 83 |
+| `frontend` | 51 | 309 | 61 |
 
 ## Complete file list
 
@@ -131,13 +131,14 @@ Line counts are Git numstat values. Added documentation/source files count every
 | Added | `ai/wave0/scripts/transport_probe.py` | 85 | 0 |
 | Modified | `backend/README.md` | 78 | 65 |
 | Modified | `backend/scripts/security-smoke.mjs` | 1 | 0 |
-| Modified | `docs/README.md` | 39 | 13 |
+| Modified | `backend/src/server.ts` | 5 | 4 |
+| Modified | `docs/README.md` | 41 | 13 |
 | Modified | `docs/ai/ARCHITECTURE.md` | 4 | 2 |
 | Modified | `docs/ai/DECISION-REGISTER.md` | 3 | 0 |
 | Added | `docs/ai/DELIVERY-PLAYBOOK.md` | 191 | 0 |
 | Modified | `docs/ai/EVALUATION.md` | 12 | 0 |
-| Added | `docs/ai/IMPLEMENTATION-LEDGER.md` | 237 | 0 |
-| Added | `docs/ai/MASTER-SPECIFICATION.md` | 191 | 0 |
+| Added | `docs/ai/IMPLEMENTATION-LEDGER.md` | 239 | 0 |
+| Added | `docs/ai/MASTER-SPECIFICATION.md` | 196 | 0 |
 | Modified | `docs/ai/OBSERVABILITY.md` | 4 | 0 |
 | Modified | `docs/ai/PRIVACY.md` | 51 | 0 |
 | Modified | `docs/ai/PROVIDERS.md` | 6 | 0 |
@@ -171,13 +172,13 @@ Line counts are Git numstat values. Added documentation/source files count every
 | Modified | `docs/guides/TESTING.md` | 41 | 3 |
 | Modified | `docs/quality/qa/README.md` | 1 | 1 |
 | Modified | `docs/reference/API.md` | 16 | 2 |
-| Modified | `docs/reference/FEATURES.md` | 1 | 1 |
+| Modified | `docs/reference/FEATURES.md` | 7 | 4 |
 | Modified | `docs/reference/GLOSSARY.md` | 1 | 1 |
 | Modified | `docs/reference/PERSISTENCE-KEYS.md` | 9 | 2 |
 | Modified | `docs/reference/README.md` | 1 | 1 |
 | Modified | `docs/reference/ROUTES.md` | 7 | 1 |
-| Added | `docs/reports/AI-BRANCH-PR-CHANGED-FILES-2026-08-19.md` | 268 | 0 |
-| Added | `docs/reports/AI-BRANCH-PR-INTEGRATION-REVIEW-2026-08-19.md` | 234 | 0 |
+| Added | `docs/reports/AI-BRANCH-PR-CHANGED-FILES-2026-08-19.md` | 271 | 0 |
+| Added | `docs/reports/AI-BRANCH-PR-INTEGRATION-REVIEW-2026-08-19.md` | 238 | 0 |
 | Added | `docs/reports/AI-DOCUMENTATION-PROCESS-2026-08-18.md` | 22 | 0 |
 | Added | `docs/reports/AI-V0.1-INTEGRATION-FREEZE-2026-08-17.md` | 22 | 0 |
 | Added | `docs/reports/AI-V0.1.1-ACCEPTANCE-AND-MODEL-EVAL-DESIGN-2026-08-19.md` | 148 | 0 |
@@ -199,8 +200,10 @@ Line counts are Git numstat values. Added documentation/source files count every
 | Added | `docs/reports/AI-WAVE-0-QWEN-PREFLIGHT-2026-08-18.md` | 29 | 0 |
 | Added | `docs/reports/AI-WAVE-0-TARGET-RESULT-1-2026-08-18.md` | 47 | 0 |
 | Added | `docs/reports/AI-WAVE-1-FOUNDATION-2026-08-17.md` | 43 | 0 |
+| Added | `docs/reports/APPLICATION-COMPLETION-BACKLOG-2026-08-19.md` | 145 | 0 |
+| Added | `docs/reports/APPLICATION-GAP-AUDIT-2026-08-19.md` | 311 | 0 |
 | Added | `docs/reports/DOCS-AND-COMMENTARY-POLISH-2026-08-18.md` | 35 | 0 |
-| Modified | `docs/reports/README.md` | 24 | 0 |
+| Modified | `docs/reports/README.md` | 26 | 0 |
 | Modified | `docs/spaces/career/QA.md` | 1 | 1 |
 | Modified | `docs/spaces/career/README.md` | 1 | 1 |
 | Modified | `docs/spaces/entertainment/APIS.md` | 1 | 1 |
@@ -248,7 +251,7 @@ Line counts are Git numstat values. Added documentation/source files count every
 | Added | `frontend/scripts/qa-ai-foundation.ts` | 19 | 0 |
 | Added | `frontend/scripts/qa-comments.js` | 7 | 0 |
 | Modified | `frontend/scripts/qa-csp.js` | 1 | 0 |
-| Modified | `frontend/scripts/qa-docs.js` | 34 | 5 |
+| Modified | `frontend/scripts/qa-docs.js` | 35 | 5 |
 | Modified | `frontend/scripts/qa-entertainment-intelligence.ts` | 1 | 0 |
 | Modified | `frontend/scripts/qa-entertainment-migration.ts` | 1 | 0 |
 | Modified | `frontend/scripts/qa-entertainment-reports.ts` | 1 | 0 |
@@ -261,8 +264,8 @@ Line counts are Git numstat values. Added documentation/source files count every
 
 ## Review notes
 
-- The dominant additions are the independent `ai/` engine, frozen evaluation evidence/harnesses and synchronized documentation.
-- Frontend changes are bounded to the fixed AI proxy, Home Core Today integration, revision/snapshot verification and repository QA/commentary touchups.
-- Backend executable behavior is unchanged except commentary; backend README/API documentation is synchronized and the full build/security smoke passed.
+- The independent deterministic AI chain is complete and application-locked.
+- The whole-product audit now blocks PR/merge on production data truth, timezone correctness, persistence architecture and CI.
+- Frontend changes include accumulated product UI work plus the fixed AI proxy/Home bridge.
+- Backend remains a reference in-memory API; the frontend does not consume it.
 - No model weights, local configuration, raw private outputs, secrets, memory, embeddings or user data are included.
-- No merge is performed by this review.
