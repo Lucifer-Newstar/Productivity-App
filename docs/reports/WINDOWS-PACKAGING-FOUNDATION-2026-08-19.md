@@ -8,8 +8,9 @@
 - Next.js standalone production output.
 - Loopback-package CSP mode that remains eval-free without upgrading local HTTP to unavailable HTTPS.
 - Checksum-pinned official Node.js 20.19.0 Windows x64 runtime.
-- Portable directory and ZIP builder.
-- Per-user Inno Setup installer definition and builder.
+- Internal runtime staging builder.
+- One per-user Inno Setup executable containing the complete application.
+- Registered Windows uninstaller plus branded desktop, Start Menu, verification and uninstall entries.
 - Shared launcher for frontend and deterministic Intelligence Engine.
 - Fixed ports, stable browser origin, readiness checks, duplicate/occupied-port refusal and process-state file.
 - Stop command and uninstall shutdown hook.
@@ -47,8 +48,8 @@ The Express reference API, model artifacts, evaluation outputs, credentials, use
 
 A real Windows x64 host must still verify:
 
-1. portable build and checksum;
-2. installer compilation and checksum;
+1. installer staging and compilation;
+2. setup executable checksum and signature readiness;
 3. clean install and first launch;
 4. engine pairing and Core Today;
 5. offline route and local-data behavior;

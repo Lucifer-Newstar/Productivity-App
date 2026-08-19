@@ -1,46 +1,49 @@
 # Windows local installation
 
-## Supported release formats
+## Release format
 
-Kaizen local v1 ships for Windows x64 in two equivalent formats:
+Kaizen local v1 ships as one Windows x64 setup executable:
 
-- per-user Inno Setup installer;
-- portable ZIP.
+```text
+Kaizen-1.0.0-win-x64-setup.exe
+```
 
-Both bundle Node.js 20.19.0, the Next.js standalone server and deterministic Intelligence Engine. Neither includes the Express reference API, a model runtime, cloud service, user records or provider credentials.
+The installer bundles Node.js 20.19.0, the Next.js standalone server and deterministic Intelligence Engine. It does not include the Express reference API, a model runtime, cloud service, credentials or user records.
 
-## Installer
+## Install
 
-1. Verify the published `.sha256` file.
-2. Run `Kaizen-<version>-win-x64-setup.exe` as the intended Windows user.
-3. Keep the Kaizen console open while using the application.
-4. Use **Stop Kaizen** from the Start Menu before an update or uninstall.
+1. Verify the setup executable against its published `.sha256` file.
+2. Run the setup executable as the intended Windows user.
+3. Optionally allow setup to create the desktop shortcut.
+4. Launch **Kaizen** from the desktop or Start Menu.
+5. Keep the Kaizen console open while using the application; closing it stops the local runtime.
 
 The installer is per-user and does not require administrator privileges.
 
-## Portable ZIP
+## Installed entries
 
-1. Verify the ZIP checksum and extract it to a local folder.
-2. Run `start-kaizen.cmd`.
-3. Keep the console open while using Kaizen at `http://127.0.0.1:3000`.
-4. Run `stop-kaizen.cmd` before moving or deleting the folder.
+Setup creates a Kaizen Start Menu group containing:
 
-Do not launch Kaizen from an untrusted/shared Windows account or browser profile.
+- **Kaizen**;
+- **Stop Kaizen**;
+- **Verify Kaizen installation**;
+- **Uninstall Kaizen**.
 
-## Data and uninstall behavior
+The same professional Kaizen icon is used by setup, Windows Apps, Start Menu and the optional desktop shortcut.
 
-Product records remain in the browser profile under the stable loopback origin `http://127.0.0.1:3000`. They are not stored in the installation directory and are not encrypted by Kaizen. Uninstalling the application does not erase browser records.
+## Uninstall
 
-Before an update, uninstall or browser-profile change:
+Use **Uninstall Kaizen** from the Start Menu or Windows **Settings → Apps → Installed apps**. The uninstaller first stops the package-owned local services and then removes installed runtime files and shortcuts.
 
-1. open **Local data recovery**;
-2. export a whole-product backup;
-3. store it in an encrypted user-controlled location;
-4. test restore only with synthetic/non-sensitive data during release verification.
+Product records remain in the browser profile under `http://127.0.0.1:3000`; uninstall intentionally does not erase them. Export a whole-product backup before uninstalling, changing browsers or deleting the browser profile.
+
+## Data boundary
+
+Browser records are not stored in the installation directory and are not encrypted by Kaizen. Do not use Kaizen in an untrusted/shared Windows account or browser profile. Store exported backups in an encrypted user-controlled location.
 
 ## Runtime behavior
 
-The launcher reserves these loopback-only ports:
+The launcher reserves:
 
 - `127.0.0.1:3000` — Next.js application;
 - `127.0.0.1:4317` — deterministic Intelligence Engine.
@@ -49,7 +52,7 @@ Startup fails rather than selecting another port if either is occupied. This pre
 
 ## Packaged verification
 
-With Kaizen stopped, run `verify-kaizen.cmd`. It starts only the bundled services and checks:
+With Kaizen stopped, run **Verify Kaizen installation**. It checks:
 
 - required package layout and Express exclusion;
 - all 39 user routes;
@@ -57,21 +60,20 @@ With Kaizen stopped, run `verify-kaizen.cmd`. It starts only the bundled service
 - cross-site pairing denial;
 - deterministic provider identity;
 - complete synthetic Core Today request/tool/SSE/source flow;
-- service shutdown and release of ports 3000 and 4317.
+- shutdown and release of ports 3000 and 4317.
 
-It writes `package-verification.json` containing only `PUBLIC-SANITIZED-AGGREGATE` results. Pairing codes and service logs are never written to that report. Delete any failed-run console capture rather than publishing it without privacy review.
+It writes `package-verification.json` containing only `PUBLIC-SANITIZED-AGGREGATE` results. Pairing codes and raw service logs are never written to that report.
 
 ## Offline scope
 
-Core personal tracking, backup/recovery and deterministic Core Today work offline. Entertainment metadata search/trending/detail features require network access and optional locally configured provider credentials. No remote AI provider is used.
+Core personal tracking, backup/recovery and deterministic Core Today work offline. Entertainment metadata provider features require network access and optional locally configured credentials. No remote AI provider is used.
 
-## Build commands
+## Build command
 
-From Windows PowerShell:
+Install Inno Setup 6, then run from Windows PowerShell:
 
 ```powershell
-powershell -ExecutionPolicy Bypass -File packaging/windows/build-portable.ps1 -Version 1.0.0
 powershell -ExecutionPolicy Bypass -File packaging/windows/build-installer.ps1 -Version 1.0.0
 ```
 
-Inno Setup 6 is required only to compile the installer. Build outputs and downloaded runtimes remain under ignored `release-artifacts/`.
+The setup executable and checksum are written to ignored `release-artifacts/`. The staged directory is only an installer build input and is not a public portable release.

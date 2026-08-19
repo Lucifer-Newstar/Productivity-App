@@ -16,14 +16,14 @@
 | Model evaluation | Closed; no model selected |
 | PR #4 | Merged as `06cf13c` |
 | Main CI | GREEN — run `32260387533`, all four jobs |
-| Windows package | Installer + portable foundations implemented; physical-host validation pending |
+| Windows package | Single setup executable + registered uninstaller/icons implemented; host validation pending |
 | Cloud deployment | Not planned |
 
 ## Release gate
 
 All identified P0/P1 application items are fixed, scoped or explicitly accepted. PR #4 and main CI are complete. Release is now blocked only on physical Windows evidence:
 
-1. build portable ZIP and installer;
+1. build the single Windows setup executable;
 2. verify checksums;
 3. clean install, launch, stop, update and uninstall;
 4. verify offline routes and stable browser origin;
