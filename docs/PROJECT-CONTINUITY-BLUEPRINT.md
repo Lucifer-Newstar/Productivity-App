@@ -229,7 +229,7 @@ Application configuration accepts deterministic provider only. Model settings fa
 
 CI never downloads/runs models, uses GPUs or exposes a personal laptop. The live integration script is `scripts/ci/core-today-integration.mjs`.
 
-The workflow is implemented and locally reproduced. Hosted run 1 executed stale commit `ae62224`, failed the old Entertainment structural seed assertion and exposed deprecated JavaScript action runtimes. Run 2 (`32255006909`, `615da49`) passed the backend and Intelligence jobs but exposed a second stale seed expectation in the Entertainment migration QA; the integration job was dependency-skipped. The migration assertion now requires an exactly empty production library. Push the corrected `ai` head and require a new four-job green run.
+The workflow is implemented and locally reproduced. Hosted runs 1 and 2 exposed and closed stale Entertainment seed assertions plus deprecated action runtimes. Hosted run 3 (`32255861421`) passed all four jobs at `6a2c885`: Frontend application, Reference API, Deterministic Intelligence, and Frontend to deterministic Core Today. The hosted-CI gate is satisfied; create the `ai` → `main` PR and leave it unmerged for human review.
 
 ## 9. Current completion status
 
@@ -250,10 +250,9 @@ The workflow is implemented and locally reproduced. Hosted run 1 executed stale 
 
 ### Still required before PR/merge
 
-1. Obtain hosted CI green result.
-2. Regenerate final PR changed-file/integration review with hosted evidence.
-3. Create `ai`→`main` PR from an authenticated GitHub session.
-4. Human review; do not merge automatically.
+1. Commit and push the green-CI evidence and regenerated PR review.
+2. Create `ai`→`main` PR from an authenticated GitHub session.
+3. Human review; do not merge automatically.
 
 The current release matrix and final local regression are complete.
 

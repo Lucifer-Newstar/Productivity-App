@@ -6,9 +6,9 @@ _Last updated: 2026-08-19_
 
 ## Current milestone
 
-> **Local application completion work is closed; first hosted CI proof now gates PR creation.**
+> **Local completion and hosted CI are green; unmerged PR creation is the active gate.**
 
-Local completion is green. Hosted run 1 exposed a stale Entertainment structural seed assertion and deprecated action-runtime warnings. Run 2 (`32255006909`, `615da49`) passed backend and Intelligence but exposed the equivalent stale seed expectation in Entertainment migration QA; that test now requires the approved empty production library. A corrected four-job rerun is pending. AI scope remains closed with no model/GPU work.
+Hosted run 3 (`32255861421`) passed all four jobs at `6a2c885` after runs 1 and 2 supplied corrective evidence for stale Entertainment seed assertions and action runtimes. The final PR diff/review is regenerated. Create `ai` → `main`, leave it unmerged for human review, and do not begin packaging. AI scope remains closed with no model/GPU work.
 
 ## Completed architecture and foundation
 
@@ -72,12 +72,12 @@ Local completion is green. Hosted run 1 exposed a stale Entertainment structural
 | Merge conflict precheck | PASS | `origin/main` is ancestor; merge-tree clean |
 | Whole-product gap audit | COMPLETE | 39 routes, persistence, mocks, API consumption, states and integration traced |
 | Product completion backlog | COMPLETE | P0/P1/P2, completed, rejected AI scope and CI plan |
-| CI workflow | RUN 2 FAILED STALE MIGRATION ASSERTION / RERUN PENDING | backend + Intelligence green; exact empty-library QA corrected |
+| CI workflow | GREEN | run `32255861421`; all four jobs passed at `6a2c885` |
 | Deterministic CI integration | PASS LOCALLY | actual engine + Next proxy + pairing/SSE/tool/source/session |
 | Product P0/P1 completion | PASS LOCALLY | data, dates, habits, backup, security, resilience, placeholders |
 | Continuity/release handoff | COMPLETE | blueprint + current release matrix + backlog |
 | Model/GPU CI exclusion | ENFORCED | closed authorization; no execution commands or runner |
-| GitHub PR creation | HOLD | P0 backlog and hosted CI now block PR |
+| GitHub PR creation | AUTHORIZED / PENDING | create `ai`→`main`, leave unmerged for review |
 | Merge action | NOT PERFORMED | do not merge before release gates |
 
 The new gate does not supersede or weaken `W0-GATE-2`. It evaluates a different, narrower provider role with no tools.
@@ -209,7 +209,7 @@ The larger control is rejected. Wave 0 is complete with no model selected. No mo
 
 ## Next review
 
-Obtain the first hosted CI result. If all four jobs pass, rerun the synchronized release matrix, regenerate the PR diff/review, create `ai`→`main` from an authenticated session and stop for human review. Merge and Windows packaging remain separately approval-gated.
+Commit and push the green hosted-CI evidence and regenerated PR review, create `ai`→`main` from an authenticated session, and stop for human review. Merge and Windows packaging remain separately approval-gated.
 
 Do not re-enable model providers, rerun candidates, add AI domains, memory, retrieval, Health, writes, automation, remote processing or v0.2 work.
 

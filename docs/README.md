@@ -57,6 +57,7 @@ Current production verification: **39/39 user routes return HTTP 200**, five Ent
 | [`reports/CI-FOUNDATION-2026-08-19.md`](reports/CI-FOUNDATION-2026-08-19.md) | Hosted correctness workflow and deterministic integration runner |
 | [`reports/CI-RUN-1-INTAKE-2026-08-19.md`](reports/CI-RUN-1-INTAKE-2026-08-19.md) | First hosted failure intake and action-runtime compatibility fixes |
 | [`reports/CI-RUN-2-INTAKE-2026-08-19.md`](reports/CI-RUN-2-INTAKE-2026-08-19.md) | Second hosted failure intake and empty-library migration QA correction |
+| [`reports/CI-RUN-3-GREEN-2026-08-19.md`](reports/CI-RUN-3-GREEN-2026-08-19.md) | Green four-job hosted CI evidence authorizing unmerged PR creation |
 | [`reports/CORE-DATE-HABIT-CORRECTNESS-2026-08-19.md`](reports/CORE-DATE-HABIT-CORRECTNESS-2026-08-19.md) | Local-date and habit-streak correctness fixes |
 | [`reports/PRODUCTION-DATA-BASELINE-2026-08-19.md`](reports/PRODUCTION-DATA-BASELINE-2026-08-19.md) | Empty fresh user history and retained product catalogs/templates |
 | [`reports/LOCAL-RELEASE-DATA-AUTHORITY-2026-08-19.md`](reports/LOCAL-RELEASE-DATA-AUTHORITY-2026-08-19.md) | Browser-only release authority and reference API hardening |

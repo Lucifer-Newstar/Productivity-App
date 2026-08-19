@@ -17,19 +17,17 @@
 | Express network security | Non-loopback requires service key |
 | Deterministic Intelligence | Authoritative Core Today path |
 | Model evaluation | Closed; no model selected |
-| CI | Implemented; run 2 exposed one stale empty-library migration assertion; corrected rerun pending |
+| CI | GREEN — run `32255861421` passed all four jobs at `6a2c885` |
 | Cloud deployment | Not planned |
 
 ## Backlog gate
 
 All identified P0/P1 code or architecture items are now fixed, scoped or explicitly accepted locally. P2 items remain intentional deferrals.
 
-The final local regression is green. The release is blocked on hosted/review evidence:
+The final local regression and hosted CI are green. The release remains blocked on review evidence:
 
-1. one fully green four-job hosted GitHub CI run (runs 1 and 2 supplied corrective evidence but were not green);
-2. regenerated final PR diff/review after hosted results;
-3. authenticated `ai`→`main` PR creation;
-4. human review and explicit merge approval.
+1. authenticated `ai`→`main` PR creation;
+2. human review and explicit merge approval.
 
 ## Post-merge-only gate
 
@@ -47,8 +45,9 @@ Windows/local packaging, clean install/update/uninstall, offline operation, back
 ## Release decision
 
 ```text
-Local code completion:     READY FOR HOSTED CI
-PR creation:              HOLD UNTIL HOSTED CI
+Local code completion:     COMPLETE
+Hosted CI:                GREEN — 32255861421
+PR creation:              AUTHORIZED — LEAVE UNMERGED
 Merge:                    NOT AUTHORIZED
 Windows packaging:        AFTER MERGE ONLY
 Release:                  NOT YET

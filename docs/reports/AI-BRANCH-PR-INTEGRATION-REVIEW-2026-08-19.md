@@ -4,21 +4,21 @@
 **Base:** `origin/main` at `cc8155d265f8752e20c294f4a6fd51f36d5ea291`
 **Head branch:** `ai`
 **Merge performed:** no
-**Review decision:** HOLD PR CREATION/MERGE — FIRST HOSTED CI RUN REQUIRED
+**Review decision:** READY TO CREATE PR — LEAVE UNMERGED FOR HUMAN REVIEW
 
 ## Executive summary
 
 The Core Today integration review found no unresolved AI-chain blocker. Frontend, Express reference API and Intelligence Engine remain separate and correctly composed; deterministic Core Today is the only application AI provider.
 
-The whole-product gap audit found real release blockers beyond AI. Those local P0/P1 items are now fixed, scoped or explicitly accepted, and the final local regression is green. PR creation remains held until the implemented four-job workflow produces its first hosted GitHub result. Current authority is [`CURRENT-RELEASE-STATUS-2026-08-19.md`](CURRENT-RELEASE-STATUS-2026-08-19.md).
+The whole-product gap audit found real release blockers beyond AI. Those local P0/P1 items are now fixed, scoped or explicitly accepted, the final local regression is green, and hosted CI run [`32255861421`](https://github.com/Lucifer-Newstar/Productivity-App/actions/runs/32255861421) passed all four jobs at head `6a2c885`. The `ai` → `main` PR may now be created but must remain unmerged for human review. Current authority is [`CURRENT-RELEASE-STATUS-2026-08-19.md`](CURRENT-RELEASE-STATUS-2026-08-19.md).
 
 ## PR diff summary
 
 ```text
-Commits from main: 66
-Files changed: 275
-Additions: 20158
-Deletions: 496
+Commits from main: 70
+Files changed: 278
+Additions: 20255
+Deletions: 497
 Merge base: cc8155d265f8752e20c294f4a6fd51f36d5ea291
 Merge topology: origin/main is an ancestor of ai; no conflict expected
 ```
@@ -190,19 +190,23 @@ Production CSP remains free of `unsafe-eval`; external URLs, restored images, CS
 | Staged privacy scan | PASS |
 | Git diff check | PASS |
 | Main ancestry / merge conflict precheck | PASS |
+| Hosted CI run `32255861421` — Frontend application | PASS |
+| Hosted CI run `32255861421` — Reference API | PASS |
+| Hosted CI run `32255861421` — Deterministic Intelligence | PASS |
+| Hosted CI run `32255861421` — Frontend to deterministic Core Today | PASS |
 
 ## Current constraints after completion work
 
 - Browser persistence is unencrypted under the explicitly accepted trusted-profile boundary.
 - Express is excluded reference code, not release persistence.
-- Hosted CI has not yet run because this environment cannot push/create the PR.
+- Hosted CI is green at `6a2c885`; this environment still has no authenticated GitHub tooling to create the PR.
 - Windows/local packaging and offline verification are post-merge work.
 - P2 feature items remain intentional deferrals.
 - Historical model adapters/harnesses remain application-unreachable and authorization-closed.
 
 ## PR creation status
 
-No open `ai`→`main` PR existed when checked through the public GitHub API, and this workspace has no authenticated GitHub tooling. Local completion is green; first hosted CI proof still blocks PR creation.
+No open `ai`→`main` PR existed when checked through the public GitHub API. Local completion and hosted CI are green, so PR creation is authorized; this workspace has no authenticated GitHub tooling to create it.
 
 The future comparison URL remains:
 
@@ -210,11 +214,11 @@ The future comparison URL remains:
 https://github.com/Lucifer-Newstar/Productivity-App/compare/main...ai?expand=1
 ```
 
-Do not open or merge it until all four hosted CI jobs pass.
+All four hosted CI jobs have passed. Create the PR and leave it unmerged for human review.
 
 ## PR recommendation
 
-**HOLD FOR HOSTED CI.** After the first green hosted run, regenerate this diff/review, create the PR from an authenticated session and stop for human review.
+**CREATE PR; DO NOT MERGE.** Hosted CI is green and the diff/review is regenerated. Create the PR from an authenticated session, then stop for human review and explicit merge approval.
 
 ### Proposed PR title
 

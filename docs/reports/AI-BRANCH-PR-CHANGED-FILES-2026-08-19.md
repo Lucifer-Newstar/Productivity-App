@@ -2,14 +2,14 @@
 
 **Generated:** 2026-08-19
 **Base:** `origin/main` (`cc8155d265f8752e20c294f4a6fd51f36d5ea291`)
-**Head:** `ai` local-completion review
+**Head:** `ai`, after green hosted CI run `32255861421` and evidence intake
 
 ## Aggregate diff
 
 ```text
-Files changed: 275
-Additions: 20158
-Deletions: 496
+Files changed: 278
+Additions: 20255
+Deletions: 497
 ```
 
 Line counts are Git numstat values. Added documentation/source files count every line; generated dependency/build directories are excluded.
@@ -24,8 +24,8 @@ Line counts are Git numstat values. Added documentation/source files count every
 | `README.md` | 1 | 109 | 39 |
 | `ai` | 96 | 12500 | 0 |
 | `backend` | 5 | 105 | 72 |
-| `docs` | 93 | 6603 | 165 |
-| `frontend` | 76 | 626 | 220 |
+| `docs` | 96 | 6695 | 165 |
+| `frontend` | 76 | 630 | 221 |
 | `scripts` | 1 | 45 | 0 |
 
 ## Complete file list
@@ -137,8 +137,8 @@ Line counts are Git numstat values. Added documentation/source files count every
 | Modified | `backend/scripts/security-smoke.mjs` | 1 | 0 |
 | Added | `backend/scripts/startup-security.mjs` | 16 | 0 |
 | Modified | `backend/src/server.ts` | 9 | 7 |
-| Added | `docs/PROJECT-CONTINUITY-BLUEPRINT.md` | 392 | 0 |
-| Modified | `docs/README.md` | 53 | 13 |
+| Added | `docs/PROJECT-CONTINUITY-BLUEPRINT.md` | 391 | 0 |
+| Modified | `docs/README.md` | 56 | 13 |
 | Modified | `docs/ai/ARCHITECTURE.md` | 4 | 2 |
 | Modified | `docs/ai/DECISION-REGISTER.md` | 3 | 0 |
 | Added | `docs/ai/DELIVERY-PLAYBOOK.md` | 191 | 0 |
@@ -188,8 +188,8 @@ Line counts are Git numstat values. Added documentation/source files count every
 | Modified | `docs/reference/PERSISTENCE-KEYS.md` | 15 | 7 |
 | Modified | `docs/reference/README.md` | 1 | 1 |
 | Modified | `docs/reference/ROUTES.md` | 7 | 1 |
-| Added | `docs/reports/AI-BRANCH-PR-CHANGED-FILES-2026-08-19.md` | 317 | 0 |
-| Added | `docs/reports/AI-BRANCH-PR-INTEGRATION-REVIEW-2026-08-19.md` | 236 | 0 |
+| Added | `docs/reports/AI-BRANCH-PR-CHANGED-FILES-2026-08-19.md` | 311 | 0 |
+| Added | `docs/reports/AI-BRANCH-PR-INTEGRATION-REVIEW-2026-08-19.md` | 240 | 0 |
 | Added | `docs/reports/AI-DOCUMENTATION-PROCESS-2026-08-18.md` | 22 | 0 |
 | Added | `docs/reports/AI-V0.1-INTEGRATION-FREEZE-2026-08-17.md` | 22 | 0 |
 | Added | `docs/reports/AI-V0.1.1-ACCEPTANCE-AND-MODEL-EVAL-DESIGN-2026-08-19.md` | 148 | 0 |
@@ -215,14 +215,17 @@ Line counts are Git numstat values. Added documentation/source files count every
 | Added | `docs/reports/APPLICATION-GAP-AUDIT-2026-08-19.md` | 324 | 0 |
 | Added | `docs/reports/BROWSER-BACKUP-RECOVERY-2026-08-19.md` | 36 | 0 |
 | Added | `docs/reports/CI-FOUNDATION-2026-08-19.md` | 90 | 0 |
+| Added | `docs/reports/CI-RUN-1-INTAKE-2026-08-19.md` | 32 | 0 |
+| Added | `docs/reports/CI-RUN-2-INTAKE-2026-08-19.md` | 34 | 0 |
+| Added | `docs/reports/CI-RUN-3-GREEN-2026-08-19.md` | 24 | 0 |
 | Added | `docs/reports/CORE-DATE-HABIT-CORRECTNESS-2026-08-19.md` | 42 | 0 |
-| Added | `docs/reports/CURRENT-RELEASE-STATUS-2026-08-19.md` | 55 | 0 |
+| Added | `docs/reports/CURRENT-RELEASE-STATUS-2026-08-19.md` | 54 | 0 |
 | Added | `docs/reports/DOCS-AND-COMMENTARY-POLISH-2026-08-18.md` | 35 | 0 |
 | Added | `docs/reports/FINAL-LOCAL-REGRESSION-2026-08-19.md` | 65 | 0 |
 | Added | `docs/reports/LOCAL-RELEASE-DATA-AUTHORITY-2026-08-19.md` | 37 | 0 |
 | Added | `docs/reports/P1-CORRECTNESS-POLISH-2026-08-19.md` | 31 | 0 |
 | Added | `docs/reports/PRODUCTION-DATA-BASELINE-2026-08-19.md` | 44 | 0 |
-| Modified | `docs/reports/README.md` | 35 | 0 |
+| Modified | `docs/reports/README.md` | 38 | 0 |
 | Added | `docs/reports/RELEASE-RESILIENCE-DECISIONS-2026-08-19.md` | 26 | 0 |
 | Modified | `docs/spaces/career/QA.md` | 1 | 1 |
 | Modified | `docs/spaces/career/README.md` | 1 | 1 |
@@ -294,9 +297,9 @@ Line counts are Git numstat values. Added documentation/source files count every
 | Added | `frontend/scripts/qa-comments.js` | 7 | 0 |
 | Added | `frontend/scripts/qa-core-correctness.ts` | 21 | 0 |
 | Modified | `frontend/scripts/qa-csp.js` | 1 | 0 |
-| Modified | `frontend/scripts/qa-docs.js` | 45 | 5 |
+| Modified | `frontend/scripts/qa-docs.js` | 48 | 5 |
 | Modified | `frontend/scripts/qa-entertainment-intelligence.ts` | 1 | 0 |
-| Modified | `frontend/scripts/qa-entertainment-migration.ts` | 1 | 0 |
+| Modified | `frontend/scripts/qa-entertainment-migration.ts` | 2 | 1 |
 | Modified | `frontend/scripts/qa-entertainment-reports.ts` | 1 | 0 |
 | Modified | `frontend/scripts/qa-entertainment-social.ts` | 1 | 0 |
 | Modified | `frontend/scripts/qa-entertainment.js` | 2 | 1 |
@@ -307,11 +310,3 @@ Line counts are Git numstat values. Added documentation/source files count every
 | Modified | `frontend/scripts/qa-security.ts` | 1 | 0 |
 | Modified | `frontend/scripts/qa-ui.js` | 1 | 0 |
 | Added | `scripts/ci/core-today-integration.mjs` | 45 | 0 |
-
-## Review notes
-
-- Deterministic AI remains application-locked and model execution closed.
-- Local P0/P1 completion work is implemented and the full local regression is green.
-- Hosted CI proof, authenticated PR creation and human review remain before merge.
-- Express remains reference-only and excluded from local v1 runtime.
-- No model weights, local configuration, raw private outputs, secrets, memory, embeddings or user data are included.
