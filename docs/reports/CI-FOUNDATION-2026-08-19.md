@@ -9,7 +9,7 @@
 
 ### Frontend application
 
-Runs Node 20.19, clean install, TypeScript, ESLint, all Health/Entertainment/security/notification/UI/Home/AI/docs/comment suites, production build and production-dependency audit.
+Runs Node 20.19, clean install, TypeScript, ESLint, all Health/Entertainment/security/notification/UI/Home/AI/core-correctness/docs/comment suites, production build and production-dependency audit.
 
 ### Reference API
 
@@ -76,8 +76,8 @@ Local deterministic live integration: PASS
 Frontend TypeScript/ESLint/build and all domain suites: PASS
 Backend build/security smoke: PASS
 AI TypeScript/24 tests/build/design/harness: PASS
-Documentation QA: 50/50 PASS
-Source commentary QA: 255/255 PASS
+Documentation QA: 51/51 PASS
+Source commentary QA: 258/258 PASS
 Orphan ports/processes after integration: none
 Git diff check: PASS
 Staged privacy scan: PASS

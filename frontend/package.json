@@ -19,6 +19,7 @@
     "qa:csp": "node scripts/qa-csp.js",
     "qa:home": "tsx scripts/qa-home-intelligence.ts",
     "qa:ai": "tsx scripts/qa-ai-foundation.ts",
+    "qa:core": "tsx scripts/qa-core-correctness.ts",
     "qa:comments": "node scripts/qa-comments.js"
   },
   "keywords": [],

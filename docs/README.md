@@ -53,6 +53,7 @@ Current production verification: **39/39 user routes return HTTP 200**, five Ent
 | [`reports/APPLICATION-GAP-AUDIT-2026-08-19.md`](reports/APPLICATION-GAP-AUDIT-2026-08-19.md) | Current frontend/backend/integration and product-completion audit |
 | [`reports/APPLICATION-COMPLETION-BACKLOG-2026-08-19.md`](reports/APPLICATION-COMPLETION-BACKLOG-2026-08-19.md) | Prioritized release backlog and CI foundation specification |
 | [`reports/CI-FOUNDATION-2026-08-19.md`](reports/CI-FOUNDATION-2026-08-19.md) | Hosted correctness workflow and deterministic integration runner |
+| [`reports/CORE-DATE-HABIT-CORRECTNESS-2026-08-19.md`](reports/CORE-DATE-HABIT-CORRECTNESS-2026-08-19.md) | Local-date and habit-streak correctness fixes |
 | [`notifications/README.md`](notifications/README.md) | Global inbox, rule catalog, settings and scope decisions |
 
 ### Kaizen Intelligence Engine

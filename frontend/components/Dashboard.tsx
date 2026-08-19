@@ -28,6 +28,7 @@ import IntelligencePanel from "./IntelligencePanel";
 import { buildHomeIntelligence } from "../lib/homeIntelligence";
 import { BridgeRevisionTracker } from "../lib/ai/revisions";
 import { buildTodaySnapshot } from "../lib/ai/domainBridge";
+import { localDateKey } from "../lib/localDate";
 
 const container: Variants = {
   hidden: { opacity: 0 },
@@ -131,7 +132,7 @@ export default function Dashboard({
     b.date.localeCompare(a.date),
   )[0];
   const water = store.health.water
-    .filter((w) => w.date === time.toISOString().slice(0, 10))
+    .filter((w) => w.date === localDateKey(time))
     .reduce((n, w) => n + w.ml, 0);
   const queue = store.entertainment.items.filter(
     (i) => i.status === "planned" && !i.archived,

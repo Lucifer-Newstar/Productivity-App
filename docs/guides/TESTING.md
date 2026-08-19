@@ -27,6 +27,7 @@ npm run qa:notifications                     # global notification rules/setting
 npm run qa:ui                                # icon/font/theme/motion foundation
 npm run qa:home                              # cross-space command intelligence
 npm run qa:csp                               # dev vs production CSP separation
+npm run qa:core                              # local dates and habit streak correctness
 npm run qa:docs                              # documentation links/status/contracts
 ```
 

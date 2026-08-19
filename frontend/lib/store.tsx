@@ -51,11 +51,12 @@ import { SEED_ENTERTAINMENT, migrateEntertainment } from "./entertainmentTypes";
 import type { NotificationState, KaizenNotification } from "./notificationTypes";
 import { EMPTY_NOTIFICATION_STATE, migrateNotifications } from "./notificationTypes";
 import { isDoneStatus as isTaskDone } from "../components/forge/forgeUtils";
+import { localDateKey } from "./localDate";
 
 // Generate ids for runtime-created entities.
 const uid = () => Math.random().toString(36).slice(2, 10) + Date.now().toString(36);
 const DAY = 86_400_000;
-const todayIso = () => new Date().toISOString().slice(0, 10);
+const todayIso = () => localDateKey();
 
 // ---------------- Seeds (module-level constants) ----------------
 const A = Date.now();

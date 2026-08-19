@@ -32,6 +32,7 @@
 - [`APPLICATION-GAP-AUDIT-2026-08-19.md`](APPLICATION-GAP-AUDIT-2026-08-19.md) — current frontend/backend/integration truth, persistence, mock-data and release-gap audit.
 - [`APPLICATION-COMPLETION-BACKLOG-2026-08-19.md`](APPLICATION-COMPLETION-BACKLOG-2026-08-19.md) — prioritized broken/incomplete/security/deferred backlog and CI specification.
 - [`CI-FOUNDATION-2026-08-19.md`](CI-FOUNDATION-2026-08-19.md) — four-job hosted correctness workflow and deterministic live integration runner.
+- [`CORE-DATE-HABIT-CORRECTNESS-2026-08-19.md`](CORE-DATE-HABIT-CORRECTNESS-2026-08-19.md) — local-calendar utilities and history-derived habit streak corrections.
 - [`AI-WAVE-1-FOUNDATION-2026-08-17.md`](AI-WAVE-1-FOUNDATION-2026-08-17.md) — provider-neutral engine, secure gateway, Domain Bridge and read-only UI vertical slice.
 - [`AI-V0.1-INTEGRATION-FREEZE-2026-08-17.md`](AI-V0.1-INTEGRATION-FREEZE-2026-08-17.md) — canonical specification, adversarial verification and frozen next milestone.
 

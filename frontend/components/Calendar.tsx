@@ -13,13 +13,14 @@ import HomeSectionHeader from "./HomeSectionHeader";
 import { useStore } from "../lib/store";
 import { SPACES } from "../lib/types";
 import SpaceIcon from "./SpaceIcon";
+import { dateFromLocalKey, localDateKey } from "../lib/localDate";
 
 const weekdayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
 export default function Calendar() {
   const { tasks } = useStore();
   const [cursor, setCursor] = useState(() => { const d = new Date(); d.setDate(1); return d; });
-  const [selected, setSelected] = useState<string>(new Date().toISOString().slice(0, 10));
+  const [selected, setSelected] = useState<string>(()=>localDateKey());
 
   const { monthMatrix, monthName, year } = useMemo(() => {
     const year = cursor.getFullYear();
@@ -42,13 +43,14 @@ export default function Calendar() {
     return { monthMatrix: cells, monthName: first.toLocaleString("en-US", { month: "long" }), year };
   }, [cursor]);
 
-  const tasksOnSelected = tasks.filter((t) => (t.dueDate || new Date(t.createdAt).toISOString().slice(0, 10)) === selected);
+  const taskDate=(task:typeof tasks[number])=>task.dueDate||localDateKey(new Date(task.createdAt));
+  const tasksOnSelected = tasks.filter((task) => taskDate(task) === selected);
   const completedOnSelected = tasksOnSelected.filter((t) => t.completed).length;
-  const todayIso = new Date().toISOString().slice(0, 10);
+  const todayIso = localDateKey();
 
-  const tasksOn = (d: Date) => {
-    const iso = d.toISOString().slice(0, 10);
-    return tasks.filter((t) => (t.dueDate || new Date(t.createdAt).toISOString().slice(0, 10)) === iso);
+  const tasksOn = (date: Date) => {
+    const key=localDateKey(date);
+    return tasks.filter((task) => taskDate(task) === key);
   };
 
   return (
@@ -77,7 +79,7 @@ export default function Calendar() {
               <ChevronLeft size={18} />
             </button>
             <button
-              onClick={() => { const d = new Date(); d.setDate(1); setCursor(d); setSelected(new Date().toISOString().slice(0, 10)); }}
+              onClick={() => { const d = new Date(); d.setDate(1); setCursor(d); setSelected(localDateKey()); }}
               className="btn-ghost text-sm"
             >
               Today
@@ -100,7 +102,7 @@ export default function Calendar() {
 
         <div className="grid grid-cols-7 gap-2">
           {monthMatrix.map((cell, i) => {
-            const iso = cell.date.toISOString().slice(0, 10);
+            const iso = localDateKey(cell.date);
             const isToday = iso === todayIso;
             const isSelected = iso === selected;
             const dayTasks = tasksOn(cell.date);
@@ -150,7 +152,7 @@ export default function Calendar() {
         <div className="flex items-center justify-between mb-4">
           <div>
             <h3 className="font-semibold text-gray-900 dark:text-white">
-              {new Date(selected).toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric", year: "numeric" })}
+              {(dateFromLocalKey(selected)??new Date()).toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric", year: "numeric" })}
             </h3>
             <p className="text-sm text-gray-500">
               {tasksOnSelected.length} tasks · {completedOnSelected} completed
