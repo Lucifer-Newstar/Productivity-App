@@ -6,9 +6,9 @@ _Last updated: 2026-08-19_
 
 ## Current milestone
 
-> **Local completion and hosted CI are green; unmerged PR creation is the active gate.**
+> **PR #4 is merged and main CI is green; Windows package verification is the active release gate.**
 
-Hosted run 3 (`32255861421`) passed all four jobs at `6a2c885` after runs 1 and 2 supplied corrective evidence for stale Entertainment seed assertions and action runtimes. The final PR diff/review is regenerated. Create `ai` → `main`, leave it unmerged for human review, and do not begin packaging. AI scope remains closed with no model/GPU work.
+PR #4 merged as `06cf13c`; main run `32260387533` passed all four jobs. Windows installer and portable-package foundations now bundle only the standalone frontend, deterministic engine and checksum-pinned Node runtime. Physical Windows verification remains pending. AI scope remains closed with no model/GPU work.
 
 ## Completed architecture and foundation
 
@@ -72,13 +72,14 @@ Hosted run 3 (`32255861421`) passed all four jobs at `6a2c885` after runs 1 and 
 | Merge conflict precheck | PASS | `origin/main` is ancestor; merge-tree clean |
 | Whole-product gap audit | COMPLETE | 39 routes, persistence, mocks, API consumption, states and integration traced |
 | Product completion backlog | COMPLETE | P0/P1/P2, completed, rejected AI scope and CI plan |
-| CI workflow | GREEN | run `32255861421`; all four jobs passed at `6a2c885` |
+| CI workflow | GREEN ON MAIN | run `32260387533`; all four jobs passed at merge `06cf13c` |
 | Deterministic CI integration | PASS LOCALLY | actual engine + Next proxy + pairing/SSE/tool/source/session |
 | Product P0/P1 completion | PASS LOCALLY | data, dates, habits, backup, security, resilience, placeholders |
 | Continuity/release handoff | COMPLETE | blueprint + current release matrix + backlog |
 | Model/GPU CI exclusion | ENFORCED | closed authorization; no execution commands or runner |
-| GitHub PR #4 | OPEN / REVIEW PASS / FINAL HEAD PENDING | clean and mergeable; push evidence commit and rerun checks |
-| Merge action | NOT PERFORMED | do not merge before release gates |
+| GitHub PR #4 | MERGED | merge `06cf13c`; main CI green |
+| Windows package foundation | IMPLEMENTED / HOST VERIFICATION PENDING | installer + portable ZIP; ADR-014 |
+| Merge action | COMPLETE | user merged PR #4 after green checks |
 
 The new gate does not supersede or weaken `W0-GATE-2`. It evaluates a different, narrower provider role with no tools.
 
@@ -209,7 +210,7 @@ The larger control is rejected. Wave 0 is complete with no model selected. No mo
 
 ## Next review
 
-Commit and push the green hosted-CI evidence and regenerated PR review, create `ai`→`main` from an authenticated session, and stop for human review. Merge and Windows packaging remain separately approval-gated.
+Build both Windows artifacts on a physical Windows x64 host, execute the install/update/uninstall, offline, synthetic backup/restore and deterministic pairing matrix, then record checksums and release evidence. Do not release before that matrix passes.
 
 Do not re-enable model providers, rerun candidates, add AI domains, memory, retrieval, Health, writes, automation, remote processing or v0.2 work.
 
@@ -220,7 +221,7 @@ Latest maintenance pass:
 - Root, frontend, backend and Intelligence README files aligned with the current architecture and no-model Wave 0 outcome.
 - Stale “coming soon”, placeholder/in-progress and architecture-only Intelligence descriptions removed from active docs.
 - Documentation indexes, route metadata, setup commands and quality gates synchronized.
-- All 268 maintained TypeScript, JavaScript, Python, PowerShell, CSS and shell source files now include explanatory commentary.
+- All 276 maintained application and packaging source files now include explanatory commentary.
 - `qa:comments` permanently enforces source-comment coverage.
 - Historical reports/bug entries remain intact and are explicitly treated as dated evidence rather than current status.
 
