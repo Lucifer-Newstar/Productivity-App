@@ -48,6 +48,7 @@ jobs:
           npm run qa:csp
           npm run qa:ai
           npm run qa:core
+          npm run qa:baseline
           npm run qa:docs
           npm run qa:comments
       - name: Production build

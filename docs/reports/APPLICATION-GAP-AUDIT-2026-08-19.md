@@ -292,9 +292,18 @@ Current product-state docs are generally strong, but several ambiguities/drifts 
 - Historical Wave/model evidence is correctly retained, but must stay clearly separated from current product state.
 - Several per-space audit dates and “ships on main” statements are historical and should not drive current release claims.
 
+## Post-audit corrections
+
+- APP-003 local-calendar handling is fixed and covered by `qa:core`.
+- APP-101 habit streak semantics are fixed and covered by `qa:core`.
+- APP-002 automatic personal-looking seed history is removed; catalogs/templates remain and `qa:baseline` protects the boundary.
+- CI and the deterministic live integration job are implemented; first hosted proof remains pending.
+
+The remaining backlog, rather than the original finding text, is authoritative for current status.
+
 ## Audit validation
 
-The audit was performed against source/runtime evidence and the same full green baseline recorded by the pre-merge review: frontend TypeScript/ESLint/build, 458 Health assertions, 168 Entertainment structural checks, 42 Entertainment executable checks, security/CSP/notification/UI/Home/AI suites, backend build plus 13 security checks, AI 24 tests plus closed harness QA, live Core Today flow, 51 documentation checks and 258 commentary checks.
+The audit was performed against source/runtime evidence and the same full green baseline recorded by the pre-merge review: frontend TypeScript/ESLint/build, 458 Health assertions, 168 Entertainment structural checks, 42 Entertainment executable checks, security/CSP/notification/UI/Home/AI suites, backend build plus 13 security checks, AI 24 tests plus closed harness QA, live Core Today flow, 52 documentation checks and 259 commentary checks.
 
 Green regression suites establish that existing implemented behavior still works. They do not negate the product gaps classified below.
 

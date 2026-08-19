@@ -20,6 +20,7 @@
     "qa:home": "tsx scripts/qa-home-intelligence.ts",
     "qa:ai": "tsx scripts/qa-ai-foundation.ts",
     "qa:core": "tsx scripts/qa-core-correctness.ts",
+    "qa:baseline": "tsx scripts/qa-production-baseline.ts",
     "qa:comments": "node scripts/qa-comments.js"
   },
   "keywords": [],

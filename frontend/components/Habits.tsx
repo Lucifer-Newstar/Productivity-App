@@ -34,11 +34,7 @@ const COLORS = ["#8b5cf6", "#06b6d4", "#ec4899", "#a3e635", "#f59e0b"];
 
 const today = () => localDateKey();
 
-const seed: Habit[] = [
-  { id: "1", name: "Drink 2L water", icon: "droplet", color: "#06b6d4", streak: 0, history: [] },
-  { id: "2", name: "Workout 30 min", icon: "dumbbell", color: "#ec4899", streak: 0, history: [] },
-  { id: "3", name: "Read 20 pages", icon: "book", color: "#a3e635", streak: 0, history: [] },
-];
+const seed: Habit[] = [];
 function migrateHabits(value:unknown):Habit[]{
   if(!Array.isArray(value))return seed;
   return value.filter((item):item is Habit=>!!item&&typeof item==="object"&&typeof (item as Habit).id==="string"&&typeof (item as Habit).name==="string").map(item=>{const history=normalizedHabitHistory(item.history);return{...item,history,streak:habitStreak(history)}});

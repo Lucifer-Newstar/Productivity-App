@@ -28,7 +28,7 @@ Priorities:
 | ID | Category | Evidence | Required action | Exit evidence |
 |---|---|---|---|---|
 | APP-001 | Implemented / pending hosted proof | `.github/workflows/ci.yml` now defines frontend, backend, deterministic AI and integration jobs | Push branch and require all four checks; fix runner-only failures without weakening suites | PR workflow green on clean runner |
-| APP-002 | Mock/placeholder | Production first run seeds personal-looking tasks, notes, achievements, goals, Forge project, PRs and media | Separate immutable product catalogs/templates from user records; default user logs to empty or explicit onboarding sample workspace | Fresh profile contains no fabricated personal history; migrations preserve existing users |
+| APP-002 | Fixed / pending hosted proof | Fresh profile now has zero personal-history records; catalogs/templates remain; existing persisted arrays migrate intact | Keep `qa:baseline` required and complete APP-103 demo-tool gating before packaging | Local 8/8 baseline checks pass |
 | APP-003 | Fixed / pending hosted proof | Shared local-date utility now drives Home Calendar, task fallback/overdue, Dashboard day lookup, central store dates and Habits; nine core tests include IST boundary | Require `qa:core` in hosted CI and migrate remaining specialized helpers when touched | Local TypeScript/ESLint and 9/9 checks pass |
 | APP-004 | Incomplete architecture | Frontend uses localStorage only; Express is unused/in-memory; release durability promise is undefined | Decide and document one release authority: browser-only with complete backup/recovery, or durable integrated backend. Do not wire the in-memory API as production persistence | Approved architecture decision plus executable durability test |
 | APP-005 | Implemented / pending hosted proof | `scripts/ci/core-today-integration.mjs` starts actual frontend/engine and verifies pairing/SSE/tool/source/session flow | Require integration job and keep model authorization closed | Integration job passes through fixed Next proxy on Ubuntu/Node 20 |
@@ -128,10 +128,10 @@ CI must assert:
 ## Recommended execution order
 
 ```text
-1. Verify APP-001/APP-003/APP-005/APP-101 on the first hosted GitHub run
-2. APP-002 production data/onboarding truth
-3. APP-004 storage/backend authority decision
-4. APP-107 backend exposure hard-fail
+1. Verify APP-001/APP-002/APP-003/APP-005/APP-101 on the first hosted GitHub run
+2. APP-004 storage/backend authority decision
+3. APP-107 backend exposure hard-fail
+4. APP-103 production demo-tool gating
 5. Remaining P1 persistence/error/backup work
 6. Full regression + documentation release matrix
 7. Re-review PR ai → main; do not merge before gates pass
