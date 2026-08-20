@@ -6,7 +6,7 @@ Kaizen continuous delivery produces verified Windows artifacts and can publish a
 
 ### Automatic stable release after main CI
 
-A successful push-triggered **Kaizen CI** run on `main` automatically starts Windows Installer against that exact commit. It builds, installs, exercises a running in-place update, verifies, uninstalls and then publishes a stable GitHub Release. CD reads the highest existing stable release and increments its patch number: for example, `v1.0.1` becomes `v1.0.2`. The installer and packaged app both use that immutable version. It is artifact delivery, not cloud application deployment.
+A successful push-triggered **Kaizen CI** run on `main` automatically starts Windows Installer against that exact commit. It builds, installs, exercises a running in-place update, verifies, uninstalls and then publishes a stable GitHub Release. CD authenticates `gh release list` with `GH_TOKEN` from `github.token`, reads the highest existing stable release and increments its patch number: for example, `v1.0.1` becomes `v1.0.2`. The installer and packaged app both use that immutable version. It is artifact delivery, not cloud application deployment.
 
 ### Manual artifact
 
