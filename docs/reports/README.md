@@ -43,6 +43,7 @@
 - [`WINDOWS-INSTALLER-RUN-2-INTAKE-2026-08-19.md`](WINDOWS-INSTALLER-RUN-2-INTAKE-2026-08-19.md) — explicit dependency/build/output staging after native installer failure.
 - [`WINDOWS-INSTALLER-RUN-3-INTAKE-2026-08-19.md`](WINDOWS-INSTALLER-RUN-3-INTAKE-2026-08-19.md) — explicit pinned Electron runtime download after npm dependency install.
 - [`DESKTOP-PROTOCOL-SESSION-2026-08-20.md`](DESKTOP-PROTOCOL-SESSION-2026-08-20.md) — kaizen:// handler bound to the persist:kaizen window session.
+- [`DESKTOP-SILENT-START-2026-08-20.md`](DESKTOP-SILENT-START-2026-08-20.md) — visible window and failure dialog instead of silent quit.
 - [`CORE-DATE-HABIT-CORRECTNESS-2026-08-19.md`](CORE-DATE-HABIT-CORRECTNESS-2026-08-19.md) — local-calendar utilities and history-derived habit streak corrections.
 - [`PRODUCTION-DATA-BASELINE-2026-08-19.md`](PRODUCTION-DATA-BASELINE-2026-08-19.md) — empty fresh user history with preserved product catalogs/templates.
 - [`LOCAL-RELEASE-DATA-AUTHORITY-2026-08-19.md`](LOCAL-RELEASE-DATA-AUTHORITY-2026-08-19.md) — browser-only v1 authority decision and reference API network-bind hardening.

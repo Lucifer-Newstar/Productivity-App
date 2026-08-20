@@ -66,6 +66,7 @@ Current production verification: **39/39 user routes return HTTP 200**, five Ent
 | [`reports/WINDOWS-INSTALLER-RUN-2-INTAKE-2026-08-19.md`](reports/WINDOWS-INSTALLER-RUN-2-INTAKE-2026-08-19.md) | Native installer build-output failure and explicit phase correction |
 | [`reports/WINDOWS-INSTALLER-RUN-3-INTAKE-2026-08-19.md`](reports/WINDOWS-INSTALLER-RUN-3-INTAKE-2026-08-19.md) | Electron 43 runtime download contract correction |
 | [`reports/DESKTOP-PROTOCOL-SESSION-2026-08-20.md`](reports/DESKTOP-PROTOCOL-SESSION-2026-08-20.md) | kaizen:// handler bound to persist:kaizen session |
+| [`reports/DESKTOP-SILENT-START-2026-08-20.md`](reports/DESKTOP-SILENT-START-2026-08-20.md) | Hidden window and silent quit replaced with visible startup and error dialog |
 | [`reports/CORE-DATE-HABIT-CORRECTNESS-2026-08-19.md`](reports/CORE-DATE-HABIT-CORRECTNESS-2026-08-19.md) | Local-date and habit-streak correctness fixes |
 | [`reports/PRODUCTION-DATA-BASELINE-2026-08-19.md`](reports/PRODUCTION-DATA-BASELINE-2026-08-19.md) | Empty fresh user history and retained product catalogs/templates |
 | [`reports/LOCAL-RELEASE-DATA-AUTHORITY-2026-08-19.md`](reports/LOCAL-RELEASE-DATA-AUTHORITY-2026-08-19.md) | Browser-only release authority and reference API hardening |

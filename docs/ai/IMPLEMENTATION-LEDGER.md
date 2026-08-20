@@ -84,6 +84,8 @@ PR #4 merged as `06cf13c`; main run `32260387533` passed all four jobs. The sing
 | Continuous delivery | IMPLEMENTED / RERUN PENDING | green main refreshes public continuous prerelease; stable tags remain gated |
 | Installed update channel | IMPLEMENTED / RELEASE TEST PENDING | fixed GitHub release check + local notification/download + same-AppId setup |
 | Native desktop shell | IMPLEMENTED / WINDOWS VERIFY PENDING | Electron 43.4.1, stable `kaizen://app`, dynamic loopback, close-to-stop |
+| Desktop protocol session | IMPLEMENTED / HOST REINSTALL PENDING | `session.fromPartition("persist:kaizen").protocol.handle`; default-session handler caused Windows “no app can open this link” |
+| Desktop visible startup | IMPLEMENTED / HOST REINSTALL PENDING | window `show:true` before services; `dialog.showErrorBox` and redacted `desktop-error.log` instead of silent quit |
 | Merge action | COMPLETE | user merged PR #4 after green checks |
 
 The new gate does not supersede or weaken `W0-GATE-2`. It evaluates a different, narrower provider role with no tools.
@@ -215,7 +217,7 @@ The larger control is rejected. Wave 0 is complete with no model selected. No mo
 
 ## Next review
 
-Reinstall a build that includes the persist:kaizen protocol binding and confirm the native window opens instead of the Windows protocol dialog. Then execute the remaining physical Windows install/update/uninstall, offline, synthetic backup/restore and deterministic pairing matrix. Do not release before that matrix passes.
+Reinstall a build that includes the persist:kaizen protocol binding and visible-startup/error-dialog changes. Confirm the shortcut opens a native window, or an explicit **Kaizen failed to start** dialog with a redacted `%LOCALAPPDATA%\\Kaizen\\desktop-error.log`. Then execute the remaining physical Windows install/update/uninstall matrix. Do not release before that matrix passes.
 
 Do not re-enable model providers, rerun candidates, add AI domains, memory, retrieval, Health, writes, automation, remote processing or v0.2 work.
 

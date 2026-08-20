@@ -88,6 +88,12 @@ The desktop window uses partition `persist:kaizen`. The `kaizen://` handler is b
 
 If an older installed build still shows the dialog, stop Kaizen, install a build that includes this session binding, and launch from the shortcut again.
 
+### Shortcut does nothing
+
+The desktop window now opens immediately while loopback services start. If a required runtime, pairing code or child process fails, Kaizen shows **Kaizen failed to start** instead of quitting with no window. A redacted `desktop-error.log` is written under `%LOCALAPPDATA%\\Kaizen\\`. Pairing codes and profile paths are not stored in that file.
+
+Use **Stop Kaizen** if a previous launch is stuck, then start again from the shortcut.
+
 ## Offline scope
 
 Core personal tracking, backup/recovery and deterministic Core Today work offline. Entertainment metadata provider features require network access and optional locally configured credentials. No remote AI provider is used.
