@@ -19,6 +19,7 @@ test("staging explicitly downloads and copies pinned Electron runtime",()=>asser
 test("package excludes reference API",()=>assert.ok(!stage.includes('Join-Path $root "backend')&&!installer.includes("backend")));
 test("desktop shell parses as JavaScript",()=>assert.equal(spawnSync(process.execPath,["--check",path.join(root,"packaging/desktop/main.cjs")]).status,0));
 test("desktop shell uses a stable private app origin",()=>assert.ok(desktop.includes('APP_URL="kaizen://app/"')&&desktop.includes('partition:"persist:kaizen"')));
+test("desktop protocol is bound to the persist:kaizen session",()=>assert.ok(desktop.includes('session.fromPartition("persist:kaizen").protocol.handle("kaizen"')&&!/(?<!\.)protocol\.handle\("kaizen"/.test(desktop)));
 test("desktop shell assigns dynamic loopback ports",()=>assert.ok(desktop.includes('server.listen(0,"127.0.0.1"')&&desktop.includes('PORT:String(frontendPort)')&&desktop.includes('KAIZEN_AI_PORT:String(enginePort)')));
 test("desktop shell disables browser privileges",()=>assert.ok(desktop.includes('nodeIntegration:false')&&desktop.includes('contextIsolation:true')&&desktop.includes('sandbox:true')&&desktop.includes('webSecurity:true')));
 test("desktop close owns child shutdown and runtime state",()=>assert.ok(desktop.includes('window-all-closed')&&desktop.includes('before-quit')&&desktop.includes('taskkill.exe')&&desktop.includes('desktopReady:true')));
