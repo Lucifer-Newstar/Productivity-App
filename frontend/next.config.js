@@ -31,7 +31,9 @@ const securityHeaders = [
   { key: "Permissions-Policy", value: "camera=(self), microphone=(self), geolocation=(), payment=(), usb=()" },
 ];
 
-const packageVersion = require("./package.json").version;
+// CD supplies the immutable release number at build time. Local and developer
+// builds intentionally fall back to the checked-in package version.
+const packageVersion = process.env.KAIZEN_RELEASE_VERSION ?? require("./package.json").version;
 const nextConfig = {
   output: "standalone",
   env: {

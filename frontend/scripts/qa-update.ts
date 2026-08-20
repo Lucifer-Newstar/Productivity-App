@@ -14,6 +14,6 @@ const route=read("frontend/app/api/update/route.ts"),redirect=read("frontend/app
 test("release check uses fixed GitHub endpoint and exact asset",()=>assert.ok(route.includes("api.github.com/repos/${UPDATE_REPOSITORY}/releases/latest")&&route.includes("verified setup asset unavailable")));
 test("redirect accepts strict version and fixed download URL",()=>assert.ok(redirect.includes("releaseDownloadUrl(version)")&&redirect.includes("INVALID_VERSION")));
 test("checker creates one version-keyed system notification",()=>assert.ok(checker.includes("sourceKey:`update:${status.latestVersion}`")&&checker.includes("section:\"system\"")&&checker.includes("Browser data is preserved")));
-test("update channel is enabled only for packaged build",()=>assert.ok(stage.includes('$env:KAIZEN_UPDATE_CHANNEL=\"github\"')&&stage.includes("does not match frontend package")));
+test("packaged build embeds its CD-assigned release version",()=>assert.ok(stage.includes('$env:KAIZEN_UPDATE_CHANNEL=\"github\"')&&stage.includes('$env:KAIZEN_RELEASE_VERSION = $releaseVersion')));
 test("same AppId setup stops running installation before upgrade",()=>assert.ok(installer.includes("UsePreviousAppDir=yes")&&installer.includes("PrepareToInstall")&&installer.includes("stop-kaizen.cmd")));
 console.log(`\n${passed} update checks passed.`);

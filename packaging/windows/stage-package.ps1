@@ -13,8 +13,9 @@ function Run([string]$File,[string[]]$Arguments,[string]$Directory){Push-Locatio
 Remove-Item $stage -Recurse -Force -ErrorAction SilentlyContinue
 New-Item $stage -ItemType Directory -Force | Out-Null
 if(-not $SkipInstall){Run "npm.cmd" @("ci") (Join-Path $root "frontend");Run "npm.cmd" @("ci") (Join-Path $root "ai");$desktopWorkspace=Join-Path $root "packaging/desktop";Run "npm.cmd" @("ci") $desktopWorkspace;Run "node.exe" @("node_modules/electron/install.js") $desktopWorkspace}
-$declaredVersion=(Get-Content (Join-Path $root "frontend/package.json") -Raw|ConvertFrom-Json).version
-if($Version -ne $declaredVersion){throw "Installer version $Version does not match frontend package $declaredVersion"}
+$releaseVersion = $Version
+if($releaseVersion -notmatch '^\d+\.\d+\.\d+$'){throw "Installer version must use x.y.z"}
+$env:KAIZEN_RELEASE_VERSION = $releaseVersion
 $env:KAIZEN_LOCAL_PACKAGE="1"
 $env:KAIZEN_UPDATE_CHANNEL="github"
 $env:KAIZEN_DESKTOP="1"
