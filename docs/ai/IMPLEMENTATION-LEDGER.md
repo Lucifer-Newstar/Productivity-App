@@ -2,11 +2,11 @@
 
 Living record of what is implemented, validated, measured, blocked and next. Update this file at the end of every AI step.
 
-_Last updated: 2026-08-19_
+_Last updated: 2026-08-20_
 
 ## Current milestone
 
-> **PR #4 is merged and main CI is green; Windows package verification is the active release gate.**
+> **PR #4 is merged and main CI is green; desktop `kaizen://` is now session-bound; Windows host reinstall/verification remains the release gate.**
 
 PR #4 merged as `06cf13c`; main run `32260387533` passed all four jobs. The single-file Windows installer bundles only the standalone frontend, deterministic engine and checksum-pinned Node runtime, with registered uninstall and branded shortcuts. Physical Windows verification remains pending. AI scope remains closed with no model/GPU work.
 
@@ -215,7 +215,7 @@ The larger control is rejected. Wave 0 is complete with no model selected. No mo
 
 ## Next review
 
-Build both Windows artifacts on a physical Windows x64 host, execute the install/update/uninstall, offline, synthetic backup/restore and deterministic pairing matrix, then record checksums and release evidence. Do not release before that matrix passes.
+Reinstall a build that includes the persist:kaizen protocol binding and confirm the native window opens instead of the Windows protocol dialog. Then execute the remaining physical Windows install/update/uninstall, offline, synthetic backup/restore and deterministic pairing matrix. Do not release before that matrix passes.
 
 Do not re-enable model providers, rerun candidates, add AI domains, memory, retrieval, Health, writes, automation, remote processing or v0.2 work.
 

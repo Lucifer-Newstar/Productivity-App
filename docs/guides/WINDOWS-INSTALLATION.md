@@ -78,6 +78,16 @@ With Kaizen stopped, run **Verify Kaizen installation**. It checks:
 
 It writes `package-verification.json` containing only `PUBLIC-SANITIZED-AGGREGATE` results. Pairing codes and raw service logs are never written to that report.
 
+## Troubleshooting
+
+### "Your PC doesn't have an app that can open this link"
+
+`kaizen://app` is a private Electron origin, not a Windows URL protocol. Launch Kaizen only from the Start Menu or desktop shortcut. Do not paste `kaizen://app` into a browser.
+
+The desktop window uses partition `persist:kaizen`. The `kaizen://` handler is bound to that session so Chromium does not hand the URL to Windows.
+
+If an older installed build still shows the dialog, stop Kaizen, install a build that includes this session binding, and launch from the shortcut again.
+
 ## Offline scope
 
 Core personal tracking, backup/recovery and deterministic Core Today work offline. Entertainment metadata provider features require network access and optional locally configured credentials. No remote AI provider is used.
