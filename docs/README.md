@@ -60,6 +60,7 @@ Current production verification: **39/39 user routes return HTTP 200**, five Ent
 | [`reports/CI-RUN-3-GREEN-2026-08-19.md`](reports/CI-RUN-3-GREEN-2026-08-19.md) | Green four-job hosted CI evidence authorizing unmerged PR creation |
 | [`reports/CI-RUN-4-INTAKE-2026-08-20.md`](reports/CI-RUN-4-INTAKE-2026-08-20.md) | qa:docs failure after automatic stable-patch CD |
 | [`reports/WINDOWS-INSTALLER-RUN-4-INTAKE-2026-08-20.md`](reports/WINDOWS-INSTALLER-RUN-4-INTAKE-2026-08-20.md) | delivery-gate gh release list required GH_TOKEN |
+| [`reports/DESKTOP-ERROR-LOG-2026-08-20.md`](reports/DESKTOP-ERROR-LOG-2026-08-20.md) | Failures append %LOCALAPPDATA%\\Kaizen\\desktop-error.log |
 | [`reports/WINDOWS-PACKAGING-FOUNDATION-2026-08-19.md`](reports/WINDOWS-PACKAGING-FOUNDATION-2026-08-19.md) | Single-file installer/uninstaller implementation and physical-host matrix |
 | [`reports/WINDOWS-INSTALLER-RUN-1-INTAKE-2026-08-19.md`](reports/WINDOWS-INSTALLER-RUN-1-INTAKE-2026-08-19.md) | First Windows workflow failure intake and install-root correction |
 | [`reports/CONTINUOUS-DELIVERY-FOUNDATION-2026-08-19.md`](reports/CONTINUOUS-DELIVERY-FOUNDATION-2026-08-19.md) | Main/tag provenance, artifact verification and open-source release gates |
