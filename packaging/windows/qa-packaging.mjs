@@ -24,6 +24,7 @@ test("desktop shell assigns dynamic loopback ports",()=>assert.ok(desktop.includ
 test("desktop shell disables browser privileges",()=>assert.ok(desktop.includes('nodeIntegration:false')&&desktop.includes('contextIsolation:true')&&desktop.includes('sandbox:true')&&desktop.includes('webSecurity:true')));
 test("desktop close owns child shutdown and runtime state",()=>assert.ok(desktop.includes('window-all-closed')&&desktop.includes('before-quit')&&desktop.includes('taskkill.exe')&&desktop.includes('desktopReady:true')));
 test("desktop startup shows a window and surfaces failures",()=>assert.ok(desktop.includes('show:true')&&desktop.includes('dialog.showErrorBox')&&desktop.includes('desktop-error.log')&&!desktop.includes('show:false')));
+test("desktop startup failures keep the window open",()=>assert.ok(desktop.includes('data:text/html;charset=utf-8')&&desktop.includes('Kaizen failed to start')&&!desktop.includes('stopChildren();app.quit()')));
 test("runtime verifier resolves the install root one level above scripts",()=>assert.ok(read("packaging/windows/runtime/verify-package.mjs").includes('path.resolve(scriptDirectory,".."),managed')));
 test("stop rejects unsafe process identifiers",()=>{assert.equal(stop.validPid(-1),false);assert.equal(stop.validPid("12"),false);assert.equal(stop.validPid(42),true)});
 test("installer is per-user and x64",()=>assert.ok(installer.includes("PrivilegesRequired=lowest")&&installer.includes("ArchitecturesAllowed=x64compatible")));
