@@ -35,6 +35,7 @@
 - [`CI-RUN-1-INTAKE-2026-08-19.md`](CI-RUN-1-INTAKE-2026-08-19.md) — stale-head Entertainment assertion failure and Node 24 action-runtime upgrades.
 - [`CI-RUN-2-INTAKE-2026-08-19.md`](CI-RUN-2-INTAKE-2026-08-19.md) — stale Entertainment migration seed assertion and exact empty-library correction.
 - [`CI-RUN-3-GREEN-2026-08-19.md`](CI-RUN-3-GREEN-2026-08-19.md) — all four hosted CI jobs green; unmerged PR creation authorized.
+- [`CI-RUN-4-INTAKE-2026-08-20.md`](CI-RUN-4-INTAKE-2026-08-20.md) — qa:docs failure after automatic stable-patch CD.
 - [`WINDOWS-PACKAGING-FOUNDATION-2026-08-19.md`](WINDOWS-PACKAGING-FOUNDATION-2026-08-19.md) — single setup executable, registered uninstall/icons and host-test gate.
 - [`WINDOWS-INSTALLER-RUN-1-INTAKE-2026-08-19.md`](WINDOWS-INSTALLER-RUN-1-INTAKE-2026-08-19.md) — installed-root path failure and launcher/verifier correction.
 - [`CONTINUOUS-DELIVERY-FOUNDATION-2026-08-19.md`](CONTINUOUS-DELIVERY-FOUNDATION-2026-08-19.md) — exact-main CI, provenance, manifests and tag publication gates.

@@ -81,7 +81,7 @@ The verified Windows x64 setup bundles the Electron desktop shell, standalone fr
 
 After a newer stable GitHub Release is published, an installed packaged build creates a system notification with a local **Download update** action. The user stops Kaizen and runs the downloaded setup, which upgrades the existing installation through the stable installer identity. Kaizen does not silently execute installers or upload personal data.
 
-Every successful `main` CI run automatically builds and verifies an installer, uploads the workflow artifact, and refreshes the public rolling **Kaizen Continuous Build** prerelease. Stable installations ignore that prerelease. An intentional annotated semantic-version tag that passes provenance, privacy, exact-main CI, release-note and Windows install/update/verify/uninstall gates publishes a stable open-source GitHub Release.
+Every successful `main` CI run automatically builds, verifies and publishes the next immutable stable patch GitHub Release. Manual Windows Installer runs upload a private artifact and never publish.
 
 See [`docs/guides/WINDOWS-INSTALLATION.md`](docs/guides/WINDOWS-INSTALLATION.md) and [`docs/guides/CONTINUOUS-DELIVERY.md`](docs/guides/CONTINUOUS-DELIVERY.md).
 
