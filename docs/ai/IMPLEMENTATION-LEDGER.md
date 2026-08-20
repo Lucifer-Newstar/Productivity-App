@@ -86,6 +86,7 @@ PR #4 merged as `06cf13c`; main run `32260387533` passed all four jobs. The sing
 | Native desktop shell | IMPLEMENTED / WINDOWS VERIFY PENDING | Electron 43.4.1, stable `kaizen://app`, dynamic loopback, close-to-stop |
 | Desktop protocol session | IMPLEMENTED / HOST REINSTALL PENDING | `session.fromPartition("persist:kaizen").protocol.handle`; default-session handler caused Windows “no app can open this link” |
 | Desktop visible startup | IMPLEMENTED / HOST REINSTALL PENDING | window `show:true` before services; `dialog.showErrorBox` and redacted `desktop-error.log` instead of silent quit |
+| Desktop flash-close | IMPLEMENTED / HOST REINSTALL PENDING | child-service failure keeps the window open with an in-window error; no `app.quit()` on fail |
 | Merge action | COMPLETE | user merged PR #4 after green checks |
 
 The new gate does not supersede or weaken `W0-GATE-2`. It evaluates a different, narrower provider role with no tools.

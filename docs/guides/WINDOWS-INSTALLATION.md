@@ -90,7 +90,7 @@ If an older installed build still shows the dialog, stop Kaizen, install a build
 
 ### Shortcut does nothing
 
-The desktop window now opens immediately while loopback services start. If a required runtime, pairing code or child process fails, Kaizen shows **Kaizen failed to start** instead of quitting with no window. A redacted `desktop-error.log` is written under `%LOCALAPPDATA%\\Kaizen\\`. Pairing codes and profile paths are not stored in that file.
+The desktop window now opens immediately while loopback services start. If a required runtime, pairing code or child process fails, the window stays open with **Kaizen failed to start** instead of flashing closed. A redacted `desktop-error.log` is written under `%LOCALAPPDATA%\\Kaizen\\`. Pairing codes and profile paths are not stored in that file.
 
 Use **Stop Kaizen** if a previous launch is stuck, then start again from the shortcut.
 
