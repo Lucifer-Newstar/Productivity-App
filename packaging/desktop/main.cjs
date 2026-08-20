@@ -6,13 +6,21 @@ const fs=require("node:fs"),http=require("node:http"),net=require("node:net"),pa
 protocol.registerSchemesAsPrivileged([{scheme:"kaizen",privileges:{standard:true,secure:true,supportFetchAPI:true,stream:true}}]);
 const ROOT=path.resolve(__dirname,".."),APP_URL="kaizen://app/",children=[];let stopping=false,ready=false,failing=false;
 app.setName("Kaizen");app.setPath("userData",path.join(app.getPath("appData"),"Kaizen"));
-function stateFile(env=process.env){const home=env.LOCALAPPDATA||env.TEMP;if(!home)throw new Error("LOCALAPPDATA or TEMP is required");return path.join(home,"Kaizen","runtime.json")}
+function kaizenDir(env=process.env){const home=env.LOCALAPPDATA||env.TEMP;if(!home)throw new Error("LOCALAPPDATA or TEMP is required");return path.join(home,"Kaizen")}
+function stateFile(env=process.env){return path.join(kaizenDir(env),"runtime.json")}
+function errorLogFile(env=process.env){return path.join(kaizenDir(env),"desktop-error.log")}
 function redact(value){return String(value).replace(/[A-Z]:\\Users\\[^\\\s]+/gi,"%USERPROFILE%").replace(/one-time pairing code: \S+/g,"one-time pairing code: [REDACTED]").slice(0,800)}
 function escapeHtml(value){return String(value).replace(/[&<>"']/g,ch=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[ch]))}
+function writeErrorLog(message){
+  const line=`${new Date().toISOString()} ${redact(message)}\n`;
+  const file=errorLogFile();
+  fs.mkdirSync(path.dirname(file),{recursive:true});
+  fs.appendFileSync(file,line);
+}
 function fail(error){
   if(failing)return;failing=true;
   const message=redact(error&&error.message||error);
-  try{const dir=path.dirname(stateFile());fs.mkdirSync(dir,{recursive:true});fs.writeFileSync(path.join(dir,"desktop-error.log"),`${new Date().toISOString()} ${message}\n`)}catch{}
+  try{writeErrorLog(message)}catch{}
   console.error(`[kaizen-desktop] ${message}`);
   stopChildren();
   const window=BrowserWindow.getAllWindows().find(item=>!item.isDestroyed());
@@ -68,11 +76,18 @@ async function createWindow(){
   window.show();
   const runtime=await startRuntime();
   if(failing)return window;
-  await window.loadURL(APP_URL);
+  let loadTimer;
+  try{
+    await Promise.race([
+      window.loadURL(APP_URL),
+      new Promise((_,reject)=>{loadTimer=setTimeout(()=>reject(new Error("Timed out loading kaizen://app. See %LOCALAPPDATA%\\Kaizen\\desktop-error.log")),20_000)})
+    ]);
+  }finally{clearTimeout(loadTimer)}
+  if(failing)return window;
   ready=true;
   try{const state=JSON.parse(fs.readFileSync(stateFile(),"utf8"));fs.writeFileSync(stateFile(),JSON.stringify({...state,desktopReady:true}))}catch{}
   if(process.argv.includes("--smoke-test")){console.log(`KAIZEN_DESKTOP_READY ${runtime.frontendPort} ${runtime.enginePort}`);setTimeout(()=>window.close(),1_500)}
   return window;
 }
 if(!app.requestSingleInstanceLock()){app.quit()}else{app.on("second-instance",()=>{const window=BrowserWindow.getAllWindows()[0];if(window){if(window.isMinimized())window.restore();window.focus()}});app.whenReady().then(createWindow).catch(fail);app.on("window-all-closed",()=>app.quit());app.on("before-quit",stopChildren)}
-module.exports={APP_URL,allowedExternal,reservePort,stateFile,redact};
+module.exports={APP_URL,allowedExternal,reservePort,stateFile,errorLogFile,redact};
