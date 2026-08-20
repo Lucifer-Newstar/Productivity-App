@@ -80,7 +80,7 @@ PR #4 merged as `06cf13c`; main run `32260387533` passed all four jobs. The sing
 | GitHub PR #4 | MERGED | merge `06cf13c`; main CI green |
 | Windows package foundation | IMPLEMENTED / HOST VERIFICATION PENDING | one setup executable + registered uninstaller/icons; ADR-014 |
 | Packaged-runtime verifier | IMPLEMENTED | 39 routes + CSP + pairing/Core Today + shutdown; sanitized aggregate only |
-| Windows build automation | RUN 2 FAILED / CORRECTED RERUN PENDING | explicit dependency/build/output/stage phases; no `frontend/dist` contract |
+| Windows build automation | RUN 3 FAILED / CORRECTED RERUN PENDING | Electron 43 installer binary invoked explicitly after locked npm install |
 | Continuous delivery | IMPLEMENTED / RERUN PENDING | green main refreshes public continuous prerelease; stable tags remain gated |
 | Installed update channel | IMPLEMENTED / RELEASE TEST PENDING | fixed GitHub release check + local notification/download + same-AppId setup |
 | Native desktop shell | IMPLEMENTED / WINDOWS VERIFY PENDING | Electron 43.4.1, stable `kaizen://app`, dynamic loopback, close-to-stop |

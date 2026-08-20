@@ -94,6 +94,12 @@ jobs:
           npm ci --prefix frontend
           npm ci --prefix ai
           npm ci --prefix packaging/desktop
+      - name: Download pinned Electron runtime
+        shell: pwsh
+        run: |
+          node packaging/desktop/node_modules/electron/install.js
+          $electron = "packaging/desktop/node_modules/electron/dist/electron.exe"
+          if (-not (Test-Path $electron)) { throw "Electron 43.4.1 runtime download did not produce electron.exe" }
       - name: Build frontend and Intelligence workspaces
         shell: pwsh
         env:

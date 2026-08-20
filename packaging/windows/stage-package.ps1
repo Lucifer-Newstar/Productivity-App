@@ -12,7 +12,7 @@ $nodeSha256 = "be72284c7bc62de07d5a9fd0ae196879842c085f11f7f2b60bf8864c0c9d6a4f"
 function Run([string]$File,[string[]]$Arguments,[string]$Directory){Push-Location $Directory;try{& $File @Arguments;if($LASTEXITCODE -ne 0){throw "$File failed with exit code $LASTEXITCODE"}}finally{Pop-Location}}
 Remove-Item $stage -Recurse -Force -ErrorAction SilentlyContinue
 New-Item $stage -ItemType Directory -Force | Out-Null
-if(-not $SkipInstall){Run "npm.cmd" @("ci") (Join-Path $root "frontend");Run "npm.cmd" @("ci") (Join-Path $root "ai");Run "npm.cmd" @("ci") (Join-Path $root "packaging/desktop")}
+if(-not $SkipInstall){Run "npm.cmd" @("ci") (Join-Path $root "frontend");Run "npm.cmd" @("ci") (Join-Path $root "ai");$desktopWorkspace=Join-Path $root "packaging/desktop";Run "npm.cmd" @("ci") $desktopWorkspace;Run "node.exe" @("node_modules/electron/install.js") $desktopWorkspace}
 $declaredVersion=(Get-Content (Join-Path $root "frontend/package.json") -Raw|ConvertFrom-Json).version
 if($Version -ne $declaredVersion){throw "Installer version $Version does not match frontend package $declaredVersion"}
 $env:KAIZEN_LOCAL_PACKAGE="1"
