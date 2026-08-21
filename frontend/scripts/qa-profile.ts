@@ -31,6 +31,8 @@ test("Glow tab hosts session catalogue keys with official help URLs",()=>{
   }
   assert.match(page,/AFTERGLOW_KEY_FIELDS/);
   assert.match(page,/profile-help-bang/);
+  assert.match(page,/profile-hero/);
+  assert.match(page,/CycleLogCard/);
   assert.match(keys,/myanimelist\.net\/apiconfig\/references\/api\/v2/);
   assert.match(keys,/developer\.themoviedb\.org\/docs\/getting-started/);
   assert.match(keys,/developers\.google\.com\/books\/docs\/v1\/using/);
