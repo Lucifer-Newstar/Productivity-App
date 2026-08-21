@@ -329,6 +329,14 @@ assertClose(navyBF_m(80,37,175), 13.7, 0.5, "80w/37n/175h ≈ 14% BF");
 assertClose(navyBF_m(90,38,178), 20.2, 1.0, "90w/38n/178h ≈ 20% BF");
 assert(navyBF_m(30,40,175)===0, "waist<neck returns 0 instead of NaN");
 assert(navyBF_m(0,0,175)===0, "zero inputs return 0");
+function navyBF_f(w,n,hip,h){ if(!(w>n)||hip<=0) return 0; return 495/(1.29579 - 0.35004*Math.log10(w+hip-n) + 0.22100*Math.log10(h)) - 450; }
+assertClose(navyBF_f(70,32,95,162), 25.7, 1.0, "70w/32n/95hip/162h female Navy ≈ 26%");
+assert(navyBF_f(70,32,0,162)===0, "female formula without hip returns 0");
+assert(/export function navyBf/.test(anSrc), "healthAnalytics exports navyBf");
+assert(/export function estimatedNextPeriodStart/.test(anSrc), "healthAnalytics exports estimatedNextPeriodStart");
+assert(/cycleLog/.test(typesSrc), "HealthState.cycleLog exists");
+assert(/DEFAULT_CYCLE_LOG/.test(typesSrc), "DEFAULT_CYCLE_LOG exists");
+assert(/cycleLog:/.test(storeSrc), "migrateHealth defaults cycleLog");
 // LBM/Fat mass
 assertClose((1-15/100)*70, 59.5, 0.1, "70kg @15% = 59.5kg LBM");
 // Waist-height
@@ -349,7 +357,7 @@ assert(detectAsym({al:35,ar:35.4,fl:28,fr:28,tl:58,tr:58,cl:37,cr:37}).length===
 // ---------- Soma component & page ----------
 section("Soma component / physique page");
 const soma = fs.readFileSync(path.join(compDir,'SomaSection.tsx'),'utf8');
-assert(/navyBF_m|Navy/.test(soma), "Soma references Navy BF");
+assert(/navyBF_m|navyBf|Navy/.test(soma), "Soma references Navy BF");
 assert(/webcam|getUserMedia|camera/i.test(soma), "Soma has webcam/camera capture");
 assert(/ProgressPhoto|photos/.test(soma), "Soma handles progress photos");
 assert(/asymmetry|detectAsymmetries/.test(soma), "Soma flags asymmetries");

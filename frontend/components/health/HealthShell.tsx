@@ -22,6 +22,7 @@ import { motion } from "framer-motion";
 import { useEffect, useState } from "react";
 import { Activity, Heart, Moon, Sun, Home } from "lucide-react";
 import { useTheme } from "../../lib/theme";
+import { useStore } from "../../lib/store";
 import { HEALTH_SECTIONS, type HealthSectionId } from "../../lib/healthTypes";
 import NotificationButton from "../NotificationButton";
 import { ProfileTrigger } from "../ProfileDock";
@@ -84,6 +85,7 @@ function Clock({ light }: { light: boolean }) {
 export default function HealthShell({ section, children }: Props) {
   const router = useRouter();
   const { theme, toggle } = useTheme();
+  const gender = useStore().health.profile.gender;
   const light = theme === "light";
   const [pulseKey, setPulseKey] = useState(0);
   const [mounted, setMounted] = useState(false);
@@ -116,7 +118,7 @@ export default function HealthShell({ section, children }: Props) {
 
   // VITAL-SIGN dark theme tokens default; CLINIC overrides via [data-lt="1"] scoping on the wrapper.
   return (
-    <div className={light ? "health-root health-light" : "health-root health-dark"} data-lt={light ? "1" : "0"}>
+    <div className={light ? "health-root health-light" : "health-root health-dark"} data-lt={light ? "1" : "0"} data-gender={gender}>
       {/* ===== LEFT RAIL ===== */}
       <aside className="hlth-rail">
         {/* Brand heart icon with pulse */}
@@ -239,6 +241,15 @@ export default function HealthShell({ section, children }: Props) {
           grid-template-columns: 72px 1fr;
         }
         /* ===== CLINIC LIGHT ===== */
+        .health-root[data-gender="female"] {
+          --hlth-accent: #db2777;
+          --hlth-accent-glow: #f472b6;
+          --hlth-border: rgba(244,114,182,0.28);
+        }
+        .health-root.health-light[data-gender="female"] {
+          --hlth-accent: #be185d;
+          --hlth-accent-glow: #db2777;
+        }
         .health-root.health-light {
           --hlth-bg:
             linear-gradient(rgba(148,163,184,0.08) 1px, transparent 1px) 0 0/24px 24px,
@@ -257,6 +268,15 @@ export default function HealthShell({ section, children }: Props) {
           --hlth-red: #dc2626;
           --hlth-cyan: #0891b2;
           --hlth-amber: #d97706;
+        }
+        .health-root[data-gender="female"] {
+          --hlth-accent: #db2777;
+          --hlth-accent-glow: #f472b6;
+          --hlth-border: rgba(244,114,182,0.28);
+        }
+        .health-root.health-light[data-gender="female"] {
+          --hlth-accent: #be185d;
+          --hlth-accent-glow: #db2777;
         }
         .hlth-rail {
           position: sticky; top: 0;

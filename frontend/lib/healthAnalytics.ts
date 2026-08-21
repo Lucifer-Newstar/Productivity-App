@@ -15,7 +15,7 @@ import type {
   SleepEntry, SleepHygieneTick, SupplementDef, SupplementLog,
   MealEntry, SunlightEntry, DeficiencyBadge, MicronutrientId, DeficiencyLevel,
   MeasurementEntry, VitalsEntry, MindEntry, InjuryEntry, SymptomEntry,
-  JournalEntry, OrthostaticTest,
+  JournalEntry, OrthostaticTest, CycleLog,
 } from "./healthTypes";
 import { INDIAN_DEFICIENCY_CONTEXT } from "./healthTypes";
 import { csvCell } from "./security";
@@ -228,6 +228,12 @@ const MICRO_DAILY_TARGETS: Record<MicronutrientId, number> = {
   potassium: 3500,   // mg
 };
 
+/** ICMR adult targets. Female iron RDA is 29mg; folate stays the adult 300 mcg DFE. */
+export function microDailyTargets(gender: Gender = "male"): Record<MicronutrientId, number> {
+  if (gender === "female") return { ...MICRO_DAILY_TARGETS, iron: 29 };
+  return MICRO_DAILY_TARGETS;
+}
+
 /** Approximate micronutrient contribution per food (very rough; wave-8 replaces with detailed DB). */
 const FOOD_MICRO_HINTS: Record<string, Partial<Record<MicronutrientId, number>>> = {
   // dairy
@@ -286,6 +292,7 @@ const SUPP_MICRO_DOSE: Record<string, Partial<Record<MicronutrientId, number>>> 
  */
 export function computeDeficiencyBadges(
   state: Pick<HealthState, "meals"|"supplementLog"|"sunlight">,
+  gender: Gender = "male",
 ): DeficiencyBadge[] {
   const today = new Date();
   const days: string[] = [];
@@ -329,8 +336,9 @@ export function computeDeficiencyBadges(
 
   const badges: DeficiencyBadge[] = [];
   const MICROS: MicronutrientId[] = ["vitD","vitB12","iron","zinc","calcium","omega3","magnesium","vitC","folate","potassium"];
+  const targets = microDailyTargets(gender);
   for (const mk of MICROS) {
-    const target7 = MICRO_DAILY_TARGETS[mk] * 7;
+    const target7 = targets[mk] * 7;
     const frac = totals[mk] / target7;
     let level: DeficiencyLevel;
     if (frac >= 0.9) level = "ok";
@@ -375,6 +383,15 @@ export function navyBF_f(waistCm: number, neckCm: number, hipCm: number, heightC
   return Math.max(8, Math.min(55, 495 / denom - 450));
 }
 
+/** Gender-aware Navy BF%. Female formula requires hip. */
+export function navyBf(
+  gender: Gender,
+  args: { waistCm: number; neckCm: number; hipCm?: number; heightCm: number },
+): number {
+  if (gender === "female") return navyBF_f(args.waistCm, args.neckCm, args.hipCm ?? 0, args.heightCm);
+  return navyBF_m(args.waistCm, args.neckCm, args.heightCm);
+}
+
 /** Lean body mass (kg) */
 export function lbmKg(weightKg: number, bfPct: number): number {
   return weightKg * (1 - bfPct / 100);
@@ -393,7 +410,7 @@ export function bmiCategory(bmiVal: number): { label: string; color: string; cav
 }
 
 /**
- * Strength-to-weight ratio classification by bodyweight multiples (men, untrained→elite).
+ * Strength-to-weight ratio classification by bodyweight multiples (men, untrained→elite.
  * Standards approximate (kg/kg), based on Lon Kilgore / Mark Rippetoe / ExRx tiered
  * tables for 18-35yo natural lifters.
  */
@@ -456,14 +473,41 @@ export function latestMeasurement(entries: MeasurementEntry[]): MeasurementEntry
  * Resolve current BF%: latest measurement's navyBfPct if present, else compute
  * from latest measurements + profile height. Returns 0 if insufficient data.
  */
-export function currentBfPct(entries: MeasurementEntry[], heightCm: number): number {
+export function currentBfPct(entries: MeasurementEntry[], heightCm: number, gender: Gender = "male"): number {
   const last = latestMeasurement(entries);
   if (!last) return 0;
   if (last.navyBfPct != null && last.navyBfPct > 0) return last.navyBfPct;
   if (last.waistCm != null && last.neckCm != null) {
-    return navyBF_m(last.waistCm, last.neckCm, last.heightCm ?? heightCm);
+    return navyBf(gender, {
+      waistCm: last.waistCm,
+      neckCm: last.neckCm,
+      hipCm: last.hipCm,
+      heightCm: last.heightCm ?? heightCm,
+    });
   }
   return 0;
+}
+
+/** Next estimated period start from last start + cycle length. Educational only. */
+export function estimatedNextPeriodStart(log: CycleLog, fromIso?: string): string | null {
+  if (!log.lastStartDate || !/^\d{4}-\d{2}-\d{2}$/.test(log.lastStartDate)) return null;
+  const len = Math.max(21, Math.min(45, Math.round(log.cycleLengthDays) || 28));
+  const start = new Date(log.lastStartDate + "T00:00:00");
+  if (!isFinite(start.getTime())) return null;
+  const from = fromIso && /^\d{4}-\d{2}-\d{2}$/.test(fromIso)
+    ? new Date(fromIso + "T00:00:00")
+    : new Date();
+  from.setHours(0, 0, 0, 0);
+  const next = new Date(start);
+  let guard = 0;
+  while (next < from && guard < 48) {
+    next.setDate(next.getDate() + len);
+    guard++;
+  }
+  const y = next.getFullYear();
+  const m = String(next.getMonth() + 1).padStart(2, "0");
+  const d = String(next.getDate()).padStart(2, "0");
+  return `${y}-${m}-${d}`;
 }
 
 // ---------------- Recovery / workout-advisory flags (wave 3 light; deeper in wave 7) ----------------

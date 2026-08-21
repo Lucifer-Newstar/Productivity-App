@@ -27,6 +27,7 @@ import {
   type WeightPoint, type PrLike,
 } from "../../lib/healthAnalytics";
 import type { WorkoutCheckin, SoreArea, HealthGoalItem, CompetitionEntry, HabitBreakEntry } from "../../lib/healthTypes";
+import CycleLogCard from "./CycleLogCard";
 
 function todayIso() { return new Date().toISOString().slice(0, 10); }
 function uid() { return Math.random().toString(36).slice(2, 10) + Date.now().toString(36); }

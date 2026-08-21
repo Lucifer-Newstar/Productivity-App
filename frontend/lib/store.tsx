@@ -398,6 +398,7 @@ function migrateHealth(raw: any): HealthState {
     sunlight: raw.sunlight ?? [],
     bedtimeRoutine: raw.bedtimeRoutine ?? DEFAULT_BEDTIME_ROUTINE,
     wakeRoutine: raw.wakeRoutine ?? DEFAULT_WAKE_ROUTINE,
+    cycleLog: { ...base.cycleLog, ...(raw.cycleLog ?? {}) },
     pinnedFoods: Array.isArray(raw.pinnedFoods) ? raw.pinnedFoods : [],
   };
 }

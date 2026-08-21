@@ -169,7 +169,7 @@ export default function SomaIntel() {
   const due = nextMeasureDue(lastM?.date, health.measureFrequency ?? "biweekly", today);
 
   const latestBw = weights.length ? [...weights].sort((a, b) => b.date.localeCompare(a.date))[0].weightKg : 70;
-  const bf = currentBfPct(health.measurements, health.profile.heightCm);
+  const bf = currentBfPct(health.measurements, health.profile.heightCm, health.profile.gender);
   const lean = bf > 0 ? lbmKg(latestBw, bf) : 0;
   const fat = bf > 0 ? fatMassKg(latestBw, bf) : 0;
 

@@ -22,7 +22,7 @@ import { Ruler, Scale, Target, Camera, Upload, Trash2, Plus, AlertTriangle, Tren
 import { useStore } from "../../lib/store";
 import { readSafeImageAsDataUrl } from "../../lib/security";
 import {
-  navyBF_m, bmi, bmiCategory, lbmKg, fatMassKg, whtr, detectAsymmetries,
+  navyBf, bmi, bmiCategory, lbmKg, fatMassKg, whtr, detectAsymmetries,
   latestMeasurement, currentBfPct, strengthClass, SW_STANDARDS, bmrKatch,
 } from "../../lib/healthAnalytics";
 import { PROGRESS_PHOTO_LABELS, type MeasurementEntry, type ProgressPhoto, type ProgressPhotoTag } from "../../lib/healthTypes";
@@ -88,14 +88,19 @@ export default function SomaSection() {
   const [note, setNote] = useState("");
   const [pump, setPump] = useState(false); // Wave 8E — post-workout pump measurement
 
+  const gender = health.profile.gender;
+  const female = gender === "female";
   // Live previews
   const bf = useMemo(() => {
     const waist = toNum(vals.waistCm);
     const neck  = toNum(vals.neckCm);
-    if (waist && neck) return Math.round(navyBF_m(waist, neck, health.profile.heightCm)*10)/10;
+    const hip = toNum(vals.hipCm);
+    if (waist && neck && (!female || hip)) {
+      return Math.round(navyBf(gender, { waistCm: waist, neckCm: neck, hipCm: hip, heightCm: health.profile.heightCm }) * 10) / 10;
+    }
     if (last?.navyBfPct) return last.navyBfPct;
     return 0;
-  }, [vals, last, health.profile.heightCm]);
+  }, [vals, last, health.profile.heightCm, gender, female]);
 
   const w = toNum(weight) ?? latestBw;
   const bmiVal = bmi(w, health.profile.heightCm);
@@ -159,8 +164,13 @@ export default function SomaSection() {
       const v = toNum(vals[s.key]);
       if (v != null) (entry as any)[s.key] = v;
     }
-    if (entry.waistCm && entry.neckCm) {
-      entry.navyBfPct = navyBF_m(entry.waistCm, entry.neckCm, health.profile.heightCm);
+    if (entry.waistCm && entry.neckCm && (!female || entry.hipCm)) {
+      entry.navyBfPct = navyBf(gender, {
+        waistCm: entry.waistCm,
+        neckCm: entry.neckCm,
+        hipCm: entry.hipCm,
+        heightCm: health.profile.heightCm,
+      });
     }
     updateHealth(h => ({
       measurements: [...h.measurements.filter(x => x.date !== mdate), entry]
@@ -295,7 +305,7 @@ export default function SomaSection() {
             <input type="number" step="0.1" min={30} max={200} value={weight} onChange={e=>setWeight(e.target.value)} style={input}/>
           </Field>
           {SITES.map(s => (
-            <Field key={String(s.key)} label={s.label}>
+            <Field key={String(s.key)} label={s.key === "hipCm" && female ? "Hips (cm) — required for Navy BF%" : s.label}>
               <input type="number" step="0.1" min={0} max={300} placeholder="cm"
                 value={vals[String(s.key)] ?? ""}
                 onChange={e=>setVals(v=>({...v,[s.key]:e.target.value}))}
@@ -329,7 +339,7 @@ export default function SomaSection() {
             </div>
           ) : (
             <div className="hlth-subtle" style={{fontSize:11,margin:0}}>
-              Enter neck + waist to see live Navy BF% estimate.
+              {female ? "Enter neck, waist and hip for the female Navy BF% estimate." : "Enter neck + waist to see live Navy BF% estimate."}
             </div>
           )}
         </div>

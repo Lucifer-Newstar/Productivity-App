@@ -61,7 +61,7 @@ export default function ApothecarySection() {
   const overallAdh = supplementAdherence(health.supplementLog, null, 7);
   const badges = useMemo(() => computeDeficiencyBadges({
     meals: health.meals, supplementLog: health.supplementLog, sunlight: health.sunlight,
-  }), [health.meals, health.supplementLog, health.sunlight]);
+  }, health.profile.gender), [health.meals, health.supplementLog, health.sunlight, health.profile.gender]);
   const atRisk = hasDeficiencyRisk(badges);
 
   const todaysSun = health.sunlight.filter(s=>s.date===today).reduce((n,s)=>n+s.minutes, 0);

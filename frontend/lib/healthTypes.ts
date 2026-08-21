@@ -97,6 +97,19 @@ export interface DailyScore {
 
 // ---------------- Settings ----------------
 
+/** Optional period log. Educational averages only — never diagnostic. */
+export interface CycleLog {
+  lastStartDate: string;
+  cycleLengthDays: number;
+  periodLengthDays: number;
+}
+
+export const DEFAULT_CYCLE_LOG: CycleLog = {
+  lastStartDate: "",
+  cycleLengthDays: 28,
+  periodLengthDays: 5,
+};
+
 export interface HealthSettings {
   nudges: boolean;
   soundEnabled: boolean;
@@ -667,6 +680,8 @@ export interface HealthState {
   bedtimeRoutine: BedtimeRoutine;
   wakeRoutine: WakeRoutine;
   settings: HealthSettings;
+  /** Optional cycle log. Visible when gender is female or cycleTrackingVisible. */
+  cycleLog: CycleLog;
   /** Wave-1 daily score computed at read time, persisted here for history charts. */
   lastScoreDate?: string;
   /** Wave 8A: pinned food names for the frequent-foods library. */
@@ -811,6 +826,7 @@ export function emptyHealthState(): HealthState {
     bedtimeRoutine: JSON.parse(JSON.stringify(DEFAULT_BEDTIME_ROUTINE)),
     wakeRoutine: JSON.parse(JSON.stringify(DEFAULT_WAKE_ROUTINE)),
     settings: { ...DEFAULT_SETTINGS },
+    cycleLog: { ...DEFAULT_CYCLE_LOG },
     pinnedFoods: [],
   };
 }
