@@ -16,7 +16,6 @@ import TopNav from "../components/TopNav";
 import StorageErrorBanner from "../components/StorageErrorBanner";
 import NotificationCenter from "../components/NotificationCenter";
 import UpdateChecker from "../components/UpdateChecker";
-import ProfileDock from "../components/ProfileDock";
 import "../app/globals.css";
 
 // Custom component type so TS knows about our static opt-in flag
@@ -32,7 +31,6 @@ export default function App({ Component, pageProps }: AppProps) {
       <ThemeProvider>
         <StoreProvider>
           <>
-            <ProfileDock floating />
             <StorageErrorBanner />
             <UpdateChecker />
             <NotificationCenter />

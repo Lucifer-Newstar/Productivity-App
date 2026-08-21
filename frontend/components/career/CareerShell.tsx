@@ -32,6 +32,7 @@ import { useTheme } from "../../lib/theme";
 import { useStore } from "../../lib/store";
 import { KeyboardArmed } from "./CareerFx";
 import NotificationButton from "../NotificationButton";
+import { ProfileTrigger } from "../ProfileDock";
 
 export type CareerSectionId =
   | "roadmaps" | "skills" | "certs" | "network" | "jobs"
@@ -490,6 +491,7 @@ export default function CareerShell({ section, commandButton, commandCard, child
           className="p-2 rounded-sm transition hover:bg-black/5 hidden sm:inline-flex" style={{color:T.fgMuted}}>
           {light ? <Moon size={14}/> : <Sun size={14}/>}
         </button>
+        <ProfileTrigger className="profile-trigger-inline" />
 
         {/* UID seal */}
         <div className="relative px-2 py-1 rounded-sm hud-corner text-[10px] tracking-widest hidden sm:block"

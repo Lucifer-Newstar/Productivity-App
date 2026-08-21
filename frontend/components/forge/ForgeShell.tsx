@@ -35,6 +35,7 @@ import { useTheme } from "../../lib/theme";
 import { useStore } from "../../lib/store";
 import { isDoneStatus as isTaskDone } from "./forgeUtils";
 import NotificationButton from "../NotificationButton";
+import { ProfileTrigger } from "../ProfileDock";
 
 export type ForgeSectionId = "foundry" | "quarry" | "smelter" | "vault";
 
@@ -613,6 +614,7 @@ export default function ForgeShell({ section, actionButton, actionPanel, childre
               style={{color:T.fgMuted}}>
               {light ? <Moon size={14}/> : <Sun size={14}/>}
             </button>
+            <ProfileTrigger className="profile-trigger-inline" />
             <button aria-label="Settings" onClick={()=>setSettingsOpen(v=>!v)}
               title="Forge settings"
               className="p-2 rounded-sm transition hover:bg-black/5 hidden sm:inline-flex"

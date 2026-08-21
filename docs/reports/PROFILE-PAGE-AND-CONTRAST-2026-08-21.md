@@ -6,7 +6,9 @@
 
 ## Outcome
 
-The avatar control navigates to `/profile`, a Home-themed full page with a section rail, identity hero and the same per-space constants previously edited in the overlay drawer. Native `<select>` option menus and the notification inbox now use explicit light/dark ink so dropdown labels remain readable in Daily Edition and in dark mode.
+The avatar control navigates to `/profile`. Wave 1 (2026-08-21) removed the floating overlay that covered space theme toggles: the avatar now sits in each space header after the theme button. The profile page is a quiet identity strip, section pills and one card — not a crowded rail. Native `<select>` option menus and the notification inbox use explicit light/dark ink.
+
+Credentials, gender-aware formulas and cycle logging are later waves.
 
 ## Scope
 

@@ -28,6 +28,7 @@ import type { LucideIcon } from "lucide-react";
 import { useTheme } from "../../lib/theme";
 import { useStore } from "../../lib/store";
 import NotificationButton from "../NotificationButton";
+import { ProfileTrigger } from "../ProfileDock";
 
 export type WorkoutSectionId =
   | "overview" | "library" | "calisthenics" | "gym" | "cardio"
@@ -241,6 +242,7 @@ export default function WorkoutShell({ section, battleButton, battleCard, childr
           }`}>
           {isDark ? <Sun size={16} /> : <Moon size={16} />}
         </button>
+        <ProfileTrigger className="profile-trigger-inline" />
 
         {/* K seal */}
         <button className="relative w-9 h-9 rounded-lg flex items-center justify-center text-sm imperial-name font-black text-amber-50 shrink-0 transition hover:scale-105 hover:rotate-[-3deg]"

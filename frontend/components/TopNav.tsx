@@ -72,7 +72,6 @@ export default function TopNav() {
             />
           </label>
           <NotificationButton className="home-theme-toggle" size={16}/>
-          <ProfileTrigger />
           <button
             onClick={toggle}
             aria-label="Toggle theme"
@@ -86,6 +85,7 @@ export default function TopNav() {
               {dark ? <Sun size={16} /> : <Moon size={16} />}
             </motion.span>
           </button>
+          <ProfileTrigger />
         </div>
       </div>
     </header>

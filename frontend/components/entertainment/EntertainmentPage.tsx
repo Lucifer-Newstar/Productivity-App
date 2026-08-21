@@ -21,6 +21,7 @@ import EntertainmentStats from "./EntertainmentStats";
 import EntertainmentSocial from "./EntertainmentSocial";
 import EntertainmentStudio from "./EntertainmentStudio";
 import NotificationButton from "../NotificationButton";
+import { ProfileTrigger } from "../ProfileDock";
 import { ENTERTAINMENT_LANGUAGES, entertainmentCopy, providerLocale, type EntertainmentCopyKey } from "../../lib/entertainmentI18n";
 
 const uid = () => Math.random().toString(36).slice(2,10) + Date.now().toString(36);
@@ -124,6 +125,7 @@ export default function EntertainmentPage() {
       <NotificationButton size={15} className="w-9 h-9 rounded-full border" style={{borderColor:"var(--line)"}}/>
       <button aria-label="Providers and credits" onClick={()=>setProviderOpen(true)} title="Providers & credits" className="w-9 h-9 rounded-full border grid place-items-center" style={{borderColor:"var(--line)"}}><Info size={15}/></button>
       <button aria-label="Toggle color theme" onClick={toggle} className="w-9 h-9 rounded-full border grid place-items-center" style={{borderColor:"var(--line)"}}>{theme==="dark"?<Sun size={15}/>:<Moon size={15}/>}</button>
+      <ProfileTrigger className="profile-trigger-inline" />
     </header>
     <nav aria-label="Entertainment sections" className="lg:hidden flex gap-2 overflow-x-auto px-3 py-2 border-b" style={{borderColor:"var(--line)"}}>{VIEW_NAV.filter(n=>n.ready).map(n=><button key={n.id} onClick={()=>setView(n.id)} aria-current={view===n.id?"page":undefined} className={`shrink-0 rounded-full px-3 py-2 text-[10px] flex items-center gap-1.5 ${view===n.id?"bg-fuchsia-500 text-white":"bg-white/5"}`}><n.icon size={12}/>{navLabel(n.id,n.label)}</button>)}<select aria-label={t("language")} value={entertainment.settings.language} onChange={e=>updateEntertainment(s=>({settings:{...s.settings,language:e.target.value as any}}))} className="sm:hidden shrink-0 rounded-full border bg-transparent px-3 text-[10px]" style={{borderColor:"var(--line)"}}>{ENTERTAINMENT_LANGUAGES.map(l=><option key={l.id} value={l.id}>{l.label}</option>)}</select></nav>
 

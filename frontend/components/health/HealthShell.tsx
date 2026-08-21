@@ -24,6 +24,7 @@ import { Activity, Heart, Moon, Sun, Home } from "lucide-react";
 import { useTheme } from "../../lib/theme";
 import { HEALTH_SECTIONS, type HealthSectionId } from "../../lib/healthTypes";
 import NotificationButton from "../NotificationButton";
+import { ProfileTrigger } from "../ProfileDock";
 
 interface Props {
   section: HealthSectionId;
@@ -186,6 +187,7 @@ export default function HealthShell({ section, children }: Props) {
             >
               {light ? <Moon size={14}/> : <Sun size={14}/>}
             </button>
+            <ProfileTrigger className="profile-trigger-inline" />
           </div>
         </header>
 

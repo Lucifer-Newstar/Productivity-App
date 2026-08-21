@@ -10,7 +10,7 @@ The root route `/` is the App Router entry point and the shared launchpad for ev
 - `frontend/app/layout.tsx` — theme/store providers and storage-quota warning.
 - `frontend/app/profile/page.tsx` — full-page identity and per-space constants.
 
-Home owns a dedicated `TopNav`, desktop `SideNav` and mobile section rail. Space navigation uses the centralized Lucide `SpaceIcon` mapping. The global `ProfileDock` avatar in the top-right navigates to `/profile`.
+Home owns a dedicated `TopNav`, desktop `SideNav` and mobile section rail. Space navigation uses the centralized Lucide `SpaceIcon` mapping. The global avatar sits after the theme toggle in Home `TopNav` and in each space header, and navigates to `/profile`. It is not a floating overlay.
 
 ## Views
 
