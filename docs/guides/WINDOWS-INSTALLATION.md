@@ -48,7 +48,7 @@ The update does not move or delete browser-profile records. Kaizen never silentl
 
 Use **Uninstall Kaizen** from the Start Menu or Windows **Settings → Apps → Installed apps**. The uninstaller first stops the package-owned local services and then removes installed runtime files and shortcuts.
 
-Final desktop records remain in Kaizen's per-user Electron profile under the stable private origin `kaizen://app`; uninstall intentionally does not erase them. Export a whole-product backup before uninstalling or deleting the Windows profile.
+Final desktop records remain in Kaizen's per-user Electron profile under its stable `persist:kaizen` partition; uninstall intentionally does not erase them. Export a whole-product backup before uninstalling or deleting the Windows profile.
 
 ## Data boundary
 
@@ -56,11 +56,11 @@ Desktop records are not stored in the installation directory and are not encrypt
 
 ### One-time migration from the browser candidate
 
-The earlier browser-served candidate and final desktop shell use different storage profiles. Before installing the final desktop build, export a whole-product backup from the browser candidate. After installation, open **Local data recovery** in the desktop app and restore that backup. Future desktop setup updates keep the same `kaizen://app` origin and Electron profile, so this migration occurs once.
+The earlier browser-served candidate and final desktop shell use different storage profiles. Before installing the final desktop build, export a whole-product backup from the browser candidate. After installation, open **Local data recovery** in the desktop app and restore that backup. Future desktop setup updates keep the same Electron profile, so this migration occurs once.
 
 ## Runtime behavior
 
-The desktop shell selects two currently available ephemeral loopback ports for the Next.js application and deterministic Intelligence Engine. The user-facing origin remains `kaizen://app`, so occupied conventional ports do not block startup and changing internal ports do not change desktop storage. Internal listeners are never exposed beyond loopback.
+The desktop shell selects two currently available ephemeral loopback ports for the Next.js application and deterministic Intelligence Engine. The window loads the app from its private loopback origin, so occupied conventional ports do not block startup and changing internal ports do not change desktop storage. Internal listeners are never exposed beyond loopback.
 
 The desktop shell obtains the one-time engine pairing code in memory and pairs the Home Intelligence panel automatically. The code is never displayed, persisted or written to release reports. Closing the last Kaizen window terminates both child process trees and removes runtime state.
 
@@ -82,15 +82,13 @@ It writes `package-verification.json` containing only `PUBLIC-SANITIZED-AGGREGAT
 
 ### "Your PC doesn't have an app that can open this link"
 
-`kaizen://app` is a private Electron origin, not a Windows URL protocol. Launch Kaizen only from the Start Menu or desktop shortcut. Do not paste `kaizen://app` into a browser.
-
-The desktop window uses partition `persist:kaizen`. The `kaizen://` handler is bound to that session so Chromium does not hand the URL to Windows.
+Kaizen does not register a Windows URL protocol. Launch it only from the Start Menu or desktop shortcut. The desktop window uses partition `persist:kaizen` and loads the frontend directly from a private `127.0.0.1` origin.
 
 If an older installed build still shows the dialog, stop Kaizen, install a build that includes this session binding, and launch from the shortcut again.
 
 ### Shortcut does nothing
 
-The desktop window now opens immediately while loopback services start. If a required runtime, pairing code, child process or `kaizen://app` load fails, the window stays open with **Kaizen failed to start** instead of flashing closed. Failures append a redacted line to `%LOCALAPPDATA%\\Kaizen\\desktop-error.log` (the same folder as `runtime.json`). Pairing codes and profile paths are not stored in that file.
+The desktop window now opens immediately while loopback services start. If a required runtime, pairing code, child process or local-app load fails, the window stays open with **Kaizen failed to start** instead of flashing closed. Failures append a redacted line to `%LOCALAPPDATA%\\Kaizen\\desktop-error.log` (the same folder as `runtime.json`). Pairing codes and profile paths are not stored in that file.
 
 Use **Stop Kaizen** if a previous launch is stuck, then start again from the shortcut.
 

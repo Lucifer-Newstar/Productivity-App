@@ -1,10 +1,9 @@
 #!/usr/bin/env node
-/** Owns the native Kaizen window, dynamic loopback services, stable app origin, and shutdown lifecycle. The kaizen:// handler must bind to partition persist:kaizen, not the default session. Startup failures must keep the window open with a visible error instead of quitting. */
-const {app,BrowserWindow,protocol,net:electronNet,shell,session,dialog}=require("electron");
+/** Owns the native Kaizen window, dynamic loopback services and shutdown lifecycle. The frontend is bound only to a dynamic 127.0.0.1 origin; startup failures must keep the window open with a visible error instead of quitting. */
+const {app,BrowserWindow,shell,dialog}=require("electron");
 const {spawn,spawnSync}=require("node:child_process");
 const fs=require("node:fs"),http=require("node:http"),net=require("node:net"),path=require("node:path");
-protocol.registerSchemesAsPrivileged([{scheme:"kaizen",privileges:{standard:true,secure:true,supportFetchAPI:true,stream:true}}]);
-const ROOT=path.resolve(__dirname,".."),APP_URL="kaizen://app/",children=[];let stopping=false,ready=false,failing=false;
+const ROOT=path.resolve(__dirname,".."),children=[];let stopping=false,ready=false,failing=false;
 app.setName("Kaizen");app.setPath("userData",path.join(app.getPath("appData"),"Kaizen"));
 // Some Windows GPU/driver combinations abort Chromium while creating the first
 // native window (before JavaScript can surface an error). Kaizen's local UI
@@ -60,31 +59,23 @@ async function startRuntime(){
   await Promise.all([waitFor(`${internalOrigin}/`),waitFor(`${engineUrl}/health`)]);
   const pairingDeadline=Date.now()+10_000;let pairingCode;while(Date.now()<pairingDeadline&&!pairingCode){pairingCode=engine.getLog().match(/one-time pairing code: (\S+)/)?.[1];if(!pairingCode)await new Promise(resolve=>setTimeout(resolve,50))}if(!pairingCode)throw new Error("Engine pairing code was unavailable");
   const runtimePath=stateFile();fs.mkdirSync(path.dirname(runtimePath),{recursive:true});fs.writeFileSync(runtimePath,JSON.stringify({version:2,desktopPid:process.pid,frontendPid:frontend.child.pid,enginePid:engine.child.pid,frontendPort,enginePort,startedAt:new Date().toISOString()}));
-  session.fromPartition("persist:kaizen").protocol.handle("kaizen",async request=>{
-    try{
-      const incoming=new URL(request.url);
-      if(incoming.hostname!=="app")return new Response("Not found",{status:404});
-      if(request.method==="GET"&&incoming.pathname==="/api/desktop/pairing")return new Response(JSON.stringify({pairingCode}),{status:200,headers:{"content-type":"application/json","cache-control":"no-store"}});
-      const target=`${internalOrigin}${incoming.pathname}${incoming.search}`,headers=new Headers(request.headers);
-      for(const name of ["origin","host","referer","sec-fetch-site","sec-fetch-mode","sec-fetch-dest"])headers.delete(name);
-      return await electronNet.fetch(target,{method:request.method,headers,body:["GET","HEAD"].includes(request.method)?undefined:request.body,redirect:"follow"});
-    }catch(error){return new Response(redact(error&&error.message||error),{status:502})}
-  });
-  return{frontendPort,enginePort,logs:()=>`${engine.getLog()}\n${frontend.getLog()}`.replace(/one-time pairing code: \S+/g,"one-time pairing code: [REDACTED]")};
+  return{frontendPort,enginePort,internalOrigin,logs:()=>`${engine.getLog()}\n${frontend.getLog()}`.replace(/one-time pairing code: \S+/g,"one-time pairing code: [REDACTED]")};
 }
 async function createWindow(){
+  let appUrl="";
   const window=new BrowserWindow({width:1440,height:940,minWidth:960,minHeight:680,show:true,backgroundColor:"#0a1022",icon:path.join(ROOT,"assets","kaizen.ico"),autoHideMenuBar:true,webPreferences:{nodeIntegration:false,contextIsolation:true,sandbox:true,webSecurity:true,partition:"persist:kaizen"}});
   window.webContents.setWindowOpenHandler(({url})=>{if(allowedExternal(url))shell.openExternal(url);return{action:"deny"}});
-  window.webContents.on("will-navigate",(event,url)=>{if(url.startsWith("data:text/html"))return;if(!url.startsWith("kaizen://app/")){event.preventDefault();if(allowedExternal(url))shell.openExternal(url)}});
+  window.webContents.on("will-navigate",(event,url)=>{if(url.startsWith("data:text/html"))return;if(!appUrl||!url.startsWith(appUrl)){event.preventDefault();if(allowedExternal(url))shell.openExternal(url)}});
   window.webContents.on("did-fail-load",(_event,code,desc,url)=>{if(ready||failing||code===-3||String(url||"").startsWith("data:"))return;fail(new Error(`Window failed to load (${code}): ${desc}`))});
   window.show();
   const runtime=await startRuntime();
   if(failing)return window;
+  appUrl=runtime.internalOrigin;
   let loadTimer;
   try{
     await Promise.race([
-      window.loadURL(APP_URL),
-      new Promise((_,reject)=>{loadTimer=setTimeout(()=>reject(new Error("Timed out loading kaizen://app. See %LOCALAPPDATA%\\Kaizen\\desktop-error.log")),20_000)})
+      window.loadURL(appUrl),
+      new Promise((_,reject)=>{loadTimer=setTimeout(()=>reject(new Error("Timed out loading the local Kaizen app. See %LOCALAPPDATA%\\Kaizen\\desktop-error.log")),20_000)})
     ]);
   }finally{clearTimeout(loadTimer)}
   if(failing)return window;
@@ -94,4 +85,4 @@ async function createWindow(){
   return window;
 }
 if(!app.requestSingleInstanceLock()){app.quit()}else{app.on("second-instance",()=>{const window=BrowserWindow.getAllWindows()[0];if(window){if(window.isMinimized())window.restore();window.focus()}});app.whenReady().then(createWindow).catch(fail);app.on("window-all-closed",()=>app.quit());app.on("before-quit",stopChildren)}
-module.exports={APP_URL,allowedExternal,reservePort,stateFile,errorLogFile,redact};
+module.exports={allowedExternal,reservePort,stateFile,errorLogFile,redact};

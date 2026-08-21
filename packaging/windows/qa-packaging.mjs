@@ -18,8 +18,8 @@ test("staging uses lockfiles and production dependencies",()=>assert.ok(stage.in
 test("staging explicitly downloads and copies pinned Electron runtime",()=>assert.ok(read("packaging/desktop/package.json").includes('"electron": "43.4.1"')&&stage.includes('node_modules/electron/install.js')&&stage.includes('packaging/desktop/node_modules/electron/dist/*')&&stage.includes('packaging/desktop/main.cjs')));
 test("package excludes reference API",()=>assert.ok(!stage.includes('Join-Path $root "backend')&&!installer.includes("backend")));
 test("desktop shell parses as JavaScript",()=>assert.equal(spawnSync(process.execPath,["--check",path.join(root,"packaging/desktop/main.cjs")]).status,0));
-test("desktop shell uses a stable private app origin",()=>assert.ok(desktop.includes('APP_URL="kaizen://app/"')&&desktop.includes('partition:"persist:kaizen"')));
-test("desktop protocol is bound to the persist:kaizen session",()=>assert.ok(desktop.includes('session.fromPartition("persist:kaizen").protocol.handle("kaizen"')&&!/(?<!\.)protocol\.handle\("kaizen"/.test(desktop)));
+test("desktop shell loads only its dynamic private loopback origin",()=>assert.ok(desktop.includes('internalOrigin=`http://127.0.0.1:${frontendPort}`')&&desktop.includes('window.loadURL(appUrl)')&&desktop.includes('partition:"persist:kaizen"')));
+test("desktop shell avoids the unstable custom protocol response proxy",()=>assert.ok(!desktop.includes('protocol.handle(')&&!desktop.includes('electronNet.fetch')));
 test("desktop shell assigns dynamic loopback ports",()=>assert.ok(desktop.includes('server.listen(0,"127.0.0.1"')&&desktop.includes('PORT:String(frontendPort)')&&desktop.includes('KAIZEN_AI_PORT:String(enginePort)')));
 test("desktop shell disables browser privileges",()=>assert.ok(desktop.includes('nodeIntegration:false')&&desktop.includes('contextIsolation:true')&&desktop.includes('sandbox:true')&&desktop.includes('webSecurity:true')));
 test("desktop shell disables GPU acceleration before startup",()=>assert.ok(desktop.includes('app.disableHardwareAcceleration()')));
