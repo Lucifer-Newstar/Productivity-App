@@ -10,6 +10,7 @@ import { SPACES } from "../lib/types";
 import { useState } from "react";
 import SpaceIcon from "./SpaceIcon";
 import NotificationButton from "./NotificationButton";
+import { ProfileTrigger } from "./ProfileDock";
 
 export default function TopNav() {
   const { tasks } = useStore(),
@@ -71,6 +72,7 @@ export default function TopNav() {
             />
           </label>
           <NotificationButton className="home-theme-toggle" size={16}/>
+          <ProfileTrigger />
           <button
             onClick={toggle}
             aria-label="Toggle theme"

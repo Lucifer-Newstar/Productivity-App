@@ -23,6 +23,7 @@
     "qa:core": "tsx scripts/qa-core-correctness.ts",
     "qa:baseline": "tsx scripts/qa-production-baseline.ts",
     "qa:backup": "tsx scripts/qa-backup.ts",
+    "qa:profile": "tsx scripts/qa-profile.ts",
     "qa:resilience": "tsx scripts/qa-resilience.ts",
     "qa:packaging": "node ../packaging/windows/qa-packaging.mjs",
     "qa:update": "tsx scripts/qa-update.ts",

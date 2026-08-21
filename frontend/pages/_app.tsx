@@ -16,6 +16,7 @@ import TopNav from "../components/TopNav";
 import StorageErrorBanner from "../components/StorageErrorBanner";
 import NotificationCenter from "../components/NotificationCenter";
 import UpdateChecker from "../components/UpdateChecker";
+import ProfileDock from "../components/ProfileDock";
 import "../app/globals.css";
 
 // Custom component type so TS knows about our static opt-in flag
@@ -30,31 +31,34 @@ export default function App({ Component, pageProps }: AppProps) {
     return (
       <ThemeProvider>
         <StoreProvider>
-          <StorageErrorBanner />
-          <UpdateChecker />
-          <NotificationCenter />
-          {/* min-h-screen + no chrome — page renders its own layout */}
-          <div className="min-h-screen w-full">
-            <Page {...pageProps} />
-          </div>
+          <ProfileDock floating>
+            <StorageErrorBanner />
+            <UpdateChecker />
+            <NotificationCenter />
+            <div className="min-h-screen w-full">
+              <Page {...pageProps} />
+            </div>
+          </ProfileDock>
         </StoreProvider>
       </ThemeProvider>
     );
   }
 
   return (
-    <ThemeProvider>
-      <StoreProvider>
-        <StorageErrorBanner />
-        <UpdateChecker />
-        <NotificationCenter />
-        <div className="min-h-screen flex flex-col">
-          <TopNav />
-          <main className="flex-1 w-full max-w-[1600px] mx-auto px-4 md:px-8 py-6 md:py-8 animate-fade-up">
-            <Component {...pageProps} />
-          </main>
-        </div>
-      </StoreProvider>
-    </ThemeProvider>
+      <ThemeProvider>
+        <StoreProvider>
+          <ProfileDock>
+            <StorageErrorBanner />
+            <UpdateChecker />
+            <NotificationCenter />
+            <div className="min-h-screen flex flex-col">
+              <TopNav />
+              <main className="flex-1 w-full max-w-[1600px] mx-auto px-4 md:px-8 py-6 md:py-8 animate-fade-up">
+                <Component {...pageProps} />
+              </main>
+            </div>
+          </ProfileDock>
+        </StoreProvider>
+      </ThemeProvider>
   );
 }

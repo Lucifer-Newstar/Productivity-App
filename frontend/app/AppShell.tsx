@@ -13,6 +13,7 @@ import Habits from "../components/Habits";
 import Calendar from "../components/Calendar";
 import type { View } from "../lib/types";
 import { useTheme } from "../lib/theme";
+import { useStore } from "../lib/store";
 type CoreView = Exclude<
   View,
   "projects" | "workout" | "career" | "entertainment" | "health"
@@ -28,7 +29,9 @@ const VALID: CoreView[] = [
 export default function AppShell() {
   const params = useSearchParams(),
     router = useRouter(),
-    initial = (params?.get("view") as CoreView | null) ?? "dashboard",
+    { profile } = useStore(),
+    landing = profile.homeLandingView === "focus" ? "pomodoro" : profile.homeLandingView,
+    initial = (params?.get("view") as CoreView | null) ?? (VALID.includes(landing as CoreView) ? landing as CoreView : "dashboard"),
     [view, setView] = useState<CoreView>(
       VALID.includes(initial) ? initial : "dashboard",
     ),

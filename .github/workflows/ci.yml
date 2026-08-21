@@ -50,6 +50,7 @@ jobs:
           npm run qa:core
           npm run qa:baseline
           npm run qa:backup
+          npm run qa:profile
           npm run qa:resilience
           npm run qa:packaging
           npm run qa:update

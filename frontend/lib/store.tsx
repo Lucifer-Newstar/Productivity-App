@@ -53,6 +53,8 @@ import { EMPTY_NOTIFICATION_STATE, migrateNotifications } from "./notificationTy
 import { isDoneStatus as isTaskDone } from "../components/forge/forgeUtils";
 import { localDateKey } from "./localDate";
 import { DEMO_TOOLS_ENABLED } from "./demoMode";
+import type { KaizenProfile } from "./profileTypes";
+import { EMPTY_PROFILE, migrateProfile } from "./profileTypes";
 
 // Generate ids for runtime-created entities.
 const uid = () => Math.random().toString(36).slice(2, 10) + Date.now().toString(36);
@@ -648,6 +650,8 @@ export const FRESH_PROFILE_COUNTS = Object.freeze({
 
 // ---------------- Store interface ----------------
 interface StoreState {
+  profile: KaizenProfile;
+  updateProfile: (patch: Partial<KaizenProfile>) => void;
   // core
   tasks: Task[]; notes: Note[];
   addTask: (t: Omit<Task, "id" | "createdAt" | "completed">) => void;
@@ -883,6 +887,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
   const [health, setHealth]   = useLocalState<HealthState>("kaizen.health", SEED_HEALTH, migrateHealth);
   const [entertainment, setEntertainment] = useLocalState<EntertainmentState>("kaizen.entertainment", SEED_ENTERTAINMENT, migrateEntertainment);
   const [notifications, setNotifications] = useLocalState<NotificationState>("kaizen.notifications", EMPTY_NOTIFICATION_STATE, migrateNotifications);
+  const [profile, setProfile] = useLocalState<KaizenProfile>("kaizen.profile", EMPTY_PROFILE, migrateProfile);
 
   useEffect(() => {
     ["prod.tasks","prod.notes","prod.projects","prod.habits"].forEach((k) => localStorage.removeItem(k));
@@ -963,6 +968,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
       return { ...state, ...patch };
     }), [setEntertainment]);
   const updateNotifications = useCallback<StoreState["updateNotifications"]>((updater)=>setNotifications(state=>({...state,...updater(state)})),[setNotifications]);
+  const updateProfile = useCallback<StoreState["updateProfile"]>((patch)=>setProfile(current=>migrateProfile({...current,...patch,updatedAt:Date.now()})),[setProfile]);
   const addNotification = useCallback<StoreState["addNotification"]>((entry)=>setNotifications(state=>state.items.some(x=>x.sourceKey===entry.sourceKey)?state:{...state,items:[{...entry,id:uid(),createdAt:entry.createdAt??Date.now()},...state.items].slice(0,2000)}),[setNotifications]);
   const markNotificationRead=useCallback((id:string)=>setNotifications(s=>({...s,items:s.items.map(x=>x.id===id?{...x,readAt:x.readAt??Date.now()}:x)})),[setNotifications]);
   const dismissNotification=useCallback((id:string)=>setNotifications(s=>({...s,items:s.items.map(x=>x.id===id?{...x,dismissedAt:Date.now(),readAt:x.readAt??Date.now()}:x)})),[setNotifications]);
@@ -1547,6 +1553,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
   }, [setWorkout]);
 
   const value: StoreState = {
+    profile, updateProfile,
     tasks, notes, addTask, toggleTask, deleteTask, updateTask,
     addNote, updateNote, deleteNote, togglePinNote,
     career, updateCareer, addRoadmapFromTemplate, toggleMilestoneDone, updateMilestone,
