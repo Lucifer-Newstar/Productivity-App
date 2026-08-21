@@ -28,7 +28,7 @@ NYT_BOOKS_API_KEY=
 
 AniList and Open Library public catalogue access do not require an application key. MyAnimeList account list sync is not part of catalogue search; a later import/sync wave may add OAuth PKCE.
 
-Feature 92 (bring your own key) uses explicit, temporary overrides in the Providers & Credits panel. Keys live only in `sessionStorage`, travel as bounded same-origin request headers and never enter `kaizen.entertainment`, exports, logs or returned URLs. Server environment credentials remain the preferred deployment configuration.
+Feature 92 (bring your own key) uses explicit, temporary overrides in the Providers & Credits panel and on `/profile` Glow. Keys live only in `sessionStorage` (`afterglow.key.*`), travel as bounded same-origin request headers and never enter `kaizen.entertainment`, `kaizen.profile`, backups, logs or returned URLs. Server environment credentials remain the preferred deployment configuration. Each required key title on Profile has a `!` control linking the official how-to URL.
 
 ## Provider constraints
 

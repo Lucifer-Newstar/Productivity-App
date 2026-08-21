@@ -40,6 +40,7 @@
 - [`DESKTOP-ERROR-LOG-2026-08-20.md`](DESKTOP-ERROR-LOG-2026-08-20.md) — failures append `%LOCALAPPDATA%\\Kaizen\\desktop-error.log`.
 - [`PROFILE-AND-GITHUB-2026-08-20.md`](PROFILE-AND-GITHUB-2026-08-20.md) — global profile drawer and read-only Forge GitHub BFF.
 - [`PROFILE-PAGE-AND-CONTRAST-2026-08-21.md`](PROFILE-PAGE-AND-CONTRAST-2026-08-21.md) — full-page `/profile` and contrast-safe selects/notifications.
+- [`PROFILE-CREDENTIALS-AND-HEALTH-GENDER-2026-08-21.md`](PROFILE-CREDENTIALS-AND-HEALTH-GENDER-2026-08-21.md) — Glow session keys, female Navy/iron, optional cycle log.
 - [`WINDOWS-PACKAGING-FOUNDATION-2026-08-19.md`](WINDOWS-PACKAGING-FOUNDATION-2026-08-19.md) — single setup executable, registered uninstall/icons and host-test gate.
 - [`WINDOWS-INSTALLER-RUN-1-INTAKE-2026-08-19.md`](WINDOWS-INSTALLER-RUN-1-INTAKE-2026-08-19.md) — installed-root path failure and launcher/verifier correction.
 - [`CONTINUOUS-DELIVERY-FOUNDATION-2026-08-19.md`](CONTINUOUS-DELIVERY-FOUNDATION-2026-08-19.md) — exact-main CI, provenance, manifests and tag publication gates.

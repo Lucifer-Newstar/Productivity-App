@@ -43,7 +43,7 @@ These keys are transport/revision metadata, not AI memory. No conversation, prom
 | `afterglow.key.comicvine` | Session-only Comic Vine override |
 | `afterglow.key.nyt` | Session-only NYT override |
 
-Session provider values are never included in root state or exports. They are still readable by same-origin JavaScript and are not a secure vault.
+Session provider values are never included in root state, `kaizen.profile` or exports. `/profile` Glow and AFTERGLOW Providers write the same keys. They are still readable by same-origin JavaScript and are not a secure vault. Cycle log lives inside `kaizen.health` (`cycleLog`), not sessionStorage.
 
 ## Storage failure behavior
 

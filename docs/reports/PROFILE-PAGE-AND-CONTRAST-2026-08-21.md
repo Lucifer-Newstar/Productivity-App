@@ -8,7 +8,7 @@
 
 The avatar control navigates to `/profile`. Wave 1 (2026-08-21) removed the floating overlay that covered space theme toggles: the avatar now sits in each space header after the theme button. The profile page is a quiet identity strip, section pills and one card — not a crowded rail. Native `<select>` option menus and the notification inbox use explicit light/dark ink.
 
-Credentials, gender-aware formulas and cycle logging are later waves.
+Waves 2–4 (same day) added Glow session keys with `!` help, gender-aware Navy BF% / ICMR iron, optional cycle log, and a subtle Profile + Health accent when gender is female.
 
 ## Scope
 

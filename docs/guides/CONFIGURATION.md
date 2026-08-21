@@ -12,7 +12,7 @@ Create `frontend/.env.local` from `frontend/.env.example`. Never commit real val
 | `COMICVINE_API_KEY` | Western comic search/discovery | Non-commercial terms and strict quotas |
 | `NYT_BOOKS_API_KEY` | Book bestseller discovery | Not used for general search |
 
-AFTERGLOW also supports temporary tab-session overrides in Providers & Credits. They are sent as same-origin headers and are not exported, but server variables remain safer.
+AFTERGLOW also supports temporary tab-session overrides in Providers & Credits and on `/profile` Glow. They are sent as same-origin headers and are not exported, but server variables remain safer.
 
 ## Express environment
 

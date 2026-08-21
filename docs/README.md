@@ -63,6 +63,7 @@ Current production verification: **40/40 user routes return HTTP 200**, five Ent
 | [`reports/DESKTOP-ERROR-LOG-2026-08-20.md`](reports/DESKTOP-ERROR-LOG-2026-08-20.md) | Failures append %LOCALAPPDATA%\\Kaizen\\desktop-error.log |
 | [`reports/PROFILE-AND-GITHUB-2026-08-20.md`](reports/PROFILE-AND-GITHUB-2026-08-20.md) | Global profile drawer and read-only Forge GitHub BFF |
 | [`reports/PROFILE-PAGE-AND-CONTRAST-2026-08-21.md`](reports/PROFILE-PAGE-AND-CONTRAST-2026-08-21.md) | Full-page `/profile` and contrast-safe selects/notifications |
+| [`reports/PROFILE-CREDENTIALS-AND-HEALTH-GENDER-2026-08-21.md`](reports/PROFILE-CREDENTIALS-AND-HEALTH-GENDER-2026-08-21.md) | Glow session keys, female Navy/iron, optional cycle log |
 | [`reports/WINDOWS-PACKAGING-FOUNDATION-2026-08-19.md`](reports/WINDOWS-PACKAGING-FOUNDATION-2026-08-19.md) | Single-file installer/uninstaller implementation and physical-host matrix |
 | [`reports/WINDOWS-INSTALLER-RUN-1-INTAKE-2026-08-19.md`](reports/WINDOWS-INSTALLER-RUN-1-INTAKE-2026-08-19.md) | First Windows workflow failure intake and install-root correction |
 | [`reports/CONTINUOUS-DELIVERY-FOUNDATION-2026-08-19.md`](reports/CONTINUOUS-DELIVERY-FOUNDATION-2026-08-19.md) | Main/tag provenance, artifact verification and open-source release gates |

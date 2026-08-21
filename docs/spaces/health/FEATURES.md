@@ -193,8 +193,8 @@ with body fat, tape measurements, and photos.
 |----|-----------------------------------------------------------------------------------------|--------|-------|
 | 01 | Bodyweight log — manual entry; also reads Workout.bodyweight[] as source of truth (sync read) | ✅ | Workout owns weight entries; Health can display and suggest logging but doesn't duplicate |
 | 02 | Weight chart (30/90/365 day) with 7/30-day SMA, min/max annotations                     | ❌     | |
-| 03 | **Navy Method body fat %** (men, metric): `BF% = 495 / (1.0324 − 0.19077×log10(waist_cm − neck_cm) + 0.15456×log10(height_cm)) − 450` | ✅ | Evidence: circumference method ±3-4% vs DEXA; acceptable for tracking trend |
-| 04 | Waist, neck, height (cm) inputs for Navy method; hip optional for future                | ✅     | |
+| 03 | **Navy Method body fat %** (men, metric): `BF% = 495 / (1.0324 − 0.19077×log10(waist_cm − neck_cm) + 0.15456×log10(height_cm)) − 450`. Women: hip required, `495 / (1.29579 − 0.35004×log10(waist+hip−neck) + 0.221×log10(height)) − 450` | ✅ | Evidence: circumference method ±3-4% vs DEXA; acceptable for tracking trend |
+| 04 | Waist, neck, height (cm) inputs for Navy method; hip required when gender is female      | ✅     | |
 | 05 | BF% trendline (30/90/365) — each measurement date stamped                              | ✅     | |
 | 06 | **Lean Body Mass** auto: `weight × (1 − BF%)`                                           | ✅     | |
 | 07 | Fat mass auto: `weight × BF%`                                                           | ✅     | |
@@ -318,7 +318,7 @@ Cross-links with Career daily mood/stress and Workout readiness.
 | 10 | Meditation/mindfulness minutes                                                          | ✅     | |
 | 11 | **Burnout/overtraining flag** — heuristic combining sleep debt, resting HR, mood, stress, motivation, libido, workout performance drop | ✅ | Cross-space algorithm |
 | 12 | Mood tag picker: happy/calm/focused/tired/anxious/irritable/sad/motivated/hungover/other | ❌ | |
-| 13 | Menstrual cycle (NOT applicable to user profile; still added as non-gendered feature flag — hidden by default for male profile but present in settings for any future user) | ❌ | Profile-aware |
+| 13 | Optional cycle log (last start, cycle length, period length, next estimated start). Hidden unless gender is female or cycleTrackingVisible. Educational, not medical advice. | ✅ | Profile-aware |
 | 14 | Mental wellness resource list — crisis lines for India (Vandrevala 1860-2662-345, iCall 9152987821, NIMHANS) 🌏 | ✅ | Real Indian helplines |
 | 15 | Habit/alcohol/caffeine/nicotine tracker (opt-in)                                        | ❌     | |
 | 16 | Steps / physical activity (manual entry or from workout.cardio walk)                     | ❌     | Workout sync |
