@@ -15,6 +15,7 @@
 | `kaizen.habits` | Home habits | Empty + history normalization |
 | `kaizen.focus` | Completed focus cycles/minutes | Bounded component validation |
 | `kaizen.theme` | `dark` or `light` | Preference validation |
+| `kaizen.profile` | Identity, landing view, GitHub username | `migrateProfile`; PAT never stored |
 | `kaizen.bw.ack` | Workout bodyweight prompt acknowledgement | Date string |
 | `afterglow.notice.<item>.<date>` | Local notification de-duplication | Best effort |
 
@@ -46,7 +47,7 @@ Session provider values are never included in root state or exports. They are st
 
 ## Storage failure behavior
 
-Root persistence, Habits and Focus catch quota exceptions and dispatch `kaizen:storage-error`. Corrupt root JSON blocks writes for that slice instead of overwriting data and opens whole-product recovery. The versioned backup covers the eleven authoritative keys.
+Root persistence, Habits and Focus catch quota exceptions and dispatch `kaizen:storage-error`. Corrupt root JSON blocks writes for that slice instead of overwriting data and opens whole-product recovery. The versioned backup covers the twelve authoritative keys. Schema v1 backups without `kaizen.profile` still restore.
 
 ## Privacy
 

@@ -58,6 +58,10 @@ The browser cannot supply an upstream AI URL. Engine-native routes are documente
 - `/projects/vault`
 - `/projects/p/[id]`
 
+Same-origin GitHub list (read-only, allowlisted host):
+
+- `/api/forge/github/repos?user=`
+
 ## Workout
 
 - `/workout` → redirect to Overview

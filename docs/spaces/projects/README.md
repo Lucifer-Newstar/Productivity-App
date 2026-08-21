@@ -138,6 +138,7 @@ Shared helpers exported from Canvases: `ProjPicker`, `BlockEditor`, `SectionHead
 - **STRIKE** ⚡ button — 14 amber spark particles, `⌘K` quick-find palette.
 
 ## Offline-first
+- Public GitHub repositories can be listed through `/api/forge/github/repos` and attached to `ForgeProject.links`. Tokens stay in `sessionStorage` and are never backed up.
 - All Forge state persists to `localStorage["kaizen.forge"]` through the hydration-safe store hook.
 - Backend routes under `/api/forge/*` exist but are intentionally **not wired** —
   the Projects space works fully offline.

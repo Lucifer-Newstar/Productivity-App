@@ -9,7 +9,7 @@ The root route `/` is the App Router entry point and the shared launchpad for ev
 - `frontend/components/SideNav.tsx` — Dashboard, Tasks, Pomodoro, Notes, Habits and Calendar navigation.
 - `frontend/app/layout.tsx` — theme/store providers and storage-quota warning.
 
-Home owns a dedicated `TopNav`, desktop `SideNav` and mobile section rail. Space navigation uses the centralized Lucide `SpaceIcon` mapping.
+Home owns a dedicated `TopNav`, desktop `SideNav` and mobile section rail. Space navigation uses the centralized Lucide `SpaceIcon` mapping. The global `ProfileDock` avatar in the top-right opens identity and per-space setup without leaving the current view.
 
 ## Views
 
