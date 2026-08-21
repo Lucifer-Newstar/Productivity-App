@@ -27,6 +27,7 @@ No item here may be silently guessed during implementation.
 6. Pattern promotion thresholds and whether confirmation is always required.
 7. Action audit retention duration.
 8. Deterministic compression versus model-assisted long-document compression.
+9. AI-ADR-021 local evaluation MLOps: approve metadata/experiment/gate layer, reject, or defer; Docker eval runtime yes/no. Does not include application model activation.
 
 ## Deferred decisions
 

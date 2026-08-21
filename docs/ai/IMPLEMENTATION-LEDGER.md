@@ -2,7 +2,11 @@
 
 Living record of what is implemented, validated, measured, blocked and next. Update this file at the end of every AI step.
 
-_Last updated: 2026-08-20_
+_Last updated: 2026-08-21_
+
+## Proposed documentation (not authorized to implement)
+
+2026-08-21: branch `docs/ai-mlops-evaluation-layer` records AI-ADR-021 (proposed) and the [`mlops/`](mlops/README.md) architecture / file / validation plans. No engine, frontend, Docker or packaging code. Deterministic application provider and closed I1 stages are unchanged. Review the ADR before any `ai/mlops/` source.
 
 ## Current milestone
 

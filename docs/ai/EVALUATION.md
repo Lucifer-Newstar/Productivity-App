@@ -107,6 +107,10 @@ The normative thresholds, dataset strata, scoring rules and stop conditions are 
 
 The package is documented under [`v0.1.1-model-evaluation/`](v0.1.1-model-evaluation/README.md). Valid classified aggregates confirm Qwen3 and Phi are both `REJECTED-PREFLIGHT` with `PROVIDER_HTTP_400`, incomplete/invalid structured-source flow and failed aggregate resource ceilings. Neither is eligible for full or operations. All model stages are closed by `I1-PREFLIGHT-CLOSURE-1`; Wave 0 remains closed.
 
+### Proposed evaluation MLOps layer
+
+[AI-ADR-021](adrs/AI-ADR-021-LOCAL-MLOPS-EVALUATION-LAYER.md) (proposed) would wrap the frozen I1/Wave 0 artifacts with registry metadata, experiment records, gate verdicts, promotion **states** and sanitized metrics. Optional Docker/Compose would isolate evaluation runtimes only. It does not reopen execution or promote a model into application composition. Plan: [`mlops/README.md`](mlops/README.md).
+
 ## Feedback and future learning
 
 Significant recommendations may later store model/prompt/context references, user feedback, action and outcome. This supports evaluation and only later a fine-tuning feasibility review. Fine-tuning is deferred until evidence shows prompting, tools, retrieval and memory are insufficient.

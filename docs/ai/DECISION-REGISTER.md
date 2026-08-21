@@ -55,6 +55,7 @@ Example: a Forge record says the deadline is August 22 while a confirmed memory 
 | AI-PROP-003 | Loopback HTTP/SSE transport initially | Compare SSE with WebSocket for bidirectional tool requests. |
 | AI-PROP-004 | Structured telemetry without raw prompt retention by default | Confirm debugging and evaluation workflow. |
 | AI-PROP-005 | Seven-day default conversation retention | Requires product/privacy review. |
+| AI-PROP-006 | [AI-ADR-021 draft](adrs/AI-ADR-021-LOCAL-MLOPS-EVALUATION-LAYER.md) — local-first evaluation MLOps (registry metadata, experiments, gates, promotion states, privacy-safe metrics, optional eval Compose) | Must not activate a production model, reopen I1 stages, or add Kubernetes/cloud/feature-store/vector infrastructure. |
 
 ## Requires technical spike
 
@@ -76,6 +77,7 @@ Example: a Forge record says the deadline is August 22 while a confirmed memory 
 - Vision and voice modalities
 - Fine-tuning/LoRA
 - Permanent vector technology
+- Kubernetes, cloud MLOps control planes, distributed training and feature stores
 - Permanent default generation or embedding model
 - Moving authoritative Kaizen state out of the browser
 - Parallel agents or parallel tool execution
