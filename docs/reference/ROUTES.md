@@ -1,10 +1,11 @@
 # Route inventory
 
-_Last synchronized: 2026-08-18. The latest production build emits 39 user routes plus fixed dynamic provider/AI routes._
+_Last synchronized: 2026-08-21. The latest production build emits 40 user routes plus fixed dynamic provider/AI routes._
 
 ## Home
 
 - `/`
+- `/profile`
 
 ## Career
 

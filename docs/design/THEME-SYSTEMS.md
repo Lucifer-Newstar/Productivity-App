@@ -56,4 +56,5 @@
 - Themes use the global `kaizen.theme` preference.
 - A light theme must not be a simple color inversion of its dark counterpart.
 - Text contrast, focus states and reduced-motion behavior remain mandatory.
+- Native `<select>` option lists and the global notification inbox must keep readable ink in both themes.
 - Fonts are self-hosted npm assets; no runtime CDN dependency.

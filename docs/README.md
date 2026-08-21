@@ -10,7 +10,7 @@ Kaizen is a local-first productivity and life OS built as one Next.js applicatio
 
 | Space | Routes | Shell | Current status |
 |---|---|---|---|
-| Home | `/` | App Router + SideNav | Dashboard, tasks, notes, habits, Pomodoro and calendar |
+| Home | `/`, `/profile` | App Router + SideNav | Dashboard, tasks, notes, habits, Pomodoro, calendar and identity |
 | Workout | `/workout/*` | Full-screen imperial training OS | Shipped; 12 routes |
 | Projects / Forge | `/projects/*` | Full-screen Foundry/Drafting Room | v1.0 shipped; 5 routes, 31 Smelter tabs |
 | Career | `/career/*` | Full-screen Night HUD/Blueprint | Shipped; 10 routes including redirect |
@@ -21,7 +21,7 @@ A global local-first NotificationCenter is mounted across Home and every full-sc
 
 **Kaizen Intelligence v0.1** now provides a provider-neutral local engine, paired loopback gateway, read-only `get_today@1.0` Domain Bridge and source-linked Home Intelligence panel. No permanent model/vector backend, Health context, memory or write tool is selected. See [`ai/README.md`](ai/README.md).
 
-Current production verification: **39/39 user routes return HTTP 200**, five Entertainment provider routes plus the fixed AI proxy are dynamic, all user pages remain statically prerendered, TypeScript and ESLint pass, and dependency audits are clean.
+Current production verification: **40/40 user routes return HTTP 200**, five Entertainment provider routes plus the fixed AI proxy are dynamic, all user pages remain statically prerendered, TypeScript and ESLint pass, and dependency audits are clean.
 
 ## Documentation map
 
@@ -62,6 +62,7 @@ Current production verification: **39/39 user routes return HTTP 200**, five Ent
 | [`reports/WINDOWS-INSTALLER-RUN-4-INTAKE-2026-08-20.md`](reports/WINDOWS-INSTALLER-RUN-4-INTAKE-2026-08-20.md) | delivery-gate gh release list required GH_TOKEN |
 | [`reports/DESKTOP-ERROR-LOG-2026-08-20.md`](reports/DESKTOP-ERROR-LOG-2026-08-20.md) | Failures append %LOCALAPPDATA%\\Kaizen\\desktop-error.log |
 | [`reports/PROFILE-AND-GITHUB-2026-08-20.md`](reports/PROFILE-AND-GITHUB-2026-08-20.md) | Global profile drawer and read-only Forge GitHub BFF |
+| [`reports/PROFILE-PAGE-AND-CONTRAST-2026-08-21.md`](reports/PROFILE-PAGE-AND-CONTRAST-2026-08-21.md) | Full-page `/profile` and contrast-safe selects/notifications |
 | [`reports/WINDOWS-PACKAGING-FOUNDATION-2026-08-19.md`](reports/WINDOWS-PACKAGING-FOUNDATION-2026-08-19.md) | Single-file installer/uninstaller implementation and physical-host matrix |
 | [`reports/WINDOWS-INSTALLER-RUN-1-INTAKE-2026-08-19.md`](reports/WINDOWS-INSTALLER-RUN-1-INTAKE-2026-08-19.md) | First Windows workflow failure intake and install-root correction |
 | [`reports/CONTINUOUS-DELIVERY-FOUNDATION-2026-08-19.md`](reports/CONTINUOUS-DELIVERY-FOUNDATION-2026-08-19.md) | Main/tag provenance, artifact verification and open-source release gates |

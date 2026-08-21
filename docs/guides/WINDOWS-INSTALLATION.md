@@ -69,7 +69,7 @@ The desktop shell obtains the one-time engine pairing code in memory and pairs t
 With Kaizen stopped, run **Verify Kaizen installation**. It checks:
 
 - required package layout and Express exclusion;
-- all 39 user routes;
+- all 40 user routes;
 - eval-free loopback production CSP;
 - cross-site pairing denial;
 - deterministic provider identity;

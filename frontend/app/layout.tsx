@@ -5,7 +5,6 @@ import { ThemeProvider } from "../lib/theme";
 import StorageErrorBanner from "../components/StorageErrorBanner";
 import NotificationCenter from "../components/NotificationCenter";
 import UpdateChecker from "../components/UpdateChecker";
-import ProfileDock from "../components/ProfileDock";
 
 export const metadata: Metadata = {
   title: "Kaizen — Rule Your Realm",
@@ -38,7 +37,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       </head>
       <body className="min-h-screen">
         <ThemeProvider>
-          <StoreProvider><ProfileDock><StorageErrorBanner /><UpdateChecker /><NotificationCenter />{children}</ProfileDock></StoreProvider>
+          <StoreProvider><StorageErrorBanner /><UpdateChecker /><NotificationCenter />{children}</StoreProvider>
         </ThemeProvider>
       </body>
     </html>

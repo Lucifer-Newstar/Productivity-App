@@ -54,9 +54,10 @@ KAIZEN_API_KEY=security-test-key npm run security:test   # 13 attack checks
 
 ## Runtime smoke
 
-Production smoke covers 39 user routes:
+Production smoke covers 40 user routes:
 
 - Home: 1
+- Profile: 1
 - Career: 10 including redirect
 - Entertainment: 1
 - Health: 10

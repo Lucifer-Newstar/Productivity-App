@@ -1,4 +1,4 @@
-/** Identity and setup constants for the global Profile drawer. Daily logs stay in-space. */
+/** Identity and setup constants for the global `/profile` page. Daily logs stay in-space. */
 import { safeExternalUrl, safeImageDataUrl } from "./security";
 
 export type HomeLandingView = "" | "dashboard" | "tasks" | "focus" | "notes" | "habits" | "calendar";

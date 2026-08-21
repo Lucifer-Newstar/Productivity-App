@@ -9,7 +9,7 @@ _Last synchronized: 2026-08-18. Historical reports retain their original dates a
 | Frontend TypeScript | Pass |
 | ESLint | Pass |
 | Next.js 16 production build | Pass |
-| User-route smoke | 39/39 HTTP 200 |
+| User-route smoke | 40/40 HTTP 200 |
 | Frontend dependency audit | 0 vulnerabilities |
 | Backend TypeScript build | Pass |
 | Backend dependency audit | 0 vulnerabilities |

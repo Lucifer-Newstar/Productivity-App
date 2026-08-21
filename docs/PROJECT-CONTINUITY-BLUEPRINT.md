@@ -182,6 +182,7 @@ Demo fixtures require `NEXT_PUBLIC_KAIZEN_DEMO_TOOLS=1` and are hidden/no-op oth
 
 ```text
 /                                  Home: Command, Tasks, Focus, Notes, Habits, Calendar
+/profile                           Identity and per-space constants
 /career/*                          10 routes including redirect
 /projects/*                        5 routes including project drilldown
 /workout/*                         12 routes including redirect
@@ -189,7 +190,7 @@ Demo fixtures require `NEXT_PUBLIC_KAIZEN_DEMO_TOOLS=1` and are hidden/no-op oth
 /entertainment                     1 full-screen multi-view application
 ```
 
-Total user routes: 39.
+Total user routes: 40.
 
 Use `docs/reports/APPLICATION-GAP-AUDIT-2026-08-19.md` for per-screen functional/persistence details.
 

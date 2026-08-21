@@ -17,4 +17,10 @@ test("github username allowlist",()=>{
   assert.throws(()=>assertGithubUsername("../etc"),/invalid/);
 });
 test("profile is an authoritative backup key",()=>assert.ok(AUTHORITATIVE_KEYS.includes("kaizen.profile")));
+test("avatar control routes to the full profile page",()=>{
+  const dock=require("node:fs").readFileSync(require("node:path").join(__dirname,"../components/ProfileDock.tsx"),"utf8");
+  const page=require("node:fs").readFileSync(require("node:path").join(__dirname,"../app/profile/page.tsx"),"utf8");
+  assert.match(dock,/href=\"\/profile\"/);
+  assert.match(page,/Kaizen profile/);
+});
 console.log(`\n${passed} profile checks passed.`);

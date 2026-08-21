@@ -31,14 +31,15 @@ export default function App({ Component, pageProps }: AppProps) {
     return (
       <ThemeProvider>
         <StoreProvider>
-          <ProfileDock floating>
+          <>
+            <ProfileDock floating />
             <StorageErrorBanner />
             <UpdateChecker />
             <NotificationCenter />
             <div className="min-h-screen w-full">
               <Page {...pageProps} />
             </div>
-          </ProfileDock>
+          </>
         </StoreProvider>
       </ThemeProvider>
     );
@@ -47,7 +48,7 @@ export default function App({ Component, pageProps }: AppProps) {
   return (
       <ThemeProvider>
         <StoreProvider>
-          <ProfileDock>
+          <>
             <StorageErrorBanner />
             <UpdateChecker />
             <NotificationCenter />
@@ -57,7 +58,7 @@ export default function App({ Component, pageProps }: AppProps) {
                 <Component {...pageProps} />
               </main>
             </div>
-          </ProfileDock>
+          </>
         </StoreProvider>
       </ThemeProvider>
   );

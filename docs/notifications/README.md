@@ -10,7 +10,7 @@ Root StoreProvider
       ├── deduplicated inbox
       └── global/section/channel settings
 
-NotificationCenter (mounted in App + Pages layouts)
+NotificationCenter (mounted in App + Pages layouts; themed for light and dark)
  ├── opened by a NotificationButton embedded in each space navigation bar
  ├── evaluates pure rules on state changes and every 5 minutes
  ├── maps the current URL to one section
