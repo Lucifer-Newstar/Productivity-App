@@ -54,6 +54,19 @@ export function bmi(weightKg: number, heightCm: number): number {
 }
 
 /**
+ * Standing bodyweight: latest Workout log, not a daily chore.
+ * Profile writes this once; Health, diet, hydration, S:W and Home intelligence keep using it until it changes.
+ */
+export function latestStandingWeightKg(
+  logs: { date: string; weightKg: number }[] | undefined,
+  fallback = 0,
+): number {
+  if (!logs?.length) return fallback;
+  const last = [...logs].sort((a, b) => b.date.localeCompare(a.date))[0];
+  return last && last.weightKg > 0 ? last.weightKg : fallback;
+}
+
+/**
  * Dynamic water goal in ml.
  *  - Base: 35 ml × weight_kg (EFSA baseline)
  *  - Multiplied by climateMult (1.1 Chennai default)

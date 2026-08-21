@@ -30,7 +30,7 @@ npm run qa:csp                               # dev vs production CSP separation
 npm run qa:core                              # local dates and habit streak correctness
 npm run qa:baseline                          # empty user history vs retained product catalogs
 npm run qa:backup                            # whole-product backup/restore and rollback security
-npm run qa:profile                           # identity migration, GitHub username allowlist, backup key
+npm run qa:profile                           # identity migration, standing weight, gender chrome, GitHub allowlist
 npm run qa:resilience                        # route errors, navigation history and corrupt storage
 npm run qa:packaging                         # Windows bundle/runtime/installer/CD contracts
 npm run qa:update                            # release checks, notification links and in-place updates

@@ -781,12 +781,67 @@ html:not(.dark) option { background-color: #fff8e4; color: #1a0f0a; }
 .profile-help-pop{display:block;padding:10px 12px;border:1px solid var(--home-line);border-radius:10px;background:var(--home-panel);font-size:11px;line-height:1.5;color:var(--home-muted)}
 .profile-help-pop a{color:var(--home-accent);font-weight:650}
 .profile-key-actions{display:flex;gap:8px;flex-wrap:wrap;align-items:center;justify-content:flex-end}
+.profile-weight{display:grid;grid-template-columns:42px 1fr 42px;gap:8px;align-items:center}
+.profile-weight-step{height:42px;display:grid;place-items:center;border:1px solid var(--home-line);background:transparent;color:var(--home-fg);cursor:pointer}
+.profile-weight-step:disabled{opacity:.35;cursor:not-allowed}
+.profile-weight-input{text-align:center;font-variant-numeric:tabular-nums;font-size:18px;font-weight:650}
+.profile-intel{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px}
+.profile-intel>div{padding:10px 8px;border:1px solid var(--home-line);display:flex;flex-direction:column;gap:4px;min-width:0}
+.profile-intel b{font-size:16px;letter-spacing:-.03em;color:var(--home-fg)}
+.profile-intel span{font-size:9px;letter-spacing:.08em;text-transform:uppercase;color:var(--home-muted)}
+.profile-page[data-gender="male"]{--home-accent:#5eead4;--home-accent2:#38bdf8}
+.profile-page[data-gender="male"] .profile-kicker{font-family:var(--font-mono);letter-spacing:.22em}
+.profile-page[data-gender="male"] .profile-name-input{font-family:var(--font-tech);letter-spacing:-.05em}
+.profile-page[data-gender="male"] .profile-hero,.profile-page[data-gender="male"] .profile-card,.profile-page[data-gender="male"] .profile-intel>div,.profile-page[data-gender="male"] .profile-weight-step{border-radius:4px}
+.profile-page[data-gender="male"] .profile-pills button,.profile-page[data-gender="male"] .profile-seg button{border-radius:4px}
 .profile-page[data-gender="female"]{--home-accent:#f0abbf;--home-accent2:#d946ef}
 .home-root[data-theme="light"].profile-page[data-gender="female"]{--home-accent:#9d174d;--home-accent2:#be185d}
-@media(max-width:640px){.profile-hero{flex-direction:column;align-items:flex-start}.profile-row{grid-template-columns:1fr}.profile-pills{flex-wrap:nowrap;overflow-x:auto}.profile-card-head{flex-direction:column}}
+.profile-page[data-gender="female"] .profile-kicker{font-family:var(--font-editorial);letter-spacing:.18em;font-style:italic;text-transform:none}
+.profile-page[data-gender="female"] .profile-name-input{font-family:var(--font-editorial);font-style:italic;letter-spacing:-.03em}
+.profile-page[data-gender="female"] .profile-hero{border-radius:28px}
+.profile-page[data-gender="female"] .profile-card,.profile-page[data-gender="female"] .profile-intel>div{border-radius:20px}
+.profile-page[data-gender="female"] .profile-pills button,.profile-page[data-gender="female"] .profile-seg button,.profile-page[data-gender="female"] .profile-weight-step,.profile-page[data-gender="female"] .profile-chips span{border-radius:999px}
+.profile-page .profile-kicker:after{content:"";display:block;width:42px;height:1px;margin-top:8px;background:linear-gradient(90deg,var(--home-accent),transparent)}
+@media(max-width:640px){.profile-hero{flex-direction:column;align-items:flex-start}.profile-row{grid-template-columns:1fr}.profile-pills{flex-wrap:nowrap;overflow-x:auto}.profile-card-head{flex-direction:column}.profile-intel{grid-template-columns:repeat(2,1fr)}}
 .home-space-card{transition:transform .22s ease,box-shadow .22s ease}
 .home-space-card:hover{transform:translateY(-3px)}
 @media(prefers-reduced-motion:reduce){.profile-trigger,.home-space-card,.profile-avatar-edit em{transition:none}}
+
+/* Japanese geometry only — unique per space, never letters. Overlay, does not replace each OS. */
+.profile-page{
+  background-image:
+    radial-gradient(circle at 8% 12%,color-mix(in srgb,var(--home-accent) 18%,transparent),transparent 34%),
+    repeating-radial-gradient(circle at 100% 0,transparent 0 22px,color-mix(in srgb,var(--home-accent) 10%,transparent) 23px,transparent 26px);
+}
+.home-root:not(.profile-page)::before,
+.workout-root::before,.workout-shell::before,
+.career-root::before,.forge-root::before,.ent-root::before,.health-root::before{
+  content:"";position:absolute;inset:0;pointer-events:none;z-index:0;
+}
+.home-root:not(.profile-page){position:relative}
+.home-root:not(.profile-page)::before{
+  background-image:repeating-radial-gradient(circle at 0 100%,transparent 0 18px,rgba(110,231,249,.05) 19px,transparent 21px);
+}
+.workout-root::before,.workout-shell::before{
+  background-image:repeating-conic-gradient(from 30deg at 80% 0,transparent 0 14deg,rgba(212,175,55,.05) 15deg,transparent 16deg);
+}
+.career-root::before{
+  background-image:repeating-linear-gradient(-18deg,transparent 0 11px,rgba(34,211,238,.05) 12px,transparent 14px);
+}
+.forge-root::before{
+  background-image:repeating-linear-gradient(45deg,transparent 0 13px,rgba(245,158,11,.06) 14px,transparent 16px);
+}
+.health-root{position:relative}
+.health-root::before{
+  grid-column:1/-1;grid-row:1/-1;
+  background-image:repeating-radial-gradient(circle at 0 50%,transparent 0 16px,rgba(16,185,129,.06) 17px,transparent 20px);
+}
+.health-root[data-gender="female"]::before{
+  background-image:repeating-radial-gradient(circle at 100% 0,transparent 0 18px,rgba(244,114,182,.08) 19px,transparent 22px);
+}
+.ent-root::before{
+  background-image:repeating-radial-gradient(circle at 50% 50%,transparent 0 24px,rgba(192,132,252,.07) 25px,transparent 28px);
+}
 
 /* Notification inbox — theme tokens instead of always-white type. */
 .kaizen-notify{

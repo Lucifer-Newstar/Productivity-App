@@ -58,3 +58,5 @@
 - Text contrast, focus states and reduced-motion behavior remain mandatory.
 - Native `<select>` option lists and the global notification inbox must keep readable ink in both themes.
 - Fonts are self-hosted npm assets; no runtime CDN dependency.
+- Japanese geometry (waves, hemp, hatch) may overlay a space in that space’s own colour. No Japanese letters. Type, radius and motion stay unique per space (ADR-009).
+- Male vs female chrome is Profile + Health only: Instrument/VITALS vs Atelier/CLINIC. Do not clone one gender look across Workout, Career, Forge or Glow.

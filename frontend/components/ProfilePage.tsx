@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
   ArrowUpRight, Briefcase, Camera, Dumbbell, FolderKanban, GitBranch, HeartPulse,
-  Home, Link2, Sparkles, UserRound,
+  Home, Link2, Minus, Plus, Sparkles, UserRound,
 } from "lucide-react";
 import TopNav from "./TopNav";
 import { useStore } from "../lib/store";
@@ -19,15 +19,18 @@ import {
 } from "../lib/entertainmentKeys";
 import CycleLogCard from "./health/CycleLogCard";
 import type { Gender } from "../lib/healthTypes";
+import {
+  bmi, bmiCategory, bmrMifflin, latestStandingWeightKg, proteinTargetG, tdee, waterGoalMl,
+} from "../lib/healthAnalytics";
 
 type Tab = "identity" | "home" | "workout" | "forge" | "career" | "health" | "entertainment" | "github";
 const TABS: { id: Tab; label: string; href: string; icon: typeof UserRound; lead: string }[] = [
-  { id: "identity", label: "You", href: "/profile", icon: UserRound, lead: "Name, photo and how Kaizen addresses you." },
+  { id: "identity", label: "You", href: "/profile", icon: UserRound, lead: "Name, photo, gender and standing weight." },
   { id: "home", label: "Home", href: "/", icon: Home, lead: "Which Home view opens after load." },
   { id: "workout", label: "Workout", href: "/workout/overview", icon: Dumbbell, lead: "Units and phase. Sessions stay in Workout." },
   { id: "forge", label: "Forge", href: "/projects", icon: FolderKanban, lead: "Workspace hours and sprint length." },
   { id: "career", label: "Career", href: "/career/projects", icon: Briefcase, lead: "Public career link used by network views." },
-  { id: "health", label: "Health", href: "/health/sync", icon: HeartPulse, lead: "Age, height and formulas. Cycle log is optional." },
+  { id: "health", label: "Health", href: "/health/sync", icon: HeartPulse, lead: "Age, height, standing weight and formulas. Cycle log is optional." },
   { id: "entertainment", label: "Glow", href: "/entertainment", icon: Sparkles, lead: "Language and catalogue keys for this tab only." },
   { id: "github", label: "GitHub", href: "/projects", icon: GitBranch, lead: "Public username and a session token, never backed up." },
 ];
@@ -53,12 +56,41 @@ function Field({ label, hint, children }: { label: string; hint?: string; childr
   );
 }
 
+function WeightField({ kg, onCommit }: { kg: number; onCommit: (n: number) => void }) {
+  const [draft, setDraft] = useState(kg > 0 ? String(kg) : "");
+  useEffect(() => { setDraft(kg > 0 ? String(kg) : ""); }, [kg]);
+  function flush() {
+    const n = Number(draft);
+    if (Number.isFinite(n) && n >= 30 && n <= 250) onCommit(n);
+    else setDraft(kg > 0 ? String(kg) : "");
+  }
+  return (
+    <div className="profile-weight">
+      <button type="button" className="profile-weight-step" aria-label="Decrease weight" disabled={!(kg > 0)} onClick={() => onCommit(kg - 0.1)}><Minus size={14} /></button>
+      <input
+        className="input-base profile-weight-input"
+        type="number"
+        min={30}
+        max={250}
+        step={0.1}
+        value={draft}
+        placeholder="—"
+        aria-label="Standing weight in kilograms"
+        onChange={(e) => setDraft(e.target.value)}
+        onBlur={flush}
+        onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); flush(); } }}
+      />
+      <button type="button" className="profile-weight-step" aria-label="Increase weight" disabled={!(kg > 0)} onClick={() => onCommit(kg + 0.1)}><Plus size={14} /></button>
+    </div>
+  );
+}
+
 export default function ProfilePage() {
   const params = useSearchParams();
   const router = useRouter();
   const { theme } = useTheme();
   const store = useStore();
-  const { profile, updateProfile, health, updateHealth, workout, updateWorkoutSettings, forge, updateForge, career, updateCareer, entertainment, updateEntertainment } = store;
+  const { profile, updateProfile, health, updateHealth, workout, updateWorkoutSettings, logBodyweight, forge, updateForge, career, updateCareer, entertainment, updateEntertainment } = store;
   const requested = params?.get("tab") as Tab | null;
   const tab: Tab = requested && TAB_IDS.includes(requested) ? requested : "identity";
   const [token, setToken] = useState("");
@@ -71,6 +103,24 @@ export default function ProfilePage() {
   const [glowHelp, setGlowHelp] = useState<AfterglowKeyId | null>(null);
   const zones = useMemo(() => Array.from(new Set([profile.timezone, ...ZONES].filter(Boolean))), [profile.timezone]);
   const female = health.profile.gender === "female";
+  const standingKg = useMemo(() => latestStandingWeightKg(workout.bodyweight), [workout.bodyweight]);
+  const hp = health.profile;
+  const intel = useMemo(() => {
+    if (!(standingKg > 0 && hp.heightCm > 0 && hp.ageYears > 0)) return null;
+    const bmiVal = bmi(standingKg, hp.heightCm);
+    return {
+      bmi: bmiVal,
+      bmiLabel: bmiCategory(bmiVal).label,
+      bmr: Math.round(bmrMifflin(standingKg, hp.heightCm, hp.ageYears, hp.gender)),
+      tdee: Math.round(tdee(standingKg, hp)),
+      water: waterGoalMl(standingKg, hp.climateMult),
+      protein: proteinTargetG(standingKg),
+    };
+  }, [standingKg, hp]);
+  function commitWeight(raw: number) {
+    if (!Number.isFinite(raw)) return;
+    logBodyweight(Math.round(Math.min(250, Math.max(30, raw)) * 10) / 10);
+  }
 
   useEffect(() => {
     setToken(sessionStorage.getItem(GITHUB_TOKEN_SESSION_KEY) ?? "");
@@ -154,7 +204,7 @@ export default function ProfilePage() {
             <em><Camera size={12} /> Photo</em>
           </label>
           <div className="profile-identity-copy">
-            <p className="profile-kicker">Kaizen profile</p>
+            <p className="profile-kicker">{female ? "Atelier profile" : "Instrument profile"}</p>
             <input
               className="profile-name-input"
               value={profile.displayName}
@@ -174,6 +224,7 @@ export default function ProfilePage() {
             <div className="profile-chips">
               <span>{profile.timezone}</span>
               <span>{female ? "Female" : "Male"}</span>
+              {standingKg > 0 && <span>{standingKg.toFixed(1)} kg</span>}
               <span>{readyCount} / {TAB_IDS.length} ready</span>
             </div>
             <div className="profile-meter" aria-hidden>
@@ -223,6 +274,18 @@ export default function ProfilePage() {
                     <button type="button" className={female ? "is-on" : ""} onClick={() => setGender("female")}>Female</button>
                   </div>
                 </Field>
+                <Field label="Standing weight (kg)" hint="Set once. BMI, calories, water, protein, workout ratios and Home intelligence use this until you change it — not a daily log.">
+                  <WeightField kg={standingKg} onCommit={commitWeight} />
+                </Field>
+                {intel && (
+                  <div className="profile-intel" aria-label="Health intelligence from standing weight">
+                    <div><b>{intel.bmi.toFixed(1)}</b><span>BMI · {intel.bmiLabel}</span></div>
+                    <div><b>{intel.bmr}</b><span>BMR kcal</span></div>
+                    <div><b>{intel.tdee}</b><span>TDEE kcal</span></div>
+                    <div><b>{Math.round(intel.water / 10) / 100}</b><span>Water L</span></div>
+                    <div><b>{intel.protein}g</b><span>Protein</span></div>
+                  </div>
+                )}
                 <Field label="Timezone">
                   <select className="input-base" value={profile.timezone} onChange={(e) => updateProfile({ timezone: e.target.value })}>
                     {zones.map((zone) => <option key={zone} value={zone}>{zone}</option>)}
@@ -296,6 +359,16 @@ export default function ProfilePage() {
             )}
             {tab === "health" && (
               <>
+                <Field label="Standing weight (kg)" hint="Same number as You. Health and Workout read it; you do not log it every day.">
+                  <WeightField kg={standingKg} onCommit={commitWeight} />
+                </Field>
+                {intel && (
+                  <div className="profile-intel" aria-label="Health intelligence from standing weight">
+                    <div><b>{intel.bmi.toFixed(1)}</b><span>BMI · {intel.bmiLabel}</span></div>
+                    <div><b>{intel.tdee}</b><span>TDEE kcal</span></div>
+                    <div><b>{intel.protein}g</b><span>Protein</span></div>
+                  </div>
+                )}
                 <div className="profile-row">
                   <Field label="Age">
                     <input className="input-base" type="number" min={12} max={90} value={health.profile.ageYears} onChange={(e) => updateHealth((h) => ({ profile: { ...h.profile, ageYears: Number(e.target.value) } }))} />

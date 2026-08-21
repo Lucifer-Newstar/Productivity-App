@@ -8,7 +8,7 @@ The root route `/` is the App Router entry point and the shared launchpad for ev
 - `frontend/app/AppShell.tsx` — active home view.
 - `frontend/components/SideNav.tsx` — Dashboard, Tasks, Pomodoro, Notes, Habits and Calendar navigation.
 - `frontend/app/layout.tsx` — theme/store providers and storage-quota warning.
-- `frontend/app/profile/page.tsx` — full-page identity and per-space constants, including Glow session catalogue keys.
+- `frontend/app/profile/page.tsx` — full-page identity and per-space constants, including Glow session catalogue keys and standing bodyweight.
 
 Home owns a dedicated `TopNav`, desktop `SideNav` and mobile section rail. Space navigation uses the centralized Lucide `SpaceIcon` mapping. The global avatar sits after the theme toggle in Home `TopNav` and in each space header, and navigates to `/profile`. It is not a floating overlay. Glow catalogue keys on that page use the same `sessionStorage` contract as AFTERGLOW Providers & Credits.
 

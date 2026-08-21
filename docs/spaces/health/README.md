@@ -66,7 +66,8 @@ sweep (see `docs/quality/bugs/BUGS.md`).
 - **APOTHECARY (Wave 3):** ✅ 13-seed supplement stack, streaks + 30d adherence, 🇮🇳 deficiency risk badges (10 micronutrients, ICMR prevalence), sunlight log for Vit D
 - **TRIAGE (Wave 3):** Live KPIs — BW/BMI/BMR/TDEE/water/protein/sleep bank/recovery/supp adherence/deficiency count
 - **SOMA (Wave 4):** ✅ Navy BF% (metric men + women with hip, ±input guards), 24-site tape measurements (L/R limbs), LBM/fat mass auto, BMI + lifter caveat, WHtR central-adiposity flag, **S:W ratio tiers** (Beginner→Elite for Squat/Bench/Dead/OHP/Pull-up, pulling live PRs from Workout), bilateral asymmetry detector (≥1cm L/R flag), progress photos (webcam + upload, 9 angle tags, weight+BF stamped), 90-day BF% sparkline, measurement history.
-- **Gender-aware Health (2026-08-21):** Female Navy BF% in Soma, ICMR iron 29mg when gender is female, optional cycle log on Profile Health and TRIAGE. Subtle warmer accent on Profile + Health only (ADR-009 — space OSes are not restyled). Educational, not medical advice.
+- **Gender-aware Health (2026-08-21):** Female Navy BF% in Soma, ICMR iron 29mg when gender is female, optional cycle log on Profile Health and TRIAGE. Profile + Health now use obviously different male (VITALS, square, EKG green) vs female (CLINIC, rounded, rose) chrome. The other four space OSes are unchanged (ADR-009). Educational, not medical advice.
+- **Standing weight (2026-08-21):** Set once on `/profile`. Workout `bodyweight` is the source of truth; BMI, TDEE, water, protein, Soma and Home intelligence keep using the latest value until it changes.
 - **Workout bridge contract:** ✅ Documented (directional read-only pull,
   advisory push flags — see ALGORITHMS.md); bodyweight/sessions/PRs/readiness
   consumed live; sleep-debt/recovery/deload flags computed, deeper push wired in wave 7

@@ -24,6 +24,7 @@ import { readSafeImageAsDataUrl } from "../../lib/security";
 import {
   navyBf, bmi, bmiCategory, lbmKg, fatMassKg, whtr, detectAsymmetries,
   latestMeasurement, currentBfPct, strengthClass, SW_STANDARDS, bmrKatch,
+  latestStandingWeightKg,
 } from "../../lib/healthAnalytics";
 import { PROGRESS_PHOTO_LABELS, type MeasurementEntry, type ProgressPhoto, type ProgressPhotoTag } from "../../lib/healthTypes";
 import SomaIntel from "./SomaIntel";
@@ -67,17 +68,14 @@ export default function SomaSection() {
   const { health, updateHealth, workout } = useStore();
   const today = todayIso();
 
-  // Latest bodyweight from Workout (source of truth)
-  const latestBw = useMemo(() => {
-    const sorted = [...workout.bodyweight].sort((a,b)=>b.date.localeCompare(a.date));
-    return sorted[0]?.weightKg ?? 70;
-  }, [workout.bodyweight]);
+  // Latest bodyweight from Workout (source of truth). 0 until Profile/Workout sets it.
+  const latestBw = useMemo(() => latestStandingWeightKg(workout.bodyweight), [workout.bodyweight]);
 
   const last = useMemo(() => latestMeasurement(health.measurements), [health.measurements]);
 
   // Form state — pre-fill with last measurement for easy "measure weekly" workflow
   const [mdate, setMdate] = useState<string>(today);
-  const [weight, setWeight] = useState<string>(latestBw.toFixed(1));
+  const [weight, setWeight] = useState<string>(latestBw > 0 ? latestBw.toFixed(1) : "");
   const [vals, setVals] = useState<Record<string,string>>(() => {
     const init: Record<string,string> = {};
     if (last) {
@@ -301,7 +299,7 @@ export default function SomaSection() {
         </div>
 
         <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill, minmax(180px,1fr))",gap:8}}>
-          <Field label={`Weight (kg) — pulled from Workout`}>
+          <Field label={latestBw > 0 ? `Weight (kg) — standing ${latestBw.toFixed(1)} from Profile` : "Weight (kg) — set standing weight on Profile"}>
             <input type="number" step="0.1" min={30} max={200} value={weight} onChange={e=>setWeight(e.target.value)} style={input}/>
           </Field>
           {SITES.map(s => (

@@ -127,7 +127,9 @@ export default function HealthShell({ section, children }: Props) {
             <Heart size={26} fill="currentColor" />
           </motion.div>
           <div className="hlth-brand-label">
-            <span style={{ fontWeight: 900, letterSpacing: "0.15em", fontSize: 11 }}>VITALS</span>
+            <span style={{ fontWeight: 900, letterSpacing: gender === "female" ? "0.08em" : "0.15em", fontSize: 11, fontStyle: gender === "female" ? "italic" : "normal" }}>
+              {gender === "female" ? "CLINIC" : "VITALS"}
+            </span>
             <span style={{ fontSize: 9, letterSpacing: "0.25em", opacity: 0.6 }}>KAIZEN</span>
           </div>
         </div>
@@ -173,7 +175,7 @@ export default function HealthShell({ section, children }: Props) {
           <div className="hlth-topbar-left">
             <h1 className="hlth-wordmark">
               <Activity size={18} style={{ display: "inline", verticalAlign: "-3px", marginRight: 8 }} />
-              {active.label.toUpperCase()}
+              {gender === "female" ? active.label : active.label.toUpperCase()}
             </h1>
             <span className="hlth-section-desc">// {active.description}</span>
           </div>
@@ -195,7 +197,7 @@ export default function HealthShell({ section, children }: Props) {
 
         {/* Top EKG trace decoration */}
         <div className="hlth-top-ekg" aria-hidden>
-          <EkgTrace pulseKey={pulseKey} color={light ? "#059669" : "#34d399"} className="hlth-ekg-svg"/>
+          <EkgTrace pulseKey={pulseKey} color={gender === "female" ? (light ? "#be185d" : "#f9a8d4") : (light ? "#059669" : "#34d399")} className="hlth-ekg-svg"/>
         </div>
 
         {/* Content area */}
@@ -241,15 +243,6 @@ export default function HealthShell({ section, children }: Props) {
           grid-template-columns: 72px 1fr;
         }
         /* ===== CLINIC LIGHT ===== */
-        .health-root[data-gender="female"] {
-          --hlth-accent: #db2777;
-          --hlth-accent-glow: #f472b6;
-          --hlth-border: rgba(244,114,182,0.28);
-        }
-        .health-root.health-light[data-gender="female"] {
-          --hlth-accent: #be185d;
-          --hlth-accent-glow: #db2777;
-        }
         .health-root.health-light {
           --hlth-bg:
             linear-gradient(rgba(148,163,184,0.08) 1px, transparent 1px) 0 0/24px 24px,
@@ -269,15 +262,38 @@ export default function HealthShell({ section, children }: Props) {
           --hlth-cyan: #0891b2;
           --hlth-amber: #d97706;
         }
+        .health-root[data-gender="male"] .hlth-card,
+        .health-root[data-gender="male"] .hlth-icon-btn { border-radius: 4px; }
+        .health-root[data-gender="male"] .hlth-wordmark { letter-spacing: 0.16em; }
         .health-root[data-gender="female"] {
           --hlth-accent: #db2777;
-          --hlth-accent-glow: #f472b6;
-          --hlth-border: rgba(244,114,182,0.28);
+          --hlth-accent-glow: #f9a8d4;
+          --hlth-border: rgba(244,114,182,0.34);
+          --hlth-card: rgba(36, 14, 28, 0.88);
+          --hlth-card2: rgba(52, 18, 36, 0.92);
+          --hlth-bg: radial-gradient(at 16% 8%, rgba(244,114,182,0.14) 0, transparent 46%),
+                     radial-gradient(at 88% 90%, rgba(192,132,252,0.08) 0, transparent 42%),
+                     #12080f;
         }
         .health-root.health-light[data-gender="female"] {
-          --hlth-accent: #be185d;
-          --hlth-accent-glow: #db2777;
+          --hlth-accent: #9d174d;
+          --hlth-accent-glow: #be185d;
+          --hlth-card: #fff7f9;
+          --hlth-card2: #fde8ef;
         }
+        .health-root[data-gender="female"] .hlth-nav-item { border-radius: 16px; letter-spacing: 0.06em; }
+        .health-root[data-gender="female"] .hlth-nav-item:hover { background: rgba(244,114,182,0.1); }
+        .health-root[data-gender="female"] .hlth-nav-item[data-active="1"] {
+          background: rgba(244,114,182,0.16);
+          box-shadow: inset 0 0 18px rgba(244,114,182,0.08);
+        }
+        .health-root[data-gender="female"] .hlth-card { border-radius: 18px; }
+        .health-root[data-gender="female"] .hlth-wordmark {
+          letter-spacing: 0.02em; font-weight: 650; text-transform: none;
+          text-shadow: 0 0 18px rgba(244,114,182,0.28);
+        }
+        .health-root[data-gender="female"] .hlth-btn { border-radius: 999px; color: #2a0814; }
+        .health-root[data-gender="female"] .hlth-icon-btn { border-radius: 999px; }
         .hlth-rail {
           position: sticky; top: 0;
           height: 100vh;

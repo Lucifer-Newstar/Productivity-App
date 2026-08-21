@@ -147,9 +147,9 @@ export function buildHomeIntelligence(
     weight =
       [...(s.workout.bodyweight ?? [])].sort((a: any, b: any) =>
         String(b.date).localeCompare(String(a.date)),
-      )[0]?.weightKg ?? 70,
-    waterGoal = weight * 35 * (s.health.profile?.climateMult ?? 1),
-    hydration = clamp((water / waterGoal) * 100),
+      )[0]?.weightKg ?? 0,
+    waterGoal = weight > 0 ? weight * 35 * (s.health.profile?.climateMult ?? 1) : 0,
+    hydration = waterGoal > 0 ? clamp((water / waterGoal) * 100) : 0,
     mind = [...(s.health.mind ?? [])].sort((a: any, b: any) =>
       String(b.date).localeCompare(String(a.date)),
     )[0],

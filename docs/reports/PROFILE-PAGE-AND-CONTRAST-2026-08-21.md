@@ -10,6 +10,8 @@ The avatar control navigates to `/profile`. Wave 1 (2026-08-21) removed the floa
 
 Waves 2–4 (same day) added Glow session keys with `!` help, gender-aware Navy BF% / ICMR iron, optional cycle log, and a subtle Profile + Health accent when gender is female.
 
+Follow-up the same day: standing weight on `/profile` (not a daily log), obvious male/female chrome on Profile + Health only, and unique Japanese geometry overlays with no letters. See [`PROFILE-STANDING-WEIGHT-AND-GENDER-2026-08-21.md`](PROFILE-STANDING-WEIGHT-AND-GENDER-2026-08-21.md).
+
 ## Scope
 
 - `/profile` App Router page; avatar is a `Link`, not a modal.
