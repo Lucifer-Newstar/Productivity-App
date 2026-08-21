@@ -41,4 +41,10 @@ test("Glow tab hosts session catalogue keys with official help URLs",()=>{
   assert.match(page,/sessionStorage|writeAfterglowSessionKeys/);
   assert.doesNotMatch(page,/kaizen\.profile.*afterglow\.key/);
 });
+test("native select option menus have explicit dark and light ink",()=>{
+  const css=require("node:fs").readFileSync(require("node:path").join(__dirname,"../app/globals.css"),"utf8");
+  assert.match(css,/home-root option/);
+  assert.match(css,/background-color: #0d131f/);
+  assert.match(css,/html\.dark option/);
+});
 console.log(`\n${passed} profile checks passed.`);

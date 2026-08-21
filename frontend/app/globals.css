@@ -678,6 +678,14 @@ html, body { font-family: var(--font-ui); }
 .home-root[data-theme="light"] .btn-ghost {background:#fff;border-radius:2px;}
 .home-root input,.home-root textarea,.home-root select {color:var(--home-fg);font-family:inherit;}
 .home-root input::placeholder,.home-root textarea::placeholder {color:var(--home-muted);}
+.home-root { color-scheme: dark; }
+.home-root[data-theme="light"] { color-scheme: light; }
+.home-root select,.home-root .input-base { background-color: var(--home-panel-solid); color: var(--home-fg); }
+/* Native <option> popups ignore CSS variables on Windows Chromium. */
+.home-root option { background-color: #0d131f; color: #edf3ff; }
+.home-root[data-theme="light"] option { background-color: #fffdf8; color: #14213d; }
+html.dark option { background-color: #17101f; color: #f8fafc; }
+html:not(.dark) option { background-color: #fff8e4; color: #1a0f0a; }
 .home-root .text-gray-900,.home-root .dark\:text-white {color:var(--home-fg)!important;}
 .home-root .text-gray-500,.home-root .dark\:text-gray-400 {color:var(--home-muted)!important;}
 .home-root .gradient-text,.home-root .gold-text {background:none!important;-webkit-text-fill-color:currentColor!important;color:var(--home-accent)!important;}
@@ -796,3 +804,5 @@ html:not(.dark) .kaizen-notify .text-gray-400,
 html:not(.dark) .kaizen-notify .text-gray-500{color:var(--n-muted)!important}
 .kaizen-notify .setting-input{background:var(--n-input);color:var(--n-fg);border:1px solid var(--n-line)}
 .kaizen-notify header{border-color:var(--n-line)!important}
+.kaizen-notify select,.kaizen-notify option{background:#17101f;color:#f8fafc}
+html:not(.dark) .kaizen-notify select,html:not(.dark) .kaizen-notify option{background:#fffdf8;color:#14213d}
