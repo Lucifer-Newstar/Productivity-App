@@ -6,6 +6,10 @@ const fs=require("node:fs"),http=require("node:http"),net=require("node:net"),pa
 protocol.registerSchemesAsPrivileged([{scheme:"kaizen",privileges:{standard:true,secure:true,supportFetchAPI:true,stream:true}}]);
 const ROOT=path.resolve(__dirname,".."),APP_URL="kaizen://app/",children=[];let stopping=false,ready=false,failing=false;
 app.setName("Kaizen");app.setPath("userData",path.join(app.getPath("appData"),"Kaizen"));
+// Some Windows GPU/driver combinations abort Chromium while creating the first
+// native window (before JavaScript can surface an error). Kaizen's local UI
+// does not require hardware compositing, so prefer reliable software rendering.
+app.disableHardwareAcceleration();
 function kaizenDir(env=process.env){const home=env.LOCALAPPDATA||env.TEMP;if(!home)throw new Error("LOCALAPPDATA or TEMP is required");return path.join(home,"Kaizen")}
 function stateFile(env=process.env){return path.join(kaizenDir(env),"runtime.json")}
 function errorLogFile(env=process.env){return path.join(kaizenDir(env),"desktop-error.log")}
