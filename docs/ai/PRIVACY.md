@@ -45,6 +45,8 @@ ai/evaluation/v0.1.1/results-public/  PUBLIC synthetic aggregates only
 ai/evaluation/v0.1.1/model-phase/results-local/  LOCAL-ONLY, gitignored
 ai/evaluation/v0.1.1/model-phase/config/*.local.json  LOCAL-ONLY, gitignored
 ai/evaluation/v0.1.1/model-phase/results-public/  PUBLIC only after sanitization/review
+ai/mlops/results-local/           PROPOSED LOCAL-ONLY path if AI-ADR-021 is implemented
+ai/mlops/config/*.local.json      PROPOSED LOCAL-ONLY machine config if implemented
 ```
 
 Every v0.1.1 public aggregate declares `"classification": "PUBLIC-SANITIZED-AGGREGATE"` and excludes raw prompts, responses and machine data. The two final preflight files were reclassified and sanitized on-device; only those aggregates entered the repository. Raw attempts, local config, messages, logs and telemetry were never requested or uploaded, and attachment copies were deleted after validation.

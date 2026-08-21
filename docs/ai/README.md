@@ -64,6 +64,8 @@ Every design choice in this package uses one of four labels:
 - [`IMPLEMENTATION-LEDGER.md`](IMPLEMENTATION-LEDGER.md) — current status, completed work, blockers and next steps.
 - [AI-ADR-019](adrs/AI-ADR-019-DETERMINISTIC-CORE-TODAY-ROUTING.md) — approved deterministic `get_today` routing and interpreter-only model authority.
 - [AI-ADR-020](adrs/AI-ADR-020-DETERMINISTIC-APPLICATION-PROVIDER.md) — deterministic-only application provider composition after no-model closure.
+- [AI-ADR-021](adrs/AI-ADR-021-LOCAL-MLOPS-EVALUATION-LAYER.md) — **proposed** local-first evaluation MLOps layer; not implemented; does not select a model.
+- [`mlops/`](mlops/README.md) — architecture diagram, file-level plan and validation plan for that proposal.
 - [`V0.1.1-DETERMINISTIC-ROUTING-CONTRACT.md`](V0.1.1-DETERMINISTIC-ROUTING-CONTRACT.md) — frozen route, evidence and output contracts.
 - [`V0.1.1-INTERPRETER-EVALUATION.md`](V0.1.1-INTERPRETER-EVALUATION.md) — frozen interpreter-only gates and deterministic/mock result.
 - [`../reports/AI-V0.1.1-IMPLEMENTATION-2026-08-19.md`](../reports/AI-V0.1.1-IMPLEMENTATION-2026-08-19.md) — implementation, security and evaluation closeout.

@@ -56,6 +56,8 @@ Wave 0 is complete with no model selected. Architecture review has authorized a 
 
 **Final v0.1.1 status:** deterministic Core Today is the authoritative application AI path. No model is selected or reachable through application configuration. AI scope is closed; continue non-AI application work.
 
+A **proposed** evaluation-only MLOps layer (AI-ADR-021) is documented under [`mlops/`](mlops/README.md). It is not implemented and does not reopen model execution or v0.2.
+
 **Scope freeze:** Core Today only. Do not add memory, retrieval, Health, additional domains, writes, automation, remote processing or v0.2 work.
 
 ## v0.2 — Kaizen Understands

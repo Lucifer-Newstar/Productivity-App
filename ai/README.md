@@ -74,6 +74,7 @@ python scripts/qa_wave0.py
 - [`../docs/ai/IMPLEMENTATION-LEDGER.md`](../docs/ai/IMPLEMENTATION-LEDGER.md)
 - [`../docs/ai/DELIVERY-PLAYBOOK.md`](../docs/ai/DELIVERY-PLAYBOOK.md)
 - [`../docs/ai/adrs/AI-ADR-019-DETERMINISTIC-CORE-TODAY-ROUTING.md`](../docs/ai/adrs/AI-ADR-019-DETERMINISTIC-CORE-TODAY-ROUTING.md)
+- [`../docs/ai/adrs/AI-ADR-021-LOCAL-MLOPS-EVALUATION-LAYER.md`](../docs/ai/adrs/AI-ADR-021-LOCAL-MLOPS-EVALUATION-LAYER.md) — proposed evaluation MLOps; not implemented; no model selected
 - [`../docs/ai/V0.1.1-DETERMINISTIC-ROUTING-CONTRACT.md`](../docs/ai/V0.1.1-DETERMINISTIC-ROUTING-CONTRACT.md)
 - [`../docs/ai/V0.1.1-INTERPRETER-EVALUATION.md`](../docs/ai/V0.1.1-INTERPRETER-EVALUATION.md)
 - [`../docs/ai/WAVE-0-REPORT.md`](../docs/ai/WAVE-0-REPORT.md)
