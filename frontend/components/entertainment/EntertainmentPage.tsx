@@ -23,6 +23,7 @@ import EntertainmentStudio from "./EntertainmentStudio";
 import NotificationButton from "../NotificationButton";
 import { ProfileTrigger } from "../ProfileDock";
 import { ENTERTAINMENT_LANGUAGES, entertainmentCopy, providerLocale, type EntertainmentCopyKey } from "../../lib/entertainmentI18n";
+import { AFTERGLOW_SESSION_KEYS as SESSION_KEYS, afterglowProviderHeaders as providerHeaders } from "../../lib/entertainmentKeys";
 
 const uid = () => Math.random().toString(36).slice(2,10) + Date.now().toString(36);
 const today = () => new Date().toISOString().slice(0,10);
@@ -31,8 +32,6 @@ const STATUS: {id:MediaStatus;label:string;color:string}[] = [
   {id:"completed",label:"Completed",color:"#34d399"},{id:"paused",label:"Paused",color:"#fbbf24"},{id:"dropped",label:"Dropped",color:"#fb7185"},
 ];
 const TYPE_COLORS: Record<MediaType,string> = { book:"#fbbf24",comic:"#fb7185",manga:"#c084fc",movie:"#22d3ee",series:"#60a5fa",anime:"#f472b6" };
-const SESSION_KEYS={mal:"afterglow.key.mal",tmdb:"afterglow.key.tmdb",googleBooks:"afterglow.key.google",comicVine:"afterglow.key.comicvine",nytBooks:"afterglow.key.nyt"} as const;
-function providerHeaders():Record<string,string>{if(typeof window==="undefined")return{};const pairs:[keyof typeof SESSION_KEYS,string][]=[["mal","x-afterglow-mal"],["tmdb","x-afterglow-tmdb"],["googleBooks","x-afterglow-google-books"],["comicVine","x-afterglow-comic-vine"],["nytBooks","x-afterglow-nyt-books"]];const out:Record<string,string>={};for(const [key,header] of pairs){const value=sessionStorage.getItem(SESSION_KEYS[key as keyof typeof SESSION_KEYS]);if(value)out[header]=value}return out}
 const VIEW_NAV: {id:EntertainmentView;label:string;icon:any;ready:boolean}[] = [
   {id:"dashboard",label:"Now Playing",icon:Clapperboard,ready:true},{id:"library",label:"Library",icon:Library,ready:true},
   {id:"collections",label:"Collections",icon:FolderHeart,ready:true},{id:"calendar",label:"Calendar",icon:CalendarDays,ready:true},
