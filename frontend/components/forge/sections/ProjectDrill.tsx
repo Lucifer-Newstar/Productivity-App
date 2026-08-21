@@ -207,6 +207,16 @@ export default function ProjectDrill() {
           <Gauge label="TASKS" value={`${doneTasks}/${tasks.length}`}
             pct={tasks.length?Math.round(doneTasks/tasks.length*100):0} color="#06b6d4"/>
         </div>
+        {project.links.some((item) => /^https:\/\/github\.com\//.test(item.url)) && (
+          <div className="flex flex-wrap gap-2 mt-4">
+            {project.links.filter((item) => /^https:\/\/github\.com\//.test(item.url)).map((item) => (
+              <a key={item.url} href={item.url} target="_blank" rel="noreferrer" className="mono text-[10px] tracking-widest px-2 py-1 rounded-sm flex items-center gap-1"
+                style={{ background: "var(--fr-card2)", border: "1px solid var(--fr-borderSoft)", color: project.color }}>
+                <GitBranch size={10} /> {item.label || item.url.replace("https://github.com/", "")}
+              </a>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Tabs */}
