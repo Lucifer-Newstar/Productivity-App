@@ -23,4 +23,20 @@ test("avatar control routes to the full profile page",()=>{
   assert.match(dock,/href=\"\/profile\"/);
   assert.match(page,/Kaizen profile/);
 });
+test("Glow tab hosts session catalogue keys with official help URLs",()=>{
+  const keys=require("node:fs").readFileSync(require("node:path").join(__dirname,"../lib/entertainmentKeys.ts"),"utf8");
+  const page=require("node:fs").readFileSync(require("node:path").join(__dirname,"../components/ProfilePage.tsx"),"utf8");
+  for (const token of ["afterglow.key.mal","afterglow.key.tmdb","afterglow.key.google","afterglow.key.comicvine","afterglow.key.nyt"]) {
+    assert.ok(keys.includes(token), token);
+  }
+  assert.match(page,/AFTERGLOW_KEY_FIELDS/);
+  assert.match(page,/profile-help-bang/);
+  assert.match(keys,/myanimelist\.net\/apiconfig\/references\/api\/v2/);
+  assert.match(keys,/developer\.themoviedb\.org\/docs\/getting-started/);
+  assert.match(keys,/developers\.google\.com\/books\/docs\/v1\/using/);
+  assert.match(keys,/comicvine\.gamespot\.com\/api/);
+  assert.match(keys,/developer\.nytimes\.com\/docs\/books-product\/1\/overview/);
+  assert.match(page,/sessionStorage|writeAfterglowSessionKeys/);
+  assert.doesNotMatch(page,/kaizen\.profile.*afterglow\.key/);
+});
 console.log(`\n${passed} profile checks passed.`);

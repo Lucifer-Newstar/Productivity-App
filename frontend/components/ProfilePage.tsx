@@ -13,6 +13,12 @@ import { useTheme } from "../lib/theme";
 import { GITHUB_REPO_URL, GITHUB_TOKEN_SESSION_KEY, type HomeLandingView } from "../lib/profileTypes";
 import { readSafeImageAsDataUrl } from "../lib/security";
 import type { PublicGithubRepo } from "../lib/githubRepos";
+import {
+  AFTERGLOW_KEY_FIELDS, emptyAfterglowKeyDraft, readAfterglowSessionKeys,
+  writeAfterglowSessionKeys, clearAfterglowSessionKeys, type AfterglowKeyId,
+} from "../lib/entertainmentKeys";
+import CycleLogCard from "./health/CycleLogCard";
+import type { Gender } from "../lib/healthTypes";
 
 type Tab = "identity" | "home" | "workout" | "forge" | "career" | "health" | "entertainment" | "github";
 const TABS: { id: Tab; label: string; href: string; icon: typeof UserRound }[] = [
@@ -60,11 +66,22 @@ export default function ProfilePage() {
   const [repoStatus, setRepoStatus] = useState("");
   const [linkProjectId, setLinkProjectId] = useState("");
   const [photoError, setPhotoError] = useState("");
+  const [glowKeys, setGlowKeys] = useState(emptyAfterglowKeyDraft);
+  const [glowSaved, setGlowSaved] = useState(false);
+  const [glowHelp, setGlowHelp] = useState<AfterglowKeyId | null>(null);
   const zones = useMemo(() => Array.from(new Set([profile.timezone, ...ZONES].filter(Boolean))), [profile.timezone]);
 
   useEffect(() => {
     setToken(sessionStorage.getItem(GITHUB_TOKEN_SESSION_KEY) ?? "");
+    setGlowKeys(readAfterglowSessionKeys());
   }, []);
+
+  function setGender(next: Gender) {
+    updateHealth((h) => ({
+      profile: { ...h.profile, gender: next },
+      settings: { ...h.settings, cycleTrackingVisible: next === "female" ? true : h.settings.cycleTrackingVisible },
+    }));
+  }
 
   const filled = useMemo(() => ({
     identity: !!(profile.displayName || profile.handle),
@@ -123,7 +140,7 @@ export default function ProfilePage() {
   const activeTab = TABS.find((item) => item.id === tab) ?? TABS[0];
 
   return (
-    <div className="home-root profile-page" data-theme={theme}>
+    <div className="home-root profile-page" data-theme={theme} data-gender={health.profile.gender}>
       <TopNav />
       <main className="profile-shell">
         <header className="profile-identity">
@@ -186,6 +203,12 @@ export default function ProfilePage() {
           <div className="profile-body">
             {tab === "identity" && (
               <>
+                <Field label="Gender" hint="Writes Health formulas. Spaces keep their own look.">
+                  <select className="input-base" value={health.profile.gender} onChange={(e) => setGender(e.target.value as Gender)}>
+                    <option value="male">Male</option>
+                    <option value="female">Female</option>
+                  </select>
+                </Field>
                 <Field label="Timezone">
                   <select className="input-base" value={profile.timezone} onChange={(e) => updateProfile({ timezone: e.target.value })}>
                     {zones.map((zone) => <option key={zone} value={zone}>{zone}</option>)}
@@ -268,7 +291,7 @@ export default function ProfilePage() {
                 </div>
                 <div className="profile-row">
                   <Field label="Gender">
-                    <select className="input-base" value={health.profile.gender} onChange={(e) => updateHealth((h) => ({ profile: { ...h.profile, gender: e.target.value as "male" | "female" } }))}>
+                    <select className="input-base" value={health.profile.gender} onChange={(e) => setGender(e.target.value as Gender)}>
                       <option value="male">Male</option>
                       <option value="female">Female</option>
                     </select>
@@ -302,7 +325,41 @@ export default function ProfilePage() {
                   <input type="checkbox" checked={entertainment.settings.monthlyRollover} onChange={(e) => updateEntertainment((current) => ({ settings: { ...current.settings, monthlyRollover: e.target.checked } }))} />
                   Monthly rollover
                 </label>
-                <p className="profile-hint">MAL and other catalogue keys move onto this page in Wave 2. They already live in AFTERGLOW → Providers.</p>
+                <div className="profile-divider" />
+                <p className="profile-hint">Catalogue keys live in this tab only — never backed up. AniList and Open Library need no key. Server env vars remain preferred.</p>
+                {AFTERGLOW_KEY_FIELDS.map((field) => (
+                  <div className="profile-field" key={field.id}>
+                    <span className="profile-key-title">
+                      {field.label}
+                      <button
+                        type="button"
+                        className="profile-help-bang"
+                        aria-label={`How to get ${field.label}`}
+                        aria-expanded={glowHelp === field.id}
+                        onClick={() => setGlowHelp((current) => current === field.id ? null : field.id)}
+                      >!</button>
+                    </span>
+                    {glowHelp === field.id && (
+                      <span className="profile-help-pop" role="note">
+                        {field.help}{" "}
+                        <a href={field.helpUrl} target="_blank" rel="noopener noreferrer">Official guide</a>
+                      </span>
+                    )}
+                    <input
+                      className="input-base"
+                      type="password"
+                      autoComplete="off"
+                      value={glowKeys[field.id]}
+                      placeholder="Session-only credential"
+                      aria-label={field.label}
+                      onChange={(e) => setGlowKeys((current) => ({ ...current, [field.id]: e.target.value }))}
+                    />
+                  </div>
+                ))}
+                <div className="profile-key-actions">
+                  <button type="button" className="btn-ghost" onClick={() => { clearAfterglowSessionKeys(); setGlowKeys(emptyAfterglowKeyDraft()); setGlowSaved(false); }}>Clear session keys</button>
+                  <button type="button" className="btn-primary" onClick={() => { writeAfterglowSessionKeys(glowKeys); setGlowSaved(true); }}>{glowSaved ? "Saved for this tab" : "Save session keys"}</button>
+                </div>
               </>
             )}
             {tab === "github" && (
